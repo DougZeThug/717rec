@@ -121,9 +121,9 @@ Nothing is recorded and nothing is kept. The realtime subscription, if one was
 open, closes. Coming back re-runs the whole load.
 
 What survives is the address: a link carrying `?bracket=<id>` opens straight to
-that bracket, and `?season=<id>` opens that season. Nothing else about the page is
-in the URL — not the
-season, not the admin tab.
+that bracket, and `?season=<id>` opens that season. The page adds `?season=<id>`
+itself, so a link to a bracket carries its season too. Nothing else about the
+page is in the URL, not even the admin tab.
 
 ### Begin editing
 
@@ -138,9 +138,12 @@ row of admin tools. Those are owned by
 
 ### While editing
 
-Changing the season reloads the bracket list for that season. The choice is held
-in memory only: it is not in the URL, not in storage, and it is lost on reload,
-which returns to the automatic choice.
+Changing the season reloads the bracket list for that season. The choice goes
+into the address as `?season=<id>` and adds one step to go back through, so it
+survives a reload and a copied link opens the same season. It also closes any
+open bracket and removes `?bracket=` from the address, because that bracket
+belongs to the season being left. The season is not kept in storage: the address
+is its only memory.
 
 Choosing a bracket does three things at once: it sets `?bracket=<id>`, it starts
 loading that bracket, and it starts a realtime subscription to that bracket's
@@ -208,8 +211,8 @@ none. A league in its first season therefore never sees it.
 | The window loses focus | No effect. | The realtime subscription stays open in the background. Neither the bracket nor the list refetches on focus returning — both have that switched off — so returning to the tab shows whatever realtime delivered, and nothing else. |
 
 After any interrupt the page rebuilds itself from the address and from the
-automatic season choice. Nothing the user picked, apart from the bracket, is
-remembered.
+automatic season choice. Apart from the bracket and the season, which the
+address holds, nothing the user picked is remembered.
 
 ## Interactions with other systems
 
@@ -218,7 +221,9 @@ is admin-only, and each control is hidden rather than disabled for everyone else
 See [`cross-cutting/permissions.md`](../cross-cutting/permissions.md).
 
 **Season scoping.** The bracket list is scoped to one season on the server. The
-season is chosen by the page, never by the URL. See
+page takes the season from `?season=` in the address first, then from the season
+of the bracket in `?bracket=`, then from the season with playoffs active, then
+from the active season, and writes the one it took back to the address. See
 [`foundations/seasons.md`](../foundations/seasons.md).
 
 **Validation and error display.** Nothing to validate. Failures appear as
@@ -242,9 +247,10 @@ cached for offline use and nothing is queued.
 from the user: "Bracket Updated", "Tournament Complete!", and — for an admin —
 the result of a save. Nothing about the playoffs is pushed outside the app.
 
-**URL state.** Only `?bracket=<id>`. The season, the admin tab, and the scroll
-position are all lost on navigation. A link shared during one season therefore
-opens on a different season's brackets in the next, unless it names a bracket.
+**URL state.** `?bracket=<id>` and `?season=<id>`. The admin tab and the scroll
+position are lost on navigation. A link carries its season, so a link shared
+during one season opens the same season's brackets later. A link with no
+`?season=` and no bracket opens on the automatic choice.
 
 **On a phone.** The season picker stays where it is, under the heading. The admin
 toolbar inside a bracket collapses into a single **⋯** menu, so an admin on a
@@ -300,10 +306,6 @@ last five minutes opens again instantly.
   was read from the code and not seen in a browser. The row already carries a
   "Legacy" badge, so the state is known.
   **May be worth treating as a bug rather than documenting.**
-- **The chosen season is lost on reload while the bracket in the address is
-  not.** After a reload the season dropdown can name one season while the open
-  bracket belongs to another. **May be worth treating as a bug rather than
-  documenting.**
 - **Realtime here contradicts the foundations.**
   [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md)
   says realtime exists only on live scoring. This page opens two subscriptions
@@ -325,4 +327,7 @@ Verified against `717rec` commit `ea5c8f4`, except the wait after "View Live
 Bracket", the "Back to brackets" button above an open bracket, the phone "Live
 updates" dot and the history step that closing a bracket replaces. All four
 changed after that commit. None is a triaged bug. The season picker is described
-as the code has it now: under the heading on every screen size.
+as the code has it now: under the heading on every screen size. The season in
+the address (`?season=<id>`, written by the page, set by the picker and kept on
+reload) was read from the code and checked in a real browser against fake data
+on 2026-11-05.
