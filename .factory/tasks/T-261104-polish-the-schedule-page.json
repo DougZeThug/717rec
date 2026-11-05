@@ -60,6 +60,10 @@
     {
       "text": "C13 Date dots: with 9 dates or fewer the dots look and tap as today (24 px wide); with more than 9 dates text like 3 of 19 replaces them and updates on Next and Previous. Unit tests for 9 dates, 10 dates and Next.",
       "done": false
+    },
+    {
+      "text": "C14 Search ignores spaces at the start and end: alpha with a trailing or leading space finds the same matches as alpha, spaces alone show the whole list like an empty box, and a space inside the text still counts. Unit tests RED then GREEN, a real-browser check, and the page doc and the verification row are updated.",
+      "done": false
     }
   ],
   "checks": {
@@ -131,6 +135,13 @@
       "sha": "e83e613f6cc550d674defb6bb81eeced34fa444d",
       "at": "2026-11-04T19:53:26.019Z",
       "summary": "Independent plan review: CHANGES, all accepted and the plan revised. Blockers: (U4) ScheduleContent has no search text, so a search prop and a clear callback are passed from Schedule.tsx, and chips win over search; (U12) narrowing the dots breaks the 24 px floor, so it went to Doug, who chose text after 9 dates. Also fixed in the plan: U1 test mock cannot see isFirstGroup, U6 needs exact classes and no edit to the shared calendar, U10 ring may vanish on the selected chip in light, U5 needs open plus onOpenChange and the undefined date, desktop effect of U2 and U3 stated (U3 kept desktop-identical), U8 old value stated, docs list completed (SCHED-19 rewritten)."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "at": "2026-11-05T00:34:03.140Z",
+      "summary": "Fresh independent reviewer on 73e0e2b: APPROVE, no blockers, one SHOULD. It proved every new test fails on the old code (carousel open, search empty state, calendar close, date counter) and found nothing that moved. SHOULD: a trailing space gives a wrong No matches (the filter did not trim, the message echoed the trimmed text). Doug chose to make the filter ignore leading and trailing spaces. That moves the head commit, so this approval becomes stale and a short fresh review of the change follows. NITs left alone: scroll-mt only helps when the browser scrolls; the 30-character cut can still clip a run of wide letters; No matches is not tab-aware (copy approved); reopened calendar shows the current month; counter text has no word date for screen readers."
     }
   ],
   "issues": {},
@@ -142,9 +153,13 @@
     {
       "at": "2026-11-04T19:53:25.885Z",
       "why": "Doug chose text after 9 dates for the carousel date dots (shows N of M with more than 9 dates; dots stay as today up to 9). Not shrunk, not scrolled."
+    },
+    {
+      "at": "2026-11-05T00:34:02.972Z",
+      "why": "Doug said yes: the schedule search ignores spaces at the start and end of what is typed (found by the independent reviewer: alpha followed by a space found nothing, and the new No matches message hid the space). Typing only spaces now shows the whole list."
     }
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-04T21:40:22.637Z"
+  "updatedAt": "2026-11-05T00:34:03.140Z"
 }
