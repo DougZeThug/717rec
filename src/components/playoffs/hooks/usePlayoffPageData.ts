@@ -138,8 +138,9 @@ export function usePlayoffPageData(): PlayoffPageData {
       } else {
         const newSearchParams = new URLSearchParams(searchParams);
         newSearchParams.delete('bracket');
-        // Replace, not push. This closes a bracket that was just left, failed to
-        // load or was deleted, and the phone's Back button must not open it again.
+        // Replace, not push. This closes a bracket that was deleted, or one with no
+        // list step behind it to go back to (see closeBracket), and the phone's Back
+        // button must not open it again.
         setSearchParams(newSearchParams, { replace: true });
 
         bracketLog('Removed bracket from URL');
@@ -151,9 +152,12 @@ export function usePlayoffPageData(): PlayoffPageData {
   /**
    * "Back to brackets". Opening a bracket from the list added a history step.
    * If this step carries the mark, Back goes to the list the reader came from,
-   * so the Back button does not need an extra press to leave the page. Without
-   * the mark (a shared link, a failed bracket, an admin-made link) the step
+   * so the Back button does not need an extra press to leave the page. This
+   * holds when the bracket then fails to load too. Without the mark, the step
    * is swapped in place, as before: there is no list step behind it to use.
+   * That is a link that opened straight on a bracket, the link an admin gets
+   * after making a bracket, or a bracket opened from a list that shows over
+   * another bracket's address.
    * The bracket is cleared first so the list shows at once, before the step lands.
    */
   const closeBracket = useCallback(() => {
