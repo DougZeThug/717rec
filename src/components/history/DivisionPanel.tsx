@@ -57,7 +57,8 @@ const DivisionTitle: React.FC<{
 
 const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) => {
   const isMobile = useIsMobile();
-  const [isExpanded, setIsExpanded] = useState(true);
+  // Start closed on a phone so the big team list is never drawn and then hidden
+  const [isExpanded, setIsExpanded] = useState(!isMobile);
   const { isWinterTheme } = useSeasonalThemeBase();
 
   // Collapse divisions on mobile after initial mount
@@ -110,6 +111,8 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
           variant="ghost"
           size="sm"
           className="p-1 size-6 md:size-8 transition-transform duration-300"
+          aria-expanded={isExpanded}
+          aria-label={`Toggle ${divisionName} teams`}
           style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           <ChevronDown size={20} />
