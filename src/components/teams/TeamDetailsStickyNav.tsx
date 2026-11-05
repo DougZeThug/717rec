@@ -78,6 +78,7 @@ const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }
   // The section a tapped pill is scrolling to. Scrolling past other sections on
   // the way must not move the highlight until the page has settled.
   const tappedRef = useRef<string | null>(null);
+  // skipcq: JS-W1042 -- React 19's types have no call without an argument, so `undefined` stays.
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   /** Highlight the topmost section in view, unless a tapped pill is still scrolling. */
