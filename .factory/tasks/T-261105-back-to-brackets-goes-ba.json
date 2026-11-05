@@ -8,12 +8,41 @@
   "branch": "claude/affectionate-dirac-icive8",
   "baseSha": "85e2addba37f76f762c47be34fa968ada689c919",
   "createdAt": "2026-11-05T12:29:39.039Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Sequences A, C, D need exactly 1 browser Back press to leave /playoffs with 0 dead presses (real browser, fake data, 390x844 touch); B and E keep their numbers (1; 3 with 0 dead)",
+      "done": false
+    },
+    {
+      "text": "Reload on an open bracket, then Back to brackets: goes back one step and shows the list; a push made from a ?bracket= entry carries no mark (unit test) and still replaces",
+      "done": false
+    },
+    {
+      "text": "After Back to brackets the list is at its top (PLAYOFF-41 stays true), measured in a short window where the list scrolls; delete of the open bracket still replaces (unit test); the error banner button works (real browser C)",
+      "done": false
+    },
+    {
+      "text": "Unit tests: changed assertions are edited to the exact new calls, none skipped or loosened; typecheck, lint, knip, build, unit, integrity pass at the head commit",
+      "done": false
+    },
+    {
+      "text": "Docs and rows PLAYOFF-41 to 45, PLAYADMIN-38, the-playoffs-page.md (paragraph, interrupt table, footer) say what the code does; links 0 broken; totals stay 1,958 and 116",
+      "done": false
+    }
+  ],
   "checks": {},
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "CHANGES",
+      "sha": "85e2addba37f76f762c47be34fa968ada689c919",
+      "at": "2026-11-05T12:38:53.518Z",
+      "summary": "Independent plan review: design is sound and the smallest option (mark in history.state, verified in react-router source: a replace with no state wipes the mark, reload keeps it). Blocking: (1) a push made while the list shows over an entry that already has ?bracket= (admin loading, error banner, legacy null bracket) would carry the mark and Back to brackets would land on that bracket entry; fix = mark only when the address has no bracket param. (2) typecheck break: untyped makeAdminData in bracket-view.test.tsx needs closeBracket. (3) two existing assertions (actions.test:149, season-from-bracket.test:154) change on purpose. (4) scroll after a POP is only knowable in a browser; fix after the POP if not 0. Docs list was short: PLAYOFF-41/42, PLAYADMIN-38 added."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T12:29:39.039Z"
+  "updatedAt": "2026-11-05T12:38:53.708Z"
 }
