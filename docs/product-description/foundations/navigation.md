@@ -162,7 +162,8 @@ Not applicable to navigation itself.
 | The window loses focus | No effect. | Returning focus causes cached data older than five minutes to refetch. See [`saving-and-freshness.md`](saving-and-freshness.md). |
 
 After any interrupt the user is wherever the browser put them. The app never
-returns a user to an interrupted page or restores what was on it.
+returns a user to an interrupted page. It restores only what the page keeps in the
+address (see *While editing*).
 
 ## When a page fails
 

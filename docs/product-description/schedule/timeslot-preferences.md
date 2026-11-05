@@ -137,7 +137,8 @@ admin screen.
 | The window loses focus | Nothing. | **The poll stops** while the tab is hidden and resumes when it comes back, so returning to a tab left open for an hour re-fetches once rather than sixty times. |
 
 After any interrupt the tab is rebuilt from the database. Nothing was held that
-could be lost beyond which cards were open.
+could be lost beyond which cards were open and the night: a reload or Back brings
+the night back from the address, and the Schedule link does not.
 
 ## Interactions with other systems
 

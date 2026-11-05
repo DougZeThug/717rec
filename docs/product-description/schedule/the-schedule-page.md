@@ -193,8 +193,9 @@ that own their own commits.
 | Browser autofill or a password manager writes into the form | The search box asks the browser not to autofill. | No effect. There is no form on this page to fill. |
 | The window loses focus | Nothing. | **The match list does not re-fetch on return**, unlike most of the app. The Timeslots tab pauses its poll while the tab is hidden and resumes on return, so timeslots can visibly change and matches cannot. |
 
-After any interrupt the user comes back to a schedule rebuilt from what was
-loaded. Nothing is held for them and nothing warns them that they lost a filter.
+After any interrupt the user comes back to a schedule rebuilt from the address and
+from what was loaded. Nothing warns the reader when a link back to the Schedule
+starts from the default night.
 
 ## Interactions with other systems
 
