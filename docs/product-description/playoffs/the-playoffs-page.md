@@ -344,7 +344,8 @@ last five minutes opens again instantly.
 Verified against `717rec` commit `ea5c8f4`, except the wait after "View Live
 Bracket", the "Back to brackets" button above an open bracket, the phone "Live
 updates" dot and the history step that "Back to brackets" takes. All four
-changed after that commit. None is a triaged bug. The season picker is described
+changed after that commit. None is a triaged bug. The scroll statement in Open questions changed after that
+commit too; see [B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation). The season picker is described
 as the code has it now: under the heading on every screen size. The season in
 the address (`?season=<id>`, written by the page, set by the picker and kept on
 reload) was read from the code and checked in a real browser against fake data

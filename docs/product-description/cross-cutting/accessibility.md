@@ -31,8 +31,7 @@ in the theme's ring colour.
 They activate a navigation link. The page changes. A visually hidden live region
 says "Schedule page", and focus moves to the page's main content area, so the
 next Tab lands inside the new page rather than back at the top of the browser.
-The page does **not** scroll to the top, so what is announced and what is on
-screen can be two different things.
+The new page opens at the top, so what is announced and what is on screen agree.
 
 They open a dialog. Focus goes into it, Escape closes it, and focus returns.
 Every dialog, dropdown, popover, and select in the app behaves this way, because

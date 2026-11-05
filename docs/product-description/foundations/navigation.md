@@ -87,7 +87,8 @@ Three things happen on every arrival, on every route:
 
 **A link opens the new page at the top.** Moving from the bottom of a long
 schedule to a short page shows the top of the short page. The reset happens when
-the path changes, and only then. The new page used to inherit the old scroll
+the path changes, and only then. A link that names a place on the page (`#match-<id>`
+on the schedule, `#career` on a team) then scrolls to that place. The new page used to inherit the old scroll
 position, which was a defect; see [B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation). Measured in a real
 browser against fake data on 2026-11-05, on the dev server and on the production
 build: scrolled 337px down `/schedule`, followed the Help link, arrived at 0.
@@ -101,8 +102,8 @@ after a team page came back at 300 of 300px. After a top-bar link, and for
 `/teams`, `/history` and `/insights` in every other case tried, Back landed at 0.
 On `/stats` the saved position had been overwritten with 0 as the page was left.
 Every other route — the home page, the schedule, a team's page, the playoffs, the
-message board, live scoring — has no scroll code of its own; the schedule came
-back at the top too. See [Open questions](#open-questions-and-verification).
+message board, live scoring — does not save or restore its own scroll position; the
+schedule came back at the top too. See [Open questions](#open-questions-and-verification).
 
 Nothing is prefilled or focused by arriving, beyond the main-content focus move
 above. Three lightweight pages — teams, schedule, and history — are fetched
@@ -270,8 +271,9 @@ development build the analytics call does nothing.
   `/oauth/consent` is reached by another app; the not-found route is reached by
   being wrong; `/join` is reached from the Join the League button on the home
   page; `/recap/:seasonSlug/:week` is reached from the home page's Weekly Recap
-  block and from shared links. A team, a live match and an admin section are
-  reached by a link inside a page. Every other route is offered by the top bar,
+  block and from shared links. Three more are reached by a link inside a page rather than
+  from the top bar or the tab bar: a team, a live match and an admin section.
+  Every other route is offered by the top bar,
   the phone tab bar, the user menu or the palette.
 
 ## Open questions and verification

@@ -35,7 +35,7 @@ tab bar never covers its last line.
 They tap Teams. The teams list arrives grouped by division rather than in one
 long list, because that is the default on a small screen and not on a large one.
 They open a team, read it, and press back. `/teams` is built to put them back
-where they were, but in a 2026-11-05 test in a real browser it landed at the top
+where they were, but in a 2026-11-05 test in desktop Chromium it landed at the top
 (see [navigation](../foundations/navigation.md#open-questions-and-verification)).
 
 They tap a control that fails. A red panel appears across the **top** of the
@@ -219,7 +219,7 @@ much of its traffic is phones. Nothing more precise is stored. See
   rather than documenting.**
 - **A link opens the new page at the top**, which matters most on a phone: a long
   schedule followed by a short page no longer leaves a blank screen ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation),
-  fixed). Back does not restore the old position, though; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+  fixed). Back mostly does not restore the old position, though; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 - **A large phone in landscape is a desktop** as far as the app is concerned, so
   the bottom tab bar vanishes at an angle rather than at a device.
 - **The command palette's keyboard shortcut is unreachable on a phone**, which is

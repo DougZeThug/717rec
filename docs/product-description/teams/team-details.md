@@ -133,7 +133,7 @@ Nothing is submitted. Every write that touches this team happens elsewhere.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes an open badge dialog. Nothing else. |
 | In-app navigation away, or switching tab within the page | Which sections were open is lost. Nothing else is held. | No effect; nothing is ever in flight from this page but reads. |
-| Browser back or forward | Leaves the page. Coming back by a link gives a fresh page in the default arrangement, with no memory of what was opened. Coming back with Back to an address that holds a section hash (`#career`) opens that section as well. **Back from here to `/teams` restores that list's scroll position**; the breadcrumb link to Teams does not, because it is a new navigation rather than a history move. | Same. |
+| Browser back or forward | Leaves the page. Coming back by a link gives a fresh page in the default arrangement, with no memory of what was opened. Coming back with Back to an address that holds a section hash (`#career`) opens that section as well. Back from here goes one step back in the history, so `/teams` is built to come back where it was left; **in the 2026-11-05 test it landed at the top**. The breadcrumb link to Teams opens the list at the top, because it is a new navigation rather than a history move. | Same. |
 | Reload, or the tab closed | The page rebuilds from the database in the default arrangement, Roster and Match History open and the rest closed, plus the section named in the address, if there is one. | Same. |
 | Network lost mid-request | The page stays a skeleton indefinitely, or shows a retry card if the read fails outright. There is no message that the network is the problem. | An open section that has not loaded shows its own retry card; the Advanced Stats block offers "We couldn't load advanced stats. Please try again." |
 | The request fails or times out | Reads are retried once. A failed team read gives the retry card; only a team that genuinely does not exist gives **Team Not Found**. | As above, per section. |
@@ -214,9 +214,11 @@ data and writes nothing.
 - **The section bar's buttons scroll to closed sections.** Three of the five
   (Stats, Matchups and Career) land the user on a folded heading. Overview lands on
   the cards and Matches on a section that is already open.
-- **Back behaves differently depending on where the user came from.** From the
-  standings the page returns to the standings and scrolls to where the user was,
-  as a new navigation. From anywhere else it is a plain history step back.
+- **Back depends on how the page was opened.** In the app it goes one step back
+  in the history, so the page the user came from comes back (the standings came
+  back where they were left in the 2026-11-05 test). A team address typed by
+  hand, reloaded, or opened from outside the app has nothing of ours behind it,
+  so Back goes to the teams list.
 - **Badges are not filtered by season.** Every badge the team has ever earned is
   in the header row and the Career section, so a badge from three seasons ago
   sits beside one from last week with only its tooltip to tell them apart.
