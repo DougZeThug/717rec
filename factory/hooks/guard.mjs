@@ -446,8 +446,8 @@ const guard = async () => {
     cfg = hardenConfig(DEFAULT_CONFIG);
     configBroken = true;
   }
-  const { existsSync } = await import('node:fs');
-  const { execFileSync } = await import('node:child_process');
+  // Two independent built-in imports: load them together.
+  const [{ existsSync }, { execFileSync }] = await Promise.all([import('node:fs'), import('node:child_process')]);
   if (toolInput.file_path) toolInput.__exists = existsSync(toolInput.file_path);
   if (input.tool_name === 'Bash' && /\bgit\s+commit\b/.test(String(toolInput.command))) {
     toolInput.__stagedDiff = commitContent(String(toolInput.command), root, execFileSync);
