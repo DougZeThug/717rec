@@ -2,7 +2,7 @@
   "id": "T-261105-back-to-brackets-goes-ba",
   "title": "Back to brackets goes back one real step",
   "kind": "polish",
-  "status": "intake",
+  "status": "ready",
   "request": "When the reader opened a bracket from the playoffs list, the Back to brackets button should go back one real step in the browser history, so the browser Back button has no dead press afterward. A direct link, a deep link, a delete and the error banner keep working. Update the history docs and rows PLAYOFF-43, 44 and 45.",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -117,5 +117,7 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T13:20:50.251Z"
+  "updatedAt": "2026-11-05T13:21:00.442Z",
+  "readySha": "8b6a38896b4b1fd075d6f1f7bc403e06f8ec2208",
+  "readyAt": "2026-11-05T13:21:00.441Z"
 }
