@@ -70,9 +70,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "sha": "cfeeaaca861eea871683bf12cb9c8626964d3d86",
       "dirty": false,
-      "at": "2026-11-04T21:27:47.698Z",
+      "at": "2026-11-05T00:39:43.407Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261104-polish-the-schedule-page/integrity.log"
@@ -80,50 +80,50 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "sha": "cfeeaaca861eea871683bf12cb9c8626964d3d86",
       "dirty": false,
-      "at": "2026-11-04T21:28:01.491Z",
-      "seconds": 14,
+      "at": "2026-11-05T00:39:56.386Z",
+      "seconds": 13,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261104-polish-the-schedule-page/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "sha": "cfeeaaca861eea871683bf12cb9c8626964d3d86",
       "dirty": false,
-      "at": "2026-11-04T21:29:45.918Z",
-      "seconds": 104,
+      "at": "2026-11-05T00:41:26.048Z",
+      "seconds": 90,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261104-polish-the-schedule-page/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "sha": "cfeeaaca861eea871683bf12cb9c8626964d3d86",
       "dirty": false,
-      "at": "2026-11-04T21:29:50.203Z",
-      "seconds": 4,
+      "at": "2026-11-05T00:41:30.749Z",
+      "seconds": 5,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261104-polish-the-schedule-page/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "sha": "cfeeaaca861eea871683bf12cb9c8626964d3d86",
       "dirty": false,
-      "at": "2026-11-04T21:29:57.823Z",
-      "seconds": 8,
+      "at": "2026-11-05T00:41:36.160Z",
+      "seconds": 5,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261104-polish-the-schedule-page/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "sha": "cfeeaaca861eea871683bf12cb9c8626964d3d86",
       "dirty": false,
-      "at": "2026-11-04T21:40:22.637Z",
-      "seconds": 625,
+      "at": "2026-11-05T00:49:28.837Z",
+      "seconds": 473,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261104-polish-the-schedule-page/unit.log"
     }
@@ -161,5 +161,5 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T00:34:03.140Z"
+  "updatedAt": "2026-11-05T00:49:28.837Z"
 }
