@@ -34,7 +34,7 @@ test('every check and the preview command are covered by an allow rule in .claud
 });
 
 test('stray commands are not covered by .claude/settings.json', () => {
-  for (const command of ['npm run deploy', 'npm run publish-site', 'node tools/other.mjs', 'node factory/hooks/guard.mjs', 'node factory/bin/../../evil.mjs', 'npx playwright codegen', 'npx playwright show-report'])
+  for (const command of ['npm run deploy', 'npm run publish-site', 'node tools/other.mjs', 'node factory/hooks/guard.mjs', 'node factory/bin/../../evil.mjs', 'npx playwright codegen', 'npx playwright show-report', 'node --test /tmp/evil.mjs', 'node --test --import ./evil.mjs factory/spec/a.spec.mjs'])
     assert.equal(allowed(settings.permissions.allow, command), false, command);
 });
 
