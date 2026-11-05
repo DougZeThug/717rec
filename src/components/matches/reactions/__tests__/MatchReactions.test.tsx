@@ -65,6 +65,17 @@ describe('MatchReactions', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Remove reaction');
   });
 
+  // Q14: 44 pixels wide on a phone, back to the small button from md up.
+  it('keeps the Add reaction button 44 pixels wide on a phone', () => {
+    setup([]);
+    render(<MatchReactions matchId="m1" />);
+
+    expect(screen.getByRole('button', { name: 'Add reaction' })).toHaveClass(
+      'min-w-11',
+      'md:min-w-0'
+    );
+  });
+
   it('adds a new reaction from the picker', async () => {
     setup([]);
     render(<MatchReactions matchId="m1" />);
