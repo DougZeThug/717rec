@@ -8,9 +8,12 @@ every match it has played, and what it has won across every season it has
 existed.
 
 Almost all of it is folded away. The page opens with the team's identity, two
-summary cards, the roster and the match history; the other sections are closed,
-and each one fetches its own numbers only when it is opened. A user who never opens anything
-sees a short page and the app never asks the league for most of the data.
+summary cards, the roster and the match history; the other sections are closed.
+Stats & Report Card, Matchups & Rivalries and Career & Achievements fetch their
+numbers only when opened. Player Stats is different: it asks for its numbers as
+the page loads, and it does not appear at all when live scoring has no rounds for
+the team. A user who never opens anything sees a short page and the app never
+asks the league for most of the data.
 
 The address in the URL is normally the **team's name**, not its id. That has
 consequences a user can notice, and they are set out below.
@@ -77,8 +80,8 @@ What is shown once it resolves, in order:
 | Match History | **open** | every completed match this season |
 | Career & Achievements | closed | career totals, a power score chart across seasons, and every badge |
 
-The closed sections' contents are **not loaded until they are opened**, so the
-first opening of Stats, Matchups, or Career costs a wait, and closing and
+The contents of Stats, Matchups and Career are **not loaded until they are opened**, so the
+first opening of any of them costs a wait, and closing and
 reopening within five minutes is instant. A section named in the address counts
 as opened, and pays that cost on arrival.
 
@@ -122,7 +125,7 @@ Nothing is submitted. Every write that touches this team happens elsewhere.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role | No effect at all. A visitor, a player, and an admin see the same page with the same sections and the same numbers. There is no edit control here for anyone. | No effect. |
-| The record's state | A hidden team's page renders normally. A team with no players shows "No players registered". A team with no completed matches loses the last-match line and shows "No Match History". A team with no badges shows nothing in the header and "No achievements yet" in the Career section. | Numbers change under the user on a refetch. Sections already open update; sections still closed will simply be current when opened. |
+| The record's state | A hidden team's page renders normally. A team with no players shows "No players registered". A team with no completed matches loses the last-match line and shows "No Match History". A team with no badges shows nothing in the header and "No achievements yet" in the Career section. | Numbers change under the user on a refetch. Sections already open update; sections still closed will simply be current when opened (Player Stats is already loaded). |
 | The season's state | The header, the Overview cards, the roster, and the Match History are all the **active season**. Career, badges, and the advanced stats look across every season. Nothing on the page marks which is which. | A season changeover empties the record and the match history at the next refetch, while the career numbers stay. |
 | Viewport | On a phone the logo is smaller, the breadcrumbs are replaced by a single Back button, and the section bar scrolls sideways. Badges are bigger and open a dialog on tap; on a wide screen they show a tooltip on hover. | Re-flows on rotation. |
 | Keys the app honours | No shortcuts. Tab reaches Back, then each section header in turn, then whatever is inside an open one. | Enter or Space opens the focused section. Escape closes a badge dialog. |

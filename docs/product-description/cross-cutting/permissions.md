@@ -250,8 +250,8 @@ is the only role-specific message in the product, and it is shown once per visit
 to a guarded route.
 
 **URL state.** No role or permission is ever in the URL, and nothing in it says
-which team the signed-in member belongs to (a team page or a comparison names a
-team for every reader). The destination
+which team the signed-in member belongs to (a team page names its team, and a
+comparison names its teams once they are chosen). The destination
 remembered across a sign-in redirect is carried in navigation state and does not
 survive a reload of `/auth`.
 

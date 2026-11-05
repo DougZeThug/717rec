@@ -138,11 +138,13 @@ step. Its six documents start at
 - The phone's safe areas are honoured in the top bar, the bottom tab bar and the
   padding under every page. A notch or a home indicator does not sit over them.
   The playoffs page has no bottom bar of its own.
-- The bottom tab bar reaches four of the app's twenty-four routes. Everything else —
-  the message board, history, help, contact, and Admin for an admin — is behind
-  the hamburger; my team and the profile are in the user menu. Insights and
-  compare are in the hamburger's list only through Help's Quick Navigation and
-  the command palette, neither of which a phone can reach.
+- The bottom tab bar reaches four of the app's twenty-four routes. The hamburger reaches
+  the other main pages — the message board, history, help, contact, and Admin for
+  an admin — and the user menu reaches my team, the message board and the profile.
+  A team, a weekly recap, a live match, Join and the password pages are in
+  neither: a link or button inside another page opens them. Insights and compare
+  are in neither menu. On a phone they open only from the buttons in Help's Quick
+  Navigation, because the command palette does not exist below 768 pixels.
 - The message board puts its list in a fixed-height scrolling box sized from the
   viewport, so the page has a scroller inside a scroller. On a phone the outer
   page barely moves and the inner list does the scrolling.
@@ -152,7 +154,7 @@ step. Its six documents start at
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | A phone keyboard has no Escape, so on a phone nothing can be cancelled by key; only by tapping a Cancel or Close control. **The hamburger menu has no close-by-tapping-away** — it closes on a route change or by pressing the button again. It does close on Escape, which reaches it from an attached keyboard but not from a touch keyboard. | Same. A dialog's Cancel button works; there is no key that reaches it. |
-| In-app navigation away, or switching tab within the page | The new page loads and opens at the top. Back does not put the old page back where it was: `/teams` is built to, and landed at the top in the 2026-11-05 test. | Everything typed is lost with no warning, exactly as on a desktop. |
+| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top; switching a tab within the page keeps the scroll position. Back does not put the old page back where it was: `/teams` is built to, and landed at the top in the 2026-11-05 test. | Everything typed is lost with no warning, exactly as on a desktop. |
 | Browser back or forward | The gesture-based back swipe is the browser's, and the app cannot intercept it. It behaves as an in-app navigation. | Same. On a phone this is the most likely way work is lost, because the swipe is easy to trigger by accident. |
 | Reload, or the tab closed | Everything in memory is lost and every page refetches. A mobile browser closing a background tab to save memory looks identical to a reload when the user comes back. | A sent write still lands. An unsent one is gone. |
 | Network lost mid-request | Nothing to lose. Cached data stays on screen and looks current, which on a phone at a venue is the common case. | The request fails and is lost. **Nothing is queued.** This matters most during live scoring, which is the one thing done on a phone at a place with poor signal. |

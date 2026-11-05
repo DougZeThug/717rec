@@ -136,12 +136,16 @@ address, so that a view can be linked to, bookmarked or reloaded:
 - `/stats` carries the Division / All choice, as `?view=all`.
 - `/compare` carries the two teams, as `?team1=` and `?team2=`.
 - `/playoffs` carries the season and the open bracket.
-- `/auth` and `/setup-profile` carry where to go next, as `?next=`. The consent
-  page carries its request number, as `?authorization_id=`.
+- `/auth` and `/setup-profile` can carry where to go next, as `?next=`. Google
+  sign-in and the consent page's sign-in redirect use it. Other sign-in redirects
+  (the Sign in button, the admin guard, the message board's sign-in prompt) keep the
+  destination in the browser's history entry instead. It is not in the address, so a
+  copied link or a bookmark loses it. The consent page carries its request number,
+  as `?authorization_id=`.
 
 Two pages also read a value from the address on arrival. The contact form reads
-`?type=` (its topic), `?solo=true` (its solo box) and `?source=join_page` (where the
-visitor came from). The admin timeslots section takes a night, a team and a slot,
+`?type=` (its topic) and `?solo=true` (its solo box) on arrival, and `?source=join_page`
+(where the visitor came from) when the message is sent. The admin timeslots section takes a night, a team and a slot,
 or what the team asked for, that another admin section hands it, and removes them
 from the address once it has used them. Each page's own document
 says exactly what it writes.
@@ -165,7 +169,7 @@ Not applicable to navigation itself.
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No global effect. There is no global Escape handler. | No global effect; individual dialogs handle their own. |
-| In-app navigation away, or switching tab within the page | The new page loads and opens at the top. | **The page's state is discarded with no warning.** No route in the app blocks navigation for unsaved work. Requests already sent still complete, unseen. |
+| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top. Switching a tab within the page keeps the scroll position. | **The page's state is discarded with no warning.** No route in the app blocks navigation for unsaved work. Requests already sent still complete, unseen. |
 | Browser back or forward | Works normally; the app cannot intercept it. | Same as navigating away. Coming back gives a freshly mounted page, not the one that was left. |
 | Reload, or the tab closed | The whole app is re-fetched and re-initialised. Sign-in state survives; everything else does not. | Everything in memory is lost. |
 | Network lost mid-request | If the page's own code has not arrived, the loading spinner stays indefinitely — there is no timeout and no error for a chunk that never loads. | Data requests fail and each page reports it in its own way. |
@@ -176,8 +180,11 @@ Not applicable to navigation itself.
 | The window loses focus | No effect. | Returning focus causes cached data older than five minutes to refetch. See [`saving-and-freshness.md`](saving-and-freshness.md). |
 
 After any interrupt the user is wherever the browser put them. The app never
-returns a user to an interrupted page. It restores only what the page keeps in the
-address (see *While editing*).
+returns a user to an interrupted page. It restores only what a page chose to keep:
+what is in the address (see *While editing*), a few choices saved in the browser (for
+example the teams page's style and grouping and the schedule's tab), and, on four
+pages, the scroll position (see *Arrive*; in the 2026-11-05 test it mostly came back
+at the top).
 
 ## When a page fails
 

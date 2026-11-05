@@ -215,15 +215,18 @@ stateDiagram-v2
 ```
 
 After a link the new page opens at the top, where focus has moved. After Back or
-Forward the scroll is the browser's to restore, so the part of the page on screen
-and the element focused can disagree.
+Forward nothing resets the scroll. The browser may put the page back, and four
+pages (`/teams`, `/stats`, `/history`, `/insights`) also try to put it back
+themselves; in the 2026-11-05 test most pages still came back at the top (see
+[navigation](../foundations/navigation.md#arrive)). Either way, the part of the page on
+screen and the element focused can disagree.
 
 ## Cancel and interrupt
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | Escape closes any dialog, menu, popover, or select and returns focus to whatever opened it. It closes the hamburger menu too, and returns focus to the hamburger button. | Escape closes the dialog and abandons what was in it. It does not abort a request already sent. |
-| In-app navigation away, or switching tab within the page | The new page is announced and focus moves to its main content. The new page opens at the top, so a sighted user and a reader are looking at the same place. | Work is discarded with no warning and nothing is announced about the loss. |
+| In-app navigation away, or switching tab within the page | A link to another page is announced, focus moves to its main content, and the page opens at the top, so a sighted user and a reader are looking at the same place. Switching a tab within the page does none of these: nothing is announced, focus is not moved, and the scroll position is kept. | Work is discarded with no warning and nothing is announced about the loss. |
 | Browser back or forward | The new page is announced but **focus is not moved**, so the next Tab continues from wherever focus happened to be. | Same, and the discarded work is silent. |
 | Reload, or the tab closed | The first load after a reload announces nothing and moves no focus, by design. The reader starts at the top of the document. | Nothing is announced about a write that may or may not have landed. |
 | Network lost mid-request | Silent. Nothing announces going offline, because nothing detects it. | The failure toast is announced. It says the feature failed, never that the connection did. |

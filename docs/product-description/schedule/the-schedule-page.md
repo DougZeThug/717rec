@@ -38,8 +38,9 @@ upcoming matches, and otherwise **Timeslots**.
 The Upcoming tab lists matches grouped by date, oldest first. Each date is a
 collapsible heading like "Thursday, June 12". Inside a date, matches are grouped
 again by start time — "7:00 PM", with a count badge — and inside that sit the
-match cards. On a wide screen the first date group and its first time group are
-open; the rest are closed. On a phone only one date shows at a time, and each
+match cards. On a wide screen the first date group is open, and so is any date
+group for today or for the selected night. Each open date group has its first time
+group open too. Every other group is closed. On a phone only one date shows at a time, and each
 date opens with its first time group showing.
 
 The Completed tab is the same, newest date first, and every card reads "Final".
@@ -104,7 +105,7 @@ Which groups were expanded is thrown away. The search text, the selected date an
 the chips are in the address (see **URL state** below): the browser's Back button
 brings them back, and so does a reload. Coming back by the Schedule link, which
 carries no parameters, gives the default night, an empty search box, the All chip
-pressed, and the first group open.
+pressed, and the first group and the default night's group open.
 
 ### Begin editing
 
@@ -122,8 +123,7 @@ see only that date's matches sees the whole season's matches with one heading
 highlighted.
 
 **The calendar button.** It opens a month picker with no limits, so a date
-outside the fourteen-day strip can be chosen. When one is, no date in the strip
-appears selected. Picking a day closes the picker at once. Pressing the day that
+outside the fourteen-day strip can be chosen. When one is, the strip changes to hold it and the picked date is highlighted: a date within about six weeks stretches the strip, and a date further away moves the strip to run from three days before it to ten days after it. Picking a day closes the picker at once. Pressing the day that
 is already selected also closes it and changes nothing. Escape, or a press
 anywhere outside it, closes it too.
 
@@ -134,8 +134,9 @@ Searching to zero results gives its own empty state, "No matches", which repeats
 what was typed (cut off after thirty characters) and has a **Clear search**
 button that empties the box. That message replaces the season-level "No Upcoming
 Matches" and "No Completed Matches", which would blame the league for what the
-search did. A division or My team chip that is also on wins: the filtered-out
-message below is shown instead, because a chip is the likelier cause. Spaces at
+search did. If a division or My team chip is also on, the chip message takes precedence: the
+page shows "No matches match these filters", described below, instead of "No
+matches", because a chip is the likelier cause. Spaces at
 the start or end of what is typed are ignored, so `alpha ` finds what `alpha`
 finds, and spaces alone are no search: the whole list shows, as with an empty
 box. A space inside the text still counts.
@@ -183,7 +184,7 @@ that own their own commits.
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes the calendar popover if it is open, or an admin's dialog. It does not clear the search box and does not abort a write already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | Every expanded group is lost. The search text, the selected date and the chips are in the address, so they come back with the browser's Back button, but not when the reader returns by the Schedule link, which starts from the default night. The tab is picked again for the night. An admin's write already sent still lands, and the toast may appear over the next page. |
+| In-app navigation away, or switching tab within the page | Nothing is lost. | Every expanded group is lost. The search text, the selected date and the chips are in the address, so they come back with the browser's Back button, but not when the reader returns by the Schedule link, which starts from the default night. When the reader comes back to the page, the tab is picked again for the night. Switching tab inside the page keeps the reader's choice until another date is picked. An admin's write already sent still lands, and the toast may appear over the next page. |
 | Browser back or forward | Returns to the previous page. Nothing is recorded. | Back and Forward bring the search text, the selected date and the chips back from the address; the expanded groups are lost. The page cannot prevent leaving. |
 | Reload, or the tab closed | Re-fetches everything from scratch. | **The search text, the selected date and the chips survive**, because they are in the address. The expanded groups are lost, and the tab is picked again for the night once the matches arrive. |
 | Network lost mid-request | The matches do not load and the "Loading schedule" error card appears with a Try Again button. | Reading carries on with what is already on screen. The Timeslots tab's minute poll pauses while the browser reports itself offline. An admin's write fails and reports through its own dialog. |
@@ -283,8 +284,7 @@ ordinary pageview.
   Time".
 - **The strip's fourteen days are frozen at page load.** After midnight the strip
   still starts three days before yesterday.
-- **A date chosen from the calendar can be outside the strip**, and then no strip
-  date looks selected.
+- **A date chosen from the calendar moves the strip.** The strip stretches to hold a date within about six weeks, or re-centres on a date further away, so its dates shift under the reader.
 - **The search box searches locations too**, so typing a venue name finds matches
   the user was not looking for by team.
 - **Expanding a later timeslot on the Timeslots tab can collapse again** when the

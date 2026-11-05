@@ -539,7 +539,7 @@ nothing to say is absent rather than empty**, so two users can see very differen
 home pages and neither is told why.
 
 **Section.** A collapsible region of a page with its own heading and chevron,
-which fetches its own data only when first opened. Used on a team's page. Which
+which, apart from Player Stats, fetches its own data only when first opened. Used on a team's page. Which
 sections are open is not remembered, except that a section named in the address
 (`#career`) opens again.
 

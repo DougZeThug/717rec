@@ -263,7 +263,7 @@ is selected**. Selecting a bracket hides it. It is read-only to everyone.
 | Escape, or a Cancel button | Nothing to cancel. | Closes any dialog and writes nothing. It cannot stop a creation already sent, and it cannot un-do seeds saved from the Seeds tab. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | A half-filled create form is lost with no warning. A creation already sent still completes and the bracket still appears. |
 | Browser back or forward | As above. | As above. The automatic navigation a second after creation can also land while the admin is doing something else. |
-| Reload, or the tab closed | The page reloads with no bracket selected. | The form is gone. A sent creation may have landed; the division card says which. |
+| Reload, or the tab closed | A reload brings back the same season and bracket, because both are in the address. After the tab is closed, `/playoffs` opens on the list with no bracket selected. | The form is gone. A sent creation may have landed; the division card says which. |
 | Network lost mid-request | The brackets list shows its error banner. | Creation fails with "Network Error: Please check your internet connection and try again" in the dialog and a toast. Nothing is queued. |
 | The request fails or times out | As above. | The dialog keeps the form and shows the reason, so the admin can retry without re-ticking twelve teams. |
 | The session expires | Reading still works; `/playoffs` is public. | Every write is refused and reported as that control's failure. |
@@ -319,7 +319,7 @@ team when a bracket is created, seeded, or deleted.
 
 **URL state.** The address carries a division and a bracket id after the
 automatic navigation, so a bracket can be linked to. It also carries the season
-(`?season=<id>`), which the page writes itself and the season picker changes.
+(`?season=<id>`), which the season picker changes and which the page writes itself once it knows the season. A link to a bracket that cannot be read keeps only `?bracket=`.
 The tab, the blind draw, and the Challonge settings are not in the address.
 
 **On a phone.** Every bracket admin control is reachable, behind the **⋯**

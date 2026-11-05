@@ -316,7 +316,7 @@ last five minutes opens again instantly.
 
 ## Open questions and verification
 
-- **A legacy bracket's "View Live Bracket" button does nothing visible.** The
+- **A legacy bracket's "View Live Bracket" button never opens the bracket.** The
   loader returns null for any bracket not built with the current engine. The page
   adds `?bracket=<id>` to the address and shows "Loading bracket..." for a
   moment. Then it shows the list again at the top, with no message at all. This
