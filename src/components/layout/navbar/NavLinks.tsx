@@ -34,14 +34,15 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
   // The row holds nine links, three account controls, the search button and —
   // for an admin — Admin, inside a container that stops growing at 1368px, and
   // the brand keeps its full width beside it. Full pills (px-3, label and icon)
-  // need about 1320px, or 1420px with Admin. Short of that they tighten to px-2,
-  // and short of about 1280 (1340 with Admin) only the icon shows, with the
-  // label left for screen readers: at 1024 the row ran 244px past the window
-  // and pushed Sign in, the theme toggle and search out of sight. Each class is
-  // written out whole so that Tailwind finds it.
+  // need about 1320px. With Admin they would overflow the container by 11px even
+  // at the widest window, so Admin keeps px-2 at every width. Short of about
+  // 1280 (1340 with Admin) only the icon shows, with the label left for screen
+  // readers: at 1024 the row ran 244px past the window and pushed Sign in, the
+  // theme toggle and search out of sight. Each class is written out whole so
+  // that Tailwind finds it.
   const desktopFit = showAdminLink
     ? {
-        padding: 'px-2 min-[1420px]:px-3',
+        padding: 'px-2',
         icon: 'min-[1340px]:mr-2',
         label: 'max-[1340px]:sr-only',
       }

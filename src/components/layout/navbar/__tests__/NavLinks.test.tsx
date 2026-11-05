@@ -211,7 +211,10 @@ describe('NavLinks', () => {
       renderRow();
 
       const link = screen.getByRole('link', { name: 'Standings' });
-      expect(link).toHaveClass('px-2', 'min-[1420px]:px-3');
+      expect(link).toHaveClass('px-2');
+      // Full padding would push the row 11px past its container, so Admin keeps
+      // px-2 at every width.
+      expect(link).not.toHaveClass('min-[1420px]:px-3');
       expect(link).not.toHaveClass('min-[1320px]:px-3');
       const label = screen.getByText('Standings');
       expect(label).toHaveClass('max-[1340px]:sr-only');
