@@ -128,8 +128,8 @@ restore to. The form has no discard, no reset, and no undo.
 
 Typing does nothing except change the text. There is no live validation, no
 character counter, no autosave, and no indication of how much of the message is
-too much or too little. The URL never changes; `/contact` is `/contact` from
-arrival to submission.
+too much or too little. The URL does not change while the reader types or sends; it stays as it was
+on arrival.
 
 Pressing "Send Message" at any point runs every rule at once and, if any fails,
 shows a message under each failing field and sends nothing:

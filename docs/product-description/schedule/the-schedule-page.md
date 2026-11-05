@@ -103,7 +103,7 @@ matches arrive; it then picks a tab for the night it opens on, as on arrival.
 Which groups were expanded is thrown away. The search text, the selected date and
 the chips are in the address (see **URL state** below): the browser's Back button
 brings them back, and so does a reload. Coming back by the Schedule link, which
-carries no parameters, gives the default night, an empty search box, no chip
+carries no parameters, gives the default night, an empty search box, the All chip
 pressed, and the first group open.
 
 ### Begin editing

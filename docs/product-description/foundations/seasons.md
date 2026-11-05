@@ -137,7 +137,7 @@ anything has happened. See
 **Toasts and notifications.** A season changing over produces no notification to
 players. The app changes under them silently.
 
-**URL state.** The active season is not in the URL of `/standings` or
+**URL state.** The active season is not in the URL of `/stats` or
 `/schedule`. A link to either means "whatever season is active when you open it",
 so a link shared in one season shows different content in the next. The
 playoffs page (`/playoffs?season=<id>`) and the weekly recap page, whose address

@@ -194,8 +194,8 @@ the submit button at the bottom.
 
 **URL state.** A phone adds nothing to the URL. Sharing a page from a phone shares
 what the page keeps in the address (see
-[`foundations/navigation.md`](../foundations/navigation.md#while-editing)): the
-schedule's night, search and chips, the standings view, a comparison, the playoffs
+[`foundations/navigation.md`](../foundations/navigation.md#while-editing)), for
+example the schedule's night, search and chips, the standings view, a comparison, the playoffs
 season and bracket. A sort order, an open tab or an expanded panel is not shared.
 
 **On a phone.** This document is the definition.
