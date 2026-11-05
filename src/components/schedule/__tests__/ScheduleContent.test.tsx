@@ -215,8 +215,8 @@ describe('ScheduleContent', () => {
       const longWord = 'x'.repeat(80);
       renderContent({ activeTab: 'upcoming', searchTerm: longWord, onClearSearch: vi.fn() });
 
-      expect(screen.queryByText(new RegExp(longWord))).not.toBeInTheDocument();
-      expect(screen.getByText(/Nothing matches "x{20,40}…"/)).toBeInTheDocument();
+      expect(screen.queryByText(new RegExp(longWord, 'u'))).not.toBeInTheDocument();
+      expect(screen.getByText(/Nothing matches "x{20,40}…"/u)).toBeInTheDocument();
     });
 
     it('does not touch the timeslots tab, which the search does not apply to', () => {
