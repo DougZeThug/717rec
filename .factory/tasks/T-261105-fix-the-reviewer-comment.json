@@ -1,0 +1,19 @@
+{
+  "id": "T-261105-fix-the-reviewer-comment",
+  "title": "Fix the reviewer comments on PR 1729",
+  "kind": "fix",
+  "status": "intake",
+  "request": "Doug said: lets move onto the fixing the actual reviewers comments on the pr. PR #1729 has 44 open review threads (cubic P1/P2/P3 and React Doctor warnings). Verify each claim against the code, fix what is real in proportion, reply with a reason where not, resolve the threads.",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "cbe00ddc8bab9322b67e2d92c96ba5a706f1f3cf",
+  "createdAt": "2026-11-05T15:42:55.859Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-05T15:42:55.859Z"
+}
