@@ -84,7 +84,7 @@ const TrafficMiniChart: React.FC = () => {
           <p className="text-sm text-muted-foreground">Loading last {DAYS} days…</p>
         )}
         {query.error && (
-          <p className="text-sm text-red-500">
+          <p className="text-sm text-destructive-text">
             Could not load traffic. Only admins can view this data.
           </p>
         )}

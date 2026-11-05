@@ -43,7 +43,7 @@ const MatchResultDriftCard: React.FC = () => {
 
         {isError && !isLoading && (
           <div className="space-y-2">
-            <p className="text-sm text-red-500">Couldn’t check for disagreeing matches.</p>
+            <p className="text-sm text-destructive-text">Couldn’t check for disagreeing matches.</p>
             <Button size="sm" variant="outline" onClick={() => refetch()}>
               Retry
             </Button>
@@ -59,13 +59,13 @@ const MatchResultDriftCard: React.FC = () => {
 
         {showResult &&
           (count === 0 ? (
-            <div className="flex items-center gap-2 text-sm text-emerald-500">
+            <div className="flex items-center gap-2 text-sm text-success">
               <CheckCircle2 className="size-4" aria-hidden="true" />
               All clear — every live-scored match agrees with its own rounds.
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-2 text-sm text-amber-500">
+              <div className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400">
                 <AlertTriangle className="size-4" aria-hidden="true" />
                 {count} match{count === 1 ? '' : 'es'} no longer {count === 1 ? 'agrees' : 'agree'}{' '}
                 with the rounds underneath {count === 1 ? 'it' : 'them'}.
