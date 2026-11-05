@@ -1,0 +1,19 @@
+{
+  "id": "T-261105-polish-the-admin-panel-o",
+  "title": "Polish the admin panel on mobile",
+  "kind": "polish",
+  "status": "intake",
+  "request": "/factory-polish the admin panel for mobile",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "6b6984fe83a0e7b1d3bed647ede2b2ded9e5defb",
+  "createdAt": "2026-11-05T17:54:49.336Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-05T17:54:49.337Z"
+}
