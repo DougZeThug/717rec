@@ -2,7 +2,7 @@
   "id": "T-261105-polish-the-history-page-",
   "title": "Polish the History page and a season's history on mobile",
   "kind": "polish",
-  "status": "intake",
+  "status": "ready",
   "request": "/factory-polish the history page and actually looking at an individual seasons history on mobile",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -11,42 +11,128 @@
   "criteria": [
     {
       "text": "History list: the season title is no longer squeezed and its date is not clipped at 390, 360 and 320px; champion and highlight text is not cut to a few letters; the Full Season Recap strip is 44px high",
-      "done": false
+      "done": true,
+      "evidence": "History list, real browser, fake data, before at :4173 versus after (dev and production build), 390/360/320: season title width 91 to 156px at 390 (a long season 88px on 10 lines to 219px on 4), 45 to 149px at 320; the date overlapped the Completed pill in 6 cards at 320 and 1 at 360, none after; names cut with an ellipsis at 320: 22 to 2 (only the made-up 80-character names); 'Husk Busters (...' now shows its number; the Full Season Recap strip 33 to 44px at 390/360/320 and still 41px at 768 and wider (production scan: it is no longer on the small-target list on phones). I looked at the 320 before and after pair myself (files history-list-320-light-a.png, before and after folders)."
     },
     {
       "text": "Opening a season on a phone no longer flashes a huge list before collapsing (per-frame height sample before and after)",
-      "done": false
+      "done": true,
+      "evidence": "Per-frame height sample opening a season at 390 (flick.mjs): before 351px growing to 7,162px at about 320ms with 144 stat cells drawn, then snapping to 700px; after (dev, and my own run on the production build) 358px growing smoothly to 707px, 0 stat cells in every frame. The new no-flash test fails on the old code (the standings table was called once) and passes on the new; resizing from 800 to 390 with a season open still closes the divisions (kept effect)."
     },
     {
       "text": "Opened season: team names are not cut to one line, a past season with no standings shows a clear message, and the standings text colours in the light theme are 4.5:1 or better (crown 3:1)",
-      "done": false
+      "done": true,
+      "evidence": "Opened season: team names on the phone cards wrap to 2 lines instead of one cut line (17 cards at 6 width and theme combinations compared: only the long-name cards changed; the record stays on the right; I looked at the 320 pair). A past season with no rows, and a season with only hidden divisions, show 'No standings recorded for this season'; error, loading and active-season states are unchanged (before and after pictures, and 5 tests, 2 of which fail on the old code). Contrast measured on the real painted background: green 3.05 to 4.68, orange 2.73 to 4.94, crown 1.89 to 4.98 (light, phone cards); desktop rows 3.08 to 4.73, 2.89 to 5.22, 1.85 to 4.86; red-600 4.51 and blue-600 4.96 unchanged; dark red 4.04 to 5.32 and blue 4.09 to 5.82 (I measured these on the page); the reviewer recomputed the dark values independently."
     },
     {
       "text": "Accessibility: the champion and runner-up icons have text for a screen reader, and the division chevron button has a label and aria-expanded",
-      "done": false
+      "done": true,
+      "evidence": "Accessible text read from the page: champion row went from 'Ke Kernel Panic 10-2...' to 'Champion Ke Kernel Panic 10-2...', runner-up from 'Husk Busters 11-1...' to 'Runner-up Husk Busters 11-1...', a rank-3 row has no extra text, desktop rows the same; the sr-only span is 1x1px and absolute so nothing moved. The division chevron button had no name and no aria-expanded; now its name is 'Toggle Competitive teams' (static) and aria-expanded goes false, true, false by click and by the Enter key; tests added."
     },
     {
       "text": "Admin edit mode: Save Changes stays on screen at 390 and 360px when there is an unsaved change",
-      "done": false
+      "done": true,
+      "evidence": "Admin edit mode with a fake admin and 8 unsaved changes: at 390 Save Changes was at x 265 to 417 on a 390px screen; after, Reset x51-190 and Cancel x198-339 on line 1 and Save Changes x51-339 on line 2; 360 the same; at 640 and 768 the buttons are in the same place as before. Known and left alone: at 640 to about 669px Save Changes is still clipped by up to 30px; I tried wrapping below 768px instead and measured that it also changes 680 to 767px where the old row fit, so I kept the planned 640px switch."
     },
     {
       "text": "The fixes also look right at 768 and 844px and do not change the 1280px desktop view, in light and dark",
-      "done": false
+      "done": true,
+      "evidence": "768, 844 and 1280: opened-season card heights identical before and after (3,041, 3,041 and 1,901px) with 99.6 to 99.8 percent pixel overlap; the list at 1280 identical; the only differences are the darker light-theme colours (shared colour helper), the amber crown, and at 768 and wider a long champion name now wraps to 2 lines instead of an ellipsis. Light and dark checked for every changed colour."
     },
     {
       "text": "No new console errors, no sideways scroll, existing tests pass (updated only where the changed text, classes or aria attributes are asserted, never weakened), six checks pass, independent review approves the final commit",
-      "done": false
+      "done": true,
+      "evidence": "My own scan of the History page on the production build at 390, 360, 320, 768, 844 and 1280: document width equals the viewport at every width (no sideways scroll); no page errors; the only console lines are the fake mock's deliberate 500 for one season and dev-only realtime lines from the blocked websocket. Tests: the reviewer ran 35 files and 346 tests for src/components/history and src/pages, all pass; the only changed old assertions are green-600 to green-700 and orange-500 to orange-700 (same meaning); six checks pass at e9649ca; independent review APPROVE."
     },
     {
       "text": "Docs: every document that describes a changed behaviour is updated in the same change, with no broken link and the verification totals still true",
-      "done": false
+      "done": true,
+      "evidence": "A docs builder rewrote the claims these changes made wrong in past-seasons.md, on-a-phone.md, accessibility.md and 4 verification rows (HIST-13, HIST-17, PHONE-16, A11Y-22; none added or removed; the HIST-17 suspected-bug marker stays), and updated UX-AUDIT-2026-09.md HI-02 (partly done) and HI-03 (done). I re-ran the link check (2,738 links, 0 broken) and recounted with the README method: 1,958 items and 120 P1 suspected-bug rows, as the README says; the reviewer checked the claims, that exactly 4 rows changed with identical ID sets, and that footers are still the last paragraph."
     }
   ],
-  "checks": {},
-  "reviews": [],
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9649ca9c475b26a6c9b76b90239a7a1a2d8b454",
+      "dirty": false,
+      "at": "2026-11-05T21:01:48.712Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261105-polish-the-history-page-/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9649ca9c475b26a6c9b76b90239a7a1a2d8b454",
+      "dirty": false,
+      "at": "2026-11-05T21:01:58.883Z",
+      "seconds": 10,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261105-polish-the-history-page-/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9649ca9c475b26a6c9b76b90239a7a1a2d8b454",
+      "dirty": false,
+      "at": "2026-11-05T21:03:08.523Z",
+      "seconds": 70,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261105-polish-the-history-page-/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9649ca9c475b26a6c9b76b90239a7a1a2d8b454",
+      "dirty": false,
+      "at": "2026-11-05T21:03:11.471Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261105-polish-the-history-page-/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9649ca9c475b26a6c9b76b90239a7a1a2d8b454",
+      "dirty": false,
+      "at": "2026-11-05T21:03:15.804Z",
+      "seconds": 4,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261105-polish-the-history-page-/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9649ca9c475b26a6c9b76b90239a7a1a2d8b454",
+      "dirty": false,
+      "at": "2026-11-05T21:10:15.555Z",
+      "seconds": 420,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261105-polish-the-history-page-/unit.log"
+    }
+  },
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "CHANGES",
+      "sha": "23769bc9681f28255db756acf397676561e5e707",
+      "at": "2026-11-05T20:19:02.983Z",
+      "summary": "Independent plan review: all causes real, line numbers right, flash reproduced in the current build (7,162px at ~320ms then 700px). Four blocking objections accepted and written into the plan: (1) the empty-season condition would show falsely when offline or for hidden-only seasons: use !season.is_active && seasonData && Object.keys(divisionData).length === 0 after the active branch; (2) the flash fix needs a test that can fail (mock the standings table and assert it is never called on mobile); (3) the admin toolbar needs flex-wrap sm:flex-nowrap; (4) the chevron label must be static (Toggle X teams) with aria-expanded. Also adopted: md:min-h-0 on the recap strip, crown colour matching the Champions crown, measure all colour arms, desktop crown sr-only, test file ownership, named docs."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "e9649ca9c475b26a6c9b76b90239a7a1a2d8b454",
+      "at": "2026-11-05T21:10:49.710Z",
+      "summary": "Independent review at e9649ca of the History phone polish (9 code commits, docs). All changed History files are imported only by the History page (importers checked); nothing changed in src/components/ui or shared files; tailwind-merge keeps every changed class string and the classes are valid in this repo; no hydration problem (no SSR in the app); the no-flash test fails on the old DivisionPanel (the standings table was called once) and the two chevron tests fail there too; the empty-season message cannot show while loading, offline, on error, for an active season or in edit mode (checked in the component); the Lead's dark-colour edit recomputed independently (blue-400 5.82, red-400 5.35, before 4.03 and 3.93); 35 test files and 346 tests pass; 10 doc claims checked; exactly 4 verification rows changed with identical ID sets; totals unchanged (1,958 and 120); footers still last. Both deviations from the plan (empty-season message inside the normal view so the admin Edit Divisions button stays; line-clamp-3 on the record and division line) accepted. Non-blocking notes: Save Changes still clipped at 640 to about 669px in admin edit mode (disclosed); the tests pin only the light colour arms, not the new dark ones; the windowed list above 30 teams uses a fixed row height of 140 that was already too small; one doc sentence says 'Those notes' without naming them."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T20:12:40.174Z"
+  "updatedAt": "2026-11-05T21:10:50.090Z",
+  "readySha": "e9649ca9c475b26a6c9b76b90239a7a1a2d8b454",
+  "readyAt": "2026-11-05T21:10:50.090Z"
 }
