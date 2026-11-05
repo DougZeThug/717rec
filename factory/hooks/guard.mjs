@@ -432,20 +432,21 @@ const readInput = () => {
   return input;
 };
 
+// An unreadable config: an edit falls back to the built-in rules and asks the human. Bash throws (exit 2).
+const readConfig = (root, toolName) => {
+  try {
+    return { cfg: hardenConfig(loadConfig(root)), configBroken: false };
+  } catch (error) {
+    if (!EDIT_TOOLS.includes(toolName)) throw new Error(`the factory config (.factory/config.json) cannot be read: ${error.message}`);
+    return { cfg: hardenConfig(DEFAULT_CONFIG), configBroken: true };
+  }
+};
+
 const guard = async () => {
   const input = readInput();
   const root = repoRoot(input.cwd);
   const toolInput = (input.tool_input ??= {});
-  // An unreadable config: an edit falls back to the built-in rules and asks the human. Bash throws (exit 2).
-  let cfg;
-  let configBroken = false;
-  try {
-    cfg = hardenConfig(loadConfig(root));
-  } catch (error) {
-    if (!EDIT_TOOLS.includes(input.tool_name)) throw new Error(`the factory config (.factory/config.json) cannot be read: ${error.message}`);
-    cfg = hardenConfig(DEFAULT_CONFIG);
-    configBroken = true;
-  }
+  const { cfg, configBroken } = readConfig(root, input.tool_name);
   // Two independent built-in imports: load them together.
   const [{ existsSync }, { execFileSync }] = await Promise.all([import('node:fs'), import('node:child_process')]);
   if (toolInput.file_path) toolInput.__exists = existsSync(toolInput.file_path);
