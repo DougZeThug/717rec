@@ -47,9 +47,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "60184dc1a1183282254edd4e30a35d43b523d49a",
+      "sha": "34b67f2c5da96b1cb474ae28a4965e4b1d7c34c4",
       "dirty": false,
-      "at": "2026-11-05T03:41:35.952Z",
+      "at": "2026-11-05T03:45:35.539Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/integrity.log"
@@ -57,9 +57,9 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "60184dc1a1183282254edd4e30a35d43b523d49a",
+      "sha": "34b67f2c5da96b1cb474ae28a4965e4b1d7c34c4",
       "dirty": false,
-      "at": "2026-11-05T03:41:45.988Z",
+      "at": "2026-11-05T03:45:45.635Z",
       "seconds": 10,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/typecheck.log"
@@ -67,19 +67,19 @@
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "60184dc1a1183282254edd4e30a35d43b523d49a",
+      "sha": "34b67f2c5da96b1cb474ae28a4965e4b1d7c34c4",
       "dirty": false,
-      "at": "2026-11-05T03:43:09.364Z",
-      "seconds": 83,
+      "at": "2026-11-05T03:47:11.036Z",
+      "seconds": 85,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "60184dc1a1183282254edd4e30a35d43b523d49a",
+      "sha": "34b67f2c5da96b1cb474ae28a4965e4b1d7c34c4",
       "dirty": false,
-      "at": "2026-11-05T03:43:12.554Z",
+      "at": "2026-11-05T03:47:14.084Z",
       "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/knip.log"
@@ -87,9 +87,9 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "60184dc1a1183282254edd4e30a35d43b523d49a",
+      "sha": "34b67f2c5da96b1cb474ae28a4965e4b1d7c34c4",
       "dirty": false,
-      "at": "2026-11-05T03:43:16.253Z",
+      "at": "2026-11-05T03:47:17.878Z",
       "seconds": 4,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/build.log"
@@ -147,6 +147,13 @@
       "sha": "34b67f2c5da96b1cb474ae28a4965e4b1d7c34c4",
       "at": "2026-11-05T03:45:33.241Z",
       "summary": "Independent re-check on 95c1e8f: the six delta items true (Timeslots tab opens the night from ?date= in a real browser; league-objects, seasons /stats, contact, All chip, for example). Two small blockers: the closing sentence under the schedule interrupt table (rebuilt from what was loaded, nothing held) and the one in navigation.md (never restores what was on it) both contradict their own tables, since the search, night and chips come back from the address. Nits: manage-timeslots says three prefill parameters (there are four, asked is cleared too); timeslot-preferences closing line; enter-scores-in-bulk and send-notifications say Back returns to the previous page (it steps between admin sections). Completeness pass with new search terms found nothing else. 0 broken links, totals 1,958 and 116, markdown only."
+    },
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
+      "at": "2026-11-05T03:49:45.999Z",
+      "summary": "Independent re-check on 92e670e: the delta (closing lines, admin Back rows, four prefill parameters) true. One real finding: the team page docs say a reload or Back gives every section closed, but a section named in the address by the section bar (#career) opens after a reload and after Back. I had left those lines alone as a rare edge; the reviewer showed it in a browser and I confirmed it myself. My run also showed Roster and Match History are open by default, so every section closed was never right. Affected: team-details.md (Back row, reload row, closing line), team-and-player-stats.md Back row, TEAM-34 and TEAM-18. Nit: pending-scores Back row covers both the home card and the admin section. 0 broken links, totals 1,958 and 116, markdown only."
     }
   ],
   "issues": {
@@ -204,6 +211,17 @@
       ],
       "escalated": false,
       "resolved": "fixed in the sixth docs commit; links 0 broken; totals unchanged; delta re-check follows"
+    },
+    "review6-team-page": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-05T03:49:46.038Z",
+          "summary": "Fix the team page sentences and rows with the measured facts: default arrangement is Roster and Match History open and the rest closed; the section named in the address opens after a reload and after Back; a plain link leaves it closed. TEAM-34 gets a section-bar step; no row added. pending-scores Back row says which behaviour is which."
+        }
+      ],
+      "escalated": false,
+      "resolved": "fixed in the seventh docs commit; links 0 broken; totals unchanged; delta re-check follows"
     }
   },
   "interventions": [
@@ -214,7 +232,7 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T03:45:33.315Z",
+  "updatedAt": "2026-11-05T03:49:46.080Z",
   "readySha": "673af161251667af7422eaddbecf23284a4567fc",
   "readyAt": "2026-11-05T02:03:36.845Z"
 }
