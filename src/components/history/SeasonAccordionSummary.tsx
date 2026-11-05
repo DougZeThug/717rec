@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { getHistoryDivisionDisplayName } from '@/utils/historyDivisionUtils';
 
 import { Highlights } from './seasonAccordionTypes';
+import TeamNameLink from './TeamNameLink';
 import { SeasonData } from './useSeasonAccordionViewModel';
 
 interface ChampionsSummaryCardProps {
@@ -49,11 +50,16 @@ const ChampionsSummaryCard: React.FC<ChampionsSummaryCardProps> = ({
             <div className="min-w-0">
               <p
                 className={cn(
-                  'text-xs font-semibold line-clamp-2 break-words leading-tight',
+                  'text-xs font-semibold leading-tight',
                   isWinterTheme ? 'text-white' : 'text-foreground'
                 )}
               >
-                {champ.team_name}
+                {/* Small tap area: these rows are 6px apart, so two 44px areas would overlap. */}
+                <TeamNameLink
+                  name={champ.team_name}
+                  tapArea="small"
+                  className="line-clamp-2 break-words"
+                />
               </p>
               <p
                 className={cn(
