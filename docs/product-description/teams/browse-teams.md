@@ -11,8 +11,9 @@ sorted are remembered in the browser between visits. They are remembered per
 browser, not per account, and they are never in the address, so the choice
 cannot be shared or linked to.
 
-It is also the page that **remembers where the user was scrolled to** and puts
-them back when they come back with the browser's Back button.
+It is also built to **remember where the user was scrolled to** and put them
+back when they come back with the browser's Back button. In a 2026-11-05 test in a
+real browser it did not: Back landed at the top.
 
 ## The simple case
 
@@ -25,7 +26,8 @@ card has the team's logo, its name, a division badge, its record, and its power
 score. Clicking any of them opens that team's page.
 
 The user opens a team, reads it, and presses Back. `/teams` returns with the
-same layout, the same grouping, and the same scroll position.
+same layout and the same grouping. It is built to return to the same scroll
+position too; in the 2026-11-05 test it landed at the top.
 
 ## The interaction, event by event
 
@@ -132,8 +134,8 @@ item, **View Details**.
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes an open dropdown or card menu. It does not undo a preference that has already been chosen — there is no undo. |
-| In-app navigation away, or switching tab within the page | Preferences and scroll position are already saved. An open division is not: coming back opens the default one again. | Same. No request is ever in flight from this page except the initial read. |
-| Browser back or forward | **Back into `/teams` restores the scroll position.** This is the only route in the app that does it. Forward into it does too, because both are history moves. | Same. |
+| In-app navigation away, or switching tab within the page | Preferences are already saved. The scroll position is saved too, but leaving by a top-bar link overwrites it with 0 (seen on `/stats`, which runs the same code). An open division is not: coming back opens the default one again. | Same. No request is ever in flight from this page except the initial read. |
+| Browser back or forward | **Back into `/teams` is built to restore the scroll position, and did not in the 2026-11-05 test:** after a team, Help or Schedule the list came back at the top. Three other routes (`/stats`, `/history`, `/insights`) run the same code. Forward is the same kind of move and was not measured. | Same. |
 | Reload, or the tab closed | Preferences survive; they are stored in the browser. Scroll position survives for the rest of the browser session. The open division does not. | Same. |
 | Network lost mid-request | Nothing loads. In **By Division** the page shows "We couldn't load the teams. Please try again." with a Try Again button. In **All Teams** the same message appears only when nothing was cached; if a stale list is held, it is shown instead with no warning that it is old. | Preferences still save; they never touch the network. |
 | The request fails or times out | The read is retried once, then one of the two states above. | As above. |
@@ -224,14 +226,16 @@ browser on arrival even if nothing is touched. Nothing is sent to the league.
   The phone-friendly default only applies when nothing has been stored, so the
   intended mobile default is lost as soon as a user changes anything anywhere.
   Worth a product decision rather than a fix.
-- **The foundation says `/teams` is the only route with scroll restoration.**
-  Three other routes call the same mechanism at this commit. This document does
-  not claim to be the only one; the point needs settling in
-  [`foundations/navigation.md`](../foundations/navigation.md) during the
-  consistency pass.
-- Not confirmed by hand: whether the scroll restoration actually lands correctly
-  on a long list. It waits for the page to grow tall enough, retrying with
-  increasing gaps for roughly fifteen seconds before giving up.
+- Settled: four routes run the scroll restoration (`/teams`, `/stats`, `/history`,
+  `/insights`), as [`foundations/navigation.md`](../foundations/navigation.md#arrive)
+  now says.
+- **A suspected bug: the scroll restoration did not land on `/teams` in a
+  2026-11-05 test.** After a team, Help or Schedule, Back came back at the top
+  (fake data, scrolled 300px down a 1,080px page). The code waits for the page to
+  grow tall enough, retrying with increasing gaps for roughly fifteen seconds
+  before giving up; a probe on `/stats` showed the saved position had already been
+  overwritten with 0 as the page was left, so there was nothing to restore. See
+  [navigation](../foundations/navigation.md#open-questions-and-verification). Not tried: a very long list.
 - Not confirmed by hand: whether the division that opens first looks arbitrary
   to a user.
 - Not confirmed by hand: what a very long team name does to a phone grid card,
@@ -243,3 +247,4 @@ browser on arrival even if nothing is touched. Nothing is sent to the league.
   account. Nothing stores them against a profile.
 
 Verified against `717rec` commit `ea5c8f4`.
+The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).

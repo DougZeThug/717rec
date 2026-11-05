@@ -29,6 +29,7 @@ stop them, and nothing warns before leaving a page with unsaved work.
 | `/` | The home dashboard | Readable |
 | `/teams` | The teams list | Readable |
 | `/teams/:teamId` | One team | Readable |
+| `/recap/:seasonSlug/:week` | One weekly recap, for example `/recap/<season>/week-<n>` | Readable |
 | `/schedule` | The season schedule | Readable |
 | `/stats` | Standings and rankings | Readable |
 | `/playoffs` | The bracket | Readable |
@@ -40,7 +41,10 @@ stop them, and nothing warns before leaving a page with unsaved work.
 | `/matches/:matchId/live` | A match being scored live | **Readable.** Watching is public; scoring is not |
 | `/help` | Help | Readable |
 | `/contact` | The contact form | Readable and writable |
+| `/join` | Join the League: the league's details and a sign-up button | Readable |
 | `/auth` | Sign in and register | Readable |
+| `/forgot-password` | Ask for a password-reset email | Readable |
+| `/reset-password` | Choose a new password, from the link in that email | Readable |
 | `/setup-profile` | Finish your profile | Not guarded |
 | `/oauth/consent` | Authorise another app | Not guarded |
 | `/admin` | The admin dashboard; redirects to the section last open | **Guarded**: redirects to `/auth` |
@@ -81,15 +85,24 @@ Three things happen on every arrival, on every route:
   the main content area — but **not on the very first page load**, only on
   navigations after it.
 
-**Scroll position is not reset.** Moving from the bottom of a long schedule to a
-short page leaves the user scrolled down on the new page, looking at nothing.
+**A link opens the new page at the top.** Moving from the bottom of a long
+schedule to a short page shows the top of the short page. The reset happens when
+the path changes, and only then. The new page used to inherit the old scroll
+position, which was a defect; see [B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation). Measured in a real
+browser against fake data on 2026-11-05, on the dev server and on the production
+build: scrolled 337px down `/schedule`, followed the Help link, arrived at 0.
 
-Four routes opt out of that by remembering and restoring their own scroll
-position: **`/teams`, `/stats`, `/history`, and `/insights`**. Returning to one of
-them from elsewhere puts the user back where they were. Every other route — the
-home page, the schedule, a team's page, the playoffs, the message board, live
-scoring — does nothing at all, and simply inherits whatever scroll position the
-previous page had.
+Browser Back and Forward are not reset, which leaves the browser free to put the
+user back where they were. In the same test the page came back **at the top**, not
+where it was left, in every case tried but one. Four routes have code of their
+own that saves the scroll position and puts it back on Back and Forward:
+**`/teams`, `/stats`, `/history`, and `/insights`**. It worked once: `/stats`
+after a team page came back at 300 of 300px. After a top-bar link, and for
+`/teams`, `/history` and `/insights` in every other case tried, Back landed at 0.
+On `/stats` the saved position had been overwritten with 0 as the page was left.
+Every other route — the home page, the schedule, a team's page, the playoffs, the
+message board, live scoring — has no scroll code of its own; the schedule came
+back at the top too. See [Open questions](#open-questions-and-verification).
 
 Nothing is prefilled or focused by arriving, beyond the main-content focus move
 above. Three lightweight pages — teams, schedule, and history — are fetched
@@ -151,7 +164,7 @@ Not applicable to navigation itself.
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No global effect. There is no global Escape handler. | No global effect; individual dialogs handle their own. |
-| In-app navigation away, or switching tab within the page | The new page loads. Scroll position is not reset. | **The page's state is discarded with no warning.** No route in the app blocks navigation for unsaved work. Requests already sent still complete, unseen. |
+| In-app navigation away, or switching tab within the page | The new page loads and opens at the top. | **The page's state is discarded with no warning.** No route in the app blocks navigation for unsaved work. Requests already sent still complete, unseen. |
 | Browser back or forward | Works normally; the app cannot intercept it. | Same as navigating away. Coming back gives a freshly mounted page, not the one that was left. |
 | Reload, or the tab closed | The whole app is re-fetched and re-initialised. Sign-in state survives; everything else does not. | Everything in memory is lost. |
 | Network lost mid-request | If the page's own code has not arrived, the loading spinner stays indefinitely — there is no timeout and no error for a chunk that never loads. | Data requests fail and each page reports it in its own way. |
@@ -223,9 +236,9 @@ navigation and cannot be linked to.
 **On a phone.** The navigation bar becomes a menu. Everything else is the same.
 
 **Accessibility.** A skip link reaches the main content. Route changes are
-announced and move focus to the main content, except on the first load. The
-absence of a scroll reset is felt most by a user who cannot see the page has
-changed. The command palette is the only keyboard route to fast navigation and it
+announced and move focus to the main content, except on the first load, and the
+new page opens at the top, so what is on screen matches where focus went. The
+command palette is the only keyboard route to fast navigation and it
 is absent below 768 pixels.
 
 **Side effects the user can notice.** Every route change is recorded twice, once
@@ -234,11 +247,11 @@ development build the analytics call does nothing.
 
 ## Edge cases
 
-- **Scroll position carries across pages.** Arriving at a short page from the
-  bottom of a long one shows an apparently empty screen until the user scrolls
-  up. Only the four routes with their own restoration are exempt, and they
-  restore rather than reset — which is a different thing and is not what a user
-  arriving from elsewhere needs.
+- **Back and Forward bring a page back at the top, not where it was left.** A
+  user who presses Back to `/schedule`, `/teams`, `/history` or `/insights`
+  lands at the top; so does `/stats` after a top-bar link. Only `/stats` after
+  a team page came back where it was left. The four routes were built to do
+  better; see [Open questions](#open-questions-and-verification).
 - **A chunk that never downloads leaves the spinner forever.** There is no
   timeout, no retry, and no error.
 - **"Home" on the error screen is a full page load**, unlike "Home" anywhere else
@@ -252,19 +265,31 @@ development build the analytics call does nothing.
   brings those back.
 - **The command palette is desktop-only.** Cmd/Ctrl+K does nothing below 768
   pixels, where the app is most used.
-- **Four routes are never in a menu, by design.** `/forgot-password` and
+- **Six routes are never in a menu, by design.** `/forgot-password` and
   `/reset-password` are reached from the sign-in form and from an email;
   `/oauth/consent` is reached by another app; the not-found route is reached by
-  being wrong. Every other route is offered by the top bar, the phone tab bar,
-  the user menu or the palette.
+  being wrong; `/join` is reached from the Join the League button on the home
+  page; `/recap/:seasonSlug/:week` is reached from the home page's Weekly Recap
+  block and from shared links. A team, a live match and an admin section are
+  reached by a link inside a page. Every other route is offered by the top bar,
+  the phone tab bar, the user menu or the palette.
 
 ## Open questions and verification
 
-- **No route resets scroll position.** Four routes restore their own, which is a
-  different behaviour and does not help a user arriving at any of the other
-  sixteen. Confirmed by hand on 2026-08-25: scrolled 337px down `/schedule`,
-  clicked through to `/help`, still at 337px. **May be worth treating as a bug
-  rather than documenting.**
+- Settled 2026-11-05: **a link opens the new page at the top.** On 2026-08-25 it
+  did not (337px before, 337px after), which was [B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation). Measured again in a real
+  browser against fake data, on the dev server and on the production build:
+  337px before, 0 after.
+- **Open, a suspected bug: the four routes' own scroll restoration mostly does
+  not work.** Measured in a real browser against fake data on 2026-11-05, on the
+  production build. `/stats`, then a team page, then Back: back at 300 of
+  300px. Back landed at 0 in every other case tried: from `/stats` after Help,
+  Schedule or Playoffs; from `/teams` after a team, Help or Schedule; from
+  `/history` after Help or Schedule; from `/insights` after Help or Schedule.
+  The cold and the warm load of the other page made no difference. A probe on
+  `/stats`, then Help, showed the saved position overwritten with 0 as the page
+  was left. Not tried: `/history` or `/insights` after a team page (the fake
+  data has no link to one), Forward, and a real phone. Followed up under [B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation).
 - Not confirmed by hand: what `/my-team`, `/message-board`, and `/setup-profile`
   show to a visitor. They have no route guard.
 - Not confirmed by hand: whether the post-sign-in redirect returns the user to
@@ -282,4 +307,6 @@ gone, the command palette moved into the top bar, Compare and Insights joined th
 palette and Help's Quick Navigation, and an admin sees an "Admin" link in the top
 bar and the phone menu rather than only in the user menu. The list of what each page
 writes to the address (While editing) was read from the code and checked in a real
-browser against fake data on 2026-11-05.
+browser against fake data on 2026-11-05. The routes table now lists every route
+in `src/App.tsx` except the dev-only test route. The scroll behaviour changed
+after that commit and was measured the same way on 2026-11-05; see [B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation).

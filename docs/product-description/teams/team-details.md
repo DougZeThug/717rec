@@ -85,8 +85,8 @@ as opened, and pays that cost on arrival.
 The closed section headers show a summary where they have one: Stats & Report
 Card carries the team's record beside its chevron.
 
-Nothing is focused on arrival. Scroll position is not reset, so arriving from
-the bottom of a long page can land here part way down.
+Nothing is focused on arrival. The page opens at the top, whatever the scroll
+position of the page the user came from.
 
 ### Leave without changing anything
 
@@ -251,3 +251,4 @@ data and writes nothing.
 
 Verified against `717rec` commit `ea5c8f4`, except the failed-read behaviour
 above, which was changed after that commit.
+The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).

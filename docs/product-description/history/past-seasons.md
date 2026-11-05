@@ -84,10 +84,10 @@ Nothing is focused on arrival. Nothing is recorded beyond an ordinary pageview.
 
 Nothing happens. No card's open or closed state survives leaving the page.
 
-`/history` does remember **scroll position** and restores it when the user comes
-back with the browser's back button — one of the few routes that does. Every card
-is closed again on return, so the restored position may not point at the same
-card.
+`/history` is built to remember **scroll position** and restore it when the user
+comes back with the browser's back button — one of four routes that try. In a
+2026-11-05 test (a top-bar link, then Back) it landed at the top. Every card is
+closed again on return, so a restored position may not point at the same card.
 
 ### Begin editing
 
@@ -151,7 +151,7 @@ still in place.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on the read-only page and Escape does nothing. | Escape closes a division rename box. The toolbar's **Cancel** asks "You have unsaved changes. Are you sure you want to cancel?" through the browser's own confirmation box, and discards everything if confirmed. Neither can stop a save already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. Which cards were open is forgotten. | **Every unsaved change is lost with no warning.** The confirmation only guards the Cancel button, not leaving the page. A save already sent still lands, unseen. |
-| Browser back or forward | Returns to the previous page and restores this page's scroll position on the way back. Cards return closed. | Same as navigating away, and the app cannot prevent it. |
+| Browser back or forward | Returns to the previous page and is built to restore this page's scroll position on the way back; in the 2026-11-05 test (a top-bar link, then Back) it landed at the top. Cards return closed. | Same as navigating away, and the app cannot prevent it. |
 | Reload, or the tab closed | The page rebuilds itself from scratch: every season fetched again, every card closed. | **Every unsaved change is lost.** A save already sent may have landed; after reloading the standings themselves are the only evidence. |
 | Network lost mid-request | The season list fails and the whole page becomes "Failed to load season history". A single card failing shows its own error inside the opened recap, with a **Try Again** button. | The save fails and the red "Update Failed" toast carries the network error. Nothing is queued and nothing is retried. |
 | The request fails or times out | The season list is retried once. A single season's standings are retried **twice**, a second apart, before the card gives up. | The save is not retried. Changes stay on screen for the admin to press Save again. |
@@ -280,3 +280,4 @@ moves; power scores and records are untouched.
   finished season whose champion was never recorded shows no badge.
 
 Verified against `717rec` commit `ea5c8f4`.
+The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).

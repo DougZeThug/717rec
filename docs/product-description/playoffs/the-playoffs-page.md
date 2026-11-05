@@ -328,9 +328,10 @@ last five minutes opens again instantly.
   says realtime exists only on live scoring. This page opens two subscriptions
   and shows a "Live updates enabled" pill (a dot on a phone). The foundation needs
   correcting.
-- **No route resets scroll position, but `/stats`, `/insights` and `/history`
-  restore it and `/playoffs` does not.** Returning to a long bracket list by
-  browser back leaves the user wherever the browser puts them.
+- **A link opens a page at the top, and `/playoffs` has no scroll code of its
+  own for Back.** Returning to a long bracket list by browser back leaves the
+  user wherever the browser puts them; a page like it (`/schedule`) came back at
+  the top in the 2026-11-05 test.
 - Not confirmed by hand: how long the "Loading..." spinner is visible in
   practice, and whether the admin check is what usually holds it.
 - Not confirmed by hand: whether the Challonge embed renders at all on a phone,

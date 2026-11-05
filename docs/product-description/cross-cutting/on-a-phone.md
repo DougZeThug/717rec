@@ -34,8 +34,9 @@ tab bar never covers its last line.
 
 They tap Teams. The teams list arrives grouped by division rather than in one
 long list, because that is the default on a small screen and not on a large one.
-They open a team, read it, and press back — and land exactly where they were,
-because `/teams` is the one route in the app that restores scroll position.
+They open a team, read it, and press back. `/teams` is built to put them back
+where they were, but in a 2026-11-05 test in a real browser it landed at the top
+(see [navigation](../foundations/navigation.md#open-questions-and-verification)).
 
 They tap a control that fails. A red panel appears across the **top** of the
 screen, not the bottom.
@@ -137,7 +138,7 @@ step. Its six documents start at
 - The phone's safe areas are honoured in the top bar, the bottom tab bar and the
   padding under every page. A notch or a home indicator does not sit over them.
   The playoffs page has no bottom bar of its own.
-- The bottom tab bar reaches four of the app's twenty routes. Everything else —
+- The bottom tab bar reaches four of the app's twenty-four routes. Everything else —
   the message board, history, help, contact, and Admin for an admin — is behind
   the hamburger; my team and the profile are in the user menu. Insights and
   compare are in the hamburger's list only through Help's Quick Navigation and
@@ -151,7 +152,7 @@ step. Its six documents start at
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | A phone keyboard has no Escape, so on a phone nothing can be cancelled by key; only by tapping a Cancel or Close control. **The hamburger menu has no close-by-tapping-away** — it closes on a route change or by pressing the button again. It does close on Escape, which reaches it from an attached keyboard but not from a touch keyboard. | Same. A dialog's Cancel button works; there is no key that reaches it. |
-| In-app navigation away, or switching tab within the page | The new page loads. **Scroll position is not reset**, which on a phone means arriving at the bottom of a short page looking at blank screen. Only `/teams` restores rather than resets. | Everything typed is lost with no warning, exactly as on a desktop. |
+| In-app navigation away, or switching tab within the page | The new page loads and opens at the top. Back does not put the old page back where it was: `/teams` is built to, and landed at the top in the 2026-11-05 test. | Everything typed is lost with no warning, exactly as on a desktop. |
 | Browser back or forward | The gesture-based back swipe is the browser's, and the app cannot intercept it. It behaves as an in-app navigation. | Same. On a phone this is the most likely way work is lost, because the swipe is easy to trigger by accident. |
 | Reload, or the tab closed | Everything in memory is lost and every page refetches. A mobile browser closing a background tab to save memory looks identical to a reload when the user comes back. | A sent write still lands. An unsent one is gone. |
 | Network lost mid-request | Nothing to lose. Cached data stays on screen and looks current, which on a phone at a venue is the common case. | The request fails and is lost. **Nothing is queued.** This matters most during live scoring, which is the one thing done on a phone at a place with poor signal. |
@@ -216,8 +217,9 @@ much of its traffic is phones. Nothing more precise is stored. See
   a spacing value that is never defined anywhere in the app. A signed-out visitor
   on a phone probably cannot see or tap it. **May be worth treating as a bug
   rather than documenting.**
-- **No route resets scroll position**, which is felt hardest on a phone: a long
-  schedule followed by a short page leaves a blank screen.
+- **A link opens the new page at the top**, which matters most on a phone: a long
+  schedule followed by a short page no longer leaves a blank screen ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation),
+  fixed). Back does not restore the old position, though; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 - **A large phone in landscape is a desktop** as far as the app is concerned, so
   the bottom tab bar vanishes at an angle rather than at a device.
 - **The command palette's keyboard shortcut is unreachable on a phone**, which is
@@ -225,7 +227,8 @@ much of its traffic is phones. Nothing more precise is stored. See
   pixels.
 - **Only one dialog in the app becomes a drawer.** Every other dialog is a
   centred modal on a phone, including the live scoring confirmations.
-- **The teams page remembers its scroll position and nothing else does.**
+- **The teams page is built to remember its scroll position, and in the 2026-11-05
+  test it did not.**
 - **A backgrounded tab that the browser discards** returns as a cold load: the
   cache is gone, every page refetches, and any unsaved work is gone with it.
 - **Winter theme adds two hundred animated snowflakes** to the home page, which
@@ -265,3 +268,4 @@ commit — see
 [B-22](../bug-triage.md#b-22-reduced-motion-is-honoured-in-one-stylesheet-and-ignored-everywhere-else),
 [B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog)
 and [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone).
+The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).

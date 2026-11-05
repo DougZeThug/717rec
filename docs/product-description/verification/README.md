@@ -18,7 +18,7 @@ time.
 | [admin.md](admin.md) | `admin/*` |
 | [cross-cutting.md](cross-cutting.md) | `cross-cutting/*` |
 
-There are **1,958 items** across the nine files, **116** of them P1 rows marked
+There are **1,958 items** across the nine files, **120** of them P1 rows marked
 **(suspected bug)**. `admin.md` is the largest at 386 and carries a safety warning:
 the dev server writes to the league's real database, and 70 of its items are
 marked **(destructive)**. An item is a table row whose first cell is an ID, such
@@ -134,7 +134,7 @@ What it covered and what it found:
 | Submitting an empty contact form shows all four field messages and sends nothing | pass |
 | No field is focused on arrival at `/contact` | pass |
 | The contact form's hidden bot trap exists, with `tabindex="-1"` and `aria-hidden="true"` | pass |
-| **Scroll position carries across an in-app navigation** | **confirmed defect** — scrolled to 337px on `/schedule`, clicked through to `/help`, still at 337px |
+| **Scroll position carries across an in-app navigation** | **confirmed defect, since fixed ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation))** — scrolled to 337px on `/schedule`, clicked through to `/help`, still at 337px; at 0 when measured again on 2026-11-05 |
 | **The support function refuses the dev origin** | **confirmed defect** — a preflight from `https://717rec.app` returns `access-control-allow-origin`; one from `http://localhost:8080` returns none |
 
 **What this pass did not cover, and why it matters:**
