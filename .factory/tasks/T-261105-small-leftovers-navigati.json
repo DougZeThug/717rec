@@ -34,7 +34,68 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "dirty": false,
+      "at": "2026-11-05T14:35:14.490Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261105-small-leftovers-navigati/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "dirty": false,
+      "at": "2026-11-05T14:35:24.102Z",
+      "seconds": 10,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261105-small-leftovers-navigati/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "dirty": false,
+      "at": "2026-11-05T14:36:42.120Z",
+      "seconds": 78,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261105-small-leftovers-navigati/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "dirty": false,
+      "at": "2026-11-05T14:36:45.917Z",
+      "seconds": 4,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261105-small-leftovers-navigati/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "dirty": false,
+      "at": "2026-11-05T14:36:51.171Z",
+      "seconds": 5,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261105-small-leftovers-navigati/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "dirty": false,
+      "at": "2026-11-05T14:44:23.769Z",
+      "seconds": 453,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261105-small-leftovers-navigati/unit.log"
+    }
+  },
   "reviews": [
     {
       "mode": "plan",
@@ -48,5 +109,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T14:20:50.161Z"
+  "updatedAt": "2026-11-05T14:44:23.769Z"
 }
