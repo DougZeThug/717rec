@@ -56,7 +56,7 @@ const EditModeToolbar: React.FC<EditModeToolbarProps> = ({
         </span>
       </div>
 
-      <div className="flex items-center gap-2 w-full sm:w-auto">
+      <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
         {hasChanges && (
           <Button
             variant="ghost"
