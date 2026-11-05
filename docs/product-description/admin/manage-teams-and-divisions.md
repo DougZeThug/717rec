@@ -198,7 +198,7 @@ waiting. It is described in [`handle-requests.md`](handle-requests.md).
 | The user's role (visitor, player, admin) | Only an admin reaches the dashboard; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). Every admin sees every control. | Losing admin elsewhere leaves every control on screen and the writes start failing. |
 | The record's state | A hidden team appears in this list and nowhere else. A division in use has its delete refused, not hidden. A division displayed as Hidden has Edit and delete disabled. | A team hidden in another browser keeps its old division here until a re-fetch. |
 | The season's state (active, archived, playoffs on) | Teams and divisions are **not** season-scoped, so the screen looks the same in every season state. | Changing a division weight moves power scores in live seasons only. Archived seasons are frozen; see [`../foundations/seasons.md`](../foundations/seasons.md#what-frozen-means). |
-| Viewport | The three count cards stack. The team table becomes one card per team with a full-width division dropdown. The divisions table becomes cards. | No effect beyond re-flowing. |
+| Viewport | The three count cards stack. The four tabs wrap onto two or three rows, so every tab can be reached by touch. The team table becomes one card per team with a full-width division dropdown. The divisions table becomes cards. | No effect beyond re-flowing. |
 | Keys the form honours | Tab reaches the search box, the filter, then each row's dropdown and Edit button. | Enter in the team name field submits the form. Escape closes the team dialog, the confirmation, or an open dropdown. Escape does **not** leave a division row's inline editor. |
 
 ## Cancel and interrupt
@@ -248,9 +248,12 @@ sentence; division failures carry the server's reason.
 `/admin/divisions`. Nothing inside them does: the tab, search text, filter, and
 the team being edited are all invisible to the address bar.
 
-**On a phone.** The team table becomes cards, each with a full-width division
-dropdown, so the single most consequential control on the screen is also the
-easiest to hit by accident.
+**On a phone.** The four tabs — Manage Teams, Create Team, Update Logos, Member
+Approvals — wrap onto two or three rows instead of running off the screen, so
+Member Approvals can be touched. The team table becomes cards, each with a
+full-width division dropdown, so the single most consequential control on the
+screen is also the easiest to hit by accident. Both the division filter and each
+row's division dropdown are 44 pixels high.
 
 **Accessibility.** Every division dropdown is labelled "Set division for *team
 name*". Edit buttons are labelled with the team name. The team form's fields have
@@ -310,4 +313,6 @@ live season's power scores; archived seasons do not move.
 
 Verified against `717rec` commit `ea5c8f4`, except the division-editor and
 Cancel behaviour above, which was changed after that commit — see
-[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed).
+[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed) — and the
+wrapping tabs and 44-pixel selects above, changed after it too (the admin phone
+polish).

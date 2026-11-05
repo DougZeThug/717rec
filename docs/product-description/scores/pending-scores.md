@@ -200,7 +200,9 @@ holds the review queue does, `/admin/pending-matches`, like every admin section
 (see [`admin/the-admin-dashboard.md`](../admin/the-admin-dashboard.md#interactions-with-other-systems)).
 
 **On a phone.** The card's rows stack. The admin review cards keep their two
-buttons side by side at the bottom.
+buttons side by side at the bottom. On a review card the "Match:" line keeps its
+icon at full size, and the date follows the team names as plain text rather than
+wrapping onto lines of its own.
 
 **Accessibility.** Every button has visible text. A card vanishing from either
 queue is not announced. The Pending Scores card's count is in ordinary prose — "4
@@ -263,4 +265,5 @@ so numbers elsewhere move some time afterwards.
 - Assumption: the sixteen-hour delay exists so that a match is not asked about
   while it is still being played. Nothing in the code says why.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the "Match:" line on a review
+card, which was changed after that commit (the admin phone polish).

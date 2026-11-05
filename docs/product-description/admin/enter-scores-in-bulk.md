@@ -114,9 +114,11 @@ counted by the submit button.
 ### While editing
 
 Each card offers exactly four results: **2–0, 2–1, 1–2, 0–2**. Above them, the
-two team names with arrows — "← *Team A*" and "*Team B* →" — abbreviated to ten
-characters and an ellipsis when longer. There is no free score entry, no way to
-record 3–0, and no way to record a tie.
+two team names with arrows — "← *Team A*" and "*Team B* →". The names share the
+row in equal halves and are shown in full. A name is cut with an ellipsis only
+when it does not fit its half, so a very long name on the right can lose the end
+of its label, arrow included. There is no free score entry, no way to record 3–0,
+and no way to record a tie.
 
 Pressing a second button replaces the first. Pressing the same button again
 re-selects it; it does not deselect. A row that is edited but not submittable
@@ -256,11 +258,14 @@ The filters cannot: neither the date nor the bracket is in the address.
 
 **On a phone.** The admin menu becomes a grouped list at the top. Cards go to
 one column. The four score buttons stay in a row of four and remain tappable.
+Each time-slot header is 44 pixels high, and the "Mark as final" switch has a
+44-pixel tap area around a switch that looks the same.
 
 **Accessibility.** Each score button reports whether it is pressed. The switch
 has a real label. The delete dialog is a proper dialog. The red banner is an
-alert. The "Edited", "Complete", and "Invalid Score" tags are text, so they are
-readable, but nothing announces them when they change.
+alert. The "Edited", "Final", and "Invalid Score" tags are text, so they are
+readable, but nothing announces them when they change. A finished match shows
+"Final" once.
 
 **Side effects the user can notice.** A batch moves standings, both teams'
 records, per-team statistics, badges, and power scores. Badge processing runs
@@ -326,4 +331,6 @@ failure does not fail the score. Deleting a match reverses all of it.
   assert the write — so the four-button vocabulary and the partial-failure
   banner are read from the components rather than from a passing test.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the team names, the "Final"
+tag and the 44-pixel tap areas above, which were changed after that commit (the
+admin phone polish).

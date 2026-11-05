@@ -248,7 +248,11 @@ settings, nor the proposed schedule is in the address bar, so a proposed
 schedule still cannot be shared for review.
 
 **On a phone.** Both tools work but are cramped. The editable match cards stack
-into a tall column, and the Teams tab's block view needs a lot of scrolling.
+into a tall column, and the Teams tab's block view needs a lot of scrolling. The
+three Match Rules switches — Avoid Rematches, Prioritize Match Quality and Dual
+Match Mode — each have a 44-pixel tap area around a switch that looks the same.
+The switches sit close together, so a tap in the gap between two of them goes
+to the lower one.
 
 **Accessibility.** Every picker has a label tied to its match. The generated
 schedule's quality badges carry text as well as colour. The team-selection grids
@@ -334,4 +338,6 @@ Verified against `717rec` commit `ea5c8f4`, except the timeslot behaviour above,
 which was changed after that commit — see B-03 in
 [`bug-triage.md`](../bug-triage.md#b-03-with-dual-match-mode-off-the-auto-schedulers-save-is-always-refused) —
 and the two navigation buttons, changed after it too; see
-[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed).
+[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed). The 44-pixel
+tap areas on the Match Rules switches changed after that commit as well (the
+admin phone polish).

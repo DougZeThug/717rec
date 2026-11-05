@@ -336,6 +336,11 @@ screen, where the panel is already beside the list and the same button reads
 "Clear selection". The edit dialog's eight numeric fields in a four-column grid
 are cramped.
 
+The Season and Night pickers stack on a phone, each with its label above a
+full-width select 44 pixels high. From 768 pixels wide they sit side by side. A
+round's pencil and bin buttons are 44 pixels wide with an 8-pixel gap between
+them.
+
 **Accessibility.** Each round's buttons are labelled "Edit round *N*" and
 "Delete round *N*". The delete confirmation is a proper alert dialog. The
 validation message is announced. The amber finalised warning is plain text and
@@ -420,4 +425,6 @@ two disagree until someone re-saves — which the admin dashboard now lists and
 - Assumption: the database refuses these writes for anyone who is not an admin.
   The service says so in a comment; it was not observed.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the pickers and round buttons
+described under "On a phone", which were changed after that commit (the admin
+phone polish).

@@ -282,8 +282,9 @@ lost before it is finished.
 **URL state.** Nothing about accessibility is in the URL and no preference
 survives a link.
 
-**On a phone.** Touch targets are set to 44 pixels only on live scoring and the
-hamburger button. See [`on-a-phone.md`](on-a-phone.md).
+**On a phone.** Touch targets are set to 44 pixels on live scoring, on the
+hamburger button and on parts of the admin console. See
+[`on-a-phone.md`](on-a-phone.md#touch-and-reach).
 
 **Accessibility.** This document is the definition.
 
@@ -364,3 +365,4 @@ commit — see
 X-08 and Q12, and written from the change and its tests rather than a fresh pass
 over the running app.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+The 44-pixel touch targets in the admin console changed after that commit too (the admin phone polish).

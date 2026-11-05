@@ -88,7 +88,10 @@ badge counts them "0/2 selected".
 The blocks offered are **BYE, 5:00 + 5:30 PM, 5:30 + 6:00 PM, 6:00 + 6:30 PM,
 6:30 + 7:00 PM, 7:00 + 7:30 PM, 7:30 + 8:00 PM, 8:00 + 8:30 PM, 8:30 + 9:00 PM,
 9:00 + 9:30 PM** — every button names both times it books, because every booking
-writes both. BYE is styled orange and labelled "BYE WEEK". 9:30 PM is not offered
+writes both. BYE is styled orange and labelled "BYE WEEK". Each block button has an
+outline and is 44 pixels high. The chosen block turns solid navy with white text
+(a brighter blue in the dark theme), so it is clear which one is picked; a chosen
+BYE turns solid orange with white text. 9:30 PM is not offered
 on its own: it is the second half of the 9:00 block and starts no block of its
 own. In double header mode BYE is not offered either, and the buttons there name
 single start times rather than blocks. The list runs from the block constants, so
@@ -341,7 +344,8 @@ does not understand is ignored: a day that does not exist, a team that is not an
 id, and a time that starts no block.
 
 **On a phone.** The section stacks. The team grid stays two tiles across, which
-is tight but usable. The time buttons wrap.
+is tight but usable. The time buttons wrap. The Double Header switch has a
+44-pixel tap area around a switch that looks the same.
 
 **Accessibility.** Team tiles are keyboard-operable and announce their ticked
 state. The removal confirmation names the team and the time. The times are plain
@@ -431,3 +435,5 @@ behaviour above, which was changed after that commit — see
 [B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed) — and
 "Arriving from an approved request", which was written alongside UX audit item
 L4, from the change and its tests rather than a fresh pass over the running app.
+The look of the block buttons and the 44-pixel Double Header switch changed after
+that commit too (the admin phone polish).
