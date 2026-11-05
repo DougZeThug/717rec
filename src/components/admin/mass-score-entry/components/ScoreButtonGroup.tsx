@@ -27,9 +27,6 @@ interface ScoreButtonGroupProps {
   team2Name?: string;
 }
 
-// Abbreviate team name to first ~10 chars
-const abbreviate = (name: string) => (name.length > 12 ? `${name.slice(0, 10)}…` : name);
-
 const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   value,
   onChange,
@@ -89,9 +86,9 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
 
   return (
     <div className="space-y-1">
-      <div className="flex justify-between items-center px-1 text-2xs font-medium text-muted-foreground">
-        <span className="truncate max-w-[40%]">← {abbreviate(team1Name)}</span>
-        <span className="truncate max-w-[40%] text-right">{abbreviate(team2Name)} →</span>
+      <div className="flex justify-between items-center gap-2 px-1 text-2xs font-medium text-muted-foreground">
+        <span className="min-w-0 flex-1 truncate">← {team1Name}</span>
+        <span className="min-w-0 flex-1 truncate text-right">{team2Name} →</span>
       </div>
       <div className="grid grid-cols-4 gap-1.5 sm:gap-3 w-full">
         {SCORE_OPTIONS.map((option) => (
