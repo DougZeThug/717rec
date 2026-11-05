@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import SeasonAccordion from '../SeasonAccordion';
 import { SeasonData, useSeasonAccordionViewModel } from '../useSeasonAccordionViewModel';
@@ -125,6 +125,12 @@ describe('useSeasonAccordionViewModel', () => {
 });
 
 describe('SeasonAccordion expanded paths', () => {
+  // The first click on "Full Season Recap" remembers the season as open (session storage),
+  // so a test must not inherit the previous test's open season.
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
+
   it('renders error state', async () => {
     fetchSeasonStatsForAccordion.mockRejectedValueOnce(new Error('boom'));
     wrap(<SeasonAccordion season={season} />);
@@ -210,5 +216,108 @@ describe('SeasonAccordion expanded paths', () => {
     fireEvent.click(await screen.findByText('Full Season Recap'));
     fireEvent.click(await screen.findByText('Edit Divisions'));
     expect(await screen.findByText('edit mode')).toBeInTheDocument();
+  });
+});
+
+// The page keeps what is open in session storage, so Back from a team page lands on the same view.
+describe('SeasonAccordion remembers what is open', () => {
+  const STORAGE_KEY = 'history_open_state';
+  const recap = () => screen.getByRole('button', { name: /full season recap/i });
+
+  beforeEach(() => {
+    sessionStorage.clear();
+    fetchSeasonStatsForAccordion.mockReset();
+    fetchSeasonStatsForAccordion.mockResolvedValue([makeRow('Competitive')]);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('starts closed when nothing is remembered', () => {
+    wrap(<SeasonAccordion season={season} />);
+
+    expect(recap()).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText('Competitive')).not.toBeInTheDocument();
+  });
+
+  it('opens a season this tab left open, on the first draw, with no click', async () => {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ 'season:s1': true }));
+
+    wrap(<SeasonAccordion season={season} />);
+
+    expect(recap()).toHaveAttribute('aria-expanded', 'true');
+    expect(await screen.findByText('Competitive')).toBeInTheDocument();
+  });
+
+  it('remembers a season opened by hand across a new visit to the page', async () => {
+    const first = wrap(<SeasonAccordion season={season} />);
+    fireEvent.click(recap());
+    expect(recap()).toHaveAttribute('aria-expanded', 'true');
+    first.unmount();
+
+    wrap(<SeasonAccordion season={season} />);
+
+    expect(recap()).toHaveAttribute('aria-expanded', 'true');
+    expect(await screen.findByText('Competitive')).toBeInTheDocument();
+  });
+
+  it('remembers a season closed again by hand', () => {
+    const first = wrap(<SeasonAccordion season={season} />);
+    fireEvent.click(recap());
+    fireEvent.click(recap());
+    first.unmount();
+
+    wrap(<SeasonAccordion season={season} />);
+
+    expect(recap()).toHaveAttribute('aria-expanded', 'false');
+    expect(JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ 'season:s1': false });
+  });
+
+  it('keeps one memory per season', () => {
+    const first = wrap(<SeasonAccordion season={season} />);
+    fireEvent.click(recap());
+    first.unmount();
+
+    wrap(<SeasonAccordion season={{ ...season, id: 's2' }} />);
+
+    expect(recap()).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it.each([
+    ['holds text that is not JSON', () => sessionStorage.setItem(STORAGE_KEY, '{oops')],
+    ['holds a value of the wrong kind', () => sessionStorage.setItem(STORAGE_KEY, '"s1"')],
+    [
+      'refuses every read and write',
+      () => {
+        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+          throw new Error('blocked');
+        });
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+          throw new Error('blocked');
+        });
+      },
+    ],
+  ])('starts closed and still opens by hand when storage %s', async (_label, breakStorage) => {
+    breakStorage();
+
+    wrap(<SeasonAccordion season={season} />);
+    expect(recap()).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(recap());
+    expect(recap()).toHaveAttribute('aria-expanded', 'true');
+    expect(await screen.findByText('Competitive')).toBeInTheDocument();
+  });
+
+  it('lays the divisions out in one column at every width', async () => {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ 'season:s1': true }));
+
+    wrap(<SeasonAccordion season={season} />);
+
+    // Three columns squeezed each table to about 280px at 1024px wide, so Power and SOS
+    // went behind a sideways scroll. The grid stays a single column.
+    const grid = (await screen.findByText('Competitive')).parentElement as HTMLElement;
+    expect(grid).toHaveClass('grid', 'grid-cols-1');
+    expect(grid.className).not.toMatch(/(^|\s)(sm:|md:|lg:|xl:|2xl:)grid-cols-/);
   });
 });

@@ -113,7 +113,12 @@ const SeasonAccordionExpandedContent: React.FC<SeasonAccordionExpandedContentPro
           <>
             <div className="grid grid-cols-1 gap-3 md:gap-6">
               {sortHistoryDivisions(Object.entries(divisionData)).map(([divisionName, teams]) => (
-                <DivisionPanel key={divisionName} divisionName={divisionName} teams={teams} />
+                <DivisionPanel
+                  key={divisionName}
+                  seasonId={season.id}
+                  divisionName={divisionName}
+                  teams={teams}
+                />
               ))}
             </div>
             <div className="hidden md:block">

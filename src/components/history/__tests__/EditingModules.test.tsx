@@ -137,6 +137,8 @@ const seasonData = [
 describe('history editing modules', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // The first click on "Full Season Recap" remembers the season as open (session storage).
+    sessionStorage.clear();
     mockUseSeasonData.mockReturnValue({
       data: seasonData,
       isLoading: false,
@@ -161,6 +163,11 @@ describe('history editing modules', () => {
     createWrapper(<SeasonAccordion season={season} />);
 
     fireEvent.click(screen.getByRole('button', { name: /full season recap/i }));
+    // The season must really be open, or the missing Edit button below proves nothing.
+    expect(screen.getByRole('button', { name: /full season recap/i })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
     expect(screen.queryByRole('button', { name: /edit divisions/i })).not.toBeInTheDocument();
   });
 

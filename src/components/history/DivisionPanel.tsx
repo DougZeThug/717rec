@@ -1,11 +1,12 @@
 import { AnimatePresence, m } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
+import { readOpen, writeOpen } from '@/utils/historyOpenState';
 
 import HistoricalStandingsTable from './HistoricalStandingsTable';
 
@@ -28,6 +29,7 @@ interface SeasonData {
 }
 
 interface DivisionPanelProps {
+  seasonId: string;
   divisionName: string;
   teams: SeasonData[];
 }
@@ -55,19 +57,30 @@ const DivisionTitle: React.FC<{
   </h4>
 );
 
-const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) => {
+const DivisionPanel: React.FC<DivisionPanelProps> = ({ seasonId, divisionName, teams }) => {
   const isMobile = useIsMobile();
-  // Start closed on a phone so the big team list is never drawn and then hidden
-  const [isExpanded, setIsExpanded] = useState(!isMobile);
+  // What this tab left open (Back from a team page, or a reload) wins. With nothing
+  // remembered, start closed on a phone so the big team list is never drawn and then hidden.
+  const openKey = `division:${seasonId}:${divisionName}`;
+  const [isExpanded, setIsExpanded] = useState(() => readOpen(openKey) ?? !isMobile);
   const { isWinterTheme } = useSeasonalThemeBase();
 
-  // Collapse divisions on mobile after initial mount
+  // Close the division when the screen BECOMES a phone (a wide window shrunk). Not on mount:
+  // a division left open on a phone must stay open.
+  const wasMobile = useRef(isMobile);
   useEffect(() => {
-    if (isMobile) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
+    if (isMobile && !wasMobile.current) {
       setIsExpanded(false);
+      writeOpen(openKey, false);
     }
-  }, [isMobile]);
+    wasMobile.current = isMobile;
+  }, [isMobile, openKey]);
+
+  const toggle = () => {
+    const next = !isExpanded;
+    setIsExpanded(next);
+    writeOpen(openKey, next);
+  };
 
   // Sort teams by playoff_rank (1st, 2nd, 3rd, etc.) with fallback to match wins
   const sortedTeams = [...teams].sort((a, b) => {
@@ -98,7 +111,7 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
             ? 'bg-white/5 hover:bg-white/10 border border-white/10'
             : 'bg-muted/50 hover:bg-accent'
         )}
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={toggle}
       >
         <div className="flex items-center gap-3">
           <DivisionTitle
@@ -119,7 +132,8 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
         </Button>
       </div>
 
-      <AnimatePresence>
+      {/* initial={false}: a division left open appears at full height, with no grow-in. */}
+      <AnimatePresence initial={false}>
         {isExpanded && (
           <m.div
             initial={{ height: 0, opacity: 0 }}
