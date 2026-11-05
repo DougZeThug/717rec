@@ -6,7 +6,11 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Team } from '@/types';
 
 vi.mock('@/components/badges/TeamBadgeCollection', () => ({
-  default: ({ teamId }: { teamId: string }) => <div data-testid="badges">{`badges-${teamId}`}</div>,
+  default: ({ teamId, interactive }: { teamId: string; interactive?: boolean }) => (
+    <div data-testid="badges" data-interactive={String(interactive)}>
+      {`badges-${teamId}`}
+    </div>
+  ),
 }));
 
 vi.mock('../TeamStats', () => ({
@@ -33,6 +37,15 @@ describe('TeamCard', () => {
     expect(screen.getByRole('heading', { name: 'Degeneration X' })).toBeInTheDocument();
     expect(screen.getByTestId('badges')).toHaveTextContent('badges-t1');
     expect(screen.getByTestId('stats')).toHaveTextContent('stats-t1');
+  });
+
+  // The badges sit inside the card link: a button there would be nested
+  // interactive content.
+  it('keeps the badges non-interactive because they sit inside the link', () => {
+    renderCard();
+
+    expect(screen.getByRole('link')).toContainElement(screen.getByTestId('badges'));
+    expect(screen.getByTestId('badges')).toHaveAttribute('data-interactive', 'false');
   });
 
   it('uses the frosted image area in the winter theme', () => {

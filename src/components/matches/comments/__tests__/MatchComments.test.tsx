@@ -38,9 +38,14 @@ describe('MatchComments', () => {
 
   it('shows a skeleton while comments load', () => {
     mockUseMatchComments.mockReturnValue({ comments: [], isLoading: true });
-    render(<MatchComments matchId="m1" />);
+    const { container } = render(<MatchComments matchId="m1" />);
 
     expect(screen.queryByRole('button', { name: /Comment/ })).not.toBeInTheDocument();
+
+    // One block, 44px high (h-11): as tall as the collapsed comments row, so the
+    // card does not change height when the comments arrive.
+    expect(container.children).toHaveLength(1);
+    expect(container.firstChild).toHaveClass('bg-muted', 'h-11');
   });
 
   it('counts comments on the toggle and expands to show them', async () => {

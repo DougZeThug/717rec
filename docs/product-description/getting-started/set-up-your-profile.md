@@ -196,10 +196,10 @@ silently and leaves no mark at all.
 pre-submit refusals. See
 [`foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md).
 
-**URL state.** `next` is the only thing the URL carries — an exception to the rule
-in [`foundations/navigation.md`](../foundations/navigation.md#while-editing) that
-nothing but a record id is ever in the URL. It decides where the user lands after
-saving, and it can skip the page entirely for a finished profile.
+**URL state.** `next` is the only thing the URL carries. It decides where the user
+lands after saving, and it can skip the page entirely for a finished profile. The
+pages that carry state in the address are listed in
+[`foundations/navigation.md`](../foundations/navigation.md#while-editing).
 
 **On a phone.** The card fills the width. Both fields are full width. The tick and
 warning sit inside the right edge of the first-name field.

@@ -1,5 +1,14 @@
 import { format, isSameDay, isToday, parseISO } from 'date-fns';
-import { Calendar, CalendarDays, CheckCircle, Clock, type LucideIcon, Trophy } from 'lucide-react';
+import {
+  Calendar,
+  CalendarDays,
+  CheckCircle,
+  Clock,
+  type LucideIcon,
+  Search,
+  Trophy,
+  X,
+} from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -43,7 +52,14 @@ interface ScheduleContentProps {
    * read as an empty league night.
    */
   hasAnyTimeslots?: boolean;
+  /** What is typed in the search box. Only the Upcoming and Completed lists use it. */
+  searchTerm?: string;
+  onClearSearch?: () => void;
 }
+
+// How much of a typed search the empty state repeats back. A long word with no
+// spaces would otherwise run past the edge of a phone.
+const MAX_ECHOED_SEARCH = 30;
 
 interface ScheduleTabProps {
   value: string;
@@ -105,6 +121,8 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   hasFilters = false,
   onClearFilters,
   hasAnyTimeslots,
+  searchTerm = '',
+  onClearSearch,
 }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -242,6 +260,34 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
       // on. Saying "check back soon" here would be a claim about the season
       // that the page cannot make.
       if (hasFilters) return filteredOutState;
+      // Only a search is narrowing the list. The ordinary messages below would
+      // blame the league ("check back soon") or the calendar ("will appear after
+      // they have been played") for what the search did. Spaces alone are not a
+      // search. Timeslots has its own empty state and ignores the search.
+      const typed = searchTerm.trim();
+      if (typed) {
+        const echoed =
+          typed.length > MAX_ECHOED_SEARCH ? `${typed.slice(0, MAX_ECHOED_SEARCH)}…` : typed;
+        return (
+          <EmptyState
+            icon={Search}
+            title="No matches"
+            description={`Nothing matches "${echoed}". Check the spelling or clear the search.`}
+            actions={
+              onClearSearch
+                ? [
+                    {
+                      label: 'Clear search',
+                      onClick: onClearSearch,
+                      variant: 'default',
+                      icon: X,
+                    },
+                  ]
+                : []
+            }
+          />
+        );
+      }
       if (activeTab === 'upcoming') {
         return (
           <EmptyState
@@ -319,7 +365,10 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <ScheduleTabsBar />
 
-        <TabsContent value="timeslots" className="mt-3">
+        {/* The tab panel takes keyboard focus, and the browser scrolls it to the very
+            top. That put the pager row under the 60px sticky bar. scroll-mt-16 leaves
+            room for the bar, as the pager buttons do in SwipeableDateGroups. */}
+        <TabsContent value="timeslots" className="mt-3 scroll-mt-16">
           {showNothingScheduled ? (
             <EmptyState
               icon={CalendarDays}
@@ -338,11 +387,11 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           )}
         </TabsContent>
 
-        <TabsContent value="upcoming" className="mt-3">
+        <TabsContent value="upcoming" className="mt-3 scroll-mt-16">
           {matchGroupsContent}
         </TabsContent>
 
-        <TabsContent value="completed" className="mt-3">
+        <TabsContent value="completed" className="mt-3 scroll-mt-16">
           {matchGroupsContent}
         </TabsContent>
       </Tabs>

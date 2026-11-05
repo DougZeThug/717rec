@@ -152,10 +152,10 @@ const ModeToggle: React.FC<{
       className="justify-start"
       size="sm"
     >
-      <ToggleGroupItem value="season" className="text-xs px-3">
+      <ToggleGroupItem value="season" className="text-xs px-3 min-h-11">
         Season
       </ToggleGroupItem>
-      <ToggleGroupItem value="career" className="text-xs px-3">
+      <ToggleGroupItem value="career" className="text-xs px-3 min-h-11">
         Career
       </ToggleGroupItem>
     </ToggleGroup>

@@ -28,6 +28,8 @@ vi.mock('@tanstack/react-query', async () => {
 
 vi.mock('react-router', () => ({
   useSearchParams: () => [new URLSearchParams('bracket=bracket-1'), vi.fn()] as const,
+  useLocation: () => ({ state: null }),
+  useNavigate: () => vi.fn(),
 }));
 
 vi.mock('@/hooks/useSeasons', () => ({

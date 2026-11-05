@@ -97,6 +97,28 @@ describe('ChampionsHeroCard', () => {
     expect(divisions).toEqual(['Competitive', 'Intermediate', 'Recreational']);
   });
 
+  // whileTap makes framer-motion add tabindex=0 to its wrapper: a Tab stop with
+  // nothing to do. The section and each champion card set -1 instead.
+  it('keeps the section and the champion cards out of the Tab order', async () => {
+    mocks.fetchChampionTeams.mockImplementation(() =>
+      Promise.resolve([
+        { id: 't1', name: 'Bag Boys', image_url: null },
+        { id: 't2', name: 'Hole Punchers', image_url: null },
+      ])
+    );
+    const { container } = renderCard(makeCard({ Competitive: 't1', Intermediate: 't2' }));
+
+    const heading = await screen.findByText('Season Champions');
+
+    expect(heading.closest('section')).toHaveAttribute('tabindex', '-1');
+    // The phone carousel comes first in the DOM; its team name sits inside the card.
+    expect(screen.getAllByText('Bag Boys')[0].closest('[tabindex]')).toHaveAttribute(
+      'tabindex',
+      '-1'
+    );
+    expect(container.querySelectorAll('[tabindex="0"]')).toHaveLength(0);
+  });
+
   it('puts a division with an unfamiliar name after the three known ones', async () => {
     mocks.fetchChampionTeams.mockImplementation(() =>
       Promise.resolve([

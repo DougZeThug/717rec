@@ -313,7 +313,10 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   const showCountdown = isActiveEvent && Boolean(startTimeStr);
 
   return (
+    // tabIndex -1: whileTap makes framer-motion add tabindex=0, which is a Tab stop
+    // with nothing to do. The real links and buttons inside keep their own.
     <m.div
+      tabIndex={-1}
       whileHover={{ scale: 1.01, y: -2 }}
       whileTap={{ scale: 0.99 }}
       transition={{ duration: 0.2 }}

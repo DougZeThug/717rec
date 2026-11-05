@@ -154,4 +154,91 @@ describe('NavLinks', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/teams');
     confirmSpy.mockRestore();
   });
+
+  /**
+   * The desktop row gives the brand its full width, so the pills make the room:
+   * tighter between 1280 and 1320, icon only below 1280. The label stays in the
+   * page for screen readers, and the phone menu is untouched. An admin has one
+   * more pill, so every step comes later for them.
+   */
+  describe('the desktop row making room for the brand', () => {
+    const renderRow = (isMobile = false) =>
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <NavLinks isMobile={isMobile} />
+        </MemoryRouter>
+      );
+    const signedOutWithoutAdmin = () =>
+      mockUseAdminAccess.mockReturnValue({ isAdminAccessGranted: false, isLoading: false });
+
+    it('keeps every link, each with its name in the page', () => {
+      signedOutWithoutAdmin();
+      renderRow();
+
+      expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual([
+        'Home',
+        'Teams',
+        'Schedule',
+        'Standings',
+        'Playoffs',
+        'History',
+        'Messages',
+        'Help',
+        'Contact',
+      ]);
+    });
+
+    it('hides the label below xl but leaves it for screen readers', () => {
+      signedOutWithoutAdmin();
+      renderRow();
+
+      const label = screen.getByText('Standings');
+      expect(label).toHaveClass('max-xl:sr-only');
+      expect(label).toBeInTheDocument();
+      // The icon sheds its gap with the label.
+      expect(label.previousElementSibling).toHaveClass('xl:mr-2');
+    });
+
+    it('tightens the padding until the row has room for the full pills', () => {
+      signedOutWithoutAdmin();
+      renderRow();
+
+      const link = screen.getByRole('link', { name: 'Standings' });
+      expect(link).toHaveClass('px-2', 'min-[1320px]:px-3');
+    });
+
+    it('waits for wider windows before an admin gets labels and full padding', () => {
+      renderRow();
+
+      const link = screen.getByRole('link', { name: 'Standings' });
+      expect(link).toHaveClass('px-2');
+      // Full padding would push the row 11px past its container, so Admin keeps
+      // px-2 at every width.
+      expect(link).not.toHaveClass('min-[1420px]:px-3');
+      expect(link).not.toHaveClass('min-[1320px]:px-3');
+      const label = screen.getByText('Standings');
+      expect(label).toHaveClass('max-[1340px]:sr-only');
+      expect(label.previousElementSibling).toHaveClass('min-[1340px]:mr-2');
+      expect(screen.getByRole('link', { name: 'Admin' })).toBeInTheDocument();
+    });
+
+    it('names each icon-only pill for a mouse user', () => {
+      signedOutWithoutAdmin();
+      renderRow();
+
+      expect(screen.getByRole('link', { name: 'Standings' })).toHaveAttribute('title', 'Standings');
+    });
+
+    it('leaves the phone menu as it was: full label, wide padding, no tooltip', () => {
+      renderRow(true);
+
+      const link = screen.getByRole('link', { name: 'Standings' });
+      expect(link).toHaveClass('px-4', 'py-3');
+      expect(link).not.toHaveAttribute('title');
+      const label = screen.getByText('Standings');
+      expect(label).not.toHaveClass('max-xl:sr-only');
+      expect(label.className).toBe('text-base');
+      expect(label.previousElementSibling).toHaveClass('mr-3');
+    });
+  });
 });

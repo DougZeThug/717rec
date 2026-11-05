@@ -72,6 +72,21 @@ describe('AnnouncementHeroCard', () => {
     expect(link).toHaveAttribute('target', '_blank');
   });
 
+  // whileTap makes framer-motion add tabindex=0 to the wrapper: a Tab stop with
+  // nothing to do. -1 stops that, and the real link keeps its own stop.
+  it('keeps the motion wrapper out of the Tab order and the link in it', () => {
+    render(
+      <MemoryRouter>
+        <AnnouncementHeroCard card={{ ...baseCard, cta_url: '/playoffs' }} />
+      </MemoryRouter>
+    );
+
+    const link = screen.getByRole('link');
+
+    expect(link.firstElementChild).toHaveAttribute('tabindex', '-1');
+    expect(link).not.toHaveAttribute('tabindex');
+  });
+
   it('matches snapshot without CTA link', () => {
     const { asFragment } = render(
       <MemoryRouter>

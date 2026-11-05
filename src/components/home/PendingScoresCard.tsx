@@ -84,7 +84,12 @@ const PendingTeamName = ({
   shouldApplyWinter: boolean;
 }) => (
   <div className="min-w-0">
-    <p className={cn('font-medium text-sm truncate', shouldApplyWinter && 'text-cyan-50')}>
+    <p
+      className={cn(
+        'font-medium text-sm line-clamp-2 break-words',
+        shouldApplyWinter && 'text-cyan-50'
+      )}
+    >
       {name}
     </p>
   </div>
@@ -107,9 +112,11 @@ const PendingMatchRow = ({
         : 'bg-card hover:bg-accent/50'
     )}
   >
-    <div className="flex items-center gap-3 flex-1 min-w-0">
-      {/* Team 1 */}
-      <div className="flex items-center gap-2 min-w-0">
+    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+      {/* Team 1. Both team boxes share the row, so a long name on one side cannot
+          squeeze the other side down to a letter. From lg up there is room, so
+          they keep their natural width. */}
+      <div className="flex items-center gap-2 min-w-0 flex-1 lg:flex-initial">
         <PendingTeamLogo
           logo={match.team1_logo}
           name={match.team1_name}
@@ -119,7 +126,7 @@ const PendingMatchRow = ({
       </div>
 
       {/* VS */}
-      <div className="shrink-0 px-2">
+      <div className="shrink-0 px-1 sm:px-2">
         <span
           className={cn(
             'text-xs font-medium',
@@ -131,7 +138,7 @@ const PendingMatchRow = ({
       </div>
 
       {/* Team 2 */}
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center gap-2 min-w-0 flex-1 lg:flex-initial">
         <PendingTeamName name={match.team2_name} shouldApplyWinter={shouldApplyWinter} />
         <PendingTeamLogo
           logo={match.team2_logo}

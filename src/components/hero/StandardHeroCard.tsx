@@ -13,7 +13,10 @@ interface StandardHeroCardProps {
 }
 
 const cardWrapper = (children: React.ReactNode) => (
+  // tabIndex -1: whileTap makes framer-motion add tabindex=0, which is a Tab stop
+  // with nothing to do. The real link inside keeps its own stop.
   <m.div
+    tabIndex={-1}
     whileHover={{ scale: 1.02, y: -1 }}
     whileTap={{ scale: 0.98 }}
     transition={{ duration: 0.15 }}

@@ -128,8 +128,8 @@ restore to. The form has no discard, no reset, and no undo.
 
 Typing does nothing except change the text. There is no live validation, no
 character counter, no autosave, and no indication of how much of the message is
-too much or too little. The URL never changes; `/contact` is `/contact` from
-arrival to submission.
+too much or too little. The URL does not change while the reader types or sends; it stays as it was
+on arrival.
 
 Pressing "Send Message" at any point runs every rule at once and, if any fails,
 shows a message under each failing field and sends nothing:
@@ -254,8 +254,13 @@ one on success, a red one on failure. The success toast is redundant with the
 success panel that replaces the form, so a successful submit produces two
 confirmations of the same thing.
 
-**URL state.** None. `/contact` carries nothing, so a part-filled form cannot be
-shared, bookmarked, or linked to.
+**URL state.** The address can choose the topic and the solo box (`?type=`,
+`?solo=true`), and is read once on arrival. It can also say the visitor came from
+the Join page (`?source=join_page`). The form reads that one when the message is
+sent, and only Join the league uses it: it sets the source on the
+sign-up event sent to Google Analytics ([what the league sees](../cross-cutting/what-the-league-sees.md#league-sign-up-totals)).
+What the reader types is never written to the address, so a part-filled form
+cannot be shared, bookmarked, or linked to.
 
 **On a phone.** The two top fields stack. The email field asks for the email
 keyboard. The message box is 150 pixels tall before it grows. Nothing else

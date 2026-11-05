@@ -151,9 +151,10 @@ comment as agreed with the league admin):
   and handles its own signed-out state, inconsistently. Do not describe any
   other route as "protected".
 - `/matches/:matchId/live` is **public to watch**. Only editing is gated.
-- **No route resets scroll position** on navigation. **Four** routes restore
-  their own — `/teams`, `/stats`, `/history`, `/insights` — which is a different
-  behaviour and does not help a user arriving at any of the other sixteen.
+- **A link opens the new page at the top** (B-14, fixed). Back and Forward are
+  not reset. **Four** routes — `/teams`, `/stats`, `/history`, `/insights` — are
+  built to put the scroll position back on Back, but a 2026-11-05 test found it
+  did so only for `/stats` after a team page; see `foundations/navigation.md`.
 - The URL carries record ids, the open admin section, the schedule's night and
   search, the standings view, the compared teams, the playoff season and
   bracket, and the team-page section. It does not carry sort orders, most tabs,

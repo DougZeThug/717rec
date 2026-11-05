@@ -152,7 +152,7 @@ Any of these writes moves standings, records, badges, and power scores.
 | --- | --- | --- |
 | Escape, or a Cancel button | Closes the reject confirmation without rejecting anything. | Closes the report dialog if it is open, discarding what was typed. Approve and Reject both confirm first — Approve by asking for the result, Reject by asking whether to throw the report away. |
 | In-app navigation away, or switching tab within the page | Nothing is lost; neither queue holds any state. | A decision already sent still lands. The card was already removed from the list, so leaving looks the same as succeeding. |
-| Browser back or forward | Returns to the previous page. | Same as navigating away. |
+| Browser back or forward | On the home page, returns to the previous page. In the admin section, steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away. |
 | Reload, or the tab closed | Both queues are fetched again from scratch. Neither caches. | A sent decision still lands; an unsent one is gone. The list after the reload is the truth. |
 | Network lost mid-request | Both queues fail to load. The card is simply absent from the home page; the admin list shows a red toast reading "Failed to load score submissions. Please try again." | A report fails and keeps its dialog open. A decision fails, the card returns to its old position in the list, and a red toast names the action. |
 | The request fails or times out | As above. The Pending Scores card failing to load is **invisible** — the home page draws nothing where it would have been. | As above. |
@@ -195,8 +195,9 @@ queued. See
 anyone** when a match joins the pending list, when a report arrives, or when a
 decision is made.
 
-**URL state.** None. Neither queue has an address; the admin section is a tab
-inside `/admin` and is not in the URL.
+**URL state.** Neither queue has an address of its own. The admin section that
+holds the review queue does, `/admin/pending-matches`, like every admin section
+(see [`admin/the-admin-dashboard.md`](../admin/the-admin-dashboard.md#interactions-with-other-systems)).
 
 **On a phone.** The card's rows stack. The admin review cards keep their two
 buttons side by side at the bottom.

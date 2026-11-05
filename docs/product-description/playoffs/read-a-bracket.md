@@ -19,10 +19,13 @@ are defined in
 
 ## The simple case
 
-A player presses "View Live Bracket". A progress bar counts through four steps —
-"Loading bracket info...", "Fetching stage & participants...", "Loading
-matches...", "Fetching team details..." — and then the bracket appears inside a
-card.
+A player presses "View Live Bracket". The Playoffs page shows its own "Loading
+bracket..." spinner (see [`the-playoffs-page.md`](the-playoffs-page.md)) until the
+bracket's data has arrived, and then the bracket appears inside a card. The code
+holds a four-step progress bar for this wait ("Loading bracket info...",
+"Fetching stage & participants...", "Loading matches...", "Fetching team
+details..."). The Playoffs page never shows it, because it draws the card only after
+the data is in; see [Open questions](#open-questions-and-verification).
 
 The card's header names the bracket, its division, its format, and its state as a
 coloured pill: grey "Pending", blue "In progress", green "Completed".
@@ -57,9 +60,10 @@ stateDiagram-v2
 
 ### Arrive
 
-The bracket loads in four steps and shows its progress as a percentage while it
-does: 20, 50, 75, 90, done. This is the only progress bar in the app; everywhere
-else a wait is a spinner or a skeleton.
+The bracket's own loader goes through four steps (20, 50, 75, 90, done) and can
+show them as a percentage. It is the only progress bar in the app, and the Playoffs
+page does not show it: the page draws the card only after the data is in, behind its
+own "Loading bracket..." spinner. Everywhere else a wait is a spinner or a skeleton.
 
 Two more things load quietly beside it. The bracket's participants are fetched so
 seed numbers can be drawn, and — only when the bracket is completed — its final
@@ -163,7 +167,7 @@ appears stuck.
 | Escape, or a Cancel button | No effect. There is no Cancel here. | Closes an admin's score editor. It does not close the bracket. |
 | In-app navigation away, or switching tab within the page | The drawing is discarded and both subscriptions close. Nothing is recorded. | An admin switching to the Teams tab keeps the bracket mounted but hidden; coming back shows it without reloading. |
 | Browser back or forward | Back removes `?bracket=<id>` and returns to the list. | Same. Nothing about the drawn bracket is in the history, so back never steps through rounds. |
-| Reload, or the tab closed | The bracket in the address reloads from scratch, progress bar and all. | An admin's unsaved score in the editor is lost. Everything drawn is rebuilt from the database. |
+| Reload, or the tab closed | The bracket in the address reloads from scratch, behind the "Loading bracket..." spinner. | An admin's unsaved score in the editor is lost. Everything drawn is rebuilt from the database. |
 | Network lost mid-request | The four-step load stops and the failure state appears with a "Try Again" button: "Failed to load bracket: *reason*" when a real reason is known, otherwise "Failed to load bracket. Please try again." | The realtime pill disappears and the bracket freezes at its last drawing. Nothing is queued. |
 | The request fails or times out | As above. The read is retried twice automatically before the failure is shown. | An admin's failed save is reported and rolled back; the bracket redraws from the server. |
 | The session expires | No effect. Brackets are public to read. | An admin keeps seeing the toolbar and the clickable cards; the next save fails. |
@@ -199,8 +203,8 @@ See [`the-playoffs-page.md`](the-playoffs-page.md).
 "Tournament Complete!" once, the first time the bracket completes while the page
 is open.
 
-**URL state.** The bracket id only. There is no address for a round, a match, or
-a team inside a bracket.
+**URL state.** The bracket id, and the season, which the page adds beside it once it has read the bracket. For a bracket that cannot be read, or an old bracket with no season, the page adds no season: the address keeps what the link carried, such as `?bracket=<id>`. There
+is no address for a round, a match, or a team inside a bracket.
 
 **On a phone.** The bracket scrolls sideways: it is never scaled to fit, and a
 sixteen-team double-elimination bracket is several screens wide. It is drawn at
@@ -261,8 +265,9 @@ a session takes noticeably longer than the second.
   back-swipe gesture.
 - Not confirmed by hand: what the library draws for a bye slot exactly — the word
   "BYE" is inferred from the class the decoration code skips.
-- Not confirmed by hand: how long the four-step progress bar takes on a real
-  bracket, and whether all four steps are ever visible.
+- The four-step progress bar is not drawn on the Playoffs page: the page draws the
+  card only after the data is in. This was read from the code and not run in a
+  browser.
 - Not confirmed by hand: whether the "Data Structure Error" screen has ever
   appeared in practice.
 - Assumption: byes going to the top seeds is intended. It follows from rounding
@@ -270,4 +275,6 @@ a session takes noticeably longer than the second.
 
 Verified against `717rec` commit `ea5c8f4`, except the phone behaviour of the
 admin toolbar above, which was changed after that commit — see
-[B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone).
+[B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone) —
+and the "Loading bracket..." spinner that now shows first, which changed after it
+too.

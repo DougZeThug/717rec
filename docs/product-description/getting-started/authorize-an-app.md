@@ -172,8 +172,8 @@ no message. See
 [`foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md).
 
 **URL state.** The request number is the only thing in the URL, and it is the whole
-of the page's state, so the page survives a reload intact. It behaves like the
-record ids described in
+of the page's state, so the page survives a reload intact. It is listed with the
+other state the address carries in
 [`foundations/navigation.md`](../foundations/navigation.md#while-editing).
 
 **On a phone.** Plain text at a readable width with the two buttons in a row. The

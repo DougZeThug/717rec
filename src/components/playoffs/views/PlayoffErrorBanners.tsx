@@ -35,7 +35,7 @@ const PlayoffErrorBanners: React.FC<PlayoffErrorBannersProps> = ({ data }) => {
             onRetry={data.retrySelectedBracket}
           />
           <div className="flex justify-center">
-            <Button variant="ghost" size="sm" onClick={() => data.setSelectedBracketId(null)}>
+            <Button variant="ghost" size="sm" onClick={() => data.closeBracket()}>
               Back to brackets
             </Button>
           </div>

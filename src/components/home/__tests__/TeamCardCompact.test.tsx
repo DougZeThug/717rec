@@ -40,3 +40,21 @@ describe('TeamCardCompact rank badge contrast', () => {
     expect(badge.className).not.toContain('bg-cyan-500');
   });
 });
+
+// A long team name used to be cut to one line ("FAKE TEAM BRAVO WI…"). It now
+// wraps to two, and the card fills its carousel slot so cards stay one height.
+describe('TeamCardCompact team name', () => {
+  it('wraps to two lines instead of truncating', () => {
+    render(
+      <MemoryRouter>
+        <TeamCardCompact team={team} rank={1} />
+      </MemoryRouter>
+    );
+
+    const name = screen.getByRole('heading', { name: 'Degeneration X' });
+
+    expect(name).toHaveClass('line-clamp-2', 'break-words');
+    expect(name).not.toHaveClass('truncate');
+    expect(screen.getByRole('link')).toHaveClass('h-full');
+  });
+});

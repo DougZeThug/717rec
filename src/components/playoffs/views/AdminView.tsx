@@ -7,6 +7,7 @@ import BracketDetail from '../BracketDetail';
 import BracketList from '../BracketList';
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 import TeamDivisionTable from '../TeamDivisionTable';
+import BackToBracketsButton from './BackToBracketsButton';
 import PlayoffErrorBanners from './PlayoffErrorBanners';
 
 interface AdminViewProps {
@@ -81,6 +82,13 @@ const AdminView: React.FC<AdminViewProps> = ({
             seasonId={!data.selectedBracketId || !data.bracket ? data.selectedSeasonId : null}
           />
         </div>
+
+        {/* Shown whenever the list above is hidden: the opposite of its test. Not while
+            the "Loading bracket" error banner (data.selectedBracketError) shows, because
+            only that banner has its own "Back to brackets"; the other banners do not. */}
+        {data.selectedBracketId && data.bracket && !data.selectedBracketError && (
+          <BackToBracketsButton onBack={() => data.closeBracket()} />
+        )}
 
         {data.ready &&
           data.selectedBracketId &&
