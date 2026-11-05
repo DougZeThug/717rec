@@ -37,17 +37,58 @@ describe('TeamGameScoreRow', () => {
   });
 
   it('links each team name and logo to its team page', () => {
-    renderRow();
+    const { container } = renderRow();
 
-    const railRidersLinks = screen
-      .getAllByRole('link')
-      .filter((link) => link.getAttribute('href') === '/teams/rail-riders');
-    const banditsLinks = screen
-      .getAllByRole('link')
-      .filter((link) => link.getAttribute('href') === '/teams/bag-bandits');
+    const links = [...container.querySelectorAll('a')];
+    const railRidersLinks = links.filter(
+      (link) => link.getAttribute('href') === '/teams/rail-riders'
+    );
+    const banditsLinks = links.filter((link) => link.getAttribute('href') === '/teams/bag-bandits');
 
     expect(railRidersLinks).toHaveLength(2);
     expect(banditsLinks).toHaveLength(2);
+  });
+
+  it('keeps the logo links out of the tab order and the screen reader list', () => {
+    const { container } = renderRow();
+
+    const links = [...container.querySelectorAll('a')];
+    const logoLinks = links.filter((link) => link.querySelector('span[title]') === null);
+    const nameLinks = links.filter((link) => link.querySelector('span[title]') !== null);
+
+    expect(logoLinks).toHaveLength(2);
+    for (const link of logoLinks) {
+      expect(link).toHaveAttribute('aria-hidden', 'true');
+      expect(link).toHaveAttribute('tabindex', '-1');
+    }
+    // The name links stay: one tab stop per team.
+    expect(nameLinks).toHaveLength(2);
+    expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
+      '/teams/rail-riders',
+      '/teams/bag-bandits',
+    ]);
+  });
+
+  it('lets a long name wrap onto two lines instead of cutting it with an ellipsis', () => {
+    renderRow({
+      match: match({
+        team1Details: {
+          team_id: 'team-a',
+          name: 'Rail Riders With A Very Long Name',
+          image_url: null,
+          logo_url: null,
+          divisionName: null,
+          division_id: null,
+          power_score: null,
+          sos: null,
+        },
+      }),
+    });
+
+    const name = screen.getByText('Rail Riders With A Very Long Name');
+    expect(name.className).toContain('line-clamp-2');
+    expect(name.className).toContain('break-words');
+    expect(name.className).not.toContain('truncate');
   });
 
   it('falls back to the first letter when a team has no logo', () => {
@@ -59,8 +100,8 @@ describe('TeamGameScoreRow', () => {
   it('colours the winner green and the loser red when highlighting is on', () => {
     renderRow({ highlightWinnerLoser: true });
 
-    expect(screen.getByText('Rail Riders').className).toContain('text-green-600');
-    expect(screen.getByText('Bag Bandits').className).toContain('text-red-500');
+    expect(screen.getByText('Rail Riders').className).toContain('text-green-700');
+    expect(screen.getByText('Bag Bandits').className).toContain('text-red-700');
   });
 
   it('colours the away winner green when the away team takes more games', () => {
@@ -69,14 +110,14 @@ describe('TeamGameScoreRow', () => {
       match: match({ team1_game_wins: 0, team2_game_wins: 2 }),
     });
 
-    expect(screen.getByText('Bag Bandits').className).toContain('text-green-600');
-    expect(screen.getByText('Rail Riders').className).toContain('text-red-500');
+    expect(screen.getByText('Bag Bandits').className).toContain('text-green-700');
+    expect(screen.getByText('Rail Riders').className).toContain('text-red-700');
   });
 
   it('adds no winner or loser colour when highlighting is off', () => {
     renderRow();
 
-    expect(screen.getByText('Rail Riders').className).not.toContain('text-green-600');
-    expect(screen.getByText('Bag Bandits').className).not.toContain('text-red-500');
+    expect(screen.getByText('Rail Riders').className).not.toContain('text-green-');
+    expect(screen.getByText('Bag Bandits').className).not.toContain('text-red-');
   });
 });

@@ -143,7 +143,7 @@ describe('StatsContainer', () => {
     render(<StatsContainer matches={[]} isLoadingMatches={false} matchesError={null} />);
 
     expect(screen.getByText('No Teams Available')).toBeInTheDocument();
-    expect(screen.getByText(/Try selecting a different division/i)).toBeInTheDocument();
+    expect(screen.getByText('No teams have been added yet.')).toBeInTheDocument();
   });
 
   it('renders rankings, charts, and career sections for populated rankings', async () => {

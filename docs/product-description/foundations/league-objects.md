@@ -191,9 +191,11 @@ until a refetch.
 
 **Toasts and notifications.** Not applicable here.
 
-**URL state.** Only two of these objects have their own address: a team, at
-`/teams/:teamId`, and a match being scored live, at `/matches/:matchId/live`.
-There is no page for a single game, a single round, a division, or a timeslot.
+**URL state.** A team, a match being scored live and a bracket have their own
+address: `/teams/:teamId`, `/matches/:matchId/live` and `/playoffs?bracket=<id>` (a
+parameter, not a page of its own). A season can also be named, as `?season=<id>` on
+the playoffs page. There is no page for a single game, a single round, a division,
+or a timeslot.
 
 **On a phone.** Not applicable here.
 

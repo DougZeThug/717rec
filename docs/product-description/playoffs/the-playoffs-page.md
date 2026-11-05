@@ -22,9 +22,8 @@ in [`admin/run-the-playoffs.md`](../admin/run-the-playoffs.md).
 ## The simple case
 
 A player opens `/playoffs`. The page shows a heading, "Playoffs", and a line
-under it reading "Tournament brackets and playoff schedules". On a wide screen a
-"Season:" dropdown sits under the heading; on a phone it is pinned to the bottom
-of the screen instead.
+under it reading "Tournament brackets and playoff schedules". A "Season:"
+dropdown sits under that line. It is in the same place on every screen size.
 
 Below that is one card per division, strongest division first. Each card names
 the division, says how many brackets it has, and lists them. Each bracket shows
@@ -56,11 +55,13 @@ stateDiagram-v2
     [*] --> loading : open /playoffs
     loading --> list : brackets and divisions arrived
     loading --> empty : no divisions to show
-    list --> detail : press View Live Bracket (adds ?bracket=<id>)
+    list --> opening : press View Live Bracket (adds ?bracket=<id>)
+    opening --> detail : the bracket arrived
+    opening --> list : nothing to draw (a legacy bracket), or Back to brackets
     detail --> list : browser back, or Back to brackets
     list --> failed : a list request failed
     failed --> list : press Try again
-    detail --> failed : the chosen bracket failed to load
+    opening --> failed : the chosen bracket failed to load
     list --> list : change season (reloads the list)
 ```
 
@@ -82,8 +83,9 @@ the request to finish, not for a season to appear on it: an old bracket can
 resolve with no season at all, and the page then falls back to the automatic
 choice. A bracket that fails to load does the same.
 
-However it is chosen, the season ends up in the address as `?season=<id>`, so a
-copied link opens the same view. A season the page worked out for itself
+However it is chosen, the season ends up in the address as `?season=<id>` (unless
+the link's bracket cannot be read: see Season scoping below), so a copied link
+opens the same view. A season the page worked out for itself
 replaces the current history entry, adding no step to go back through; a season
 **chosen from the picker** adds one, like choosing a bracket does.
 
@@ -120,15 +122,15 @@ Nothing is recorded and nothing is kept. The realtime subscription, if one was
 open, closes. Coming back re-runs the whole load.
 
 What survives is the address: a link carrying `?bracket=<id>` opens straight to
-that bracket, and `?season=<id>` opens that season. Nothing else about the page is
-in the URL — not the
-season, not the admin tab.
+that bracket, and `?season=<id>` opens that season. The page adds `?season=<id>`
+itself, so a link to a bracket carries its season too, once the bracket has loaded.
+Nothing else about the page is in the URL, not even the admin tab.
 
 ### Begin editing
 
-There is no editing here for a player. The page has exactly two controls: the
-season dropdown and the per-bracket buttons. Neither makes the page dirty,
-because neither is a form.
+There is no editing here for a player. The page has three kinds of control: the
+season dropdown, the per-bracket buttons and, above an open bracket, a "Back to
+brackets" button. None of them makes the page dirty, because none is a form.
 
 An admin sees more: a Brackets/Teams tab strip, a Create Bracket button on an
 empty division, a Delete button beside each bracket, and — inside a bracket — a
@@ -137,20 +139,56 @@ row of admin tools. Those are owned by
 
 ### While editing
 
-Changing the season reloads the bracket list for that season. The choice is held
-in memory only: it is not in the URL, not in storage, and it is lost on reload,
-which returns to the automatic choice.
+Changing the season reloads the bracket list for that season. The choice goes
+into the address as `?season=<id>` and adds one step to go back through, so it
+survives a reload and a copied link opens the same season. It also closes any
+open bracket and removes `?bracket=` from the address, because that bracket
+belongs to the season being left. The season is not kept in storage: the address
+is its only memory.
 
 Choosing a bracket does three things at once: it sets `?bracket=<id>`, it starts
 loading that bracket, and it starts a realtime subscription to that bracket's
-matches. While the bracket loads, the list stays on screen; the drawn bracket
-replaces it only when the data has arrived and its id matches the one asked for.
+matches. The page scrolls to the top. While the bracket loads, it shows a spinner
+reading "Loading bracket..." in place of the list. A bracket that was on screen in
+the last five minutes is still in the cache and opens at once. The drawn bracket
+replaces the spinner when the data has arrived and its id matches the one asked
+for. If the load fails, the list comes back with a "Loading bracket" banner above
+it.
 
-When the subscription is live, a small green pill reading "Live updates enabled"
-sits in the bottom-right corner. A score entered by an admin anywhere else
-arrives within a second or two: the bracket redraws and a toast says "Bracket
-Updated — Match scores have been updated." One admin save writes several rows;
-the page collapses that burst into a single refresh and a single toast.
+A "Back to brackets" button sits above the spinner, and then above the drawn
+bracket. Pressing it clears `?bracket=<id>`, shows the division list and scrolls
+to the top. The admin Brackets tab has the same button above an open bracket. It
+has no spinner: the list stays until the bracket arrives. The "Loading bracket"
+error banner has its own "Back to brackets" button, so the new button is not drawn
+while that banner shows. The page never has two.
+
+Opening a bracket from the division list adds a step to the browser history and
+marks that step as opened from the list. With the mark, "Back to brackets" goes
+back one step in the history. The list shows again, `?bracket=<id>` leaves the
+address, and the browser Back button has no press that changes nothing: the next
+press leaves the page. Both "Back to brackets" buttons do this, the one above the
+bracket and the one in the error banner. Without the mark the button swaps the
+step in place instead, as a delete always does. A swap leaves the list step before
+it behind, so after a delete of a bracket opened from the list, or after an admin's
+new bracket, the first Back press shows no change and the next one leaves the
+page. The mark is missing on a link
+that opened straight on a bracket (it has no list step behind it, so Back leaves
+at once), on the link an admin is sent to after making a bracket, and on a
+bracket opened from a list that shows over another bracket's address (under the
+"Loading bracket" banner, on the admin tab while a bracket loads, or after a
+legacy bracket with nothing to draw). Changing the season still adds a step. See
+[Cancel and interrupt](#cancel-and-interrupt).
+
+When the subscription is live, a green signal sits in the bottom-right corner. On
+a screen 768 pixels wide or more it is a small pill reading "Live updates
+enabled". On a phone it is only a pulsing green dot, above the tab bar. The dot
+covers far less of the bracket than the pill did. A tap on the dot goes through
+to whatever is under it. A screen reader still hears the words.
+
+A score entered by an admin anywhere else arrives within a second or two: the
+bracket redraws and a toast says "Bracket Updated — Match scores have been
+updated." One admin save writes several rows; the page collapses that burst into
+a single refresh and a single toast.
 
 ### Submit
 
@@ -164,8 +202,8 @@ admin writes.
 | The user's role | A visitor and a player see the same page. An admin sees the Brackets/Teams tabs, the create/delete controls, and the bracket's admin toolbar. The page shows the loading spinner until the admin check resolves, so the controls never flash in and out. | Admin granted or revoked elsewhere does not reach this page until it refetches. The controls stay as they were and the database quietly starts or stops accepting the writes behind them. |
 | The record's state | A bracket's state decides its button and its badge: pending and in-progress read "View Live Bracket", completed reads "View Final Results" and carries a grey "Completed" badge. A bracket not built with the current engine carries a "Legacy" badge. | A bracket completing while the page is open changes the drawn bracket over realtime, but the list behind it keeps the old button until the page refetches. |
 | The season's state | The page prefers a season named in the address, then the open bracket's own season, then the season with playoffs active, then the active season. When the last two differ, a banner says so by name. An archived season is selectable and shows its brackets frozen. | Changing the season in the dropdown reloads the list and closes any open bracket, because that bracket belongs to the season being left. |
-| Viewport | On a wide screen the season picker sits under the heading and the admin toolbar buttons are a row. On a phone the season picker is a fixed bar across the bottom of the screen, and the admin toolbar buttons collapse into one **⋯** menu. | No effect beyond re-flowing on rotation. |
-| Keys the page honours | Nothing is focused on arrival and there are no shortcuts. Tab reaches the season dropdown, then each bracket button in turn. | Escape closes the season dropdown. Arrow keys move within it. Nothing else. |
+| Viewport | The season picker sits under the heading on every screen size. On a wide screen the admin toolbar buttons are a row. On a phone they collapse into one **⋯** menu. | No effect beyond re-flowing on rotation. |
+| Keys the page honours | Nothing is focused on arrival and there are no shortcuts. Tab reaches the season dropdown, then each bracket button in turn. With a bracket open, it reaches "Back to brackets" right after the dropdown. | Escape closes the season dropdown. Arrow keys move within it. Nothing else. |
 
 The season picker is **absent, not disabled**, when the league has one season or
 none. A league in its first season therefore never sees it.
@@ -174,11 +212,11 @@ none. A league in its first season therefore never sees it.
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes the season dropdown if it is open. It does not close an open bracket — "Back to brackets" and browser back are the only ways out of one, and "Back to brackets" appears only when the bracket failed to load. |
-| In-app navigation away, or switching tab within the page | Nothing is lost, because nothing was entered. The realtime subscription closes. | The admin's Brackets/Teams choice is remembered for the browser session and restored on return. The chosen season is not. An in-flight load is abandoned. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Back from an open bracket removes `?bracket=<id>` and returns to the list, which is the intended way out. Forward re-opens it. Back over a season chosen from the picker restores the previous season, and the picker follows. Scroll position is not restored on this route. |
-| Reload, or the tab closed | Reloads the page from scratch. | The bracket and the season are both in the address, so a reload returns to the same bracket under the same season. |
-| Network lost mid-request | The page shows its loading spinner and then the failure banners for whichever request failed. | The realtime pill disappears. The bracket keeps showing what it last had. Nothing is queued; the next refetch recovers. |
+| Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes the season dropdown if it is open. It does not close an open bracket. The "Back to brackets" button above the bracket and browser back are the ways out of one. |
+| In-app navigation away, or switching tab within the page | Nothing is lost, because nothing was entered. The realtime subscription closes. | The admin's Brackets/Teams choice is remembered for the browser session and restored on return. The chosen season is not remembered: a way back through the app's own link starts on the automatic choice, while the browser Back button restores the season from the address. An in-flight load is abandoned. |
+| Browser back or forward | Returns to the previous page. Nothing is recorded. | Back from an open bracket removes `?bracket=<id>` and returns to the list, which is the intended way out. Forward re-opens it. "Back to brackets" on a bracket opened from the page's own list goes back one history step too, so after one open and close the first Back press leaves the page, and each further open and close adds no step. Forward after that button re-opens the bracket. When the step carries no "opened from the list" mark, the button swaps the step in place instead. A delete always does, because the bracket is gone. Then Back does not open that bracket again, but a swap leaves the list step before it behind: after a delete of a bracket opened from the list, or after an admin's new bracket, the first Back press shows no change and the next press leaves the page. A link that opened straight on a bracket has one step, so Back leaves at once. A bracket opened from a list that shows over another bracket's address (under the "Loading bracket" banner, or after a legacy bracket with nothing to draw) has no mark either: after "Back to brackets", one Back press returns to the first bracket's address. Changing the season still adds a step: Back then brings back the bracket from the earlier season. Back over a season chosen from the picker restores the previous season, and the picker follows. Scroll position is not restored on this route. |
+| Reload, or the tab closed | Reloads the page from scratch. | The bracket and the season are both in the address, so a reload returns to the same bracket under the same season. The "opened from the list" mark is kept in the history step, so "Back to brackets" still steps back after a reload. |
+| Network lost mid-request | The page shows its loading spinner and then the failure banners for whichever request failed. | The realtime pill (a dot on a phone) disappears. The bracket keeps showing what it last had. Nothing is queued; the next refetch recovers. |
 | The request fails or times out | Each failing request gets its own banner, stacked above the list: "Loading brackets" and "Loading divisions" for the list, "Loading bracket" for the chosen one. The brackets banner has a "Try again" button. | The chosen bracket failing shows a "Loading bracket" banner with both "Try again" and "Back to brackets". **"Back to brackets" is the only thing that clears `?bracket=<id>`**, so without it a reload just retries the same broken bracket forever. |
 | The session expires | No effect. Everything on this page is public to read. | No effect for a player. An admin keeps seeing the admin controls and their next write fails. |
 | The same record changed in another tab, or by another user | Not applicable before arriving. | **This is normal here, not an edge case.** With a bracket open, a score entered by an admin arrives over realtime and the bracket redraws with a toast. The bracket *list* has no subscription: a bracket created, renamed, or deleted elsewhere is invisible until the page is remounted. |
@@ -186,7 +224,8 @@ none. A league in its first season therefore never sees it.
 | The window loses focus | No effect. | The realtime subscription stays open in the background. Neither the bracket nor the list refetches on focus returning — both have that switched off — so returning to the tab shows whatever realtime delivered, and nothing else. |
 
 After any interrupt the page rebuilds itself from the address and from the
-automatic season choice. Nothing the user picked, apart from the bracket, is
+automatic season choice. Apart from the bracket and the season, which the
+address holds, and the admin's Brackets/Teams tab, nothing the user picked is
 remembered.
 
 ## Interactions with other systems
@@ -196,7 +235,11 @@ is admin-only, and each control is hidden rather than disabled for everyone else
 See [`cross-cutting/permissions.md`](../cross-cutting/permissions.md).
 
 **Season scoping.** The bracket list is scoped to one season on the server. The
-season is chosen by the page, never by the URL. See
+page takes the season from `?season=` in the address first, then from the season
+of the bracket in `?bracket=`, then from the season with playoffs active, then
+from the active season, and writes the one it took back to the address. The one
+exception is a link whose bracket cannot be read: the stand-in season the page
+uses meanwhile is not written. See
 [`foundations/seasons.md`](../foundations/seasons.md).
 
 **Validation and error display.** Nothing to validate. Failures appear as
@@ -220,31 +263,34 @@ cached for offline use and nothing is queued.
 from the user: "Bracket Updated", "Tournament Complete!", and — for an admin —
 the result of a save. Nothing about the playoffs is pushed outside the app.
 
-**URL state.** Only `?bracket=<id>`. The season, the admin tab, and the scroll
-position are all lost on navigation. A link shared during one season therefore
-opens on a different season's brackets in the next, unless it names a bracket.
+**URL state.** `?bracket=<id>` and `?season=<id>`. The scroll position is lost on
+navigation. The admin's Brackets/Teams tab is kept for the browser tab, not in the
+address. A link carries its season, so a link shared
+during one season opens the same season's brackets later. A link with no
+`?season=` and no bracket opens on the automatic choice.
 
-**On a phone.** The season picker moves to a fixed bar across the bottom of the
-screen and the page reserves room for it. The admin toolbar inside a bracket
-collapses into a single **⋯** menu, so an admin on a phone can repair, reseed,
-rearrange, edit, and delete a bracket as well as view it. See
+**On a phone.** The season picker stays where it is, under the heading. The admin
+toolbar inside a bracket collapses into a single **⋯** menu, so an admin on a
+phone can repair, reseed, rearrange, edit, and delete a bracket as well as view
+it. See
 [`cross-cutting/on-a-phone.md`](../cross-cutting/on-a-phone.md).
 
 **Accessibility.** The season dropdown has a real label. The drawn bracket is a
-labelled region. The failure banners are alerts. Replacing the list with a
-bracket is not announced — a screen reader user is moved to new content with no
-warning that it happened.
+labelled region. The failure banners are alerts. The "Loading bracket..." spinner
+is announced as a status. The bracket that then replaces it is not announced — a
+screen reader user is moved to new content with no warning that it happened.
 
 **Side effects the user can notice.** None from viewing. Opening a bracket
-preloads its data into the cache, which is why a bracket opened once and closed
-opens again instantly.
+preloads its data into the cache, which is why a bracket that was on screen in the
+last five minutes opens again instantly.
 
 ## Edge cases
 
 - **A bracket that predates the current engine cannot be opened.** Its row shows
-  a "Legacy" badge and a working button, but the loader returns nothing for it,
-  no error is raised, and the list simply stays on screen with `?bracket=<id>`
-  now in the address. Nothing tells the user what happened. See
+  a "Legacy" badge and a working button, but the loader returns nothing for it
+  and no error is raised. The page shows "Loading bracket..." for a moment, then
+  shows the list again, with `?bracket=<id>` now in the address. Nothing tells
+  the user what happened. See
   [Open questions](#open-questions-and-verification).
 - **The season shown and the season being played can differ**, and the page says
   so: "Showing *X* playoffs — regular season play is on *Y*." That banner appears
@@ -270,22 +316,22 @@ opens again instantly.
 
 ## Open questions and verification
 
-- **A legacy bracket's "View Live Bracket" button does nothing visible.** The
-  loader returns null for any bracket not built with the current engine, so the
-  page keeps the list, adds `?bracket=<id>` to the address, and shows no message
-  at all. The row already carries a "Legacy" badge, so the state is known.
+- **A legacy bracket's "View Live Bracket" button never opens the bracket.** The
+  loader returns null for any bracket not built with the current engine. The page
+  adds `?bracket=<id>` to the address and shows "Loading bracket..." for a
+  moment. Then it shows the list again at the top, with no message at all. This
+  was read from the code and not seen in a browser. The row already carries a
+  "Legacy" badge, so the state is known.
   **May be worth treating as a bug rather than documenting.**
-- **The chosen season is lost on reload while the bracket in the address is
-  not.** After a reload the season dropdown can name one season while the open
-  bracket belongs to another. **May be worth treating as a bug rather than
-  documenting.**
 - **Realtime here contradicts the foundations.**
   [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md)
   says realtime exists only on live scoring. This page opens two subscriptions
-  and shows a "Live updates enabled" pill. The foundation needs correcting.
-- **No route resets scroll position, but `/stats`, `/insights` and `/history`
-  restore it and `/playoffs` does not.** Returning to a long bracket list by
-  browser back leaves the user wherever the browser puts them.
+  and shows a "Live updates enabled" pill (a dot on a phone). The foundation needs
+  correcting.
+- **A link opens a page at the top, and `/playoffs` does not save or restore its
+  own scroll position on Back.** Returning to a long bracket list by browser back leaves the
+  user wherever the browser puts them; a page like it (`/schedule`) came back at
+  the top in the 2026-11-05 test.
 - Not confirmed by hand: how long the "Loading..." spinner is visible in
   practice, and whether the admin check is what usually holds it.
 - Not confirmed by hand: whether the Challonge embed renders at all on a phone,
@@ -295,4 +341,16 @@ opens again instantly.
 - Assumption: the automatic season choice is meant to be invisible. Nothing in
   the page explains it, and the only sign is the overlap banner.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the wait after "View Live
+Bracket", the "Back to brackets" button above an open bracket, the phone "Live
+updates" dot and the history step that "Back to brackets" takes. All four
+changed after that commit. None is a triaged bug. The scroll statement in Open questions changed after that
+commit too; see [B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation). The season picker is described
+as the code has it now: under the heading on every screen size. The season in
+the address (`?season=<id>`, written by the page, set by the picker and kept on
+reload) was read from the code and checked in a real browser against fake data
+on 2026-11-05. The history step that "Back to brackets" takes was checked the same
+way in desktop Chromium with touch emulation, not on an iPhone. The admin tab's
+button, a delete, the admin's new-bracket link and the press that shows no change
+after the last two were read from the code and covered by unit tests, because the
+admin tab needs a sign-in.

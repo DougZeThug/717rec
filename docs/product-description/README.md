@@ -292,7 +292,7 @@ Status is one of `not started`, `drafted`, or `verified`.
 | ----------------------------------------- | ------- |
 | glossary.md                               | drafted |
 | bug-triage.md                             | drafted |
-| verification/ (9 checklists, 1,863 items) | drafted |
+| verification/ (9 checklists, 1,958 items) | drafted |
 | foundations/seasons.md                    | drafted |
 | foundations/accounts-and-roles.md         | drafted |
 | foundations/league-objects.md             | drafted |

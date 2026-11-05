@@ -83,6 +83,17 @@ describe('WeeklyRecapMoversSection', () => {
 
     expect(screen.getByText('Playoff Movers')).toBeInTheDocument();
   });
+
+  // red-600 on the light card was 4.09:1, under the 4.5:1 AA minimum for small
+  // text. red-700 passes; dark and winter keep their old red-400.
+  it('colours a faller with a red that is readable on the light card', () => {
+    renderSection([], trend('f', -4));
+
+    const delta = screen.getByText('-4.0');
+
+    expect(delta).toHaveClass('text-red-700', 'dark:text-red-400');
+    expect(delta).not.toHaveClass('text-red-600');
+  });
 });
 
 describe('WeeklyRecapCard movers consistency', () => {

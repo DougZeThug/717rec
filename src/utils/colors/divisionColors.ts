@@ -71,9 +71,13 @@ export interface DivisionSoftClasses {
   badge: string;
 }
 
+// `text` and `button` read the `-soft-text` tokens, not `-soft`. The soft tones are
+// fine as fills and borders, but as text on a white or tinted surface they measured
+// 3.2 to 4.5:1 in the light theme. The two sets are identical in the dark theme,
+// and the winter theme only defines the `-soft-text` ones.
 const SOFT_CLASSES: Record<'competitive' | 'intermediate' | 'recreational', DivisionSoftClasses> = {
   competitive: {
-    text: 'text-[hsl(var(--competitive-soft))]',
+    text: 'text-[hsl(var(--competitive-soft-text))]',
     border: 'border-[hsl(var(--competitive-soft)/0.35)]',
     borderLeft: 'border-l-[hsl(var(--competitive-soft)/0.55)]',
     borderTop: 'border-t-[hsl(var(--competitive-soft)/0.5)]',
@@ -82,10 +86,10 @@ const SOFT_CLASSES: Record<'competitive' | 'intermediate' | 'recreational', Divi
     badge:
       'bg-[hsl(var(--competitive-soft)/0.15)] text-[hsl(var(--competitive-soft))] border border-[hsl(var(--competitive-soft)/0.3)]',
     button:
-      'bg-[hsl(var(--competitive-soft)/0.15)] hover:bg-[hsl(var(--competitive-soft)/0.25)] text-[hsl(var(--competitive-soft))] border border-[hsl(var(--competitive-soft)/0.35)]',
+      'bg-[hsl(var(--competitive-soft)/0.15)] hover:bg-[hsl(var(--competitive-soft)/0.25)] text-[hsl(var(--competitive-soft-text))] border border-[hsl(var(--competitive-soft)/0.35)]',
   },
   intermediate: {
-    text: 'text-[hsl(var(--intermediate-soft))]',
+    text: 'text-[hsl(var(--intermediate-soft-text))]',
     border: 'border-[hsl(var(--intermediate-soft)/0.35)]',
     borderLeft: 'border-l-[hsl(var(--intermediate-soft)/0.55)]',
     borderTop: 'border-t-[hsl(var(--intermediate-soft)/0.5)]',
@@ -94,10 +98,10 @@ const SOFT_CLASSES: Record<'competitive' | 'intermediate' | 'recreational', Divi
     badge:
       'bg-[hsl(var(--intermediate-soft)/0.15)] text-[hsl(var(--intermediate-soft))] border border-[hsl(var(--intermediate-soft)/0.3)]',
     button:
-      'bg-[hsl(var(--intermediate-soft)/0.15)] hover:bg-[hsl(var(--intermediate-soft)/0.25)] text-[hsl(var(--intermediate-soft))] border border-[hsl(var(--intermediate-soft)/0.35)]',
+      'bg-[hsl(var(--intermediate-soft)/0.15)] hover:bg-[hsl(var(--intermediate-soft)/0.25)] text-[hsl(var(--intermediate-soft-text))] border border-[hsl(var(--intermediate-soft)/0.35)]',
   },
   recreational: {
-    text: 'text-[hsl(var(--recreational-soft))]',
+    text: 'text-[hsl(var(--recreational-soft-text))]',
     border: 'border-[hsl(var(--recreational-soft)/0.35)]',
     borderLeft: 'border-l-[hsl(var(--recreational-soft)/0.55)]',
     borderTop: 'border-t-[hsl(var(--recreational-soft)/0.5)]',
@@ -106,7 +110,7 @@ const SOFT_CLASSES: Record<'competitive' | 'intermediate' | 'recreational', Divi
     badge:
       'bg-[hsl(var(--recreational-soft)/0.15)] text-[hsl(var(--recreational-soft))] border border-[hsl(var(--recreational-soft)/0.3)]',
     button:
-      'bg-[hsl(var(--recreational-soft)/0.15)] hover:bg-[hsl(var(--recreational-soft)/0.25)] text-[hsl(var(--recreational-soft))] border border-[hsl(var(--recreational-soft)/0.35)]',
+      'bg-[hsl(var(--recreational-soft)/0.15)] hover:bg-[hsl(var(--recreational-soft)/0.25)] text-[hsl(var(--recreational-soft-text))] border border-[hsl(var(--recreational-soft)/0.35)]',
   },
 };
 

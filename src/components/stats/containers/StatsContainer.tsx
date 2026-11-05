@@ -35,14 +35,10 @@ const NoTeamsAvailable = () => (
   <Card className="bg-card text-card-foreground border border-border rounded-xl shadow-xs font-inter">
     <CardHeader>
       <CardTitle className="font-bold">No Teams Available</CardTitle>
-      <CardDescription>
-        There are no teams in the selected division or no teams have been added yet.
-      </CardDescription>
+      <CardDescription>There are no teams to show right now.</CardDescription>
     </CardHeader>
     <CardContent>
-      <p className="text-muted-foreground font-inter">
-        Try selecting a different division or add teams to view statistics.
-      </p>
+      <p className="text-muted-foreground font-inter">No teams have been added yet.</p>
     </CardContent>
   </Card>
 );

@@ -142,6 +142,7 @@ const makeAdminPageData = () =>
     ready: true,
     selectedBracketId: 'bracket-1',
     setSelectedBracketId: vi.fn(),
+    closeBracket: vi.fn(),
     bracket,
     error: null,
     divisionsError: null,

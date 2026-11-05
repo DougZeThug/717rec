@@ -13,6 +13,11 @@ interface DateGroup {
   matches: Match[];
 }
 
+// Past this many nights the dots no longer fit beside Previous and Next on a
+// 360 px phone, so a season of 19 weeks pushed "Next" off the screen. Above it
+// the row shows "3 of 19" instead.
+const MAX_DOTS = 9;
+
 interface SwipeableDateGroupsProps {
   groupedMatches: DateGroup[];
   selectedDate: Date;
@@ -61,7 +66,10 @@ const SwipeableGroupPanel: React.FC<SwipeableGroupPanelProps> = ({
           date={group.date}
           matches={group.matches}
           isCurrentDay={isToday(group.date) || isSameDay(group.date, selectedDate)}
-          isFirstGroup={index === 0}
+          // The carousel shows one date at a time, so the date on screen is the
+          // first group the reader sees. Opening only index 0 left every later
+          // date as a closed header over a blank screen.
+          isFirstGroup
           onEditMatch={onEditMatch}
           onDeleteMatch={onDeleteMatch}
           liveScoredMatchIds={liveScoredMatchIds}
@@ -128,6 +136,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           className={cn(
             'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all',
             'min-h-[44px] min-w-[44px]', // Touch target
+            'scroll-mt-16', // Keyboard focus lands below the sticky tab bar
             canGoPrev
               ? 'text-primary hover:bg-primary/10 active:scale-95'
               : 'text-muted-foreground/50 cursor-not-allowed'
@@ -137,28 +146,34 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           <span className="hidden sm:inline">Previous</span>
         </button>
 
-        <div className="flex items-center">
-          {groupedMatches.map((group, idx) => (
-            // The button is the 44px tap area; the span inside is the visible dot.
-            <button
-              type="button"
-              key={group.date.toISOString()}
-              onClick={() => onIndexChange(idx)}
-              aria-label={`Go to ${format(group.date, 'EEE, MMM d')}`}
-              aria-current={idx === safeIndex ? 'true' : undefined}
-              className="group flex min-h-11 min-w-6 items-center justify-center"
-            >
-              <span
-                className={cn(
-                  'size-2.5 rounded-full transition-all',
-                  idx === safeIndex
-                    ? 'bg-primary scale-125'
-                    : 'bg-muted-foreground/30 group-hover:bg-muted-foreground/50'
-                )}
-              />
-            </button>
-          ))}
-        </div>
+        {groupedMatches.length > MAX_DOTS ? (
+          <span role="status" className="text-sm text-muted-foreground tabular-nums">
+            {`${safeIndex + 1} of ${groupedMatches.length}`}
+          </span>
+        ) : (
+          <div className="flex items-center">
+            {groupedMatches.map((group, idx) => (
+              // The button is the 44px tap area; the span inside is the visible dot.
+              <button
+                type="button"
+                key={group.date.toISOString()}
+                onClick={() => onIndexChange(idx)}
+                aria-label={`Go to ${format(group.date, 'EEE, MMM d')}`}
+                aria-current={idx === safeIndex ? 'true' : undefined}
+                className="group flex min-h-11 min-w-6 scroll-mt-16 items-center justify-center"
+              >
+                <span
+                  className={cn(
+                    'size-2.5 rounded-full transition-all',
+                    idx === safeIndex
+                      ? 'bg-primary scale-125'
+                      : 'bg-muted-foreground/30 group-hover:bg-muted-foreground/50'
+                  )}
+                />
+              </button>
+            ))}
+          </div>
+        )}
 
         <button
           type="button"
@@ -168,6 +183,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           className={cn(
             'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all',
             'min-h-[44px] min-w-[44px]', // Touch target
+            'scroll-mt-16', // Keyboard focus lands below the sticky tab bar
             canGoNext
               ? 'text-primary hover:bg-primary/10 active:scale-95'
               : 'text-muted-foreground/50 cursor-not-allowed'
@@ -202,7 +218,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
       </div>
 
       {/* Swipe hint for mobile - enhanced visibility */}
-      <p className="text-center text-xs text-muted-foreground mt-3 sm:hidden animate-pulse">
+      <p className="text-center text-xs text-muted-foreground mt-3 sm:hidden">
         ← Swipe to see more dates →
       </p>
     </div>

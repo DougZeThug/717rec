@@ -47,6 +47,8 @@ const TeamCardImageArea: React.FC<
         maxDisplay={3}
         orientation="vertical"
         prefetchedBadges={prefetchedBadges}
+        // The whole card is a link: a button inside it would be nested.
+        interactive={false}
       />
     </div>
   </div>

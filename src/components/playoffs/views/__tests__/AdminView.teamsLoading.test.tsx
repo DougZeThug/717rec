@@ -24,6 +24,7 @@ const makeData = (overrides: Partial<PlayoffPageData>): PlayoffPageData =>
     isAdmin: true,
     selectedBracketId: null,
     setSelectedBracketId: vi.fn(),
+    closeBracket: vi.fn(),
     ready: true,
     error: null,
     divisionsError: null,

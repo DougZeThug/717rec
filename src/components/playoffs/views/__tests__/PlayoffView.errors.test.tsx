@@ -23,6 +23,7 @@ const makeData = (overrides: Partial<PlayoffPageData> = {}): PlayoffPageData =>
     isAdmin: false,
     selectedBracketId: null,
     setSelectedBracketId: vi.fn(),
+    closeBracket: vi.fn(),
     ready: false,
     error: null,
     divisionsError: null,
@@ -91,18 +92,24 @@ describe('PlayoffView error surfacing', () => {
     expect(retrySelectedBracket).toHaveBeenCalledTimes(1);
   });
 
-  it('clears the stuck selection so a refresh stops retrying the same bracket', async () => {
+  // The page closes the bracket, so the stuck selection goes and a refresh stops
+  // retrying the same bracket. The banner asks it to close and does not clear
+  // the choice itself, because closing may be a step back in the history.
+  it('closes the failed bracket from the banner button', async () => {
+    const closeBracket = vi.fn();
     const setSelectedBracketId = vi.fn();
     renderView(
       makeData({
         selectedBracketId: 'bracket-1',
         selectedBracketError: 'boom',
+        closeBracket,
         setSelectedBracketId,
       })
     );
 
     await userEvent.click(screen.getByRole('button', { name: /back to brackets/i }));
-    expect(setSelectedBracketId).toHaveBeenCalledWith(null);
+    expect(closeBracket).toHaveBeenCalledTimes(1);
+    expect(setSelectedBracketId).not.toHaveBeenCalled();
   });
 
   it('surfaces list-level failures that previously had no reader', async () => {

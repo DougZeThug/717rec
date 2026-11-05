@@ -3,6 +3,7 @@
 exports[`AnnouncementHeroCard > matches snapshot without CTA link 1`] = `
 <DocumentFragment>
   <div
+    tabindex="-1"
     transition="[object Object]"
     whilehover="[object Object]"
     whiletap="[object Object]"

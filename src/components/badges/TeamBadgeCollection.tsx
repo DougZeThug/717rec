@@ -18,6 +18,8 @@ interface TeamBadgeCollectionProps {
   className?: string;
   showEmptyState?: boolean;
   prefetchedBadges?: TeamBadgeEvent[];
+  /** False inside a link: the badges then stay plain tooltip targets. See TeamBadge. */
+  interactive?: boolean;
 }
 
 const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
@@ -28,6 +30,7 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
   className,
   showEmptyState = false,
   prefetchedBadges,
+  interactive = true,
 }) => {
   // Skip the per-team query when prefetched data is provided
   const {
@@ -106,7 +109,7 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
       )}
     >
       {displayBadges.map((badgeEvent) => (
-        <TeamBadge key={badgeEvent.id} badge={badgeEvent} size={size} />
+        <TeamBadge key={badgeEvent.id} badge={badgeEvent} size={size} interactive={interactive} />
       ))}
       {hiddenCount > 0 && (
         <div

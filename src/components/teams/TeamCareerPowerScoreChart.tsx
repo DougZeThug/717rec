@@ -121,11 +121,13 @@ interface CareerChartPlotProps {
   isDark: boolean;
 }
 
+// On a phone the season names slant -45 degrees, so the first one reaches left of the
+// plot. The left margin holds it: the svg cuts off anything outside its edge.
 const CareerChartPlot = ({ seasonData, chartHeight, isMobile, isDark }: CareerChartPlotProps) => (
   <ResponsiveContainer width="100%" height={chartHeight}>
     <LineChart
       data={seasonData}
-      margin={{ top: 20, right: 30, left: 0, bottom: isMobile ? 60 : 20 }}
+      margin={{ top: 20, right: 30, left: isMobile ? 32 : 6, bottom: isMobile ? 60 : 20 }}
     >
       <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#e5e7eb'} opacity={0.5} />
       <XAxis
@@ -142,6 +144,11 @@ const CareerChartPlot = ({ seasonData, chartHeight, isMobile, isDark }: CareerCh
           value: 'Power Score',
           angle: -90,
           position: 'insideLeft',
+          // The title is turned -90 degrees. By default its end sits at the middle of the
+          // plot, so it runs off the top of the short phone chart. Middle centres it.
+          // Recharts reads this as the svg text-anchor attribute, so keep it here and not
+          // in the CSS style.
+          textAnchor: 'middle',
           style: { fontSize: 12, fill: 'currentColor' },
         }}
         tick={{ fontSize: 11, fill: 'currentColor' }}

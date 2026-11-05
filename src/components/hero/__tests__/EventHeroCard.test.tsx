@@ -132,6 +132,16 @@ describe('EventHeroCard', () => {
       expect(screen.getByText('Bring your own bags.')).toBeInTheDocument();
     });
 
+    // whileTap makes framer-motion add tabindex=0 to the wrapper: a Tab stop with
+    // nothing to do. -1 stops that, and the links and buttons inside keep theirs.
+    it('keeps the motion wrapper out of the Tab order', () => {
+      render(<EventHeroCard card={makeCard()} />);
+
+      expect(
+        screen.getByRole('heading', { name: 'Blind Draw Night' }).closest('[tabindex]')
+      ).toHaveAttribute('tabindex', '-1');
+    });
+
     it('leaves out the body when there is none', () => {
       const { container } = render(<EventHeroCard card={makeCard()} />);
 

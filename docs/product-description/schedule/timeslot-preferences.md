@@ -137,7 +137,8 @@ admin screen.
 | The window loses focus | Nothing. | **The poll stops** while the tab is hidden and resumes when it comes back, so returning to a tab left open for an hour re-fetches once rather than sixty times. |
 
 After any interrupt the tab is rebuilt from the database. Nothing was held that
-could be lost beyond which cards were open.
+could be lost beyond which cards were open and the night: a reload or Back brings
+the night back from the address, and the Schedule link does not.
 
 ## Interactions with other systems
 
@@ -167,8 +168,10 @@ be written from here in any case.
 
 **Toasts and notifications.** This tab raises none.
 
-**URL state.** None. The date, the tab, and which cards are open are all invisible
-to the URL, so "who plays at 8:30 on the 12th" cannot be linked to.
+**URL state.** The night is in the address (`?date=`), because this tab reads the
+same selected night as the rest of the schedule page, so a link opens that night.
+The tab itself, which the page picks for the night, and which cards are open are
+not in the address, so a link cannot open this tab on purpose.
 
 **On a phone.** Team rows become a two-column grid of tiles with the logo above the
 name. Card headers keep a 44-pixel touch height. The double-header badge shrinks to

@@ -13,6 +13,8 @@ import TeamGameScoreRow from './TeamGameScoreRow';
 interface MatchListProps {
   matches: Match[];
   isLoading?: boolean;
+  /** The matches failed to load. An empty list then is not "no history", so say nothing here. */
+  hasError?: boolean;
   teamId: string;
   title?: string;
   isPast?: boolean;
@@ -37,17 +39,30 @@ const VirtualizedMatchRow: React.FC<{
   );
 };
 
-const MatchList: React.FC<MatchListProps> = ({
-  matches,
-  isLoading,
-  teamId,
-  title = 'Current Season Match History',
-  isPast = true,
-  highlightWinnerLoser = false,
-  collapsible = false,
-  defaultOpen = true,
-  headingId,
-}) => {
+// Empty-state words, one set per list kind
+const EMPTY_STATE_TEXT = {
+  past: {
+    message: 'No Match History',
+    description: 'Match history will appear after games are played',
+  },
+  upcoming: {
+    message: 'No Upcoming Matches',
+    description: 'No upcoming matches scheduled',
+  },
+};
+
+const MatchListEmptyState: React.FC<{ isPast?: boolean }> = ({ isPast = true }) => {
+  const { message, description } = isPast ? EMPTY_STATE_TEXT.past : EMPTY_STATE_TEXT.upcoming;
+  return <InlineEmptyState icon={History} message={message} description={description} />;
+};
+
+// Picks what fills the list: skeleton, empty state, virtualized rows or plain rows
+const MatchListBody: React.FC<
+  Pick<
+    MatchListProps,
+    'matches' | 'isLoading' | 'hasError' | 'teamId' | 'isPast' | 'highlightWinnerLoser'
+  >
+> = ({ matches, isLoading, hasError = false, teamId, isPast, highlightWinnerLoser = false }) => {
   const { shouldVirtualize } = useVirtualization({ itemCount: matches.length, threshold: 20 });
 
   const renderRow = useCallback(
@@ -64,27 +79,27 @@ const MatchList: React.FC<MatchListProps> = ({
     [teamId, highlightWinnerLoser, matches.length]
   );
 
-  const matchContent = isLoading ? (
-    <Skeleton className="h-32 w-full rounded" />
-  ) : matches.length === 0 ? (
-    <InlineEmptyState
-      icon={History}
-      message={isPast ? 'No Match History' : 'No Upcoming Matches'}
-      description={
-        isPast
-          ? 'Match history will appear after games are played'
-          : 'No upcoming matches scheduled'
-      }
-    />
-  ) : shouldVirtualize ? (
-    <VirtualizedList
-      items={matches}
-      rowHeight={72}
-      height={Math.min(matches.length * 72, 400)}
-      renderRow={renderRow}
-      overscanCount={3}
-    />
-  ) : (
+  if (isLoading) {
+    return <Skeleton className="h-32 w-full rounded" />;
+  }
+
+  if (matches.length === 0) {
+    return hasError ? null : <MatchListEmptyState isPast={isPast} />;
+  }
+
+  if (shouldVirtualize) {
+    return (
+      <VirtualizedList
+        items={matches}
+        rowHeight={72}
+        height={Math.min(matches.length * 72, 400)}
+        renderRow={renderRow}
+        overscanCount={3}
+      />
+    );
+  }
+
+  return (
     <div className="divide-y divide-border">
       {matches.map((match) => (
         <TeamGameScoreRow
@@ -96,7 +111,20 @@ const MatchList: React.FC<MatchListProps> = ({
       ))}
     </div>
   );
+};
 
+// Puts the list inside a collapsible section, or under a plain heading
+const MatchListFrame: React.FC<
+  Pick<MatchListProps, 'title' | 'collapsible' | 'defaultOpen' | 'headingId'> & {
+    children: React.ReactNode;
+  }
+> = ({
+  title = 'Current Season Match History',
+  collapsible = false,
+  defaultOpen = true,
+  headingId,
+  children,
+}) => {
   if (collapsible && title) {
     return (
       <CollapsibleSection
@@ -106,7 +134,7 @@ const MatchList: React.FC<MatchListProps> = ({
         defaultOpen={defaultOpen}
         headingId={headingId}
       >
-        {matchContent}
+        {children}
       </CollapsibleSection>
     );
   }
@@ -118,9 +146,28 @@ const MatchList: React.FC<MatchListProps> = ({
           {title}
         </h2>
       )}
-      {matchContent}
+      {children}
     </div>
   );
 };
+
+// Each default value lives in the child that uses it. A default applies only
+// for `undefined`, so passing a prop straight through keeps the old behaviour.
+const MatchList: React.FC<MatchListProps> = ({
+  title,
+  collapsible,
+  defaultOpen,
+  headingId,
+  ...bodyProps
+}) => (
+  <MatchListFrame
+    title={title}
+    collapsible={collapsible}
+    defaultOpen={defaultOpen}
+    headingId={headingId}
+  >
+    <MatchListBody {...bodyProps} />
+  </MatchListFrame>
+);
 
 export default MatchList;

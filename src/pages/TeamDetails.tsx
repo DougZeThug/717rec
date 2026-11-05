@@ -252,7 +252,7 @@ const TeamDetailsPage = () => {
   // The section a link named, read once at arrival. The sticky nav writes the
   // address as the reader moves down the page, and re-reading that would keep
   // reopening sections under them. UX audit T-03.
-  const arrivalHash = useLocation().hash;
+  const { hash: arrivalHash, key: locationKey } = useLocation();
   const [linkedSection] = useState(() => {
     const section = arrivalHash.replace('#', '');
     return LINKABLE_SECTIONS.includes(section) ? section : null;
@@ -310,8 +310,19 @@ const TeamDetailsPage = () => {
    * tracking all along — more accurate than a snapshot taken at click time —
    * and it keeps the route-change scroll reset out of the way, since that
    * reset skips POP navigations.
+   *
+   * A direct or shared link has no page of ours behind it: the router gives its
+   * first entry the key 'default', and going back from there leaves the site
+   * (a blank page). Send that visitor to the teams list instead.
    */
   const handleBack = () => {
+    // A team address typed by hand or opened from outside the app has the key
+    // 'default'. A reload keeps the key the entry already had. Back goes to /teams
+    // for those visitors too. That is intended.
+    if (locationKey === 'default') {
+      navigate('/teams');
+      return;
+    }
     navigate(-1);
   };
 
@@ -343,7 +354,7 @@ const TeamDetailsPage = () => {
         <ErrorDisplay
           variant="card"
           context="Loading this team"
-          error={getUIErrorMessage(loadError, 'We could not load this team.')}
+          error={getUIErrorMessage(loadError, 'We could not load this team')}
           onRetry={() => {
             if (slugListError) {
               refetchTeams();
@@ -421,7 +432,7 @@ const TeamDetailsPage = () => {
         {matchesError && (
           <ErrorDisplay
             context="Match data"
-            error={getUIErrorMessage(matchesError, 'Matches could not be loaded.')}
+            error={getUIErrorMessage(matchesError, 'Matches could not be loaded')}
             onRetry={() => {
               refetchMatches();
             }}
@@ -476,6 +487,7 @@ const TeamDetailsPage = () => {
             title="Match History"
             matches={pastMatches}
             isLoading={isLoadingMatches}
+            hasError={Boolean(matchesError)}
             teamId={teamId || ''}
             isPast
             highlightWinnerLoser
