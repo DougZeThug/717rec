@@ -8,12 +8,41 @@
   "branch": "claude/affectionate-dirac-icive8",
   "baseSha": "6b6984fe83a0e7b1d3bed647ede2b2ded9e5defb",
   "createdAt": "2026-11-05T17:54:49.336Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Requests and Seasons: long team names no longer crush, and Approve/Reject and the season action buttons are fully on screen and reachable at 390, 360 and 320px (before and after pictures)",
+      "done": false
+    },
+    {
+      "text": "Teams: all four tabs (Manage Teams, Create Team, Update Logos, Member Approvals) can be reached by touch at 390, 360 and 320px",
+      "done": false
+    },
+    {
+      "text": "Timeslots: the chosen block chip is clearly visible and chips are 44px high; the Double Header and Avoid rematches and Dual match mode switches and Mark as final switch have a 44px tap area (tap-offset test)",
+      "done": false
+    },
+    {
+      "text": "Scores: team labels show the full name (cut only at the edge), Final shows once, changed status colours are 4.5:1 or better, time-slot header is 44px high",
+      "done": false
+    },
+    {
+      "text": "Live corrections filters stack cleanly with 44px selects; League night status text colours are 4.5:1 or better in light and dark",
+      "done": false
+    },
+    {
+      "text": "Phone menu drawer targets are 44px high and it still works at 320x568; small items (team and request selects, timeslot list column, score approval row) fixed",
+      "done": false
+    },
+    {
+      "text": "No new console errors, no sideways scroll at 390/360/320, existing tests pass (updated only where the changed text or classes are asserted, never weakened), six checks pass, independent review approves the final commit",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T17:54:49.337Z"
+  "updatedAt": "2026-11-05T18:28:17.448Z"
 }
