@@ -2,7 +2,7 @@
   "id": "T-261105-fix-the-playoffs-docs-th",
   "title": "Fix the playoffs docs that say the season is not in the address",
   "kind": "fix",
-  "status": "repairing",
+  "status": "ready",
   "request": "Fix the older playoffs doc lines that say the season is not in the address. The page itself puts ?season=<id> in the address, keeps it on reload, and the picker sets it.",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -12,35 +12,37 @@
     {
       "text": "E1 The page doc no longer says the season is missing from the address: the What survives lines, While editing, After any interrupt, Season scoping, URL state and the footer say it is there, and the open question about a season lost on reload is removed because it no longer happens.",
       "done": true,
-      "evidence": "I read every changed passage in the page doc diff. The What survives lines, While editing, After any interrupt, Season scoping, URL state, the Arrive paragraph exception, the In-app navigation row and the footer now say the season is in the address; the open question about a season lost on reload is removed. Checked against usePlayoffPageData.ts (the effect that writes season, selectSeason) and in a real browser. The reviewer verified each sentence too."
+      "evidence": "I read every changed passage of the playoffs page doc against usePlayoffPageData.ts and in a real browser (before/season-url-before.txt, before/reload-check-before-docs.txt): a bracket link gets its season added, a bare /playoffs gets ?season=, picking a season changes the address, adds a step and closes the bracket, a reload keeps it, and a bracket of an older season keeps its season on reload. The What survives, While editing, Arrive, Season scoping, URL state, After any interrupt and footer passages and the interrupt table now say so; the open question about a season lost on reload is removed. Two reviewers verified each sentence."
     },
     {
       "text": "E2 Checklist rows PLAYOFF-11, PLAYOFF-13 and PLAYOFF-28 say what the page does (shown in a real browser with fake data). PLAYOFF-28 loses the suspected-bug mark, and the verification README count goes from 117 to 116 (recount by the README method: 1,958 items, 116 P1 suspected-bug rows).",
       "done": true,
-      "evidence": "Rows PLAYOFF-11 (claim, step 1, expected), PLAYOFF-13 and PLAYOFF-28 rewritten, plus PLAYOFF-20 and PLAYOFF-26 and PLAYADMIN-23 and PLAYADMIN-25 found by the review. PLAYOFF-28 lost its suspected-bug mark. I recounted by the README method: 1,958 items and 116 P1 suspected-bug rows (it was 117); verification/README.md says 116. The reviewer recounted the same."
+      "evidence": "PLAYOFF-11, 13, 20, 26 and 28, PLAYADMIN-23 and 25 rewritten. PLAYOFF-28 lost its suspected-bug mark and TEAM-22 was turned into a true check instead of deleting a row, so no row was removed or added except that mark. I recounted by the README method on the head commit: 1,958 items and 116 P1 suspected-bug rows (it was 117); verification/README.md says 116 and docs/product-description/README.md says 1,958 (recount-final.txt). The reviewer recounted the same."
     },
     {
       "text": "E3 Every new sentence is true: read against usePlayoffPageData.ts and shown in a real browser (a bracket link gets its season; a bare /playoffs gets ?season=; picking a season changes the address, adds a step, closes the bracket and survives a reload; a bracket in a non-automatic season survives a reload with its season).",
       "done": true,
-      "evidence": "Real browser, fake data, my scripts (before/season-url-before.txt and before/reload-check-before-docs.txt): a bracket link ends with bracket and season in the address; a bare /playoffs gets ?season=; picking another season changes the address and adds a step and the choice survives a reload; a bracket of an older season survives a reload with its season (dropdown, address and drawn bracket agree). The reviewer re-ran these and added Back, Forward, two quick picks, an unknown bracket and the nav link versus the Back button. Code read: usePlayoffPageData.ts lines 205-245."
+      "evidence": "Real browser, fake data, my own scripts under before/: season-url-before, reload-check-before-docs (playoffs); nav09-check-before (stats view and sort, schedule date q and division after reload, Compare team1 and team2 after reload); schedule-state-check (leave by a link, Back, Forward, reload, come back by the link, and the chosen tab not surviving); team-hash-check, team-reload-check, team-h2h-check (section bar writes #stats #career #h2h, a reload and Back open that section, a plain link leaves it closed); team-bar-check (the bar starts on Overview at 1280, 1024 and 390 wide). Admin section addresses were read from the code (AdminSidebar.tsx pushes /admin/<id>, adminSections.ts ids) because the admin pages need a sign-in. Code read for each other claim."
     },
     {
       "text": "E4 Docs only: no code, test, config or lock file changed. All required repo checks pass on the final commit and a fresh independent reviewer approves.",
       "done": true,
-      "evidence": "Docs only: git diff --name-only from 0981db2 to 673af16 lists seven markdown files and nothing else (zero non-markdown files; git diff --check is clean). All six required checks pass at 673af16 (integrity, typecheck, lint, knip, build, unit: 825 files, 7513 tests). The fresh independent reviewer approved the final head after two CHANGES rounds, both fixed."
+      "evidence": "Docs only: 32 files changed since the schedule task closed (0981db2) and zero of them are outside markdown and the factory task file; git diff --check is clean. All six required checks pass at 85e2add: integrity, typecheck, lint, knip, build, unit (825 files, 7513 tests). A fresh independent reviewer approved the head commit after nine rounds, every one of whose findings was fixed after reading the code."
     },
     {
       "text": "E5 No other doc in docs/ still says the old thing (search for the old phrases comes back empty).",
       "done": true,
-      "evidence": "Searches of docs/ (not audits or quality-review) with the old phrases and then wider ones (never in the URL, held in the page, memory only, not in the address, lives in the URL, leaves an open bracket open, nothing else is in the URL) come back with nothing left that is about the playoffs season. The reviewer searched with its own terms and found nothing more. The wider navigation.md claim is a separate follow-up."
+      "evidence": "Searches of docs/ (not audits or quality-review) with the old phrases and many wider ones (nothing but a record id, the only page state, only page in the app, never changed, carries nothing, every section closed, default sections, four of the five, five sections, starts by highlighting Stats, after any interrupt, Browser back or forward rows) come back with nothing left that is about address state. The reviewer searched with its own terms in every round and its last sweep found nothing."
     },
     {
       "text": "E6 The docs no longer say that no other page keeps state in the address. foundations/navigation.md (While editing, URL state), NAV-09, teams/compare-teams.md, and the two docs that call next an exception to that rule (sign-in-and-sign-up.md, set-up-your-profile.md) say what the code does: the schedule (night, search, chips), the standings view, Compare, the playoffs page, the admin section and the team section carry state in the address, a few pages take a prefill from it, and sort orders, most tabs and expanded panels are still lost on navigation. Every claim read against the code and shown in a real browser where it is a new statement.",
-      "done": false
+      "done": true,
+      "evidence": "foundations/navigation.md (While editing now lists what each page carries and what is lost; the record row, URL state, the two closing lines and the edge case), NAV-09 (tests a sort on /stats), compare-teams.md and COMPARE-27, sign-in-and-sign-up, set-up-your-profile and authorize-an-app, plus everything the reviewer found in the same family: the schedule page doc and SCHED-15/33/34, stats rows and interrupt table, on-a-phone and PHONE-34, permissions and PERM-28, admin rows DASH-13/23, BUILD-34, BULK-34, LIVEFIX-31 and the admin Back rows, pending-scores, league-objects, seasons, read-a-bracket, team-and-player-stats, team-details and its rows, head-to-head and H2H-29, the glossary, contact-the-league and CONTACT-25, timeslot-preferences and manage-timeslots. Each new statement shown in a real browser or read in the code."
     },
     {
       "text": "E7 The broken link at verification/admin.md:340 (LIVEFIX-02c) points at a heading that exists. A link check over docs/product-description (every relative link and anchor) reports zero broken links, and it reported exactly that one before the fix.",
-      "done": false
+      "done": true,
+      "evidence": "The broken link at verification/admin.md LIVEFIX-02c pointed at #on-a-phone, which is a bold paragraph and not a heading. It now points at #interactions-with-other-systems, the heading above the On a phone paragraph, as sibling rows do. My own link and anchor check over docs/product-description reported 1 broken link in 2,702 before the fix and 0 broken in 2,704 on the head commit (linkcheck-final.txt); two reviewers ran their own checkers and got 0."
     }
   ],
   "checks": {
@@ -168,6 +170,13 @@
       "sha": "85e2addba37f76f762c47be34fa968ada689c919",
       "at": "2026-11-05T03:58:41.466Z",
       "summary": "Independent re-check on dc94dda: every changed sentence true (render order, default open sections, hashes, rows TEAM-10/12/18/21/34 and H2H-29 followed in a browser). Three more lines contradict the new text: head-to-head.md URL state says nothing is in the URL (the section is linkable as #h2h); glossary says which sections are open is never remembered; team-details.md says the section bar buttons all land on a closed section (not Overview or Matches). One older claim looked stale: the section bar starts by highlighting Stats. I measured it at 1280, 1024 and 390 wide: it starts on Overview. 0 broken links, totals 1,958 and 116, markdown only."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "85e2addba37f76f762c47be34fa968ada689c919",
+      "at": "2026-11-05T04:09:04.262Z",
+      "summary": "Independent reviewer, final confirmation on the head commit as it is now (85e2add and the bookkeeping commit after it): APPROVE. Nine rounds in all. Rounds 1 and 2 (playoffs season): the same wrong claim in sister docs, then three imprecise sentences. Rounds 3 to 9 (the URL-state sweep Doug asked for): a wrong route name I wrote (/profile-setup, the route is /setup-profile), about 18 files that said the opposite of the code about the address (schedule, stats, Compare, admin sections, phone, permissions, contact, bracket, season), a Timeslots sentence, closing lines that contradicted their own tables, the team page and head-to-head after a reload or Back with a section hash, and older wrong team page facts (Match History is open by default; three of five bar buttons; the bar starts on Overview). Every finding was read against the code and, for new statements, shown in a real browser with fake data. Final sweep with fresh terms found nothing; 2,704 links 0 broken; totals 1,958 and 116; markdown only. Left for the owner: navigation.md routes table omits /recap/:seasonSlug/:week and /join; navigation.md says scroll is never reset but ScrollToTop is mounted; the match-id arrival hash text is a simplification shared with a-match-card.md."
     }
   ],
   "issues": {
@@ -268,7 +277,7 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T04:08:03.221Z",
-  "readySha": "673af161251667af7422eaddbecf23284a4567fc",
-  "readyAt": "2026-11-05T02:03:36.845Z"
+  "updatedAt": "2026-11-05T04:09:11.233Z",
+  "readySha": "85e2addba37f76f762c47be34fa968ada689c919",
+  "readyAt": "2026-11-05T04:09:11.233Z"
 }
