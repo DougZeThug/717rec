@@ -37,7 +37,7 @@ type TabsProps = {
 };
 
 const TeamManagementTabList = ({ pendingMembershipCount }: { pendingMembershipCount: number }) => (
-  <TabsList>
+  <TabsList className="flex-wrap justify-start">
     <TabsTrigger value="manage">Manage Teams</TabsTrigger>
     <TabsTrigger value="create">Create Team</TabsTrigger>
     <TabsTrigger value="logos" className="gap-1.5">
