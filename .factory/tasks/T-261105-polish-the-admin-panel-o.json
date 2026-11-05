@@ -2,7 +2,7 @@
   "id": "T-261105-polish-the-admin-panel-o",
   "title": "Polish the admin panel on mobile",
   "kind": "polish",
-  "status": "intake",
+  "status": "ready",
   "request": "/factory-polish the admin panel for mobile",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -11,38 +11,133 @@
   "criteria": [
     {
       "text": "Requests and Seasons: long team names no longer crush, and Approve/Reject and the season action buttons are fully on screen and reachable at 390, 360 and 320px (before and after pictures)",
-      "done": false
+      "done": true,
+      "evidence": "Real browser, fake data, before at :4173 versus after at :8080, at 390/360/320/768/844px: Requests before had Approve at right edge x=421 on 390 and the name 45px wide; after nothing is past the viewport, Approve and Reject sit in one row (44px tall), the long name is 274px wide on 2 lines. Seasons before ran to x=686 and the Playoffs badge was a 71x52 circle; after nothing is past the viewport, the badge is 134x20, buttons 44px. Text colours: Approve 3.22 to 6.02 (light), Reject 4.17 to 6.63 (dark), Active badge 2.12 to 5.48, Playoffs badge 1.83 to 10.54. I looked at the 390 pairs myself (files before/after requests-*.png, seasons-*.png)."
     },
     {
       "text": "Teams: all four tabs (Manage Teams, Create Team, Update Logos, Member Approvals) can be reached by touch at 390, 360 and 320px",
-      "done": false
+      "done": true,
+      "evidence": "Teams tab strip was 551px wide with Member Approvals at x=392..563 (unreachable at 390/360/320); after it wraps to 2 rows at 390 and 360 and 3 at 320 and Member Approvals is at x=157..328 (390) and 20..191 (320), all tabs inside the viewport at 390/360/320/768/844. My own scan of all 22 sections at 390: the Teams overflow flag went from 4 elements to 0. Known small trade: at 844px the strip now takes two rows (before it fit on one but overflowed its box by 3px)."
     },
     {
       "text": "Timeslots: the chosen block chip is clearly visible and chips are 44px high; the Double Header and Avoid rematches and Dual match mode switches and Mark as final switch have a 44px tap area (tap-offset test)",
-      "done": false
+      "done": true,
+      "evidence": "Timeslot chips: before no outline and the chosen chip 1.04:1 on the card (a chosen BYE chip was grey); after 44px high with a border, chosen chip navy with white text (10.88:1 light, 3.79:1 against the dark page, white text 5.25:1), chosen BYE orange-700 with white text (5.22:1), BYE text 3.33 to 4.86; light and dark at 390/360/320/768/844 (I looked at the 390 light before and after pictures). Switches (Mark as final, Double Header, Avoid Rematches, Prioritize Match Quality, Dual Match Mode): hit box is 44x44, visible switch unchanged; real mouse and touch tap-offset tests: a centre tap always hits its own switch, taps 12 and 20px off centre now hit it (before only some did); between two switches 36px apart a tap 14 to 22px below one goes to the switch below (before it did nothing)."
     },
     {
       "text": "Scores: team labels show the full name (cut only at the edge), Final shows once, changed status colours are 4.5:1 or better, time-slot header is 44px high",
-      "done": false
+      "done": true,
+      "evidence": "Scores (light and dark, 390/360/320/768/844): team labels show the full names, cut with an ellipsis only at the edge (the right-hand arrow label can lose its end for very long names); Final shows once (new MatchStatusSection test: expected 1, the old code gave 2, so it can fail; also checked the final-and-edited case); Final 3.22 to 6.02, Edited 3.76 to 6.83, Invalid Score 3.81 to 5.83 (light), all above 4.5 in dark (Invalid Score measured on an injected copy because the fake match cannot reach that state); time-slot header 36 to 44px; Mark as final switch tap box 44x44."
     },
     {
       "text": "Live corrections filters stack cleanly with 44px selects; League night status text colours are 4.5:1 or better in light and dark",
-      "done": false
+      "done": true,
+      "evidence": "Live corrections with a populated round card: Season and Night stack with the label above at 390/360/320 (full width, 358/328/288px) and sit side by side at 768/844 (230 to 240px); selects 40 to 44px; Edit and Delete 40 to 44px wide with the gap 4 to 8px. League night status, every state produced with fake data (clear, drift found, errors, realtime): red 3.48 to 5.32, green 2.26 to 5.50, amber 1.95 to 4.59 (light, measured at the darker end of the card gradient); dark 5.23 to 6.63, 8.04 to 8.73, 9.32 to 11.55; all changed lines pass 4.5 in both themes. Winter theme not measured."
     },
     {
       "text": "Phone menu drawer targets are 44px high and it still works at 320x568; small items (team and request selects, timeslot list column, score approval row) fixed",
-      "done": false
+      "done": true,
+      "evidence": "Phone menu drawer: search box and the six group headings 40 to 44px, clear-search icon unchanged at 16x16 with a 44x44 tap box (taps up to 14px off centre clear it; before only the exact centre did), still works at 320x568. Teams division selects and the Requests status select 40 to 44px. Score approvals card: the Match icon was 4.5px wide at 390 and 0 at 320, now 16px at every width, and the date is on one line. The Timeslots list column change was cut by the plan review (it would gain only about 9px)."
     },
     {
       "text": "No new console errors, no sideways scroll at 390/360/320, existing tests pass (updated only where the changed text or classes are asserted, never weakened), six checks pass, independent review approves the final commit",
-      "done": false
+      "done": true,
+      "evidence": "My own scan of all 22 admin sections at 390px on the production build: document width 390 in every section (no sideways scroll, builders also checked 360, 320, 768, 844); small tap targets 74 to 50 in total; no new console errors (power-migration and power-sandbox show the same 2 lines as before, caused by the test harness blocking two calls; dev server only logs a blocked-websocket realtime line). Tests: reviewer ran 59 files and 493 tests for the touched folders, all pass; six checks pass at 23769bc; independent review APPROVE. No existing test changed; one new behaviour test added."
+    },
+    {
+      "text": "The fixes also look right at 768 and 844px (iPad and landscape phone), where the admin sidebar takes 264px, and in the dark theme where colours changed",
+      "done": true,
+      "evidence": "Layout fixes use wrapping without an sm: breakpoint because the admin sidebar starts at 768px (found by the plan review); builders A, B, C1 and C2 each checked 768 and 844 with before and after pictures, no sideways scroll; dark theme measured for every changed colour. Two accepted side effects at 844: the Teams strip takes two rows and the Timeslots picker is one row taller."
+    },
+    {
+      "text": "Docs: every document that describes a changed behaviour is updated in the same change, with no broken link and the verification totals still true",
+      "done": true,
+      "evidence": "A docs builder rewrote the claims the changes made wrong in 11 documents (admin/*.md, scores/pending-scores.md, cross-cutting phone and accessibility) and 12 verification rows in place; I re-ran the link check (2,737 links, 0 broken) and recounted with the README method: 1,958 items and 120 P1 suspected-bug rows, as the README says; the reviewer checked 14 claims against code and screenshots and that exactly 12 rows changed with identical ID sets; footers are still the last paragraph."
     }
   ],
-  "checks": {},
-  "reviews": [],
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "23769bc9681f28255db756acf397676561e5e707",
+      "dirty": false,
+      "at": "2026-11-05T19:39:50.991Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261105-polish-the-admin-panel-o/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "23769bc9681f28255db756acf397676561e5e707",
+      "dirty": false,
+      "at": "2026-11-05T19:39:59.107Z",
+      "seconds": 8,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261105-polish-the-admin-panel-o/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "23769bc9681f28255db756acf397676561e5e707",
+      "dirty": false,
+      "at": "2026-11-05T19:41:12.600Z",
+      "seconds": 73,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261105-polish-the-admin-panel-o/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "23769bc9681f28255db756acf397676561e5e707",
+      "dirty": false,
+      "at": "2026-11-05T19:41:15.774Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261105-polish-the-admin-panel-o/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "23769bc9681f28255db756acf397676561e5e707",
+      "dirty": false,
+      "at": "2026-11-05T19:41:20.079Z",
+      "seconds": 4,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261105-polish-the-admin-panel-o/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "23769bc9681f28255db756acf397676561e5e707",
+      "dirty": false,
+      "at": "2026-11-05T19:48:36.168Z",
+      "seconds": 436,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261105-polish-the-admin-panel-o/unit.log"
+    }
+  },
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "CHANGES",
+      "sha": "6b6984fe83a0e7b1d3bed647ede2b2ded9e5defb",
+      "at": "2026-11-05T18:35:20.774Z",
+      "summary": "Independent plan review: causes real, line numbers mostly right. Five blocking objections, all accepted and written into the plan: (1) the admin sidebar starts at 768px so sm: breakpoints would bring the bug back on iPad and landscape phones, use flex-wrap and check 768 and 844; (2) clear-search X must use hit-area-44 not p-3; (3) Final shown twice: drop the MatchStatusIndicator one, and colour swaps need dark partners; (4) TimeSlotMatchGroup has a public twin, name the admin path; (5) timeslot chip fix needs per-branch classes and a dark theme pattern. Also cut the TimeslotList column change, add the amber text lines, DateSettingsPanel has three switches."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "23769bc9681f28255db756acf397676561e5e707",
+      "at": "2026-11-05T19:49:09.798Z",
+      "summary": "Independent review at 23769bc of 13 commits (38 src files, docs). All touched components are admin-only (importers checked); nothing changed in src/components/ui or src/components/schedule; classes valid in this repo and merge as intended (Badge gradient dropped by merge, hit-area-44 vs absolute checked in the browser); MatchStatusIndicator's isCompleted prop has one caller; the new MatchStatusSection test fails on the old code (got 2 Finals) and passes on the new; label ids still pair with the live-corrections selects; no skip/todo/only/eslint-disable added; 59 test files and 493 tests pass for the touched folders; 14 doc claims checked against code or screenshots; verification totals unchanged (1,958 rows, 120 P1 suspected-bug rows) and exactly 12 rows changed with identical ID sets. Non-blocking notes: two 320px defects remain from before (Approve button 8px past the card edge in score approvals; Edited tag cut on a final-and-edited match); Calendar icon on the season card still text-green-500; the live-corrections doc says side by side from 768px while the code does it from about 412px of content."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T18:28:17.448Z"
+  "updatedAt": "2026-11-05T19:49:10.194Z",
+  "readySha": "23769bc9681f28255db756acf397676561e5e707",
+  "readyAt": "2026-11-05T19:49:10.194Z"
 }
