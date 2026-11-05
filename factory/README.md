@@ -80,6 +80,7 @@ Per-app ideas: FloorForge -> protect approved artwork folders, add a screenshot-
     - A weak or empty project config cannot turn the built-in protections off.
   - **Not covered** (seen by test or by running the guard by hand; GitHub branch protection and human review are the defence for these):
     - A path built from pieces: a shell variable, a glob, or a `$( )` part.
+    - A path that goes through a symlink. After `ln -s .claude alias`, a write to `alias/settings.json` is not seen, because the guard reads the path as text and does not resolve links. Checked by running the guard in a throwaway repo. No symlink exists in this repo; one would have to be made on purpose.
     - The body of a script or of `npm run <x>`.
     - The quoted body of `bash -lc`, `sh -ec`, `zsh -c` or `eval`. The delete and write rules do not read it. A `bash -c` or `sh -c` body is read only for a control path, so a delete of a protected path inside it is not seen. The block list for pushes, resets and the like scans the raw text, so it still sees these bodies and the wrapper words below.
     - A delete, move or write that starts with a wrapper word or a prefix: `sudo`, `env`, `time`, `xargs`, `FOO=1 cmd`. The same holds for a command after `do` or `then` in a `for` or `if` body. A redirect in those bodies is still seen. `find -delete` is not seen.
