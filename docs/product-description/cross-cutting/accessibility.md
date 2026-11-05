@@ -291,7 +291,9 @@ lost before it is finished.
 survives a link.
 
 **On a phone.** Touch targets are set to 44 pixels on live scoring, on the
-hamburger button, on the history recap strip and on parts of the admin console.
+hamburger button, on the history recap strip, on the history team-name links
+(about 27 pixels on the Champions panel, by design) and on parts of the admin
+console.
 See [`on-a-phone.md`](on-a-phone.md#touch-and-reach).
 
 **Accessibility.** This document is the definition.
@@ -373,4 +375,4 @@ commit — see
 X-08 and Q12, and written from the change and its tests rather than a fresh pass
 over the running app.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
-The 44-pixel touch targets in the admin console changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip and the history standings colours (the History phone polish).
+The 44-pixel touch targets in the admin console changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip and the history standings colours (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too.

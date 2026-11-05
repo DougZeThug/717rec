@@ -131,7 +131,10 @@ step. Its six documents start at
   Timeslots, and the Scores time-slot headers. The switches in Scores, Timeslots
   and Auto Schedule have a 44-pixel tap area around a switch that looks the same.
   The Full Season Recap strip on each history card is 44 pixels high on a phone
-  too (41 from 768 pixels wide; it was 33 on a phone). Elsewhere, control size is
+  too (41 from 768 pixels wide; it was 33 on a phone). So is the tap area of a
+  team name on a history phone card or table row, which is a link. On the
+  Champions panel it is about 27 pixels high, because the rows there are only 6
+  pixels apart. Elsewhere, control size is
   whatever the component library gives, which is
   smaller — but no row is now under **24 pixels**, the accessibility floor. The rows raised to it are the home page's
   weekly-recap team links, the teams page's Sort/View/Style row, a team page's
@@ -212,7 +215,8 @@ season and bracket. A sort order, an open tab or an expanded panel is not shared
 **On a phone.** This document is the definition.
 
 **Accessibility.** Touch target sizes are set deliberately on live scoring, the
-hamburger, the history recap strip and parts of the admin console, at 44 pixels,
+hamburger, the history recap strip, the history team-name links and parts of the
+admin console, at 44 pixels,
 and to a 24-pixel floor on the rows listed under
 [Touch and reach](#touch-and-reach). See
 [`accessibility.md`](accessibility.md).
@@ -269,8 +273,9 @@ much of its traffic is phones. Nothing more precise is stored. See
   opened with no connection.
 - Not confirmed by hand: whether touch targets outside live scoring meet the
   44-pixel guideline. Only live scoring, the hamburger, the bracket admin menu
-  and its seeding drag handle, the history recap strip, and the admin console
-  controls named under Touch and reach set it explicitly; the rows listed above
+  and its seeding drag handle, the history recap strip, the history team-name
+  links, and the admin console controls named under Touch and reach set it
+  explicitly; the rows listed above
   meet the lower 24-pixel floor, not 44.
 - Assumption: nothing in the product reads device orientation directly. Only the
   width is watched.
@@ -282,4 +287,4 @@ commit — see
 [B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog)
 and [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone).
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
-The 44-pixel controls in the admin console, listed under Touch and reach, changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip (the History phone polish).
+The 44-pixel controls in the admin console, listed under Touch and reach, changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too.

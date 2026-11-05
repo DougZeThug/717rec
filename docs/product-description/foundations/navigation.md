@@ -101,6 +101,11 @@ own that saves the scroll position and puts it back on Back and Forward:
 after a team page came back at 300 of 300px. After a top-bar link, and for
 `/teams`, `/history` and `/insights` in every other case tried, Back landed at 0.
 On `/stats` the saved position had been overwritten with 0 as the page was left.
+`/history` after a team page is **best effort**: later on 2026-11-05 (dev server,
+fake data, 390px) the exact position came back in 3 of 10 runs with the page's data
+cached and 2 of 10 when it had to load its data again, and the open seasons and
+divisions stayed open in 10 of 10 (see
+[`history/past-seasons.md`](../history/past-seasons.md#leave-without-changing-anything)).
 Every other route — the home page, the schedule, a team's page, the playoffs, the
 message board, live scoring — does not save or restore its own scroll position; the
 schedule came back at the top too. See [Open questions](#open-questions-and-verification).
@@ -258,7 +263,8 @@ development build the analytics call does nothing.
 - **Back and Forward bring a page back at the top, not where it was left.** A
   user who presses Back to `/schedule`, `/teams`, `/history` or `/insights`
   lands at the top; so does `/stats` after a top-bar link. Only `/stats` after
-  a team page came back where it was left. The four routes were built to do
+  a team page came back where it was left, and `/history` after a team page did
+  in some runs (best effort). The four routes were built to do
   better; see [Open questions](#open-questions-and-verification).
 - **A chunk that never downloads leaves the spinner forever.** There is no
   timeout, no retry, and no error.
@@ -297,7 +303,13 @@ development build the analytics call does nothing.
   `/history` after Help or Schedule; from `/insights` after Help or Schedule.
   The cold and the warm load of the other page made no difference. A probe on
   `/stats`, then Help, showed the saved position overwritten with 0 as the page
-  was left. Not tried: `/history` or `/insights` after a team page (the fake
+  was left. `/history` after a team page was tried later the same day, once team
+  names on that page became links: the exact position came back in 3 of 10 runs
+  with the data cached and 2 of 10 when the page had to load its data again;
+  otherwise it landed higher, at about 25px or about 309px from the top. The cause
+  is in the shared scroll-restore code: it saves a clamped position as the history
+  page is replaced by the shorter team page, and on a reload it restores before the
+  page has grown to full height. Not tried: `/insights` after a team page (the fake
   data has no link to one), Forward, and a real phone. Followed up under [B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation).
 - Not confirmed by hand: what `/my-team`, `/message-board`, and `/setup-profile`
   show to a visitor. They have no route guard.
