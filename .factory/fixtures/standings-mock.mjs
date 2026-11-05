@@ -1,11 +1,12 @@
 // FAKE DATA ONLY. Mock for `node factory/bin/shoot.mjs --mock`. No real league names or people.
-// Serves the /stats page, every section of /teams/<slug> (full data for "Fake Team Bravo ...") and the signed-out
+// Serves the /stats page, most sections of /teams/<slug> (full data for "Fake Team Bravo ...") and the signed-out
 // home page (/): hero cards, Team of the Week, Weekly Recap, Pending Scores, Top Teams.
 // Tables: seasons, v_team_details, matches, theme_settings, teams, divisions, team_season_stats, matches_archive,
 // team_badge_events, v_player_season_stats, ranking_snapshots, power_score_snapshots, hero_cards, v_pending_matches.
 // RPC: get_head_to_head_records, get_batch_head_to_head, get_blind_draw_signup_count.
 // Not served on purpose (the tool answers []): brackets (would flip the recap to playoff mode), recap_editions,
-// admin_notifications. Every image field is null so no fake row can make the page call an image host.
+// admin_notifications, and the career reads team_details_archive and playoff_matches (so the career division
+// history and playoff record stay empty). Every image field is null so no fake row can make the page call an image host.
 // Other reads get [] from the tool.
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
 const ID = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -235,7 +236,8 @@ const RPC = {
 
 // ---- PostgREST helpers: just the filters and sorts the app uses ----
 const RESERVED = ['select', 'order', 'limit', 'offset', 'or', 'and'];
-// One condition such as "eq.5", "neq.x", "in.(a,b)", "is.null", "not.is.null". Other operators do not filter.
+// One condition such as "eq.5", "neq.x", "in.(a,b)", "is.null", "not.is.null", or a range "gt.", "gte.", "lt.", "lte."
+// that compares numbers or dates. Other operators do not filter.
 const test = (cell, spec) => {
   if (spec.startsWith('not.')) return !test(cell, spec.slice(4));
   const dot = spec.indexOf('.');
@@ -243,6 +245,12 @@ const test = (cell, spec) => {
   if (op === 'eq' || op === 'is') return text === val;
   if (op === 'neq') return text !== val;
   if (op === 'in') return val.slice(1, -1).split(',').includes(text);
+  if (['gt', 'gte', 'lt', 'lte'].includes(op)) {
+    const num = (v) => (/^-?\d+(\.\d+)?$/.test(v) ? Number(v) : Date.parse(v));
+    const [a, b] = [num(text), num(val)];
+    if (Number.isNaN(a) || Number.isNaN(b)) return true;
+    return op === 'gt' ? a > b : op === 'gte' ? a >= b : op === 'lt' ? a < b : a <= b;
+  }
   return true;
 };
 // "col" or an embedded column written "embed(col)", as in order=seasons(start_date).desc
