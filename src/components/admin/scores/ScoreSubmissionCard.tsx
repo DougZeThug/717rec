@@ -20,7 +20,7 @@ const DetailRow: React.FC<{
   children?: React.ReactNode;
 }> = ({ Icon, label, children }) => (
   <div className="flex items-center gap-2">
-    <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+    <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
     <span className="text-sm text-muted-foreground">{label}</span>
     {children}
   </div>
@@ -94,14 +94,17 @@ const ScoreSubmissionCard = ({ submission, onApprove, onReject }: ScoreSubmissio
       <CardContent className="space-y-4">
         {/* Which match this report is about */}
         <DetailRow Icon={Swords} label="Match:">
-          <span className="font-medium">
-            {team1Name && team2Name ? `${team1Name} vs ${team2Name}` : 'Unknown match'}
-          </span>
-          {matchDate && (
-            <span className="text-xs text-muted-foreground">
-              ({formatWithPattern(matchDate, 'MMM d, yyyy')})
+          {/* One flex item: the date follows the names as plain text and never gets squeezed. */}
+          <span>
+            <span className="font-medium">
+              {team1Name && team2Name ? `${team1Name} vs ${team2Name}` : 'Unknown match'}
             </span>
-          )}
+            {matchDate && (
+              <span className="ml-2 whitespace-nowrap text-xs text-muted-foreground">
+                ({formatWithPattern(matchDate, 'MMM d, yyyy')})
+              </span>
+            )}
+          </span>
         </DetailRow>
 
         <SubmitterDetails submission={submission} />
