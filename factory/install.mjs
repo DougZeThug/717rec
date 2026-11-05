@@ -48,41 +48,34 @@ const allowRulesFor = (command) => {
 };
 const BLANKET_NPM_RUN = /^Bash\(npm run(?: \*|:\*|\*)\)$/;
 
-const install = () => {
-  const log = (message) => console.log(`${dry ? '[dry-run] ' : ''}${message}`);
-  const copy = (rel) => {
-    log(`copy ${rel}`);
-    if (dry) return;
-    mkdirSync(dirname(join(target, rel)), { recursive: true });
-    cpSync(join(src, rel), join(target, rel), { recursive: true });
-  };
+const pkgFile = join(target, 'package.json');
+const setPath = join(target, '.claude/settings.json');
+const cfgPath = join(target, '.factory/config.json');
+const log = (message) => console.log(`${dry ? '[dry-run] ' : ''}${message}`);
+const copy = (rel) => {
+  log(`copy ${rel}`);
+  if (dry) return;
+  mkdirSync(dirname(join(target, rel)), { recursive: true });
+  cpSync(join(src, rel), join(target, rel), { recursive: true });
+};
 
-  // 0. Read and parse every existing JSON file first. A bad file must stop the run before anything is written.
-  const readJson = (file) => {
-    if (!existsSync(file)) return {};
-    try {
-      return JSON.parse(readFileSync(file, 'utf8'));
-    } catch (error) {
-      throw new Error(`${file} is not valid JSON (${error.message}). Fix it, then run the installer again. Nothing was written.`);
-    }
-  };
-  const pkgFile = join(target, 'package.json');
-  const setPath = join(target, '.claude/settings.json');
-  const cfgPath = join(target, '.factory/config.json');
-  let pkg = null;
-  let cur = null;
-  let projectCfg = null; // the config the allow rules come from: the existing one, or the one step 2 creates
+// 0. Read and parse every existing JSON file first. A bad file must stop the run before anything is written.
+const readJson = (file) => {
+  if (!existsSync(file)) return {};
   try {
-    pkg = readJson(pkgFile);
-    cur = readJson(setPath);
-    projectCfg = readJson(cfgPath);
+    return JSON.parse(readFileSync(file, 'utf8'));
   } catch (error) {
-    fail(error.message);
-    return;
+    throw new Error(`${file} is not valid JSON (${error.message}). Fix it, then run the installer again. Nothing was written.`);
   }
-  const tpl = JSON.parse(readFileSync(join(src, 'factory/settings.template.json'), 'utf8'));
+};
+const readTargetFiles = () => ({
+  pkg: readJson(pkgFile),
+  cur: readJson(setPath),
+  projectCfg: readJson(cfgPath), // the config the allow rules come from: the existing one, or the one step 2 creates
+});
 
-  // 1. Portable files (the manifest).
+// 1. Portable files (the manifest).
+const copyPortableFiles = () => {
   copy('factory');
   for (const skill of readdirSync(join(src, '.claude/skills'))) if (skill.startsWith('factory-')) copy(`.claude/skills/${skill}`);
   for (const agent of readdirSync(join(src, '.claude/agents'))) if (agent.startsWith('factory-')) copy(`.claude/agents/${agent}`);
@@ -90,55 +83,61 @@ const install = () => {
     if (existsSync(join(target, '.github/workflows/factory-issue.yml'))) log('skip .github/workflows/factory-issue.yml (already exists, not overwritten)');
     else copy('.github/workflows/factory-issue.yml');
   }
+};
 
-  // The integrity check diffs against baseBranch, so it must exist in the target.
-  const detectBase = () => {
-    const tryGit = (...args) => { try { return execFileSync('git', ['-C', target, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return ''; } };
-    const remoteHead = tryGit('symbolic-ref', '--short', 'refs/remotes/origin/HEAD').replace(/^origin\//, '');
-    const found = remoteHead || ['main', 'master', 'develop', 'trunk'].find((name) => tryGit('rev-parse', '--verify', '--quiet', `refs/heads/${name}`));
-    if (!found) console.warn('WARNING: could not detect the base branch. baseBranch is set to "main". Set it in .factory/config.json, or the integrity check will diff against a branch that does not exist.');
-    return found || 'main';
+// The integrity check diffs against baseBranch, so it must exist in the target.
+const detectBase = () => {
+  const tryGit = (...args) => { try { return execFileSync('git', ['-C', target, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return ''; } };
+  const remoteHead = tryGit('symbolic-ref', '--short', 'refs/remotes/origin/HEAD').replace(/^origin\//, '');
+  const found = remoteHead || ['main', 'master', 'develop', 'trunk'].find((name) => tryGit('rev-parse', '--verify', '--quiet', `refs/heads/${name}`));
+  if (!found) console.warn('WARNING: could not detect the base branch. baseBranch is set to "main". Set it in .factory/config.json, or the integrity check will diff against a branch that does not exist.');
+  return found || 'main';
+};
+
+// 2. Project config: created once, never overwritten.
+const buildProjectConfig = (pkg) => {
+  const scripts = pkg.scripts ?? {};
+  const pick = (...names) => names.find((name) => scripts[name]);
+  const found = { typecheck: pick('typecheck', 'check'), lint: pick('lint'), unit: pick('test:ci', 'test'), build: pick('build'), e2e: pick('e2e', 'test:e2e') };
+  const checks = {};
+  for (const [name, script] of Object.entries(found)) if (script) checks[name] = `npm run ${script}`;
+  const required = ['typecheck', 'lint', 'unit'].filter((name) => checks[name]);
+  if (required.length === 0) console.warn('WARNING: no typecheck, lint or test script was found. verify.required is EMPTY, so a task can reach "ready" with no test run. Add your checks to .factory/config.json (verify.checks and verify.required) before you use the factory.');
+  checks.integrity = 'node factory/bin/factory.mjs integrity';
+  const base = detectBase();
+  return {
+    project: pkg.name ?? 'new-project',
+    baseBranch: base,
+    protectedBranches: [...new Set([base, 'main', 'master'])],
+    protectedPaths: ['.env', '.env.*'],
+    appendOnlyPaths: [],
+    controlPlanePaths: ['.claude/settings.json', '.claude/settings.local.json', '.factory/config.json', 'factory/hooks/', 'factory/bin/lib.mjs', '.github/workflows/'],
+    blockedCommands: [],
+    limits: { repairAttemptsPerIssue: 3, concurrentFeatures: 1 },
+    verify: { required, checks },
+    preview: { command: 'npm run dev -- --host 127.0.0.1', url: 'http://127.0.0.1:5173', blockedHosts: [], routes: ['/'] },
+    specialists: [],
+    projectContext: ['CLAUDE.md'],
+    productionBoundaries: ['TODO: list what must never change (live data, approved assets, deploy targets).'],
   };
-
-  // 2. Project config: created once, never overwritten.
-  if (!existsSync(cfgPath)) {
-    const scripts = pkg.scripts ?? {};
-    const pick = (...names) => names.find((name) => scripts[name]);
-    const found = { typecheck: pick('typecheck', 'check'), lint: pick('lint'), unit: pick('test:ci', 'test'), build: pick('build'), e2e: pick('e2e', 'test:e2e') };
-    const checks = {};
-    for (const [name, script] of Object.entries(found)) if (script) checks[name] = `npm run ${script}`;
-    const required = ['typecheck', 'lint', 'unit'].filter((name) => checks[name]);
-    if (required.length === 0) console.warn('WARNING: no typecheck, lint or test script was found. verify.required is EMPTY, so a task can reach "ready" with no test run. Add your checks to .factory/config.json (verify.checks and verify.required) before you use the factory.');
-    checks.integrity = 'node factory/bin/factory.mjs integrity';
-    const base = detectBase();
-    const cfg = {
-      project: pkg.name ?? 'new-project',
-      baseBranch: base,
-      protectedBranches: [...new Set([base, 'main', 'master'])],
-      protectedPaths: ['.env', '.env.*'],
-      appendOnlyPaths: [],
-      controlPlanePaths: ['.claude/settings.json', '.claude/settings.local.json', '.factory/config.json', 'factory/hooks/', 'factory/bin/lib.mjs', '.github/workflows/'],
-      blockedCommands: [],
-      limits: { repairAttemptsPerIssue: 3, concurrentFeatures: 1 },
-      verify: { required, checks },
-      preview: { command: 'npm run dev -- --host 127.0.0.1', url: 'http://127.0.0.1:5173', blockedHosts: [], routes: ['/'] },
-      specialists: [],
-      projectContext: ['CLAUDE.md'],
-      productionBoundaries: ['TODO: list what must never change (live data, approved assets, deploy targets).'],
-    };
-    projectCfg = cfg;
-    log('create .factory/config.json (EDIT IT: protectedPaths, preview, productionBoundaries)');
-    if (!dry) {
-      mkdirSync(dirname(cfgPath), { recursive: true });
-      writeFileSync(cfgPath, `${JSON.stringify(cfg, null, 2)}\n`);
-    }
+};
+// Returns the config the allow rules come from: the existing one, or the one this step creates.
+const ensureProjectConfig = (pkg, existing) => {
+  if (existsSync(cfgPath)) return existing;
+  const cfg = buildProjectConfig(pkg);
+  log('create .factory/config.json (EDIT IT: protectedPaths, preview, productionBoundaries)');
+  if (!dry) {
+    mkdirSync(dirname(cfgPath), { recursive: true });
+    writeFileSync(cfgPath, `${JSON.stringify(cfg, null, 2)}\n`);
   }
+  return cfg;
+};
 
-  // 3. Settings: merge, never replace. Existing rules stay.
-  const union = (first = [], second = []) => [...new Set([...first, ...second])];
-  cur.permissions = { ...cur.permissions };
-  // Allow rules: the template's fixed rules (git, factory.mjs, shoot.mjs, ...), but never its npm run rules.
-  // The npm run rules come from this project's own checks, plus the scripts those checks call.
+// 3. Settings: merge, never replace. Existing rules stay.
+const union = (first = [], second = []) => [...new Set([...first, ...second])];
+// Allow rules: the template's fixed rules (git, factory.mjs, shoot.mjs, ...), but never its npm run rules.
+// The npm run rules come from this project's own checks, plus the scripts those checks call.
+const derivedAllowRules = (pkg, projectCfg) => {
   const scripts = pkg.scripts ?? {};
   const derived = new Set();
   const seen = new Set();
@@ -154,6 +153,19 @@ const install = () => {
     derived.add(rule);
     if (script) addScript(script);
   }
+  return derived;
+};
+const mergeHooks = (cur, tpl) => {
+  cur.hooks = { ...cur.hooks };
+  for (const [ev, groups] of Object.entries(tpl.hooks)) {
+    // Exact command match: a substring could skip a hook the target does not really have.
+    const have = new Set((cur.hooks[ev] ?? []).flatMap((group) => (group.hooks ?? []).map((hook) => hook.command)));
+    cur.hooks[ev] = [...(cur.hooks[ev] ?? []), ...groups.filter((group) => !group.hooks.every((hook) => have.has(hook.command)))];
+  }
+};
+const mergeSettings = (cur, tpl, pkg, projectCfg) => {
+  cur.permissions = { ...cur.permissions };
+  const derived = derivedAllowRules(pkg, projectCfg);
   log(`allow rules from this project's checks: ${[...derived].join(' ') || '(none)'}`);
   const fixed = tpl.permissions.allow.filter((rule) => !rule.startsWith('Bash(npm run '));
   // Never delete a rule the user already has, but say so when it lets every npm script run.
@@ -161,25 +173,24 @@ const install = () => {
     console.warn(`WARNING: .claude/settings.json already has the rule "${rule}". It lets every npm script run without asking. The installer kept it. Remove it to be asked before scripts such as deploy.`);
   cur.permissions.allow = union(cur.permissions.allow, [...fixed, ...derived]);
   for (const kind of ['ask', 'deny']) cur.permissions[kind] = union(cur.permissions[kind], tpl.permissions[kind]);
-  cur.hooks = { ...cur.hooks };
-  for (const [ev, groups] of Object.entries(tpl.hooks)) {
-    // Exact command match: a substring could skip a hook the target does not really have.
-    const have = new Set((cur.hooks[ev] ?? []).flatMap((group) => (group.hooks ?? []).map((hook) => hook.command)));
-    cur.hooks[ev] = [...(cur.hooks[ev] ?? []), ...groups.filter((group) => !group.hooks.every((hook) => have.has(hook.command)))];
-  }
+  mergeHooks(cur, tpl);
   log('merge .claude/settings.json');
   if (!dry) {
     mkdirSync(dirname(setPath), { recursive: true });
     writeFileSync(setPath, `${JSON.stringify(cur, null, 2)}\n`);
   }
+};
 
-  // 4. Small touches, both idempotent: .gitignore and a pointer in CLAUDE.md.
+// 4. Small touches, both idempotent: .gitignore and a pointer in CLAUDE.md.
+const touchGitignore = () => {
   const ign = join(target, '.gitignore');
   const ignored = existsSync(ign) && readFileSync(ign, 'utf8').split(/\r?\n/).some((line) => ['.factory/evidence/', '/.factory/evidence/', '.factory/evidence', '/.factory/evidence'].includes(line.trim()));
   if (!ignored) {
     log('append .gitignore');
     if (!dry) appendFileSync(ign, '\n# Factory evidence stays local\n.factory/evidence/\n');
   }
+};
+const touchClaudeMd = () => {
   const cm = join(target, 'CLAUDE.md');
   const marker = '<!-- factory -->';
   const note = `\n${marker}\n## Software factory\nUse \`/factory-build\`, \`/factory-fix\`, \`/factory-review\`, \`/factory-polish\`, \`/factory-status\`, \`/factory-maintain\`. Playbook: \`factory/PIPELINE.md\`. Project settings: \`.factory/config.json\`.\n`;
@@ -187,12 +198,31 @@ const install = () => {
     log('append CLAUDE.md pointer');
     if (!dry) appendFileSync(cm, note);
   }
+};
 
+const printNextSteps = () => {
   console.log(`
   Done. Next:
    1. Edit ${join(target, '.factory/config.json')} (protected paths, preview URL, boundaries).
    2. Run in the target: node factory/bin/factory.mjs status
    3. Start a NEW Claude Code session there. Settings, agents and skills load at session start.
    4. Turn on GitHub branch protection for the base branch. Hooks help, but only GitHub can truly stop a merge.`);
+};
+
+const install = () => {
+  let files;
+  try {
+    files = readTargetFiles();
+  } catch (error) {
+    fail(error.message);
+    return;
+  }
+  const tpl = JSON.parse(readFileSync(join(src, 'factory/settings.template.json'), 'utf8'));
+  copyPortableFiles();
+  const projectCfg = ensureProjectConfig(files.pkg, files.projectCfg);
+  mergeSettings(files.cur, tpl, files.pkg, projectCfg);
+  touchGitignore();
+  touchClaudeMd();
+  printNextSteps();
 };
 if (!problem) install();
