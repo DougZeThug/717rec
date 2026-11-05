@@ -109,6 +109,15 @@ describe('usePlayoffPageData history, with the real router', () => {
     expect(result.current.location.pathname).toBe('/playoffs');
     expect(result.current.location.state).toBeNull();
     expect(result.current.page.selectedBracketId).toBeNull();
+
+    // A real step back leaves the bracket entry ahead of the reader. A swap in
+    // place would leave nothing to go forward to.
+    await act(async () => {
+      await result.current.navigate(1);
+    });
+    await waitFor(() => expect(result.current.location.search).toBe('?season=s-1&bracket=b-1'));
+    expect(result.current.location.state).toEqual({ fromList: true });
+    expect(result.current.page.selectedBracketId).toBe('b-1');
   });
 
   // A bracket opened from a list that shows over another bracket's address is

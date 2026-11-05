@@ -154,7 +154,7 @@ export function usePlayoffPageData(): PlayoffPageData {
    * If this step carries the mark, Back goes to the list the reader came from,
    * so the Back button does not need an extra press to leave the page. This
    * holds when the bracket then fails to load too. Without the mark, the step
-   * is swapped in place, as before: there is no list step behind it to use.
+   * is swapped in place, as before: the step behind it may not be this list.
    * That is a link that opened straight on a bracket, the link an admin gets
    * after making a bracket, or a bracket opened from a list that shows over
    * another bracket's address.
