@@ -114,20 +114,22 @@ cannot be linked to or bookmarked. Several pages do write some state to the
 address, so that a view can be linked to, bookmarked or reloaded:
 
 - `/teams/:teamId` and `/matches/:matchId/live` carry a record id. The team page
-  also carries its open section as a hash (`#stats`, `#career`).
+  also carries the section last chosen on its section bar, as a hash (for example
+  `#stats`, `#career`).
 - `/admin/:section` carries the open admin section.
 - `/schedule` carries the night, the search text and the division and My team
-  chips.
+  chips. A link that ends in `#match-<id>` scrolls to that match.
 - `/stats` carries the Division / All choice, as `?view=all`.
 - `/compare` carries the two teams, as `?team1=` and `?team2=`.
 - `/playoffs` carries the season and the open bracket.
-- `/auth` and `/profile-setup` carry where to go next, as `?next=`. The consent
+- `/auth` and `/setup-profile` carry where to go next, as `?next=`. The consent
   page carries its request number, as `?authorization_id=`.
 
-Two pages also read a value from the address on arrival. The contact form takes
-its topic and its solo box from `?type=` and `?solo=true`. The admin timeslots
-section takes a night, a team and a slot that another admin section hands it, and
-removes them from the address once it has used them. Each page's own document
+Two pages also read a value from the address on arrival. The contact form reads
+`?type=` (its topic), `?solo=true` (its solo box) and `?source=join_page` (where the
+visitor came from). The admin timeslots section takes a night, a team and a slot,
+or what the team asked for, that another admin section hands it, and removes them
+from the address once it has used them. Each page's own document
 says exactly what it writes.
 
 ### Submit
@@ -139,7 +141,7 @@ Not applicable to navigation itself.
 | Modifier | Set at arrival | Changed while on the page |
 | --- | --- | --- |
 | The user's role | Decides only whether the three guarded routes render, redirect, or refuse. Every other route renders the same for every role. | Signing out in another tab takes effect here immediately and can remove controls under the cursor. It does not force a redirect off an unguarded page. |
-| The record's state | Only `/teams/:teamId` and `/matches/:matchId/live` read a record from the URL. A missing or invalid id gives that page's own empty state, not the 404 page. | No effect on routing. |
+| The record's state | A team and a live match are read from the URL (`/teams/:teamId`, `/matches/:matchId/live`). Compare reads two team ids, the playoffs page a bracket id, and the consent page a request number. For a team or a match, a missing or invalid id gives that page's own empty state, not the 404 page. | No effect on routing. |
 | The season's state | No effect on which routes exist. | No effect. |
 | Viewport | The navigation bar collapses to a menu on a narrow screen. | Re-flows on rotation. |
 | Keys the app honours | **Cmd/Ctrl+K opens a command palette** for searching and jumping to one of nine pages, or to a team by name. It is the app's one global shortcut and it exists only on a screen 768 pixels or wider — on a phone there is no way to reach it. It lives in the top bar as a search icon, whose tooltip names the shortcut. Tab reaches a skip link to the main content first. | The palette can be opened at any time and closed with Escape. |
@@ -214,7 +216,8 @@ page is still visible on the next, because there is one toast area for the whole
 app.
 
 **URL state.** See *While editing* above for what each page writes to the address.
-Everything else is lost on navigation and cannot be linked to.
+Sort orders, most tabs, expanded panels and the scroll position are lost on
+navigation and cannot be linked to.
 
 **On a phone.** The navigation bar becomes a menu. Everything else is the same.
 
@@ -242,8 +245,10 @@ development build the analytics call does nothing.
 - **The first page load does not announce or move focus**, deliberately, so a
   screen reader is not interrupted mid-sentence on arrival.
 - **`/playoffs/e2e-bracket-proof` exists** as a test route and is out of scope.
-- **Filters are lost on every navigation.** Filtering the schedule, opening a
-  match, and pressing back gives an unfiltered schedule.
+- **A sort order or an expanded panel is lost on every navigation.** Sorting the
+  standings table, opening a team, and pressing back gives the default order. The
+  schedule's search and chips and the standings view are in the address, so Back
+  brings those back.
 - **The command palette is desktop-only.** Cmd/Ctrl+K does nothing below 768
   pixels, where the app is most used.
 - **Four routes are never in a menu, by design.** `/forgot-password` and

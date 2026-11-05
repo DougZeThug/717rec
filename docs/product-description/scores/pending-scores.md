@@ -195,8 +195,9 @@ queued. See
 anyone** when a match joins the pending list, when a report arrives, or when a
 decision is made.
 
-**URL state.** None. Neither queue has an address; the admin section is a tab
-inside `/admin` and is not in the URL.
+**URL state.** Neither queue has an address of its own. The admin section that
+holds the review queue does, `/admin/pending-matches`, like every admin section
+(see [`admin/the-admin-dashboard.md`](../admin/the-admin-dashboard.md#interactions-with-other-systems)).
 
 **On a phone.** The card's rows stack. The admin review cards keep their two
 buttons side by side at the bottom.

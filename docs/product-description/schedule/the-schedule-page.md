@@ -98,10 +98,13 @@ beyond an ordinary pageview.
 
 ### Leave without changing anything
 
-The chosen tab survives, in session storage, and is used the next time the page
-is opened in the same browser tab. Everything else — the search text, the
-selected date, which groups were expanded — is thrown away. Coming back gives the
-default date again, an empty search box, and the first group open.
+The chosen tab is kept in session storage and is what the page shows until the
+matches arrive; it then picks a tab for the night it opens on, as on arrival.
+Which groups were expanded is thrown away. The search text, the selected date and
+the chips are in the address (see **URL state** below): the browser's Back button
+brings them back, and so does a reload. Coming back by the Schedule link, which
+carries no parameters, gives the default night, an empty search box, no chip
+pressed, and the first group open.
 
 ### Begin editing
 
@@ -180,9 +183,9 @@ that own their own commits.
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes the calendar popover if it is open, or an admin's dialog. It does not clear the search box and does not abort a write already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | The search text, the selected date, and every expanded group are lost. The chosen page tab survives in session storage. An admin's write already sent still lands, and the toast may appear over the next page. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Same as navigating away, and the page cannot prevent it. Coming forward again gives the default view, not the one that was left. |
-| Reload, or the tab closed | Re-fetches everything from scratch. | **Everything except the chosen tab is lost.** Session storage survives a reload, so the tab comes back; nothing else does. |
+| In-app navigation away, or switching tab within the page | Nothing is lost. | Every expanded group is lost. The search text, the selected date and the chips are in the address, so they come back with the browser's Back button, but not when the reader returns by the Schedule link, which starts from the default night. The tab is picked again for the night. An admin's write already sent still lands, and the toast may appear over the next page. |
+| Browser back or forward | Returns to the previous page. Nothing is recorded. | Back and Forward bring the search text, the selected date and the chips back from the address; the expanded groups are lost. The page cannot prevent leaving. |
+| Reload, or the tab closed | Re-fetches everything from scratch. | **The search text, the selected date and the chips survive**, because they are in the address. The expanded groups are lost, and the tab is picked again for the night once the matches arrive. |
 | Network lost mid-request | The matches do not load and the "Loading schedule" error card appears with a Try Again button. | Reading carries on with what is already on screen. The Timeslots tab's minute poll pauses while the browser reports itself offline. An admin's write fails and reports through its own dialog. |
 | The request fails or times out | The error card appears. The failed read is retried once before that. | Same. Try Again re-runs the fetch. The Timeslots query retries twice on its own, waiting longer each time. |
 | The session expires | No effect. Every read on this page is public. | Reads keep working. An admin's Edit or Delete fails at the database, and the buttons stay on screen because the browser still believes it is signed in. |
@@ -207,8 +210,9 @@ as a season with no matches yet.
 **Validation and error display.** Nothing here is validated. The one error path is
 the failed match fetch, which shows the underlying message and a retry.
 
-**Unsaved changes.** None to protect. The search text and the selected date are
-lost on navigation and nothing warns about it.
+**Unsaved changes.** None to protect. The expanded groups are lost on navigation
+and nothing warns about it. The search text, the date and the chips stay in the
+address.
 
 **Optimistic updates and rollback.** None on this page.
 

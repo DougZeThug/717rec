@@ -252,7 +252,8 @@ inconsistent but never wrong.
 
 **Toasts and notifications.** None from reading statistics.
 
-**URL state.** Only the team. The tab, the report card mode, and the collapsed
+**URL state.** The team, and the section last chosen on the section bar (a hash
+such as `#stats`). The tab, the report card mode, and the collapsed
 sections are lost on navigation, so a particular view of a team's statistics
 cannot be shared.
 

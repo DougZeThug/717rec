@@ -202,8 +202,8 @@ See [`the-playoffs-page.md`](the-playoffs-page.md).
 "Tournament Complete!" once, the first time the bracket completes while the page
 is open.
 
-**URL state.** The bracket id only. There is no address for a round, a match, or
-a team inside a bracket.
+**URL state.** The bracket id, and the season, which the page adds beside it. There
+is no address for a round, a match, or a team inside a bracket.
 
 **On a phone.** The bracket scrolls sideways: it is never scaled to fit, and a
 sixteen-team double-elimination bracket is several screens wide. It is drawn at

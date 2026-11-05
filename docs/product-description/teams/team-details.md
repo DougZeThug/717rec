@@ -90,9 +90,10 @@ the bottom of a long page can land here part way down.
 
 ### Leave without changing anything
 
-Nothing is recorded. Which sections were opened is not remembered — not in the
-browser, not in the address, not anywhere. Coming back gives the default
-arrangement again.
+Nothing is recorded. Which sections were opened is not remembered, in the browser
+or anywhere else. The section last chosen on the section bar is in the address as a
+hash; see **URL state** below. Coming back by a link gives the default arrangement
+again.
 
 ### Begin editing
 

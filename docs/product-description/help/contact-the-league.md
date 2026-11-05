@@ -254,8 +254,9 @@ one on success, a red one on failure. The success toast is redundant with the
 success panel that replaces the form, so a successful submit produces two
 confirmations of the same thing.
 
-**URL state.** None. `/contact` carries nothing, so a part-filled form cannot be
-shared, bookmarked, or linked to.
+**URL state.** The address can choose the topic and the solo box (`?type=`,
+`?solo=true`), and is read once on arrival. What the reader types is never written
+to it, so a part-filled form cannot be shared, bookmarked, or linked to.
 
 **On a phone.** The two top fields stack. The email field asks for the email
 keyboard. The message box is 150 pixels tall before it grows. Nothing else

@@ -11,8 +11,8 @@ strength of schedule, playoff record, and the records against each division are
 all across every season the two teams have played, and the head-to-head is
 all-time. Only the heading over the first block says so.
 
-It is the one page in the app whose selections are kept in the address, so a
-comparison can be linked to and shared. It is also not in the navigation
+Its selections are kept in the address, so a comparison can be linked to and
+shared. It is also not in the navigation
 anywhere: the only way in from inside the app is a small icon on a standings row,
 which arrives with one team already chosen.
 
@@ -112,7 +112,7 @@ Nothing is submitted. This page only reads.
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes an open dropdown. There is no way to clear a chosen team once it is chosen — the dropdowns have no "none". |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | Nothing is lost either: the selection is in the address, so the browser's own history holds it. |
 | Browser back or forward | Leaves the page. | **Back leaves the page rather than undoing a selection**, because every change replaces the history entry instead of adding one. Coming forward again returns to the last comparison. |
-| Reload, or the tab closed | Gives two empty dropdowns. | **The comparison survives**, because it is in the address. This is the only page in the app where a reload preserves what the user set up. |
+| Reload, or the tab closed | Gives two empty dropdowns. | **The comparison survives**, because it is in the address. |
 | Network lost mid-request | The team list never arrives and the retry card appears. | The comparison stays on "Loading comparison..." with no error and no timeout. |
 | The request fails or times out | The read is retried once, then the retry card. | The numbers for one side fail and that side draws zeros rather than saying anything. |
 | The session expires | No effect. Everything here is public. | No effect. |

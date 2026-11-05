@@ -169,9 +169,9 @@ first playoff match shows `L1` even after a winning regular season.
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | No effect. Nothing on this page can be cancelled, because nothing is in progress. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | The division-or-all choice, the sort, and the expanded row are all lost. The compact/detailed choice on a phone survives, because it is stored in the browser. |
-| Browser back or forward | Returns to the previous page. | Coming back restores the scroll position but not the sort or the view. A user who sorted by SOS, opened a team, and came back is looking at a differently-ordered table at the same scroll offset. |
-| Reload, or the tab closed | Reloads everything. | Same as navigating away, and the scroll position is not restored either. |
+| In-app navigation away, or switching tab within the page | Nothing is lost. | The sort and the expanded row are lost. The division-or-all choice is in the address as `?view=all`: it comes back with Back and with a reload, not when the reader returns by a link to plain `/stats`. The compact/detailed choice on a phone survives, because it is stored in the browser. |
+| Browser back or forward | Returns to the previous page. | Coming back restores the scroll position and the view, but not the sort. A user who sorted by SOS, opened a team, and came back is looking at a differently-ordered table at the same scroll offset. |
+| Reload, or the tab closed | Reloads everything. | The sort and the expanded row are lost, the view stays (it is in the address), and the scroll position is not restored either. |
 | Network lost mid-request | The page shows a full-screen red panel: "There was an error loading the statistics data. Please try refreshing the page", with the underlying message and a "Try again" button. | Nothing in flight to lose. A background refetch that fails leaves the old numbers on screen with no sign that it failed. |
 | The request fails or times out | As above. Reads are retried once before the panel appears. | As above. |
 | The session expires | No effect. The standings are public. | No effect. |

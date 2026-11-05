@@ -192,8 +192,11 @@ invisible; only live scoring shows the connection's state while it is down.
 of the screen. It covers the top bar and the page heading while it is there, not
 the submit button at the bottom.
 
-**URL state.** Nothing extra is in the URL on a phone. Sharing a page from a
-phone shares the page, not the filter or the tab that was open.
+**URL state.** A phone adds nothing to the URL. Sharing a page from a phone shares
+what the page keeps in the address (see
+[`foundations/navigation.md`](../foundations/navigation.md#while-editing)): the
+schedule's night, search and chips, the standings view, a comparison, the playoffs
+season and bracket. A sort order, an open tab or an expanded panel is not shared.
 
 **On a phone.** This document is the definition.
 
