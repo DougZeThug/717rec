@@ -8,12 +8,45 @@
   "branch": "claude/affectionate-dirac-icive8",
   "baseSha": "23769bc9681f28255db756acf397676561e5e707",
   "createdAt": "2026-11-05T19:54:20.544Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "History list: the season title is no longer squeezed and its date is not clipped at 390, 360 and 320px; champion and highlight text is not cut to a few letters; the Full Season Recap strip is 44px high",
+      "done": false
+    },
+    {
+      "text": "Opening a season on a phone no longer flashes a huge list before collapsing (per-frame height sample before and after)",
+      "done": false
+    },
+    {
+      "text": "Opened season: team names are not cut to one line, a past season with no standings shows a clear message, and the standings text colours in the light theme are 4.5:1 or better (crown 3:1)",
+      "done": false
+    },
+    {
+      "text": "Accessibility: the champion and runner-up icons have text for a screen reader, and the division chevron button has a label and aria-expanded",
+      "done": false
+    },
+    {
+      "text": "Admin edit mode: Save Changes stays on screen at 390 and 360px when there is an unsaved change",
+      "done": false
+    },
+    {
+      "text": "The fixes also look right at 768 and 844px and do not change the 1280px desktop view, in light and dark",
+      "done": false
+    },
+    {
+      "text": "No new console errors, no sideways scroll, existing tests pass (updated only where the changed text, classes or aria attributes are asserted, never weakened), six checks pass, independent review approves the final commit",
+      "done": false
+    },
+    {
+      "text": "Docs: every document that describes a changed behaviour is updated in the same change, with no broken link and the verification totals still true",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T19:54:20.544Z"
+  "updatedAt": "2026-11-05T20:12:40.174Z"
 }
