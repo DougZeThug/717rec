@@ -74,9 +74,11 @@ Nothing is recorded by opening the section.
 
 ### Leave without changing anything
 
-Nothing happens. The section's open state, the search text, and the sort order
-are all held in the page and are gone the moment the user navigates away. Coming
-back gives a closed section again.
+Nothing happens. The search text and the sort order are held in the page and are
+gone the moment the user navigates away. So is the section's open state, unless
+the address holds `#h2h` (the Matchups button on the section bar writes it): then
+coming back with Back, or reloading, opens the section. Otherwise coming back gives
+a closed section again.
 
 ### Begin editing
 
@@ -139,8 +141,8 @@ Closing it discards nothing, because nothing was entered.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel here. | Escape closes the details dialog and returns focus to the button that opened it. It does nothing in the search box. Neither cancels a request. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | The search text and sort order are lost with no warning. There is nothing to save, so nothing is at risk. A request in flight is discarded. |
-| Browser back or forward | Returns to the previous page. The section is closed again on return. | Same as navigating away. The dialog does not add a history entry, so Back from an open dialog leaves the team page entirely rather than closing the dialog. |
-| Reload, or the tab closed | The section is closed and everything is fetched again from scratch. | The search, the sort, and the open dialog are all gone. Nothing was pending. |
+| Browser back or forward | Returns to the previous page. The section is closed again on return, unless the address holds `#h2h`, which opens it. | Same as navigating away. The dialog does not add a history entry, so Back from an open dialog leaves the team page entirely rather than closing the dialog. |
+| Reload, or the tab closed | The section is closed (open, if the address holds `#h2h`) and everything is fetched again from scratch. | The search, the sort, and the open dialog are all gone. Nothing was pending. |
 | Network lost mid-request | The section shows "Error loading head-to-head records" with no reason and no retry. | The details dialog never appears. Nothing tells the user why. |
 | The request fails or times out | Retried once, then the red error line. The rivalry cards above simply do not render, so the section looks half-broken rather than failed. | As above. Closing and reopening the section is the only retry. |
 | The session expires | No effect. Every read here is public. | No effect. |

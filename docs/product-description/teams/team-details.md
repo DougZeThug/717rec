@@ -8,8 +8,8 @@ every match it has played, and what it has won across every season it has
 existed.
 
 Almost all of it is folded away. The page opens with the team's identity, two
-summary cards, and the roster; the other five sections are closed, and each one
-fetches its own numbers only when it is opened. A user who never opens anything
+summary cards, the roster and the match history; the other sections are closed,
+and each one fetches its own numbers only when it is opened. A user who never opens anything
 sees a short page and the app never asks the league for most of the data.
 
 The address in the URL is normally the **team's name**, not its id. That has
@@ -26,10 +26,10 @@ Under that, two cards side by side: **Power Score**, with a gauge and the team's
 record; and **Ranking**, showing the team's place out of the whole field with an
 arrow for which way it has moved.
 
-Then **ROSTER**, already open, listing every player as a chip. Then **Match
-History**, also already open — it is what most people came for. Then four closed
-sections: Stats & Report Card, Matchups & Rivalries, Career & Achievements, and —
-only when the league has been scoring matches live — Player Stats.
+Then **ROSTER**, already open, listing every player as a chip. Then, in this order:
+Player Stats (closed, and only when the league has been scoring matches live),
+Stats & Report Card (closed), Matchups & Rivalries (closed), **Match History**
+(already open — it is what most people came for) and Career & Achievements (closed).
 
 Once the user scrolls past the header, a bar drops in at the top of the window
 with five buttons: Overview, Stats, Matchups, Matches, Career. Tapping one
@@ -212,8 +212,9 @@ data and writes nothing.
   missing it reads "Unknown" and links to a page that does not exist.
 - **The section bar starts by highlighting Stats**, not Overview, until the first
   scroll corrects it.
-- **The section bar's buttons scroll to closed sections.** Four of the five land
-  the user on a folded heading.
+- **The section bar's buttons scroll to closed sections.** Three of the five
+  (Stats, Matchups and Career) land the user on a folded heading. Overview lands on
+  the cards and Matches on a section that is already open.
 - **Back behaves differently depending on where the user came from.** From the
   standings the page returns to the standings and scrolls to where the user was,
   as a new navigation. From anywhere else it is a plain history step back.
