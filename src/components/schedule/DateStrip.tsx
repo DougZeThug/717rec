@@ -77,16 +77,15 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
   return (
     // A native scroll box, not Radix ScrollArea: ScrollArea with both scrollbars
     // mounted loops forever under React 19.3 ("Maximum update depth exceeded").
-    // Room for the focus ring (2px) and its offset (2px) above and below the
-    // chips, and for the 5% growth of the selected chip, which the scroll box
-    // would otherwise clip. The vertical padding is given back by -my-0.5, so
-    // nothing around the strip moves. The sides are left alone on purpose: the
-    // box keeps its width, so no part of a chip next to the edge shows, and the
-    // chips stay where they were. The cost: a chip within 4px of the side edge
-    // of the box, such as the first and last chip at the ends of the strip, has
-    // the outer side of its ring cut.
+    // Room for the focus ring (2px) and its offset (2px), and for the 5% growth
+    // of the selected chip, which the scroll box would otherwise clip. The side
+    // room is 6px on each side. The left side is padding. Right padding does not
+    // count in the scroll width of a row that overflows, so the row ends with an
+    // empty 2px item (after:) that sits 4px (the gap) from the last chip. The
+    // vertical padding is given back by -my-0.5, so nothing around the strip
+    // moves. The box keeps its width, so no part of a chip next to the edge shows.
     <div className="w-full -my-0.5 overflow-x-auto whitespace-nowrap [scrollbar-width:thin]">
-      <div className="flex gap-1 px-0.5 py-1.5">
+      <div className="flex gap-1 px-1.5 py-1.5 after:w-0.5 after:shrink-0">
         {dates.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const isTodayDate = isToday(date);
@@ -99,7 +98,8 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
               ref={isSelected ? selectedRef : null}
               onClick={() => onDateSelect(date)}
               className={cn(
-                'flex flex-col items-center px-3 py-1.5 rounded-xl min-w-[50px] transition-all duration-200',
+                // min-h-16: a chip with no match dot is as tall as one with it.
+                'flex flex-col items-center px-3 py-1.5 rounded-xl min-w-[50px] min-h-16 transition-all duration-200',
                 'ring-offset-background hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 isSelected &&
                   'bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-105',

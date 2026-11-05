@@ -58,6 +58,30 @@ describe('DateStrip', () => {
     expect((todayButton as HTMLButtonElement).className).toContain('bg-primary');
   });
 
+  // Room for the focus ring (2px + 2px offset) and the 5% growth of the selected
+  // chip, which the scroll box would clip. 6px on each side: padding on the left,
+  // an empty 2px end item on the right (right padding is not counted in the
+  // scroll width of an overflowing row).
+  it('leaves 6px of room on each side of the row, so the end chips keep their ring', () => {
+    render(<DateStrip selectedDate={today} onDateSelect={vi.fn()} matchDates={new Set()} />);
+
+    const row = screen.getAllByRole('button')[0].parentElement;
+    expect(row).toHaveClass('px-1.5', 'after:w-0.5', 'after:shrink-0');
+  });
+
+  it('makes a chip without a match dot as tall as one with it', () => {
+    const matchDates = new Set<string>([format(tomorrow, 'yyyy-MM-dd')]);
+    render(<DateStrip selectedDate={today} onDateSelect={vi.fn()} matchDates={matchDates} />);
+
+    const withDot = screen.getByText(format(tomorrow, 'd')).closest('button') as HTMLElement;
+    const withoutDot = screen.getByText(format(today, 'd')).closest('button') as HTMLElement;
+    expect(withDot.querySelector('.bg-orange-500')).not.toBeNull();
+    expect(withoutDot.querySelector('.bg-orange-500')).toBeNull();
+
+    expect(withDot).toHaveClass('min-h-16');
+    expect(withoutDot).toHaveClass('min-h-16');
+  });
+
   it('calls onDateSelect with a Date when a non-selected day is clicked', async () => {
     const onDateSelect = vi.fn();
     render(<DateStrip selectedDate={today} onDateSelect={onDateSelect} matchDates={new Set()} />);
