@@ -432,11 +432,12 @@ describe('usePlayoffPageData derived lists', () => {
 
     expect(result.current.availableDivisions).toEqual([]);
     expect(errorLog).toHaveBeenCalledTimes(1);
-    expect(errorLog).toHaveBeenCalledWith(
+    // The whole call is compared, so the logger still gets exactly these three arguments.
+    expect(vi.mocked(errorLog).mock.calls[0]).toEqual([
       'availableDivisions processing:',
       expect.any(TypeError),
-      undefined
-    );
+      undefined,
+    ]);
   });
 
   // One broken bracket must not take the page down. The divisions that could be
@@ -453,11 +454,12 @@ describe('usePlayoffPageData derived lists', () => {
     expect(result.current.typesafeBracketsByDivision.Silver).toHaveLength(1);
     expect(result.current.typesafeBracketsByDivision).not.toHaveProperty('Gold');
     expect(errorLog).toHaveBeenCalledTimes(1);
-    expect(errorLog).toHaveBeenCalledWith(
+    // The whole call is compared, so the logger still gets exactly these three arguments.
+    expect(vi.mocked(errorLog).mock.calls[0]).toEqual([
       'typesafeBracketsByDivision processing:',
       expect.any(TypeError),
-      undefined
-    );
+      undefined,
+    ]);
 
     // The same data again is not a new fault, so it is not logged again.
     rerender();
