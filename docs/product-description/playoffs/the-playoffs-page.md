@@ -328,8 +328,8 @@ last five minutes opens again instantly.
   says realtime exists only on live scoring. This page opens two subscriptions
   and shows a "Live updates enabled" pill (a dot on a phone). The foundation needs
   correcting.
-- **A link opens a page at the top, and `/playoffs` has no scroll code of its
-  own for Back.** Returning to a long bracket list by browser back leaves the
+- **A link opens a page at the top, and `/playoffs` does not save or restore its
+  own scroll position on Back.** Returning to a long bracket list by browser back leaves the
   user wherever the browser puts them; a page like it (`/schedule`) came back at
   the top in the 2026-11-05 test.
 - Not confirmed by hand: how long the "Loading..." spinner is visible in

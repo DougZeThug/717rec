@@ -263,9 +263,10 @@ moves; power scores and records are untouched.
   season is opened.** With enough seasons this is a large number of requests for
   data most users never look at, and none of it is cached between visits. **May be
   worth treating as a bug rather than documenting.**
-- **`foundations/navigation.md` states that `/teams` is the only route with scroll
-  restoration.** The code has it on `/history`, `/stats`, and `/insights` as well.
-  One of the two is wrong and the consistency pass should settle it.
+- Settled: four routes run scroll restoration (`/teams`, `/stats`, `/history`,
+  `/insights`), as [`foundations/navigation.md`](../foundations/navigation.md#arrive)
+  now says. Whether they restore is the open question: `/history` landed at the top
+  in a 2026-11-05 test (see HIST-12).
 - Not confirmed by hand: whether opening a division from its chevron by keyboard
   works in practice, or whether the press is swallowed before it reaches the
   header that handles it.

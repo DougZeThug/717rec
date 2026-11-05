@@ -218,7 +218,7 @@ data and writes nothing.
   in the history, so the page the user came from comes back (the standings came
   back where they were left in the 2026-11-05 test). A team address typed by
   hand, reloaded, or opened from outside the app has nothing of ours behind it,
-  so Back goes to the teams list.
+  so the page's own Back button goes to the teams list.
 - **Badges are not filtered by season.** Every badge the team has ever earned is
   in the header row and the Career section, so a badge from three seasons ago
   sits beside one from last week with only its tooltip to tell them apart.
