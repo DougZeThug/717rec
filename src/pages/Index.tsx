@@ -48,8 +48,8 @@ const Index: React.FC = () => {
       >
         {/* The gap-4 above sits on the outer div, but PageLayout puts its children
             in an inner one, so it never reached the hero. This spaces it from the
-            first hero card. */}
-        <div className="mb-4">
+            first hero card: mb-4 on phones, md:mb-8 to match the md:gap-8 below. */}
+        <div className="mb-4 md:mb-8">
           <PageTransition animation="fadeInSlideDown" immediate>
             <HeroSection />
           </PageTransition>
