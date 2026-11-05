@@ -146,8 +146,8 @@ needs.
 
 **Toasts and notifications.** None. This page never raises a message.
 
-**URL state.** Both teams are in the address as ids, and they are the only page
-state anywhere in 717rec that is. Selections replace rather than push, so the
+**URL state.** Both teams are in the address as ids (`?team1=` and `?team2=`), so
+a comparison can be linked to. Selections replace rather than push, so the
 history does not fill up. Nothing is written to the address until the incoming
 link has been read, so a shared link survives both the first load and a reload.
 
@@ -249,4 +249,6 @@ alone, with nothing else marking it.
 - Assumption: comparing career rather than season numbers is deliberate. The
   first block is headed "Career Statistics" and nothing offers a season view.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`. The two team ids in the address, and
+that they survive a reload, were checked in a real browser against fake data on
+2026-11-05.

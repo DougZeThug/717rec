@@ -108,10 +108,27 @@ Not applicable to navigation itself. Individual pages own this.
 
 ### While editing
 
-The URL does not generally carry page state. Filters, selected tabs, and sort
-orders are held in the page and lost on navigation; they are not in the URL and
-cannot be linked to or bookmarked. The exceptions are the two routes that address
-a record: `/teams/:teamId` and `/matches/:matchId/live`.
+Most page state is held in the page and lost on navigation: sort orders, most
+tabs, which panels are expanded, and the scroll position are not in the URL and
+cannot be linked to or bookmarked. Several pages do write some state to the
+address, so that a view can be linked to, bookmarked or reloaded:
+
+- `/teams/:teamId` and `/matches/:matchId/live` carry a record id. The team page
+  also carries its open section as a hash (`#stats`, `#career`).
+- `/admin/:section` carries the open admin section.
+- `/schedule` carries the night, the search text and the division and My team
+  chips.
+- `/stats` carries the Division / All choice, as `?view=all`.
+- `/compare` carries the two teams, as `?team1=` and `?team2=`.
+- `/playoffs` carries the season and the open bracket.
+- `/auth` and `/profile-setup` carry where to go next, as `?next=`. The consent
+  page carries its request number, as `?authorization_id=`.
+
+Two pages also read a value from the address on arrival. The contact form takes
+its topic and its solo box from `?type=` and `?solo=true`. The admin timeslots
+section takes a night, a team and a slot that another admin section hands it, and
+removes them from the address once it has used them. Each page's own document
+says exactly what it writes.
 
 ### Submit
 
@@ -196,9 +213,8 @@ the loading spinner with no error.
 page is still visible on the next, because there is one toast area for the whole
 app.
 
-**URL state.** Two routes carry a record id. The playoffs page carries the season
-(`?season=<id>`) and the open bracket (`?bracket=<id>`). Other pages that keep
-state in the address say so in their own documents.
+**URL state.** See *While editing* above for what each page writes to the address.
+Everything else is lost on navigation and cannot be linked to.
 
 **On a phone.** The navigation bar becomes a menu. Everything else is the same.
 
@@ -258,4 +274,6 @@ Verified against `717rec` commit `ea5c8f4`, except the navigation surfaces, whic
 changed with W11: the desktop pill bar that used to sit under the page content is
 gone, the command palette moved into the top bar, Compare and Insights joined the
 palette and Help's Quick Navigation, and an admin sees an "Admin" link in the top
-bar and the phone menu rather than only in the user menu.
+bar and the phone menu rather than only in the user menu. The list of what each page
+writes to the address (While editing) was read from the code and checked in a real
+browser against fake data on 2026-11-05.
