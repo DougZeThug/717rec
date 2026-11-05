@@ -91,9 +91,10 @@ Nothing is sent to the league. The page remembers which seasons and divisions ar
 open, in the browser tab's session storage (key `history_open_state`), for this
 tab only.
 
-**Back, Forward and a reload keep them open.** Any other arrival (a link to
-`/history`, or the top-bar menu) clears the memory first, so the page opens fully
-collapsed. A top-bar link is not Back. With nothing remembered, a division still
+**Back, Forward and a reload keep them open.** Arriving by a link to `/history`
+or by the top-bar menu clears the memory first, so the page opens fully collapsed.
+A top-bar link is not Back. An address typed or bookmarked into the same tab is a
+full page load, so it counts as a reload and keeps what the tab left open. With nothing remembered, a division still
 starts closed on a phone and open on a wide screen. A wide window shrunk to phone
 width still closes its divisions and remembers that they are closed; they stay
 closed when the window grows back. A season or division left open appears at full
@@ -244,8 +245,9 @@ of about 27 pixels high, because the rows there are only 6 pixels apart and two
 44-pixel areas would overlap. A card also shows a small muted "#N" to the left of
 the logo for any team with a playoff rank, except a crown with rank 1 or a medal
 with rank 2, because the icon already says it. A screen reader reads it as
-"Playoff rank #N". It is the same number as the Rank column on a wide screen; it
-matched for all 66 teams in 3 fake seasons. A team with no playoff rank shows
+"Playoff rank #N". It is the same number as the Rank column on a wide screen; in
+the change's own dev-server check with fake data it matched for all 66 teams in 3
+seasons. A team with no playoff rank shows
 nothing here, where the wide screen shows a dash.
 The Season Awards strip is hidden entirely, so three numbers a desktop user sees
 are missing. On a season card the months sit under the season name, so the name
