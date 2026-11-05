@@ -168,11 +168,14 @@ back one step in the history. The list shows again, `?bracket=<id>` leaves the
 address, and the browser Back button has no press that changes nothing: the next
 press leaves the page. Both "Back to brackets" buttons do this, the one above the
 bracket and the one in the error banner. Without the mark the button swaps the
-step in place instead, as a delete always does. The mark is missing on a link that
-opened straight on a bracket, on the link an admin is sent to after making a
-bracket, and on a bracket opened from a list that shows over another bracket's
-address (under the "Loading bracket" banner, or on the admin tab while a bracket
-loads). Changing the season still adds a step. See
+step in place instead, as a delete always does. A swap leaves the list step before
+it behind, so after a delete or after an admin's new bracket the first Back press
+shows no change and the next one leaves the page. The mark is missing on a link
+that opened straight on a bracket (it has no list step behind it, so Back leaves
+at once), on the link an admin is sent to after making a bracket, and on a
+bracket opened from a list that shows over another bracket's address (under the
+"Loading bracket" banner, on the admin tab while a bracket loads, or after a
+legacy bracket with nothing to draw). Changing the season still adds a step. See
 [Cancel and interrupt](#cancel-and-interrupt).
 
 When the subscription is live, a green signal sits in the bottom-right corner. On
@@ -210,7 +213,7 @@ none. A league in its first season therefore never sees it.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes the season dropdown if it is open. It does not close an open bracket. The "Back to brackets" button above the bracket and browser back are the ways out of one. |
 | In-app navigation away, or switching tab within the page | Nothing is lost, because nothing was entered. The realtime subscription closes. | The admin's Brackets/Teams choice is remembered for the browser session and restored on return. The chosen season is not remembered: a way back through the app's own link starts on the automatic choice, while the browser Back button restores the season from the address. An in-flight load is abandoned. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Back from an open bracket removes `?bracket=<id>` and returns to the list, which is the intended way out. Forward re-opens it. "Back to brackets" on a bracket opened from the page's own list goes back one history step too, so after one open and close the first Back press leaves the page, and each further open and close adds no step. Forward after that button re-opens the bracket. When the step carries no "opened from the list" mark, the button swaps the step in place instead. A delete always does, because the bracket is gone. Then Back does not open that bracket again. A link that opened straight on a bracket has one step, so Back leaves at once. A bracket opened from a list that shows over another bracket's address (under the "Loading bracket" banner) has no mark either: after "Back to brackets", one Back press returns to the first bracket's address. Changing the season still adds a step: Back then brings back the bracket from the earlier season. Back over a season chosen from the picker restores the previous season, and the picker follows. Scroll position is not restored on this route. |
+| Browser back or forward | Returns to the previous page. Nothing is recorded. | Back from an open bracket removes `?bracket=<id>` and returns to the list, which is the intended way out. Forward re-opens it. "Back to brackets" on a bracket opened from the page's own list goes back one history step too, so after one open and close the first Back press leaves the page, and each further open and close adds no step. Forward after that button re-opens the bracket. When the step carries no "opened from the list" mark, the button swaps the step in place instead. A delete always does, because the bracket is gone. Then Back does not open that bracket again, but a swap leaves the list step before it behind: after a delete, or after an admin's new bracket, the first Back press shows no change and the next press leaves the page. A link that opened straight on a bracket has one step, so Back leaves at once. A bracket opened from a list that shows over another bracket's address (under the "Loading bracket" banner, or after a legacy bracket with nothing to draw) has no mark either: after "Back to brackets", one Back press returns to the first bracket's address. Changing the season still adds a step: Back then brings back the bracket from the earlier season. Back over a season chosen from the picker restores the previous season, and the picker follows. Scroll position is not restored on this route. |
 | Reload, or the tab closed | Reloads the page from scratch. | The bracket and the season are both in the address, so a reload returns to the same bracket under the same season. The "opened from the list" mark is kept in the history step, so "Back to brackets" still steps back after a reload. |
 | Network lost mid-request | The page shows its loading spinner and then the failure banners for whichever request failed. | The realtime pill (a dot on a phone) disappears. The bracket keeps showing what it last had. Nothing is queued; the next refetch recovers. |
 | The request fails or times out | Each failing request gets its own banner, stacked above the list: "Loading brackets" and "Loading divisions" for the list, "Loading bracket" for the chosen one. The brackets banner has a "Try again" button. | The chosen bracket failing shows a "Loading bracket" banner with both "Try again" and "Back to brackets". **"Back to brackets" is the only thing that clears `?bracket=<id>`**, so without it a reload just retries the same broken bracket forever. |
@@ -345,5 +348,6 @@ the address (`?season=<id>`, written by the page, set by the picker and kept on
 reload) was read from the code and checked in a real browser against fake data
 on 2026-11-05. The history step that "Back to brackets" takes was checked the same
 way in desktop Chromium with touch emulation, not on an iPhone. The admin tab's
-button and a delete were read from the code and covered by unit tests, because the
+button, a delete, the admin's new-bracket link and the press that shows no change
+after the last two were read from the code and covered by unit tests, because the
 admin tab needs a sign-in.
