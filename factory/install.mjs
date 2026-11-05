@@ -209,14 +209,19 @@ const printNextSteps = () => {
    4. Turn on GitHub branch protection for the base branch. Hooks help, but only GitHub can truly stop a merge.`);
 };
 
-const install = () => {
-  let files;
+// A bad JSON file stops the run before anything is written.
+const readFilesOrFail = () => {
   try {
-    files = readTargetFiles();
+    return readTargetFiles();
   } catch (error) {
     fail(error.message);
-    return;
+    return null;
   }
+};
+
+const install = () => {
+  const files = readFilesOrFail();
+  if (!files) return;
   const tpl = JSON.parse(readFileSync(join(src, 'factory/settings.template.json'), 'utf8'));
   copyPortableFiles();
   const projectCfg = ensureProjectConfig(files.pkg, files.projectCfg);
