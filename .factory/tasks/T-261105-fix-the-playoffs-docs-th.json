@@ -2,7 +2,7 @@
   "id": "T-261105-fix-the-playoffs-docs-th",
   "title": "Fix the playoffs docs that say the season is not in the address",
   "kind": "fix",
-  "status": "repairing",
+  "status": "ready",
   "request": "Fix the older playoffs doc lines that say the season is not in the address. The page itself puts ?season=<id> in the address, keeps it on reload, and the picker sets it.",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -11,23 +11,28 @@
   "criteria": [
     {
       "text": "E1 The page doc no longer says the season is missing from the address: the What survives lines, While editing, After any interrupt, Season scoping, URL state and the footer say it is there, and the open question about a season lost on reload is removed because it no longer happens.",
-      "done": false
+      "done": true,
+      "evidence": "I read every changed passage in the page doc diff. The What survives lines, While editing, After any interrupt, Season scoping, URL state, the Arrive paragraph exception, the In-app navigation row and the footer now say the season is in the address; the open question about a season lost on reload is removed. Checked against usePlayoffPageData.ts (the effect that writes season, selectSeason) and in a real browser. The reviewer verified each sentence too."
     },
     {
       "text": "E2 Checklist rows PLAYOFF-11, PLAYOFF-13 and PLAYOFF-28 say what the page does (shown in a real browser with fake data). PLAYOFF-28 loses the suspected-bug mark, and the verification README count goes from 117 to 116 (recount by the README method: 1,958 items, 116 P1 suspected-bug rows).",
-      "done": false
+      "done": true,
+      "evidence": "Rows PLAYOFF-11 (claim, step 1, expected), PLAYOFF-13 and PLAYOFF-28 rewritten, plus PLAYOFF-20 and PLAYOFF-26 and PLAYADMIN-23 and PLAYADMIN-25 found by the review. PLAYOFF-28 lost its suspected-bug mark. I recounted by the README method: 1,958 items and 116 P1 suspected-bug rows (it was 117); verification/README.md says 116. The reviewer recounted the same."
     },
     {
       "text": "E3 Every new sentence is true: read against usePlayoffPageData.ts and shown in a real browser (a bracket link gets its season; a bare /playoffs gets ?season=; picking a season changes the address, adds a step, closes the bracket and survives a reload; a bracket in a non-automatic season survives a reload with its season).",
-      "done": false
+      "done": true,
+      "evidence": "Real browser, fake data, my scripts (before/season-url-before.txt and before/reload-check-before-docs.txt): a bracket link ends with bracket and season in the address; a bare /playoffs gets ?season=; picking another season changes the address and adds a step and the choice survives a reload; a bracket of an older season survives a reload with its season (dropdown, address and drawn bracket agree). The reviewer re-ran these and added Back, Forward, two quick picks, an unknown bracket and the nav link versus the Back button. Code read: usePlayoffPageData.ts lines 205-245."
     },
     {
       "text": "E4 Docs only: no code, test, config or lock file changed. All required repo checks pass on the final commit and a fresh independent reviewer approves.",
-      "done": false
+      "done": true,
+      "evidence": "Docs only: git diff --name-only from 0981db2 to 673af16 lists seven markdown files and nothing else (zero non-markdown files; git diff --check is clean). All six required checks pass at 673af16 (integrity, typecheck, lint, knip, build, unit: 825 files, 7513 tests). The fresh independent reviewer approved the final head after two CHANGES rounds, both fixed."
     },
     {
       "text": "E5 No other doc in docs/ still says the old thing (search for the old phrases comes back empty).",
-      "done": false
+      "done": true,
+      "evidence": "Searches of docs/ (not audits or quality-review) with the old phrases and then wider ones (never in the URL, held in the page, memory only, not in the address, lives in the URL, leaves an open bracket open, nothing else is in the URL) come back with nothing left that is about the playoffs season. The reviewer searched with its own terms and found nothing more. The wider navigation.md claim is a separate follow-up."
     }
   ],
   "checks": {
@@ -106,6 +111,13 @@
       "sha": "673af161251667af7422eaddbecf23284a4567fc",
       "at": "2026-11-05T01:53:19.106Z",
       "summary": "Independent re-check on 3f8104d: every new playoffs-season sentence true (code and browser); two sentences overclaimed and one step was imprecise. (1) foundations/seasons.md said only the history pages and the playoffs page name a season; the history page carries nothing in the address and the weekly recap route does name a season. (2) page doc Arrive paragraph said however it is chosen the season ends up in the address, which clashes with the exception for a bracket that cannot be read. (3) PLAYADMIN-23 expected a division after opening a bracket from the list; it shows only after creating one. Totals recounted: 1,958 items, 116."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "673af161251667af7422eaddbecf23284a4567fc",
+      "at": "2026-11-05T02:03:31.197Z",
+      "summary": "Independent reviewer, final confirmation on the head commit as it is now (673af16 and the bookkeeping commit after it): APPROVE. Three rounds: the first review (CHANGES) found the same wrong claim in sister docs; the re-check (CHANGES, small) found two overclaiming sentences and one imprecise test step; all fixed and read against the code and a real browser. Final: every new sentence verified, recount 1,958 items and 116 suspected-bug rows, leftover search clean, only markdown files changed. Left for the owner as follow-ups: navigation.md still says no page keeps state in the address (the schedule, standings view and Compare do; NAV-09 and compare-teams.md say the same); one broken link at verification/admin.md:340, not from this change."
     }
   ],
   "issues": {
@@ -135,5 +147,7 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T02:02:47.537Z"
+  "updatedAt": "2026-11-05T02:03:36.845Z",
+  "readySha": "673af161251667af7422eaddbecf23284a4567fc",
+  "readyAt": "2026-11-05T02:03:36.845Z"
 }
