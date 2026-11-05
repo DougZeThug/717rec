@@ -96,7 +96,8 @@ opening a recap and, for an admin, entering edit mode.
 
 Opening a recap changes nothing outside the browser. On a wide screen every
 division panel inside it starts open; on a phone every panel starts closed and
-has to be tapped open one at a time.
+has to be tapped open one at a time. A panel is closed from the first moment on a
+phone, so the recap never draws every team card and then folds them away.
 
 An admin sees an **Edit Divisions** button at the top of an opened recap. Pressing
 it replaces the read-only panels with a drag-and-drop board and a toolbar. The
@@ -140,10 +141,10 @@ still in place.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role (visitor, player, admin) | Visitors and players see the same read-only page. Only an admin sees the Edit Divisions button inside an opened recap. | Losing admin leaves the board on screen; the save then fails and reports the refusal. Gaining admin does not add the button until the page is re-rendered. |
-| The record's state | A season with a champion recorded gets the "🏆 Completed" badge. A season with standings but no champion gets no badge. A season with no standings at all shows no summary panels and no team or match count. | An admin editing one season's divisions does not affect any other card. |
+| The record's state | A season with a champion recorded gets the "🏆 Completed" badge. A season with standings but no champion gets no badge. A season with no standings at all shows no summary panels and no team or match count. If it is not the active season, its opened recap reads "No standings recorded for this season". | An admin editing one season's divisions does not affect any other card. |
 | The season's state (active, archived, playoffs on) | The active season shows a green **Active** badge and, if it has no standings yet, its recap reads "Season in progress – check back later". Archived seasons show their frozen numbers. The playoffs flag has no effect here. | A season being archived elsewhere does not reach this page until it is loaded again. |
-| Viewport | On a wide screen every division panel inside an opened recap starts open, the standings are a table, and a Season Awards strip appears at the foot. On a phone the panels start closed, each team is a card with a power score dial, and the awards strip is **not rendered at all**. | Crossing the phone-to-desktop width closes every division panel, because the collapse rule runs again. |
-| Keys the form honours | Tab reaches every season's Full Season Recap strip, and Enter or Space opens it. Inside a recap, Tab reaches only the small chevron beside each division name, not the name itself. | In edit mode, Enter saves a division rename or a new division name and Escape cancels it. Dragging by keyboard is wired up but not documented anywhere on screen. |
+| Viewport | On a wide screen every division panel inside an opened recap starts open, the standings are a table, and a Season Awards strip appears at the foot. On a phone the panels start closed, each team is a card with a power score dial, the awards strip is **not rendered at all**, and a season card's months sit under its title instead of beside it. | Crossing the phone-to-desktop width closes every division panel, because the collapse rule runs again. |
+| Keys the form honours | Tab reaches every season's Full Season Recap strip, and Enter or Space opens it. Inside a recap, Tab reaches only the small chevron beside each division name, not the name itself. The chevron is named "Toggle *division* teams" and reports whether the panel is open. | In edit mode, Enter saves a division rename or a new division name and Escape cancels it. Dragging by keyboard is wired up but not documented anywhere on screen. |
 
 ## Cancel and interrupt
 
@@ -200,17 +201,36 @@ Division", and "Update Failed". Up to three at a time, as everywhere. See
 link to `/history` always opens on a fully collapsed page.
 
 **On a phone.** Division panels start closed. Standings become stacked cards with
-a power score dial and a four-cell grid of Win%, SOS, Games, and Game%. The
-Season Awards strip is hidden entirely, so three numbers a desktop user sees are
-missing. Dragging in edit mode needs a press-and-hold of about a fifth of a
-second before it starts, so a normal swipe still scrolls.
+a power score dial and a four-cell grid of Win%, SOS, Games, and Game%. A team's
+name wraps onto up to two lines on its card, and its record stays on the right.
+The Season Awards strip is hidden entirely, so three numbers a desktop user sees
+are missing. On a season card the months sit under the season name, so the name
+keeps its width; from 768 pixels wide they sit beside it. The Full Season Recap
+strip is 44 pixels high; from 768 pixels wide it is 41. In edit mode, once there
+is a change, the Reset, Cancel and Save Changes buttons wrap onto a second line
+when they do not fit below 640 pixels wide, so Save Changes stays on the screen.
+From 640 pixels wide they stay in one row. Dragging in edit mode needs a
+press-and-hold of about a fifth of a second before it starts, so a normal swipe
+still scrolls.
 
 **Accessibility.** The recap strip is a real button and reports whether it is
 open. A division header is **not**: it is a plain container with a click handler,
-and the only focusable thing in it is the small unlabelled chevron beside the
-division name. A keyboard user can open a division by landing on that chevron,
-but nothing tells them it is a control or what it will do, and the division name
-itself cannot be focused. Opening a recap moves no focus and announces nothing.
+and the only focusable thing in it is the small chevron beside the division name.
+The chevron is a real button. It is named "Toggle *division* teams" — for example
+"Toggle Competitive teams" — and the name stays the same whether the panel is
+open or closed. It reports open or closed separately. A keyboard user can open a
+division by landing on that chevron. The division name itself cannot be focused,
+and the rest of the header answers only to a click or a tap. Opening a recap
+moves no focus and announces nothing.
+
+In an opened recap the crown and the medal are hidden from screen readers. The
+champion's row and the runner-up's row carry the word "Champion" or "Runner-up"
+instead, which only a screen reader reads. Nothing changes on screen. This holds
+for the phone cards and the desktop rows. The coloured Win% and Game% figures and
+the champion's crown were changed to read at 4.5 to 1 or better: darker green,
+orange and amber in the light theme, and lighter blue and red in the dark theme.
+The ratios were measured when the change was made. The desktop rows use the same
+colours. The SOS figure and the power score dial were not changed.
 
 **Side effects the user can notice.** Saving a division change rewrites both the
 season's standings and the archived team record behind them, so a team's division
@@ -236,9 +256,20 @@ moves; power scores and records are untouched.
 - **The match count is a halved total.** It adds up every team's wins and losses
   and divides by two. A match recorded as a tie counts as neither, so tied matches
   are missing from the total, and hidden teams inflate it.
-- **A season with no standings shows almost nothing.** No summary panels, no team
-  or match line, and an empty recap. It is not distinguishable from a season the
-  league never recorded.
+- **A past season with no standings says so.** The card has no summary panels and
+  no team or match line, and its opened recap reads "No standings recorded for
+  this season". It used to open to a blank strip that looked broken. The same
+  words appear for a past season whose teams are all in a hidden division; that
+  card still shows its summary panels and a match count, because both include
+  hidden teams. An admin still sees the Edit Divisions button above the message.
+  The active season keeps "Season in progress – check back later", and a failed
+  load keeps its error with Try Again.
+- **Long names wrap, then are cut.** On a season card, a champion's name and a
+  highlight value wrap onto up to two lines, and the record and division line
+  under a champion wraps onto up to three, so "Intermediate 1" and
+  "Intermediate 2" stay different. A longer text is still cut with an ellipsis.
+  This holds at every width. On the phone cards of an opened recap a team name
+  follows the same rule, with two lines.
 - **The rank column is the playoff finish, not the standings position.** Teams
   with no playoff rank sort after those that have one, ordered by match wins, and
   show a dash.
@@ -269,7 +300,16 @@ moves; power scores and records are untouched.
   in a 2026-11-05 test (see HIST-12).
 - Not confirmed by hand: whether opening a division from its chevron by keyboard
   works in practice, or whether the press is swallowed before it reaches the
-  header that handles it.
+  header that handles it. A test shows that a click on the named chevron reaches
+  the header and flips the panel. No one has pressed it with a keyboard in a
+  browser.
+- Not confirmed by hand: the History phone polish, which is described in the
+  passages above on the phone start state, the chevron, the empty past season, the
+  season card layout, the wrapped names, the colours and the edit buttons. It was
+  read from the code and its tests, and from the change's own measurements. Those
+  notes say that between 640 and about 669 pixels wide (a small phone on its side)
+  Save Changes is still clipped at the right edge by up to 30 pixels. This
+  document has not re-measured that.
 - Not confirmed by hand: what the drag-and-drop board does on a phone in practice,
   and whether the press-and-hold delay is long enough to avoid fighting the scroll.
 - Not confirmed by hand: whether an admin editing a season while another admin
@@ -282,3 +322,4 @@ moves; power scores and records are untouched.
 
 Verified against `717rec` commit `ea5c8f4`.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+The History phone polish changed the passages on the phone start state, the division chevron, the empty past season, the season card layout, the wrapped names, the colours and the edit buttons after that commit.

@@ -194,6 +194,14 @@ them at rest is what separates them from the muted text they sit in; in the dark
 theme they also lighten, because the app's primary blue is the same value in
 both themes and sits at 3.84:1 on a near-black card.
 
+**Coloured figures in an opened history season were corrected.** The Win% and
+Game% figures and the champion's crown now read at 4.5:1 or better: darker green,
+orange and amber in the light theme, and lighter blue and red in the dark theme.
+The ratios were measured when the change was made. The SOS figure and the power
+score dial in the same cards keep colours shared with other pages and were not
+part of that change. See
+[`history/past-seasons.md`](../history/past-seasons.md#interactions-with-other-systems).
+
 Nothing in the product responds to a high-contrast or forced-colours setting.
 
 ## The interaction, event by event
@@ -283,8 +291,8 @@ lost before it is finished.
 survives a link.
 
 **On a phone.** Touch targets are set to 44 pixels on live scoring, on the
-hamburger button and on parts of the admin console. See
-[`on-a-phone.md`](on-a-phone.md#touch-and-reach).
+hamburger button, on the history recap strip and on parts of the admin console.
+See [`on-a-phone.md`](on-a-phone.md#touch-and-reach).
 
 **Accessibility.** This document is the definition.
 
@@ -345,9 +353,9 @@ or sent anywhere.
 - Not confirmed by hand: whether heading *levels* run in order within a page.
   Several pages skip from h1 to h3; the scan deliberately leaves that rule out
   until they are fixed.
-- Not confirmed by hand: contrast ratios beyond the muted text and the in-text
-  links corrected above. The Lighthouse floor of 0.9 leaves room for contrast
-  failures on unscanned pages.
+- Not confirmed by hand: contrast ratios beyond the muted text, the in-text
+  links and the history standings colours corrected above. The Lighthouse floor of
+  0.9 leaves room for contrast failures on unscanned pages.
 - Not confirmed by hand: whether the reduced-motion behaviour is right in every
   case by eye. The snowfall and the page transitions were checked; the ~155 files
   that animate were not each looked at.
@@ -365,4 +373,4 @@ commit — see
 X-08 and Q12, and written from the change and its tests rather than a fresh pass
 over the running app.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
-The 44-pixel touch targets in the admin console changed after that commit too (the admin phone polish).
+The 44-pixel touch targets in the admin console changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip and the history standings colours (the History phone polish).
