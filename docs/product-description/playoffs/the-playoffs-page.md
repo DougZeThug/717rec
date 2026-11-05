@@ -83,8 +83,9 @@ the request to finish, not for a season to appear on it: an old bracket can
 resolve with no season at all, and the page then falls back to the automatic
 choice. A bracket that fails to load does the same.
 
-However it is chosen, the season ends up in the address as `?season=<id>`, so a
-copied link opens the same view. A season the page worked out for itself
+However it is chosen, the season ends up in the address as `?season=<id>` (unless
+the link's bracket cannot be read: see Season scoping below), so a copied link
+opens the same view. A season the page worked out for itself
 replaces the current history entry, adding no step to go back through; a season
 **chosen from the picker** adds one, like choosing a bracket does.
 

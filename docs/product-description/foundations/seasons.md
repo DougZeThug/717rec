@@ -139,9 +139,10 @@ players. The app changes under them silently.
 
 **URL state.** The active season is not in the URL of `/standings` or
 `/schedule`. A link to either means "whatever season is active when you open it",
-so a link shared in one season shows different content in the next. Only the
-history pages and the playoffs page (`/playoffs?season=<id>`) address a named
-season.
+so a link shared in one season shows different content in the next. The
+playoffs page (`/playoffs?season=<id>`) and the weekly recap page, whose address
+holds a season and a week, name a season in the address. The history page does
+not.
 
 **On a phone.** No difference.
 
