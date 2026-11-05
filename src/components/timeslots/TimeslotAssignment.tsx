@@ -236,6 +236,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         </div>
         <Switch
           id="double-header-toggle"
+          className="hit-area-44"
           checked={isDoubleHeader}
           onCheckedChange={handleDoubleHeaderToggle}
         />

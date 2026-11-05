@@ -75,7 +75,7 @@ const SwitchRow: React.FC<SwitchRowProps> = ({ id, label, checked, onCheckedChan
     <Label htmlFor={id} className="flex-1 text-sm">
       {label}
     </Label>
-    <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} />
+    <Switch id={id} className="hit-area-44" checked={checked} onCheckedChange={onCheckedChange} />
   </div>
 );
 
