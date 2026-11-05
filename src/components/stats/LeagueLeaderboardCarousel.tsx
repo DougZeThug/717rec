@@ -78,7 +78,10 @@ const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ r
                     teamName={team.teamName}
                     size="sm"
                   />
-                  <p className="text-xs font-medium text-foreground text-center leading-tight line-clamp-1">
+                  <p
+                    title={team.teamName}
+                    className="text-xs font-medium text-foreground text-center leading-tight line-clamp-2 break-words"
+                  >
                     {team.teamName}
                   </p>
                   <span

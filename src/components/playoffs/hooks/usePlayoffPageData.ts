@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
 
 import { BRACKET_FORMATS, BRACKET_STATES } from '@/constants/brackets';
 import type { SimpleBracketData } from '@/hooks/brackets/useBracketData';
@@ -23,6 +23,11 @@ export interface PlayoffPageData {
   isAdmin: boolean;
   selectedBracketId: string | null;
   setSelectedBracketId: (id: string | null) => void;
+  /**
+   * "Back to brackets". Goes back one history step when the reader opened the
+   * bracket from this page's own list. Otherwise it closes in place.
+   */
+  closeBracket: () => void;
   ready: boolean;
   error: string | null;
   divisionsError: string | null;
@@ -51,6 +56,8 @@ export interface PlayoffPageData {
 
 export function usePlayoffPageData(): PlayoffPageData {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [selectedBracketId, setSelectedBracketIdState] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -106,9 +113,21 @@ export function usePlayoffPageData(): PlayoffPageData {
       setSelectedBracketIdState(id);
 
       if (id) {
+        // The list is long and the bracket page is short. Without this a reader
+        // who had scrolled the list lands part way down the bracket.
+        window.scrollTo({ top: 0 });
+
         const newSearchParams = new URLSearchParams(searchParams);
         newSearchParams.set('bracket', id);
-        setSearchParams(newSearchParams);
+        // Mark the new history entry as opened from this page's own list, so
+        // "Back to brackets" can step back to that list instead of adding a
+        // second one. The mark is set only when the address has no bracket yet:
+        // the list also shows over a `?bracket=` address while a bracket loads
+        // or fails, and going back from there would land on the wrong bracket.
+        // The mark lives in the history entry, so a reload keeps it.
+        setSearchParams(newSearchParams, {
+          state: searchParams.get('bracket') ? undefined : { fromList: true },
+        });
 
         queryClient.prefetchQuery({
           queryKey: ['bracket-data', id],
@@ -119,13 +138,37 @@ export function usePlayoffPageData(): PlayoffPageData {
       } else {
         const newSearchParams = new URLSearchParams(searchParams);
         newSearchParams.delete('bracket');
-        setSearchParams(newSearchParams);
+        // Replace, not push. This closes a bracket that was deleted, or one with no
+        // list step behind it to go back to (see closeBracket), and the phone's Back
+        // button must not open it again.
+        setSearchParams(newSearchParams, { replace: true });
 
         bracketLog('Removed bracket from URL');
       }
     },
     [searchParams, setSearchParams, queryClient, selectedBracketId]
   );
+
+  /**
+   * "Back to brackets". Opening a bracket from the list added a history step.
+   * If this step carries the mark, Back goes to the list the reader came from,
+   * so the Back button does not need an extra press to leave the page. This
+   * holds when the bracket then fails to load too. Without the mark, the step
+   * is swapped in place, as before: the step behind it may not be this list.
+   * That is a link that opened straight on a bracket, the link an admin gets
+   * after making a bracket, or a bracket opened from a list that shows over
+   * another bracket's address.
+   * The bracket is cleared first so the list shows at once, before the step lands.
+   */
+  const closeBracket = useCallback(() => {
+    const openedFromList = (location.state as { fromList?: boolean } | null)?.fromList === true;
+    if (openedFromList) {
+      setSelectedBracketIdState(null);
+      navigate(-1);
+      return;
+    }
+    setSelectedBracketId(null);
+  }, [location.state, navigate, setSelectedBracketId]);
 
   const {
     data: selectedBracket,
@@ -213,8 +256,10 @@ export function usePlayoffPageData(): PlayoffPageData {
     if (inUrl) return;
     const next = new URLSearchParams(searchParams);
     next.set('season', selectedSeasonId);
-    setSearchParams(next, { replace: true });
-  }, [selectedSeasonId, seasonSource, bracketParam, searchParams, setSearchParams]);
+    // Keep the entry's state. A replace with no state wipes it, and that would
+    // drop the "opened from the list" mark that "Back to brackets" reads.
+    setSearchParams(next, { replace: true, state: location.state });
+  }, [selectedSeasonId, seasonSource, bracketParam, searchParams, setSearchParams, location.state]);
 
   /**
    * Choosing a season from the picker. The open bracket belongs to the season
@@ -421,6 +466,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     isAdmin,
     selectedBracketId,
     setSelectedBracketId,
+    closeBracket,
     ready: Boolean(selectedBracketId) && Boolean(selectedBracket) && !selectedBracketLoading,
     error: combinedError,
     divisionsError: finalDivisionsError,

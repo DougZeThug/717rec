@@ -151,6 +151,7 @@ function IntegrationHarness() {
             ready: true,
             selectedBracketId,
             setSelectedBracketId,
+            closeBracket: () => setSelectedBracketId(null),
             bracket: null,
             teams,
             availableDivisions: [],

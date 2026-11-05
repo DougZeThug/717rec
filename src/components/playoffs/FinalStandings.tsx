@@ -91,7 +91,9 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
                 <div className="w-6 shrink-0 text-center font-bold tabular-nums">
                   {record.placement}
                 </div>
-                <div className="shrink-0">{getPlacementIcon(record.placement)}</div>
+                {/* size-5 (20px) is the icon's size, so places 4 and up, which have no
+                    icon, keep the same empty column and their logos line up with 1-3. */}
+                <div className="size-5 shrink-0">{getPlacementIcon(record.placement)}</div>
                 {(team.image_url || team.logo_url) && (
                   <img
                     src={team.image_url || team.logo_url || undefined}

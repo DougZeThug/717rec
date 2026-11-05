@@ -71,6 +71,8 @@ export const RankingTeamCell: React.FC<RankingTeamCellProps> = ({
             maxDisplay={4}
             className="mt-1"
             prefetchedBadges={prefetchedBadges}
+            // Inside the team link: a button here would be nested.
+            interactive={false}
           />
         </div>
       </Link>

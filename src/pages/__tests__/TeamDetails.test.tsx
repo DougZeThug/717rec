@@ -100,8 +100,20 @@ vi.mock('@/components/teams/TeamReportCard', () => ({ default: () => <p>Report C
 vi.mock('@/components/teams/RivalryHighlights', () => ({ default: () => <p>Rivalries</p> }));
 vi.mock('@/components/stats/HeadToHeadRecords', () => ({ default: () => <p>Head to Head</p> }));
 vi.mock('@/components/teams/MatchList', () => ({
-  default: ({ matches, defaultOpen }: { matches: unknown[]; defaultOpen?: boolean }) => (
-    <p data-testid="match-history" data-open={defaultOpen ? 'true' : 'false'}>
+  default: ({
+    matches,
+    defaultOpen,
+    hasError,
+  }: {
+    matches: unknown[];
+    defaultOpen?: boolean;
+    hasError?: boolean;
+  }) => (
+    <p
+      data-testid="match-history"
+      data-open={defaultOpen ? 'true' : 'false'}
+      data-has-error={hasError ? 'true' : 'false'}
+    >
       {matches.length === 0 ? 'No Match History' : 'Match History Loaded'}
     </p>
   ),
@@ -115,8 +127,10 @@ vi.mock('@/components/badges/TeamBadgeCollection', () => ({ default: () => <p>Te
 const createTestQueryClient = () =>
   new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 
+// MemoryRouter gives a plain first entry the key 'default', as a direct or shared
+// link gets in the browser. An entry with its own key reads as in-app navigation.
 const renderPage = (
-  initialEntry: string | { pathname: string; state?: unknown } = '/teams/falcons'
+  initialEntry: string | { pathname: string; state?: unknown; key?: string } = '/teams/falcons'
 ) => {
   const queryClient = createTestQueryClient();
   return render(
@@ -203,6 +217,8 @@ describe('TeamDetails page', () => {
     // A dropped connection is not a missing team.
     expect(screen.queryByText('Team Not Found')).not.toBeInTheDocument();
     expect(screen.getByRole('alert')).toBeInTheDocument();
+    // One full stop, not two: getUIErrorMessage adds the ". Please try again."
+    expect(screen.getByText('We could not load this team. Please try again.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
     expect(refetchTeam).toHaveBeenCalledTimes(1);
   });
@@ -297,6 +313,29 @@ describe('TeamDetails page', () => {
     expect(refetchMatches).toHaveBeenCalledTimes(1);
   });
 
+  it('words the match error with one full stop and tells Match History it failed', () => {
+    mockUseTeamMatches.mockReturnValue({
+      pastMatches: [],
+      upcomingMatches: [],
+      isLoadingMatches: false,
+      matchesError: new Error('boom'),
+      refetchMatches: vi.fn(),
+    });
+    renderPage();
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Match data: Matches could not be loaded. Please try again.'
+    );
+    expect(screen.getByRole('alert')).not.toHaveTextContent('..');
+    // The empty text must not say "no history" when the matches failed to load.
+    expect(screen.getByTestId('match-history')).toHaveAttribute('data-has-error', 'true');
+  });
+
+  it('does not flag Match History as failed when the matches loaded', () => {
+    renderPage();
+    expect(screen.getByTestId('match-history')).toHaveAttribute('data-has-error', 'false');
+  });
+
   it('shows the next match, linked to the schedule night, for anyone', () => {
     mockUseTeamMatches.mockReturnValue({
       pastMatches: [],
@@ -338,16 +377,25 @@ describe('TeamDetails page', () => {
   });
 
   it('navigates back when Back is pressed', () => {
-    renderPage();
+    renderPage({ pathname: '/teams/falcons', key: 'from-in-app-link' });
     fireEvent.click(screen.getAllByRole('button', { name: /back/i })[0]);
     expect(mockNavigate).toHaveBeenCalledWith(-1);
+  });
+
+  it('goes to the teams list when the page was opened by a direct or shared link', () => {
+    // Nothing of ours sits behind the first entry; Back would leave the site.
+    renderPage('/teams/falcons');
+    fireEvent.click(screen.getAllByRole('button', { name: /back/i })[0]);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/teams');
+    expect(mockNavigate).not.toHaveBeenCalledWith(-1);
   });
 
   it('pops history rather than pushing the origin route again', () => {
     // Arriving from /stats used to push '/stats' back on, which mounted that
     // page at the top and then smooth-scrolled down. Popping lets the origin
     // page restore its own position.
-    renderPage({ pathname: '/teams/falcons', state: { from: '/stats' } });
+    renderPage({ pathname: '/teams/falcons', state: { from: '/stats' }, key: 'from-stats' });
     fireEvent.click(screen.getAllByRole('button', { name: /back/i })[0]);
 
     expect(mockNavigate).toHaveBeenCalledWith(-1);

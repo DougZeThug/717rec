@@ -334,8 +334,8 @@ service raised. Teams are not told when their timeslot changes.
 **URL state.** The section's address is `/admin/timeslots`. The date is **not**
 kept in it, so an admin still cannot link to a particular night. What the address
 can carry is a one-off instruction from an approved request —
-`?date=&team=&slot=` — which opens the night and raises the move card. Those
-three are read on every render and taken back out as soon as the card is used or
+`?date=&team=&slot=`, with `asked=` when the team's wording did not fit a block —
+which opens the night and raises the move card. Those are read on every render and taken back out as soon as the card is used or
 dismissed, so a reload does not repeat the instruction. Anything the address
 does not understand is ignored: a day that does not exist, a team that is not an
 id, and a time that starts no block.

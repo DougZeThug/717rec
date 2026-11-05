@@ -1012,6 +1012,14 @@ finding read a superseded migration.
   so a POP guard alone would not have covered it and the page would have jumped
   to the top and then glided back. That handler now pops history instead, which
   also deleted the timer and five dead `scrollPosition` link payloads.
+  **Follow-up, 2026-11-05.** Measured again in a real browser against fake data
+  (dev server and production build): scrolled 337px down `/schedule`, followed the
+  Help link, arrived at 0, so the fix holds. The same test found that the four
+  routes' own restoration mostly does not work. `/stats`, then a team page, then
+  Back came back at 300 of 300px. Back landed at 0 after a top-bar link on all
+  four routes, and after a team page on `/teams`. A probe on `/stats`, then Help,
+  showed the saved position overwritten with 0 as the page was left. Not fixed and
+  not decided; the checklist item is `NAV-02`.
 - **Raised by:** [`foundations/navigation.md`](foundations/navigation.md#open-questions-and-verification),
   [`teams/browse-teams.md`](teams/browse-teams.md#open-questions-and-verification),
   [`cross-cutting/accessibility.md`](cross-cutting/accessibility.md#open-questions-and-verification).

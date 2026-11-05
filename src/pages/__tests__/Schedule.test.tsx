@@ -101,6 +101,8 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
     groupedTimeslots = {},
     hasFilters = false,
     onClearFilters,
+    searchTerm = '',
+    onClearSearch,
     lastPlayedDate,
     nextScheduledDate,
     onEditMatch,
@@ -117,6 +119,8 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
     groupedTimeslots?: Record<string, unknown[]>;
     hasFilters?: boolean;
     onClearFilters?: () => void;
+    searchTerm?: string;
+    onClearSearch?: () => void;
     lastPlayedDate?: Date | null;
     nextScheduledDate?: Date | null;
     onEditMatch?: (match: { id: string }) => void;
@@ -132,10 +136,12 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
       )}
       <p>Timeslot rows: {Object.values(groupedTimeslots).flat().length}</p>
       <p>Filters on: {hasFilters ? 'yes' : 'no'}</p>
+      <p>Search text: [{searchTerm}]</p>
       <p>Next night: {dayKey(nextScheduledDate)}</p>
       <p>Last played: {dayKey(lastPlayedDate)}</p>
       <button onClick={() => setActiveTab('completed')}>Switch To Completed</button>
       <button onClick={() => onClearFilters?.()}>Clear filters</button>
+      <button onClick={() => onClearSearch?.()}>Clear search</button>
       <button onClick={() => onEditMatch?.({ id: 'm-edit' })}>Edit match</button>
       <button onClick={() => onDeleteMatch?.('m-del')}>Delete match</button>
       <button onClick={() => onDateSelect?.(new Date(2026, 11, 24))}>Pick Dec 24</button>
@@ -397,6 +403,18 @@ describe('Schedule page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Filter Alpha' }));
 
     expect(screen.getByText('Showing 1 matches')).toBeInTheDocument();
+  });
+
+  it('hands the list the search text and a way to clear it', () => {
+    renderPage();
+
+    expect(screen.getByText('Search text: []')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filter Alpha' }));
+    expect(screen.getByText('Search text: [alpha]')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear search' }));
+    expect(screen.getByText('Search text: []')).toBeInTheDocument();
   });
 
   it('changes tabs from interaction', () => {

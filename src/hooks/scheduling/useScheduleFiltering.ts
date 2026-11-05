@@ -66,15 +66,17 @@ export const useScheduleFiltering = ({
   const myTeamFilterId = team === 'mine' ? myTeamId : null;
 
   const filteredMatches = useMemo(() => {
-    const searchLower = searchTerm.toLowerCase();
-    if (!searchTerm && !selectedDivision && !myTeamFilterId) return matches;
+    // Spaces at the start or end are not part of the search: a phone keyboard
+    // often adds one after a word. Spaces alone are no search at all.
+    const searchLower = searchTerm.trim().toLowerCase();
+    if (!searchLower && !selectedDivision && !myTeamFilterId) return matches;
 
     // One pass, not a chain of filters: these lists are rebuilt on every render
     // and this page is the one scorers keep open.
     return matches.filter((match) => {
       if (selectedDivision && !matchIsInDivision(match, selectedDivision)) return false;
       if (myTeamFilterId && !matchInvolvesTeam(match, myTeamFilterId)) return false;
-      if (!searchTerm) return true;
+      if (!searchLower) return true;
 
       const team1Name = match.team1Details?.name || '';
       const team2Name = match.team2Details?.name || '';

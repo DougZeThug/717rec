@@ -42,12 +42,8 @@ const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
   };
 
   if (isLoading) {
-    return (
-      <div className="mt-2 space-y-2">
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-20 w-full bg-muted/50" />
-      </div>
-    );
+    // One 44px block, as tall as the collapsed comments row, so the card does not jump.
+    return <Skeleton className="h-11 w-26" />;
   }
 
   const commentCount = comments.length;

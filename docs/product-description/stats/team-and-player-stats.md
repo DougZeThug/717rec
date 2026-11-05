@@ -219,7 +219,7 @@ with no placement bar. See
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is nothing to cancel. | No effect. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | The tab choice, the report card mode, and which sections were collapsed are all forgotten. |
-| Browser back or forward | Returns to the previous page. | Coming back re-opens the page in its default arrangement, with the numbers refetched. |
+| Browser back or forward | Returns to the previous page. | Coming back re-opens the page in its default arrangement, with the numbers refetched, and opens the section named in the address if the section bar was used (a hash such as `#career`). |
 | Reload, or the tab closed | Reloads everything, season numbers first and career numbers second. | Same. |
 | Network lost mid-request | The page shows its own failure state; the sections that had loaded stay. | Numbers already on screen stay on screen with nothing marking them stale. The player section, failing, simply does not appear — the same as having no data. |
 | The request fails or times out | As above. Reads are retried once. | The player statistics query is retried once unless live scoring is switched off for the league, in which case it is not retried at all and the section stays absent. |
@@ -252,7 +252,8 @@ inconsistent but never wrong.
 
 **Toasts and notifications.** None from reading statistics.
 
-**URL state.** Only the team. The tab, the report card mode, and the collapsed
+**URL state.** The team, and the section last chosen on the section bar (a hash
+such as `#stats`). The tab, the report card mode, and the collapsed
 sections are lost on navigation, so a particular view of a team's statistics
 cannot be shared.
 

@@ -16,8 +16,8 @@ interface SeasonSelectorProps {
 
 const SeasonSelector: React.FC<SeasonSelectorProps> = ({ selectedSeasonId, onSeasonChange }) => {
   const { data: seasons, isLoading } = useSeasons();
-  // The Playoffs page mounts this twice (desktop and the phone bar). A fixed id
-  // made the phone label point at the hidden desktop copy.
+  // useId gives each mounted copy its own id, so the label always points at its
+  // own trigger. A fixed id would collide if this were ever mounted twice.
   const triggerId = useId();
 
   if (isLoading || !seasons || seasons.length <= 1) {
@@ -40,12 +40,18 @@ const SeasonSelector: React.FC<SeasonSelectorProps> = ({ selectedSeasonId, onSea
         Season:
       </label>
       <Select value={knownSelection} onValueChange={onSeasonChange}>
-        <SelectTrigger id={triggerId} className="w-[220px] bg-card border-border">
+        {/* On a phone the picker is 44px tall (the usual tap size) and wide enough for
+            "Season name (Current)": at the old fixed 220px the "(Current)" part was
+            cut off. From md up it keeps its old 220px by 40px size. */}
+        <SelectTrigger
+          id={triggerId}
+          className="h-11 w-full max-w-[260px] bg-card border-border md:h-10 md:w-[220px] md:max-w-none"
+        >
           <SelectValue placeholder="Select season" />
         </SelectTrigger>
         <SelectContent>
           {seasons.map((season) => (
-            <SelectItem key={season.id} value={season.id}>
+            <SelectItem key={season.id} value={season.id} className="py-3 md:py-2">
               {season.name}
               {season.is_active ? ' (Current)' : ''}
             </SelectItem>

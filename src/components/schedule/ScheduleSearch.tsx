@@ -23,8 +23,7 @@ const ScheduleSearch: React.FC<ScheduleSearchProps> = ({ value, onChange }) => {
         autoComplete="off"
         onChange={(e) => onChange(e.target.value)}
         className="
-          pl-9 h-9 rounded-md text-sm font-inter tracking-wide
-          border border-border dark:border-border
+          pl-9 rounded-md font-inter tracking-wide
           placeholder:text-muted-foreground placeholder:italic
           focus:border-cornhole-navy focus:outline-hidden 
           transition

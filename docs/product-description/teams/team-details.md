@@ -8,9 +8,12 @@ every match it has played, and what it has won across every season it has
 existed.
 
 Almost all of it is folded away. The page opens with the team's identity, two
-summary cards, and the roster; the other five sections are closed, and each one
-fetches its own numbers only when it is opened. A user who never opens anything
-sees a short page and the app never asks the league for most of the data.
+summary cards, the roster and the match history; the other sections are closed.
+Stats & Report Card, Matchups & Rivalries and Career & Achievements fetch their
+numbers only when opened. Player Stats is different: it asks for its numbers as
+the page loads, and it does not appear at all when live scoring has no rounds for
+the team. A user who never opens anything sees a short page and the app never
+asks the league for most of the data.
 
 The address in the URL is normally the **team's name**, not its id. That has
 consequences a user can notice, and they are set out below.
@@ -26,10 +29,10 @@ Under that, two cards side by side: **Power Score**, with a gauge and the team's
 record; and **Ranking**, showing the team's place out of the whole field with an
 arrow for which way it has moved.
 
-Then **ROSTER**, already open, listing every player as a chip. Then **Match
-History**, also already open — it is what most people came for. Then four closed
-sections: Stats & Report Card, Matchups & Rivalries, Career & Achievements, and —
-only when the league has been scoring matches live — Player Stats.
+Then **ROSTER**, already open, listing every player as a chip. Then, in this order:
+Player Stats (closed, and only when the league has been scoring matches live),
+Stats & Report Card (closed), Matchups & Rivalries (closed), **Match History**
+(already open — it is what most people came for) and Career & Achievements (closed).
 
 Once the user scrolls past the header, a bar drops in at the top of the window
 with five buttons: Overview, Stats, Matchups, Matches, Career. Tapping one
@@ -77,22 +80,23 @@ What is shown once it resolves, in order:
 | Match History | **open** | every completed match this season |
 | Career & Achievements | closed | career totals, a power score chart across seasons, and every badge |
 
-The closed sections' contents are **not loaded until they are opened**, so the
-first opening of Stats, Matchups, or Career costs a wait, and closing and
+The contents of Stats, Matchups and Career are **not loaded until they are opened**, so the
+first opening of any of them costs a wait, and closing and
 reopening within five minutes is instant. A section named in the address counts
 as opened, and pays that cost on arrival.
 
 The closed section headers show a summary where they have one: Stats & Report
 Card carries the team's record beside its chevron.
 
-Nothing is focused on arrival. Scroll position is not reset, so arriving from
-the bottom of a long page can land here part way down.
+Nothing is focused on arrival. The page opens at the top, whatever the scroll
+position of the page the user came from.
 
 ### Leave without changing anything
 
-Nothing is recorded. Which sections were opened is not remembered — not in the
-browser, not in the address, not anywhere. Coming back gives the default
-arrangement again.
+Nothing is recorded. Which sections were opened is not remembered, in the browser
+or anywhere else. The section last chosen on the section bar is in the address as a
+hash; see **URL state** below. Coming back by a link gives the default arrangement
+again.
 
 ### Begin editing
 
@@ -106,10 +110,11 @@ Not applicable. Opening and closing sections is the whole of the interaction,
 and each is immediate and local.
 
 The section bar at the top appears once the page is scrolled past about 200
-pixels and disappears when it is scrolled back. It highlights whichever section
-is currently under the top of the window. Pressing one of its buttons scrolls
-smoothly to that section — but the section is still **closed**, so the user
-arrives at a folded heading and has to open it.
+pixels and disappears when it is scrolled back. It starts on Overview, then highlights
+whichever section is currently under the top of the window. Pressing one of its
+buttons scrolls smoothly to that section. For Stats, Matchups and Career the
+section is still **closed**, so the user arrives at a folded heading and has to
+open it; the address now names that section, so a reload opens it.
 
 ### Submit
 
@@ -120,7 +125,7 @@ Nothing is submitted. Every write that touches this team happens elsewhere.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role | No effect at all. A visitor, a player, and an admin see the same page with the same sections and the same numbers. There is no edit control here for anyone. | No effect. |
-| The record's state | A hidden team's page renders normally. A team with no players shows "No players registered". A team with no completed matches loses the last-match line and shows "No Match History". A team with no badges shows nothing in the header and "No achievements yet" in the Career section. | Numbers change under the user on a refetch. Sections already open update; sections still closed will simply be current when opened. |
+| The record's state | A hidden team's page renders normally. A team with no players shows "No players registered". A team with no completed matches loses the last-match line and shows "No Match History". A team with no badges shows nothing in the header and "No achievements yet" in the Career section. | Numbers change under the user on a refetch. Sections already open update; sections still closed will simply be current when opened (Player Stats is already loaded). |
 | The season's state | The header, the Overview cards, the roster, and the Match History are all the **active season**. Career, badges, and the advanced stats look across every season. Nothing on the page marks which is which. | A season changeover empties the record and the match history at the next refetch, while the career numbers stay. |
 | Viewport | On a phone the logo is smaller, the breadcrumbs are replaced by a single Back button, and the section bar scrolls sideways. Badges are bigger and open a dialog on tap; on a wide screen they show a tooltip on hover. | Re-flows on rotation. |
 | Keys the app honours | No shortcuts. Tab reaches Back, then each section header in turn, then whatever is inside an open one. | Enter or Space opens the focused section. Escape closes a badge dialog. |
@@ -131,8 +136,8 @@ Nothing is submitted. Every write that touches this team happens elsewhere.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes an open badge dialog. Nothing else. |
 | In-app navigation away, or switching tab within the page | Which sections were open is lost. Nothing else is held. | No effect; nothing is ever in flight from this page but reads. |
-| Browser back or forward | Leaves the page. Coming back gives a fresh page with the default sections and no memory of what was opened. **Back from here to `/teams` restores that list's scroll position**; the breadcrumb link to Teams does not, because it is a new navigation rather than a history move. | Same. |
-| Reload, or the tab closed | The page rebuilds from the database with every section closed again. | Same. |
+| Browser back or forward | Leaves the page. Coming back by a link gives a fresh page in the default arrangement, with no memory of what was opened. Coming back with Back to an address that holds a section hash (`#career`) opens that section as well. Back from here goes one step back in the history, so `/teams` is built to come back where it was left; **in the 2026-11-05 test it landed at the top**. The breadcrumb link to Teams opens the list at the top, because it is a new navigation rather than a history move. | Same. |
+| Reload, or the tab closed | The page rebuilds from the database in the default arrangement, Roster and Match History open and the rest closed, plus the section named in the address, if there is one. | Same. |
 | Network lost mid-request | The page stays a skeleton indefinitely, or shows a retry card if the read fails outright. There is no message that the network is the problem. | An open section that has not loaded shows its own retry card; the Advanced Stats block offers "We couldn't load advanced stats. Please try again." |
 | The request fails or times out | Reads are retried once. A failed team read gives the retry card; only a team that genuinely does not exist gives **Team Not Found**. | As above, per section. |
 | The session expires | No effect. Every part of this page is public. | No effect. |
@@ -140,8 +145,9 @@ Nothing is submitted. Every write that touches this team happens elsewhere.
 | Browser autofill or a password manager writes into the form | No effect. There are no fields. | No effect. |
 | The window loses focus | Nothing. | **Returning refetches the match history immediately and everything else if it is over five minutes old.** Numbers in an open section can change under the user. |
 
-After an interrupt the page is rebuilt from scratch with every section closed.
-Nothing about the arrangement survives leaving.
+After an interrupt the page is rebuilt from scratch in the default arrangement.
+The only part of the arrangement that survives is the section named in the address
+(`#career`), which opens again.
 
 ## Interactions with other systems
 
@@ -208,13 +214,14 @@ data and writes nothing.
   winner reads L with the two scores beside it.
 - **The last-match line links to the opponent by name.** If the opponent is
   missing it reads "Unknown" and links to a page that does not exist.
-- **The section bar starts by highlighting Stats**, not Overview, until the first
-  scroll corrects it.
-- **The section bar's buttons scroll to closed sections.** Four of the five land
-  the user on a folded heading.
-- **Back behaves differently depending on where the user came from.** From the
-  standings the page returns to the standings and scrolls to where the user was,
-  as a new navigation. From anywhere else it is a plain history step back.
+- **The section bar's buttons scroll to closed sections.** Three of the five
+  (Stats, Matchups and Career) land the user on a folded heading. Overview lands on
+  the cards and Matches on a section that is already open.
+- **Back depends on how the page was opened.** In the app it goes one step back
+  in the history, so the page the user came from comes back (the standings came
+  back where they were left in the 2026-11-05 test). A team address typed by
+  hand, reloaded, or opened from outside the app has nothing of ours behind it,
+  so the page's own Back button goes to the teams list.
 - **Badges are not filtered by season.** Every badge the team has ever earned is
   in the header row and the Career section, so a badge from three seasons ago
   sits beside one from last week with only its tooltip to tell them apart.
@@ -249,3 +256,4 @@ data and writes nothing.
 
 Verified against `717rec` commit `ea5c8f4`, except the failed-read behaviour
 above, which was changed after that commit.
+The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).

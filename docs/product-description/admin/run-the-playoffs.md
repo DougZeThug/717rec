@@ -106,8 +106,9 @@ Seeding* and *Rearrange Teams* are the controls for those.
 
 ### Leave without changing anything
 
-Nothing is recorded. The selected season and bracket are held in the page and
-lost on leaving. The Brackets/Teams tab is remembered for the browser tab.
+Nothing is recorded. The selected season and bracket are in the address, so a
+reload or the browser Back button brings them back; leaving through a link in
+the app drops them. The Brackets/Teams tab is remembered for the browser tab.
 
 ### Begin editing
 
@@ -252,7 +253,7 @@ is selected**. Selecting a bracket hides it. It is read-only to everyone.
 | The user's role | A visitor or player sees `/playoffs` with no controls at all. An admin sees the tab strip and every button. Blind Draw and Hero are inside `/admin` and gated by its guard. | Losing admin leaves the controls on screen until the profile is re-read; the writes then fail. |
 | The record's state | `pending` allows seeding and rearranging. `in_progress` allows neither. `completed` disables everything but Recalculate Standings and Delete. | A result entered elsewhere moves the bracket to `in_progress`; the seeding dialog does not notice until it is reopened, and the save then fails. |
 | The season's state | The season picker chooses which season's brackets are listed, and a new bracket is stamped with it. When the playoff season and the active season differ, a banner says which is which. | Changing the season reloads the list and clears the selected bracket. |
-| Viewport | Below the medium breakpoint the six bracket admin controls collapse into one **⋯** menu; above it they are a row of buttons. The season picker moves to a fixed bar at the foot of the screen. | No effect. |
+| Viewport | Below the medium breakpoint the six bracket admin controls collapse into one **⋯** menu; above it they are a row of buttons. The season picker does not move: it is under the heading on every screen size. | No effect. |
 | Keys the form honours | The create, seeding, rearrange, and delete dialogs are proper dialogs: Escape closes, Tab is trapped. The seeding list can be reordered from the keyboard. | Escape cancels without writing — except that the Seeds tab inside the create dialog has already saved anything it saved. |
 
 ## Cancel and interrupt
@@ -262,7 +263,7 @@ is selected**. Selecting a bracket hides it. It is read-only to everyone.
 | Escape, or a Cancel button | Nothing to cancel. | Closes any dialog and writes nothing. It cannot stop a creation already sent, and it cannot un-do seeds saved from the Seeds tab. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | A half-filled create form is lost with no warning. A creation already sent still completes and the bracket still appears. |
 | Browser back or forward | As above. | As above. The automatic navigation a second after creation can also land while the admin is doing something else. |
-| Reload, or the tab closed | The page reloads with no bracket selected. | The form is gone. A sent creation may have landed; the division card says which. |
+| Reload, or the tab closed | A reload brings back the same season and bracket, because both are in the address. After the tab is closed, `/playoffs` opens on the list with no bracket selected. | The form is gone. A sent creation may have landed; the division card says which. |
 | Network lost mid-request | The brackets list shows its error banner. | Creation fails with "Network Error: Please check your internet connection and try again" in the dialog and a toast. Nothing is queued. |
 | The request fails or times out | As above. | The dialog keeps the form and shows the reason, so the admin can retry without re-ticking twelve teams. |
 | The session expires | Reading still works; `/playoffs` is public. | Every write is refused and reported as that control's failure. |
@@ -317,8 +318,9 @@ any of these three screens does.
 team when a bracket is created, seeded, or deleted.
 
 **URL state.** The address carries a division and a bracket id after the
-automatic navigation, so a bracket can be linked to. The season, the tab, the
-blind draw, and the Challonge settings are not in the address.
+automatic navigation, so a bracket can be linked to. It also carries the season
+(`?season=<id>`), which the season picker changes and which the page writes itself once it knows the season. A link to a bracket that cannot be read keeps the parameters it came with, such as `?bracket=<id>`; the page cannot work out a season from the failed bracket.
+The tab, the blind draw, and the Challonge settings are not in the address.
 
 **On a phone.** Every bracket admin control is reachable, behind the **⋯**
 menu in the bracket header. Blind draw and the Challonge settings work at every
@@ -411,4 +413,5 @@ dialog's team list above, all changed after that commit — see
 [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone),
 [pull request 1556](https://github.com/DougZeThug/717rec/pull/1556), and
 [pull request 1559](https://github.com/DougZeThug/717rec/pull/1559) (the Edit
-teams rebuild and the division filter).
+teams rebuild and the division filter). The season picker is described as the
+code has it now: under the heading on every screen size.

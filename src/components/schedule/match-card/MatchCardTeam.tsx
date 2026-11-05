@@ -43,7 +43,7 @@ export const MatchCardTeam: React.FC<MatchCardTeamProps> = ({
         <span
           className={cn(
             'text-xs font-medium truncate max-w-[120px] text-center',
-            isWinner ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-foreground'
+            isWinner ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-foreground'
           )}
         >
           {teamName}

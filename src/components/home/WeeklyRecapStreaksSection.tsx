@@ -28,7 +28,7 @@ function MobileStreakRow({ team, winter }: StreakRowProps) {
       >
         {team.teamName}
       </span>
-      <span className="shrink-0 text-xs font-bold tabular-nums bg-orange-500/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded">
+      <span className="shrink-0 text-xs font-bold tabular-nums bg-orange-500/20 text-orange-800 dark:text-orange-400 px-1.5 py-0.5 rounded">
         {team.streak}
       </span>
     </Link>

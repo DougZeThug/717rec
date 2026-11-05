@@ -38,8 +38,11 @@ const ChampionCardCompact = React.forwardRef<
   }
 >(({ team, division, isWinter }, ref) => {
   return (
+    // tabIndex -1: whileTap makes framer-motion add tabindex=0, which is a Tab stop
+    // with nothing to do.
     <m.div
       ref={ref}
+      tabIndex={-1}
       whileTap={{ scale: 0.97 }}
       className={cn(
         'flex flex-col items-center backdrop-blur-xs rounded-xl p-3 w-[130px]',

@@ -28,11 +28,11 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
         value="division"
         aria-label="View by Division"
         className={cn(
-          'transition-all duration-200 px-3 py-1.5 text-sm font-medium rounded-md',
+          'transition-all duration-200 min-h-11 min-w-11 px-3 py-1.5 text-sm font-medium rounded-md',
           view === 'division'
             ? isWinterTheme
               ? 'btn-winter-primary'
-              : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-xs'
+              : 'bg-gradient-to-br from-blue-600 to-amber-700 data-[state=on]:text-white shadow-xs'
             : isWinterTheme
               ? 'text-[hsl(var(--muted-foreground))] hover:bg-frost-primary/10'
               : 'text-muted-foreground hover:bg-accent'
@@ -45,11 +45,11 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
         value="all"
         aria-label="View All Teams"
         className={cn(
-          'transition-all duration-200 px-3 py-1.5 text-sm font-medium rounded-md',
+          'transition-all duration-200 min-h-11 min-w-11 px-3 py-1.5 text-sm font-medium rounded-md',
           view === 'all'
             ? isWinterTheme
               ? 'btn-winter-primary'
-              : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-xs'
+              : 'bg-gradient-to-br from-blue-600 to-amber-700 data-[state=on]:text-white shadow-xs'
             : isWinterTheme
               ? 'text-[hsl(var(--muted-foreground))] hover:bg-frost-primary/10'
               : 'text-muted-foreground hover:bg-accent'

@@ -154,6 +154,16 @@ describe('RankingCard', () => {
       expect(onToggleExpand).toHaveBeenCalledWith('team-1');
     });
 
+    // A badge opens its own dialog: the same tap must not also expand the card.
+    it('does not toggle the card when the badges are tapped', async () => {
+      const onToggleExpand = vi.fn();
+      renderCard({ compactView: true, onToggleExpand });
+
+      await userEvent.click(screen.getByTestId('badges-team-1'));
+
+      expect(onToggleExpand).not.toHaveBeenCalled();
+    });
+
     it('shows Win %, SOS and a compare button when expanded', () => {
       renderCard({ compactView: true, expandedTeam: 'team-1' });
       expect(screen.getByText('Win %')).toBeInTheDocument();

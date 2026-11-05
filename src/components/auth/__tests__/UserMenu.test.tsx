@@ -63,6 +63,40 @@ describe('UserMenu', () => {
     }
   });
 
+  // Below 380px only the icon shows, so Sign in no longer covers the wordmark.
+  // The word is hidden with CSS, so the button needs its own name.
+  it('keeps the name Sign in when the word is hidden on a narrow phone', () => {
+    mockUseAuth.mockReturnValue({ user: null, profile: null, signOut: mockSignOut });
+    renderMenu();
+
+    const button = screen.getByRole('button', { name: 'Sign in' });
+
+    expect(button).toHaveAttribute('aria-label', 'Sign in');
+    expect(screen.getByText('Sign in')).toHaveClass('hidden!', 'min-[380px]:block!');
+  });
+
+  // Below 640px only the icon shows, so the name no longer crowds the header.
+  // jsdom ignores CSS, so the test reads the classes. The button keeps its name.
+  it('hides the username below 640px and keeps the button name', () => {
+    renderMenu();
+
+    const button = screen.getByRole('button', { name: 'User menu' });
+
+    expect(button).toHaveAttribute('aria-label', 'User menu');
+    expect(screen.getByText('doug')).toHaveClass('hidden', 'sm:inline');
+  });
+
+  // With only the icon showing, the button would be about 28px wide. It keeps a
+  // 44px tap target below 640px, as the Sign in button does below 380px.
+  it('keeps a 44px tap target on a phone while only the icon shows', () => {
+    renderMenu();
+
+    const button = screen.getByRole('button', { name: 'User menu' });
+
+    expect(button).toHaveClass('min-w-11', 'sm:min-w-0');
+    expect(button.querySelector('svg')).toHaveClass('mr-0', 'sm:mr-1');
+  });
+
   it('sends an approved member to /my-team, where Leave Team lives', async () => {
     mockUseTeamMembership.mockReturnValue({
       activeMembership: { team_id: 'team-1', team: { name: 'Rail Riders' } },

@@ -75,11 +75,12 @@ const gateProblems = (task, sha) => {
     else if (recorded.result !== 'pass') problems.push(`check "${name}" failed`);
     else if (recorded.sha !== sha || recorded.dirty) problems.push(`check "${name}" is stale (ran on ${recorded.sha.slice(0, 7)}${recorded.dirty ? '+uncommitted' : ''}, HEAD is ${sha.slice(0, 7)}). Commit, then rerun.`);
   }
+  // A recorded CHANGES or REJECT blocks every task, trivial or not. A missing or stale review blocks only a task that is not trivial. Plan reviews never count.
+  const latest = [...task.reviews].reverse().find((entry) => entry.mode === 'code');
+  if (latest && latest.verdict !== 'APPROVE') problems.push(`latest code review is ${latest.verdict}`);
   if (!task.trivial) {
-    const latest = [...task.reviews].reverse().find((entry) => entry.mode === 'code');
     if (!latest) problems.push('no independent code review recorded');
-    else if (latest.verdict !== 'APPROVE') problems.push(`latest code review is ${latest.verdict}`);
-    else if (latest.sha !== sha) problems.push('code review is stale: code changed after the review');
+    else if (latest.verdict === 'APPROVE' && latest.sha !== sha) problems.push('code review is stale: code changed after the review');
   }
   for (const [key, issue] of Object.entries(task.issues)) if (issue.escalated && !issue.resolved) problems.push(`issue "${key}" is escalated and unresolved`);
   if (dirty()) problems.push('uncommitted changes in the working tree');
@@ -136,8 +137,14 @@ const sub = {
     const sep = rest.indexOf('--');
     const required = requiredChecks().includes(name);
     if (required && sep >= 0) die(`"${name}" is a required check. It runs its configured command only: no "-- <cmd>" override.`);
-    const cmd = sep >= 0 ? rest.slice(sep + 1).join(' ') : (cfg.verify.checks[name] ?? (required ? BUILTIN_CHECKS[name] : undefined));
-    if (!cmd) die(`No command for check "${name}". Add it to .factory/config.json verify.checks or pass: -- <cmd>`);
+    // The allow list runs this CLI without a prompt, so an override must not turn an unknown name into a shell. hasOwn keeps "__proto__" and "constructor" out.
+    if (sep >= 0 && !required && !Object.hasOwn(cfg.verify.checks ?? {}, name)) die(`"${name}" is not a configured check, so it cannot run a "-- <cmd>" override. Add it to .factory/config.json verify.checks first.`);
+    // Doug's decision: no check accepts an override, not even a configured one that is not required. The allow list would run it with no prompt.
+    if (sep >= 0) die(`The "-- <cmd>" override is not supported. "${name}" runs its configured command only. To change the command, edit .factory/config.json verify.checks.`);
+    // hasOwn, not a plain lookup: a name like "constructor" or "__proto__" would otherwise pick up a member of Object.prototype.
+    const configured = Object.hasOwn(cfg.verify.checks ?? {}, name) ? cfg.verify.checks[name] : undefined;
+    const cmd = configured ?? (required && Object.hasOwn(BUILTIN_CHECKS, name) ? BUILTIN_CHECKS[name] : undefined);
+    if (!cmd) die(`No command for check "${name}". Add it to .factory/config.json verify.checks.`);
     mkdirSync(join(evDir, id), { recursive: true });
     const started = Date.now();
     const run = spawnSync(cmd, { shell: true, cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: { ...process.env, FACTORY_TASK_BASE: task.baseSha || '' } });

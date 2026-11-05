@@ -88,8 +88,8 @@ Nothing is recorded beyond the ordinary pageview described in
 being scrolled past, opened, or dismissed. Coming back gives the same page,
 rebuilt.
 
-Scroll position is not reset when leaving, and the home page does not restore
-its own.
+A link opens the next page at the top, and the home page does not restore its own
+position on Back.
 
 ### Begin editing
 
@@ -152,7 +152,7 @@ user's own team — see
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Escape, or a Cancel button                                  | No effect. There is no Cancel anywhere on this page.                                                                                                                                                 | Closes the request-type dropdown if it is open. It does not clear the message form and does not abort a submission in flight.                                                     |
 | In-app navigation away, or switching tab within the page    | Nothing is lost. Every block rebuilds from the cache on return, so returning within five minutes is instant.                                                                                         | **Anything typed into the message form is lost, with no warning.** A submission already sent still reaches the league, unseen.                                                    |
-| Browser back or forward                                     | Returns to the previous page. Scroll position is not reset, so arriving back at a long home page from a short one can land the user in the middle of it.                                             | Same as navigating away, and the app cannot prevent it.                                                                                                                           |
+| Browser back or forward                                     | Returns to the previous page. The home page does not save or restore its own scroll position, so Back is left to the browser; a page like it (`/schedule`) came back at the top in the 2026-11-05 test.                                             | Same as navigating away, and the app cannot prevent it.                                                                                                                           |
 | Reload, or the tab closed                                   | The whole page refetches from scratch and every skeleton is shown again.                                                                                                                             | Anything typed is lost. A submission already sent still lands.                                                                                                                    |
 | Network lost mid-request                                    | Blocks that have not answered stay as skeletons or stay absent. The top ten shows "We couldn't load the top teams. Please try again." with a Try Again button; the other blocks show nothing at all. | The request fails and a red toast carries the reason. Nothing is queued.                                                                                                          |
 | The request fails or times out                              | A failed read is retried once, then that block gives up quietly. Only the top ten says so.                                                                                                           | The message form keeps every field and a red toast explains.                                                                                                                      |
@@ -279,3 +279,4 @@ message form is submitted, which creates a request an admin will see.
 Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
 UX audit item W7 (the two message forms became one). Those passages were written
 from the change and its tests, not from a fresh pass over the running app.
+The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).

@@ -10,10 +10,10 @@
   --secondary-background: #f8f9fa;
   --match-background: #ffffff;
   --font-color: #1a1a1a;
-  --win-color: #16a34a;
-  --loss-color: #dc2626;
+  --win-color: #15803d;           /* 5.0:1 on white (was #16a34a, 3.3:1) */
+  --loss-color: #dc2626;          /* 4.8:1 on white at full opacity */
   --label-color: #6b7280;
-  --hint-color: #9ca3af;
+  --hint-color: #6b7280;          /* 4.8:1 on white (was #9ca3af, 2.5:1) */
   --connector-color: #d1d5db;
   --border-color: #e5e7eb;
   --border-hover-color: #3b82f6;
@@ -103,7 +103,7 @@
   --match-background: #161b22;
   --font-color: #e6edf3;          /* Brighter than default #d9d9d9 */
   --win-color: #50b649;
-  --loss-color: #e61a1a;
+  --loss-color: #f87171;          /* 6.25:1 on #161b22 (was #e61a1a, 3.73:1, then faded to 1.98:1) */
   --label-color: #8b949e;         /* More visible than grey */
   --hint-color: #adbac7;          /* Brighter than default #a7a7a7 */
   --connector-color: #30363d;     /* More visible connectors */
@@ -164,7 +164,8 @@
 
 .brackets-viewer .participant.loss {
   color: var(--loss-color);
-  opacity: 0.6;
+  /* Not faded: opacity 0.6 took the red below 2:1 on the dark card. Red text and
+     the bold winner already tell the two teams apart. */
 }
 
 /* ============================================
@@ -241,6 +242,15 @@
   padding: 1rem;
 }
 
+/*
+  "Winner Bracket" and "Loser Bracket" are the library's `.bracket h2`, which it
+  colours plain `gray`. That is 3.95:1 on the light page, under the 4.5:1 that
+  21px text needs. The theme's label colour is 4.83:1 on light and 6.15:1 on dark.
+*/
+.brackets-viewer .bracket h2 {
+  color: var(--label-color);
+}
+
 .brackets-viewer .upper-bracket {
   margin-bottom: 2rem;
 }
@@ -254,6 +264,18 @@
 /* ============================================
    Match Labels & Status
    ============================================ */
+
+/*
+  The chip that names a match ("WB 1.1") inherits the page's 1.5 line height, so
+  its background was 21.6px tall and covered the top 4.6px of the first team's
+  logo. A line height of 1 makes it 14.4px tall, and 2px less lift keeps it
+  centred on the match border. The text keeps its size. The chip is positioned
+  absolutely, so the match height and the connector lines do not move.
+*/
+.brackets-viewer .opponents > span {
+  line-height: 1;
+  top: -8px;
+}
 
 .brackets-viewer .match-label {
   color: var(--label-color);
@@ -301,10 +323,27 @@
     transform: none;
   }
   
-  /* Tighter columns claw back some of the width the un-scaled bracket takes. */
+  /*
+    Tighter gaps claw back some of the width the un-scaled bracket takes. The
+    match box is 232px, not 200px: at 200px a long team name lost its last
+    letters to an ellipsis in about half the boxes. 232px keeps the name on one
+    line and leaves the box height unchanged. The smaller gap (24px, was 28px)
+    keeps each column only 28px wider than before.
+  */
   .brackets-viewer {
-    --match-width: 200px;
-    --round-margin: 28px;
+    --match-width: 232px;
+    --round-margin: 24px;
+  }
+
+  /*
+    The viewer library gives the bracket 50px of padding on each side, which on
+    a phone was 50px of empty space before the first round. The element's own
+    `p-4 md:p-8` (BracketsViewerComponent) loses to the library's rule, because
+    the library stylesheet loads after Tailwind's. This file loads after the
+    library's, so the phone padding is set here. Desktop keeps the library's.
+  */
+  .brackets-viewer {
+    padding: 8px 12px;
   }
   
   .brackets-viewer .participant .name {

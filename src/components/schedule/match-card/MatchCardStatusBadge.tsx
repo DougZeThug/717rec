@@ -8,7 +8,7 @@ import { UpsetTag } from '../UpsetTag';
 // One pill per state. Keyed on the union minus `scheduled`, which shows no
 // pill at all, so a new state fails the typecheck until it is given a colour.
 const statusPillClasses: Record<Exclude<MatchStatus, 'scheduled'>, string> = {
-  completed: 'bg-primary/10 text-primary',
+  completed: 'bg-primary/10 text-blue-700 dark:text-blue-400',
   postponed: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
   canceled: 'bg-destructive/10 text-destructive-text',
 };

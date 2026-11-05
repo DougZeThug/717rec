@@ -30,10 +30,13 @@ const AddReactionPopover: React.FC<AddReactionPopoverProps> = ({
 }) => (
   <Popover open={open} onOpenChange={onOpenChange}>
     <PopoverTrigger asChild>
+      {/* `min-w-11` is the 44 pixel width Q14 set for the pages people use on a
+          phone; the smile icon alone makes a much narrower button. The floor
+          stops at md (`md:min-w-0`), so a wide screen keeps the small button. */}
       <Button
         variant="outline"
         size="xs"
-        className="py-0 h-6 px-1.5 gap-1 text-xs border"
+        className="py-0 h-6 px-1.5 gap-1 text-xs border min-w-11 md:min-w-0"
         aria-label="Add reaction"
       >
         <SmilePlus className="size-3.5" />

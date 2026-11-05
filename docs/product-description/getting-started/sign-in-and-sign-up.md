@@ -234,10 +234,10 @@ is queued.
 failure.
 
 **URL state.** `next` is the only thing the URL carries, and it is the only part of
-the page's state that survives a reload. It is one of the few exceptions to the
-rule in [`foundations/navigation.md`](../foundations/navigation.md#while-editing)
-that the URL holds nothing but a record id. The chosen tab is not in the URL, so
-`/auth` cannot be linked to with Sign Up already open.
+the page's state that survives a reload. The chosen tab is not in the URL, so
+`/auth` cannot be linked to with Sign Up already open. The pages that carry state
+in the address are listed in
+[`foundations/navigation.md`](../foundations/navigation.md#while-editing).
 
 **On a phone.** The card fills the width. The email field asks for the email
 keyboard. Both tab triggers are at least 44 pixels tall. The bottom tab bar stays

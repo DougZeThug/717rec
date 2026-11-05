@@ -30,9 +30,11 @@ interface BracketDetailProps {
 // Softer, league-standard tier accent for the bracket card top border
 const getDivisionColorClass = (division: string) => getDivisionSoftClasses(division).borderTop;
 
-// min-w-0 lets the title block shrink; without it the no-wrap
-// description row pushes the admin menu past the card's clipped
-// right edge on a phone.
+// min-w-0 lets the title block shrink; without it the description row
+// pushes the admin menu past the card's clipped right edge on a phone.
+// The description wraps between its parts, and each part stays on one line.
+// A bullet travels with the value after it, so a bullet can lead a line but
+// never ends one.
 const BracketTitleBlock: React.FC<{ bracket: PlayoffBracket }> = ({ bracket }) => (
   <div className="min-w-0">
     <CardTitle
@@ -40,12 +42,14 @@ const BracketTitleBlock: React.FC<{ bracket: PlayoffBracket }> = ({ bracket }) =
     >
       {bracket.name}
     </CardTitle>
-    <CardDescription className="flex items-center gap-2">
-      <span className="font-medium">{bracket.division} Division</span>
-      <span className="text-muted-foreground">•</span>
-      <span>{bracket.format}</span>
+    <CardDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <span className="whitespace-nowrap font-medium">{bracket.division} Division</span>
+      <span className="inline-flex items-center gap-x-2 whitespace-nowrap">
+        <span className="text-muted-foreground">•</span>
+        <span>{bracket.format}</span>
+      </span>
       {bracket.state && (
-        <>
+        <span className="inline-flex items-center gap-x-2 whitespace-nowrap">
           <span className="text-muted-foreground">•</span>
           <span
             className={cn(
@@ -59,7 +63,7 @@ const BracketTitleBlock: React.FC<{ bracket: PlayoffBracket }> = ({ bracket }) =
           >
             {bracket.state.charAt(0).toUpperCase() + bracket.state.slice(1)}
           </span>
-        </>
+        </span>
       )}
     </CardDescription>
   </div>
@@ -128,7 +132,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
       <CardContent className="p-0">
         {bracketLoading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="size-8 animate-spin text-cornhole-navy" />
+            <Loader2 className="size-8 animate-spin text-primary" />
           </div>
         ) : (
           <>

@@ -31,8 +31,7 @@ in the theme's ring colour.
 They activate a navigation link. The page changes. A visually hidden live region
 says "Schedule page", and focus moves to the page's main content area, so the
 next Tab lands inside the new page rather than back at the top of the browser.
-The page does **not** scroll to the top, so what is announced and what is on
-screen can be two different things.
+The new page opens at the top, so what is announced and what is on screen agree.
 
 They open a dialog. Focus goes into it, Escape closes it, and focus returns.
 Every dialog, dropdown, popover, and select in the app behaves this way, because
@@ -215,15 +214,19 @@ stateDiagram-v2
     announced_only --> reading
 ```
 
-Scroll position is not reset by any of this. The page announced, the element
-focused, and the part of the page on screen can all disagree.
+After a link the new page opens at the top, where focus has moved. After Back or
+Forward nothing resets the scroll. The browser may put the page back, and four
+pages (`/teams`, `/stats`, `/history`, `/insights`) also try to put it back
+themselves; in the 2026-11-05 test most pages still came back at the top (see
+[navigation](../foundations/navigation.md#arrive)). Either way, the part of the page on
+screen and the element focused can disagree.
 
 ## Cancel and interrupt
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | Escape closes any dialog, menu, popover, or select and returns focus to whatever opened it. It closes the hamburger menu too, and returns focus to the hamburger button. | Escape closes the dialog and abandons what was in it. It does not abort a request already sent. |
-| In-app navigation away, or switching tab within the page | The new page is announced and focus moves to its main content. Scroll position is not reset, so a sighted user and a reader are looking at different things. | Work is discarded with no warning and nothing is announced about the loss. |
+| In-app navigation away, or switching tab within the page | A link to another page is announced, focus moves to its main content, and the page opens at the top, so a sighted user and a reader are looking at the same place. Switching a tab within the page does none of these: nothing is announced, focus is not moved, and the scroll position is kept. Pressing Tab afterwards moves focus into the tab panel, and the browser scrolls the panel into view if it is hidden. | Work is discarded with no warning and nothing is announced about the loss. |
 | Browser back or forward | The new page is announced but **focus is not moved**, so the next Tab continues from wherever focus happened to be. | Same, and the discarded work is silent. |
 | Reload, or the tab closed | The first load after a reload announces nothing and moves no focus, by design. The reader starts at the top of the document. | Nothing is announced about a write that may or may not have landed. |
 | Network lost mid-request | Silent. Nothing announces going offline, because nothing detects it. | The failure toast is announced. It says the feature failed, never that the connection did. |
@@ -360,3 +363,4 @@ commit — see
 — and the first-level headings, changed after it too, alongside UX audit items
 X-08 and Q12, and written from the change and its tests rather than a fresh pass
 over the running app.
+The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).

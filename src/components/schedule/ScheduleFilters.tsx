@@ -34,9 +34,11 @@ interface FilterChipProps {
  * "Recreational" beside three others does not fit a 390-pixel screen, and a
  * control row clipped on a phone is the defect T-01 and X-10 are about.
  *
- * `min-h-11` is 44 pixels, the target Q14 set for the pages people use on a
- * phone. `aria-pressed` rather than colour alone, so the chip that is on is
- * announced.
+ * `min-h-11` and `min-w-11` are 44 pixels, the target Q14 set for the pages
+ * people use on a phone; a short label such as "All" would otherwise be 41
+ * wide. The width floor stops at md (`md:min-w-0`), so a wide screen keeps the
+ * chips at the size of their labels. `aria-pressed` rather than colour alone,
+ * so the chip that is on is announced.
  */
 const FilterChip: React.FC<FilterChipProps> = ({
   label,
@@ -52,7 +54,7 @@ const FilterChip: React.FC<FilterChipProps> = ({
     aria-label={accessibleLabel}
     onClick={onClick}
     className={cn(
-      'flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors',
+      'flex min-h-11 min-w-11 md:min-w-0 items-center justify-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors',
       pressed
         ? (activeClassName ?? 'bg-primary text-primary-foreground')
         : 'bg-muted/50 text-muted-foreground hover:bg-muted'

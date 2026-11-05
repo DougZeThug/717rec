@@ -50,6 +50,9 @@ const HeroCardBase: React.FC<HeroCardBaseProps> = ({
 
   const motionProps = withHover
     ? {
+        // tabIndex -1: whileTap makes framer-motion add tabindex=0, which is a Tab
+        // stop with nothing to do.
+        tabIndex: -1,
         whileHover: { scale: 1.01, y: -2 as number },
         whileTap: { scale: 0.99 },
         transition: { duration: 0.2 },

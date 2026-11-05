@@ -121,4 +121,27 @@ describe('PendingScoresCard score submission integration', () => {
     expect(screen.queryByText('Team Alpha')).not.toBeInTheDocument();
     expect(screen.getByText('No pending score reports')).toBeInTheDocument();
   });
+
+  // On a phone one long name used to squeeze the other team down to a single
+  // letter and an ellipsis. Both sides now share the row and wrap to two lines.
+  it('lets both team names share the row and wrap instead of truncating', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    mockFetchPendingScoresMatches.mockResolvedValue([
+      {
+        ...pendingMatch,
+        team1_name: 'Short Name',
+        team2_name: 'A Team With An Extremely Long Name',
+      },
+    ]);
+
+    renderWithQueryClient(queryClient);
+
+    for (const name of ['Short Name', 'A Team With An Extremely Long Name']) {
+      const nameEl = await screen.findByText(name);
+      expect(nameEl).toHaveClass('line-clamp-2', 'break-words');
+      expect(nameEl).not.toHaveClass('truncate');
+      // The box around the logo and name takes an equal share of the row.
+      expect(nameEl.parentElement?.parentElement).toHaveClass('flex-1');
+    }
+  });
 });

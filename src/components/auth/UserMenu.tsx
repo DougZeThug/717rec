@@ -92,11 +92,14 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
         <Button
           variant="secondary"
           size="sm"
-          className="whitespace-nowrap flex! items-center! px-2"
+          className="whitespace-nowrap flex! items-center! px-2 min-w-11 min-[380px]:min-w-0"
           onClick={handleLoginClick}
+          aria-label="Sign in"
         >
-          <LogIn className="size-4 mr-1" />
-          <span className="block!">Sign in</span>
+          {/* Below 380px only the icon shows, so the button no longer covers the
+              717Rec wordmark. The aria-label keeps its name. */}
+          <LogIn className="size-4 min-[380px]:mr-1" />
+          <span className="hidden! min-[380px]:block!">Sign in</span>
         </Button>
       </div>
     );
@@ -107,12 +110,15 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative text-base font-normal p-1"
+          className="relative text-base font-normal p-1 min-w-11 sm:min-w-0"
           size="sm"
           aria-label="User menu"
         >
-          <User className="size-4 mr-1" />
-          {profile?.username || 'User'}
+          <User className="size-4 mr-0 sm:mr-1" />
+          {/* Below 640px only the icon shows, as the Sign in button does. The
+              aria-label keeps the button's name, and min-w-11 keeps a 44px tap
+              target (the icon alone would leave the button about 28px wide). */}
+          <span className="hidden sm:inline">{profile?.username || 'User'}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

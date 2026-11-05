@@ -76,3 +76,76 @@ test('an unknown base branch triggers a warning', () => {
   const dir = target('weird-name');
   assert.match(install(dir).stderr, /could not detect the base branch/);
 });
+
+// ---- allow rules come from the target's own checks, never a blanket npm run rule ----
+const put = (dir, rel, content) => {
+  mkdirSync(dirname(join(dir, rel)), { recursive: true });
+  writeFileSync(join(dir, rel), typeof content === 'string' ? content : JSON.stringify(content));
+};
+const allowOf = (dir) => JSON.parse(readFileSync(join(dir, '.claude', 'settings.json'), 'utf8')).permissions.allow;
+const npmRunRules = (allow) => allow.filter((rule) => rule.startsWith('Bash(npm run ')).sort();
+
+test('allow rules follow the target checks: test and build are allowed, deploy is not', () => {
+  const dir = target();
+  put(dir, 'package.json', { scripts: { test: 'vitest run', build: 'vite build', deploy: 'wrangler deploy' } });
+  put(dir, '.factory/config.json', { verify: { required: ['unit'], checks: { unit: 'npm run test', build: 'npm run build' } } });
+  const run = install(dir);
+  assert.equal(run.status, 0, run.stderr);
+  const allow = allowOf(dir);
+  assert.deepEqual(npmRunRules(allow), ['Bash(npm run build*)', 'Bash(npm run test*)']);
+  assert.deepEqual(allow.filter((rule) => rule.includes('deploy')), []);
+  assert.ok(!allow.includes('Bash(npm run *)'), 'no blanket rule');
+  for (const fixed of ['Bash(git status*)', 'Bash(git commit*)', 'Bash(node factory/bin/factory.mjs*)', 'Bash(node factory/bin/shoot.mjs*)'])
+    assert.ok(allow.includes(fixed), `the kit rule stays: ${fixed}`);
+  assert.ok(!allow.includes('Bash(node factory/*)'), 'no whole-folder node rule');
+  assert.doesNotMatch(run.stderr, /every npm script/);
+});
+test('a config the installer creates gives rules for its own scripts and the preview command only', () => {
+  const dir = target();
+  put(dir, 'package.json', { name: 'demo', scripts: { test: 'vitest run', build: 'vite build', deploy: 'wrangler deploy' } });
+  assert.equal(install(dir).status, 0);
+  assert.deepEqual(npmRunRules(allowOf(dir)), ['Bash(npm run build*)', 'Bash(npm run dev*)', 'Bash(npm run test*)']);
+});
+test('a script that a check calls is allowed too, and one it does not call is not', () => {
+  const dir = target();
+  put(dir, 'package.json', { scripts: { verify: 'npm run lint && npm run test', lint: 'eslint .', test: 'vitest run', deploy: 'wrangler deploy' } });
+  put(dir, '.factory/config.json', { verify: { required: ['verify'], checks: { verify: 'npm run verify' } } });
+  assert.equal(install(dir).status, 0);
+  assert.deepEqual(npmRunRules(allowOf(dir)), ['Bash(npm run lint*)', 'Bash(npm run test*)', 'Bash(npm run verify*)']);
+});
+test('other check commands get a safe prefix or the exact command, never a bare interpreter or blanket rule', () => {
+  const dir = target();
+  put(dir, '.factory/config.json', {
+    verify: { required: [], checks: { rust: 'cargo test', specs: 'node --test spec/*.spec.mjs', quiet: 'npm run -s lint', single: 'make', bare: 'npm run', runner: 'npx vitest run', chain: 'npm run typecheck && npm run unit | tee out.txt' } },
+    preview: { command: 'npm run -s dev -- --host 127.0.0.1' },
+  });
+  assert.equal(install(dir).status, 0);
+  const allow = allowOf(dir);
+  for (const rule of ['Bash(cargo test*)', 'Bash(node --test spec/*.spec.mjs*)', 'Bash(npm run -s lint*)', 'Bash(make)', 'Bash(npm run)', 'Bash(npx vitest run*)', 'Bash(npm run typecheck*)', 'Bash(npm run unit*)', 'Bash(npm run -s dev -- --host 127.0.0.1*)'])
+    assert.ok(allow.includes(rule), `expected ${rule}`);
+  for (const wide of ['Bash(node*)', 'Bash(node *)', 'Bash(make*)', 'Bash(npm run*)', 'Bash(npm run *)', 'Bash(npm*)', 'Bash(npm run -s*)', 'Bash(tee out.txt*)', 'Bash(tee*)'])
+    assert.ok(!allow.includes(wide), `must not add ${wide}`);
+});
+test('an existing blanket npm run rule is kept, and the installer warns about it', () => {
+  const dir = target();
+  put(dir, '.claude/settings.json', { permissions: { allow: ['Bash(npm run *)', 'Bash(my own rule)'] } });
+  put(dir, '.factory/config.json', { verify: { required: [], checks: { unit: 'npm run test' } } });
+  const run = install(dir);
+  assert.equal(run.status, 0, run.stderr);
+  const allow = allowOf(dir);
+  assert.ok(allow.includes('Bash(npm run *)'), 'the user rule is never deleted');
+  assert.ok(allow.includes('Bash(my own rule)'));
+  assert.ok(allow.includes('Bash(npm run test*)'));
+  const warnings = run.stderr.split('\n').filter((line) => line.includes('every npm script'));
+  assert.equal(warnings.length, 1, 'one warning line');
+  assert.match(warnings[0], /^WARNING: .*"Bash\(npm run \*\)".*lets every npm script run without asking/);
+});
+test('a rerun adds no duplicate allow rules', () => {
+  const dir = target();
+  put(dir, 'package.json', { scripts: { test: 'vitest run', build: 'vite build' } });
+  assert.equal(install(dir).status, 0);
+  const once = allowOf(dir);
+  assert.equal(new Set(once).size, once.length, 'no duplicates after the first run');
+  assert.equal(install(dir).status, 0);
+  assert.deepEqual(allowOf(dir), once, 'second run changes nothing');
+});

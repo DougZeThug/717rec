@@ -7,7 +7,11 @@ const NavBrand: React.FC = React.memo(() => {
   return (
     // The shortest route out of the admin console, and it used to take any
     // unsaved work with it without asking.
-    <RouterLink to="/" onClick={confirmLeavingClick} className="flex items-center space-x-2 mr-3">
+    <RouterLink
+      to="/"
+      onClick={confirmLeavingClick}
+      className="flex items-center space-x-2 mr-3 min-h-11"
+    >
       <img
         src="/lovable-uploads/faa54084-d274-43b9-9862-5544b188b4ca.png"
         alt="717Rec League Logo"

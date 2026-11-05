@@ -37,6 +37,8 @@ vi.mock('@tanstack/react-query', async () => {
 
 vi.mock('react-router', () => ({
   useSearchParams: () => [searchParams, setSearchParams] as const,
+  useLocation: () => ({ state: null }),
+  useNavigate: () => vi.fn(),
 }));
 
 vi.mock('@/hooks/useSeasons', () => ({

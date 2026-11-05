@@ -113,7 +113,14 @@ const TimeslotSectionCard = ({
   cardClass,
   children,
 }: TimeslotSectionCardProps) => (
-  <AppCard className={cardClass} elevation="default" isInteractive={false}>
+  <AppCard
+    className={cardClass}
+    // No side padding on a phone, so the header band and the tiles reach the
+    // card edge. From md up the card keeps its usual padding.
+    contentClassName="p-0 md:p-6 md:pt-0"
+    elevation="default"
+    isInteractive={false}
+  >
     <Collapsible open={open} onOpenChange={onToggle} className="w-full">
       <CollapsibleTrigger className="w-full">
         <TimeslotGroupHeader
