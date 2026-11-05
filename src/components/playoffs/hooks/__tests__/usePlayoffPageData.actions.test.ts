@@ -5,7 +5,13 @@ import { BRACKET_FORMATS, BRACKET_STATES } from '@/constants/brackets';
 
 // The actions the page hands its children: opening and closing a bracket,
 // deleting one, and the division and bracket lists it derives for them.
-const { queryClient, deleteBracketService } = vi.hoisted(() => ({
+const {
+  queryClient,
+  deleteBracketService,
+  originalRefetchBrackets,
+  refetchSelectedBracket,
+  errorLog,
+} = vi.hoisted(() => ({
   // One client for every render, so a test can check the calls made on it.
   queryClient: {
     invalidateQueries: vi.fn(),
@@ -13,6 +19,11 @@ const { queryClient, deleteBracketService } = vi.hoisted(() => ({
     prefetchQuery: vi.fn(),
   },
   deleteBracketService: vi.fn(),
+  // The data layer's refresh of the bracket lists, and the open bracket's own refetch.
+  originalRefetchBrackets: vi.fn(),
+  refetchSelectedBracket: vi.fn(),
+  // The app's error log, so a test can see what the page reported.
+  errorLog: vi.fn(),
 }));
 
 /** The address bar, shared by the hook and the assertions. */
@@ -61,7 +72,12 @@ vi.mock('@/hooks/useDivisions', () => ({
 }));
 
 vi.mock('@/hooks/brackets/useBracketData', () => ({
-  useBracketData: () => ({ data: null, isLoading: false, error: null, refetch: vi.fn() }),
+  useBracketData: () => ({
+    data: null,
+    isLoading: false,
+    error: null,
+    refetch: refetchSelectedBracket,
+  }),
 }));
 
 vi.mock('@/hooks/playoffs/usePlayoffTeams', () => ({
@@ -75,9 +91,14 @@ vi.mock('@/hooks/usePlayoffViewModel.compat', () => ({
     bracketsByDivision: bracketsByDivisionRef.current,
     handleBracketCreated: vi.fn(),
     handleTeamDivisionChange: vi.fn(),
-    refetchBrackets: vi.fn(),
+    refetchBrackets: originalRefetchBrackets,
     error: null,
   }),
+}));
+
+vi.mock('@/utils/logger', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/utils/logger')>()),
+  errorLog,
 }));
 
 vi.mock('@/services/brackets/BracketWriteService', () => ({
@@ -96,6 +117,8 @@ beforeEach(() => {
   queryClient.invalidateQueries.mockImplementation(() => Promise.resolve());
   queryClient.prefetchQuery.mockImplementation(() => Promise.resolve());
   deleteBracketService.mockImplementation(() => Promise.resolve());
+  originalRefetchBrackets.mockImplementation(() => Promise.resolve());
+  refetchSelectedBracket.mockImplementation(() => Promise.resolve());
 });
 
 describe('usePlayoffPageData setSelectedBracketId', () => {
@@ -385,5 +408,101 @@ describe('usePlayoffPageData derived lists', () => {
     const { result } = renderHook(() => usePlayoffPageData());
 
     expect(result.current.availableDivisions).toEqual(['Gold', 'Silver']);
+  });
+
+  // The division list comes from the network. If it is not a list, the page
+  // shows no divisions instead of crashing, and nothing is logged as a fault.
+  it('shows no divisions when the division data is not a list', () => {
+    divisionsRef.current = null as unknown as typeof divisionsRef.current;
+
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    expect(result.current.divisions).toEqual([]);
+    expect(result.current.availableDivisions).toEqual([]);
+    expect(errorLog).not.toHaveBeenCalled();
+  });
+
+  it('shows no divisions, and logs the fault, when a division entry is broken', () => {
+    divisionsRef.current = [
+      { display_division: 'Gold' },
+      null,
+    ] as unknown as typeof divisionsRef.current;
+
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    expect(result.current.availableDivisions).toEqual([]);
+    expect(errorLog).toHaveBeenCalledTimes(1);
+    expect(errorLog).toHaveBeenCalledWith(
+      'availableDivisions processing:',
+      expect.any(TypeError),
+      undefined
+    );
+  });
+
+  // One broken bracket must not take the page down. The divisions that could be
+  // read stay, and the page shows a message so the problem is not silent.
+  it('keeps the divisions it could read, reports the fault and logs it once', () => {
+    bracketsByDivisionRef.current = {
+      Silver: [{ id: 'b-2', name: 'Silver bracket' }],
+      Gold: [null],
+    };
+
+    const { result, rerender } = renderHook(() => usePlayoffPageData());
+
+    expect(result.current.error).toBe('Failed to process bracket data. Please try again.');
+    expect(result.current.typesafeBracketsByDivision.Silver).toHaveLength(1);
+    expect(result.current.typesafeBracketsByDivision).not.toHaveProperty('Gold');
+    expect(errorLog).toHaveBeenCalledTimes(1);
+    expect(errorLog).toHaveBeenCalledWith(
+      'typesafeBracketsByDivision processing:',
+      expect.any(TypeError),
+      undefined
+    );
+
+    // The same data again is not a new fault, so it is not logged again.
+    rerender();
+    expect(errorLog).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops the fault message once the bracket data is readable again', () => {
+    bracketsByDivisionRef.current = { Gold: [null] };
+    const { result, rerender } = renderHook(() => usePlayoffPageData());
+    expect(result.current.error).toBe('Failed to process bracket data. Please try again.');
+
+    bracketsByDivisionRef.current = { Gold: [{ id: 'b-1', name: 'Gold bracket' }] };
+    rerender();
+
+    expect(result.current.error).toBeNull();
+    expect(result.current.typesafeBracketsByDivision.Gold).toHaveLength(1);
+  });
+});
+
+describe('usePlayoffPageData refetchBrackets', () => {
+  it('refreshes the lists, and leaves bracket data alone, when no bracket is open', async () => {
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    await act(() => result.current.refetchBrackets());
+
+    expect(originalRefetchBrackets).toHaveBeenCalledTimes(1);
+    expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['brackets'] });
+    expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['playoff-data'] });
+    expect(queryClient.invalidateQueries).not.toHaveBeenCalledWith({
+      queryKey: ['bracket-data', expect.anything()],
+    });
+    expect(refetchSelectedBracket).not.toHaveBeenCalled();
+    expect(result.current.error).toBeNull();
+  });
+
+  it('also reloads the open bracket when one is open', async () => {
+    searchParams = new URLSearchParams('bracket=b-1');
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    await act(() => result.current.refetchBrackets());
+
+    expect(originalRefetchBrackets).toHaveBeenCalledTimes(1);
+    expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['bracket-data', 'b-1'],
+    });
+    expect(refetchSelectedBracket).toHaveBeenCalledTimes(1);
   });
 });

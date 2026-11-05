@@ -388,5 +388,20 @@ describe('TeamDetailsStickyNav', () => {
 
       expect(scrollTo).not.toHaveBeenCalled();
     });
+
+    // Some older phone browsers have no Element.scrollTo. The bar then moves by
+    // setting its scroll position directly, so the pill still ends up centred.
+    it('centres the highlighted pill by setting the scroll position when the browser has no scrollTo', () => {
+      Reflect.deleteProperty(Element.prototype, 'scrollTo');
+      render(<TeamDetailsStickyNav />);
+
+      scrollPageTo(250);
+
+      const bar = screen.getByRole('navigation', { name: 'Team details section navigation' })
+        .parentElement as HTMLElement;
+      // 300 - (390 - 80) / 2 = 145
+      expect(bar.scrollLeft).toBe(145);
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
   });
 });

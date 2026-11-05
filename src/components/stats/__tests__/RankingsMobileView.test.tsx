@@ -65,6 +65,7 @@ vi.mock('../RankingCard', () => ({
 }));
 
 import { Ranking } from '@/types';
+import { debugLog } from '@/utils/logger';
 
 import RankingsMobileView from '../RankingsMobileView';
 
@@ -184,5 +185,56 @@ describe('RankingsMobileView', () => {
     expect(screen.getByTestId('card-a')).toHaveAttribute('data-badge-count', '2');
     expect(screen.getByTestId('card-b')).toHaveAttribute('data-badge-count', '0');
     expect(screen.getByTestId('card-c')).toHaveAttribute('data-badge-count', '1');
+  });
+
+  // Nothing on screen changes here: the view writes a debug note about the teams
+  // that moved, so a rank bug can be traced from the console on a phone.
+  describe('debug note about teams that moved', () => {
+    const NOTE = 'Teams with non-zero rank changes:';
+    const noteCalls = () => vi.mocked(debugLog).mock.calls.filter(([label]) => label === NOTE);
+
+    it('names each team whose rank went up or down, and skips the rest', () => {
+      const moved = [
+        { ...makeRanking('a', 'Competitive', 90), rankChange: 2 },
+        { ...makeRanking('b', 'Competitive', 80), rankChange: -1 },
+        { ...makeRanking('c', 'Recreational', 70), rankChange: 0 },
+        { ...makeRanking('d', 'Recreational', 60), rankChange: undefined },
+      ];
+      render(<RankingsMobileView {...defaultProps} rankings={moved} />);
+
+      expect(noteCalls()).toEqual([
+        [
+          NOTE,
+          [
+            { team: 'Team a', rankChange: 2 },
+            { team: 'Team b', rankChange: -1 },
+          ],
+        ],
+      ]);
+    });
+
+    it('writes no note when no team moved', () => {
+      const still = [
+        { ...makeRanking('a', 'Competitive', 90), rankChange: 0 },
+        { ...makeRanking('b', 'Competitive', 80) },
+      ];
+      render(<RankingsMobileView {...defaultProps} rankings={still} />);
+
+      expect(noteCalls()).toHaveLength(0);
+    });
+
+    it('writes a fresh note when new rankings arrive', () => {
+      const { rerender } = render(<RankingsMobileView {...defaultProps} />);
+      expect(noteCalls()).toHaveLength(0);
+
+      rerender(
+        <RankingsMobileView
+          {...defaultProps}
+          rankings={[{ ...makeRanking('c', 'Recreational', 70), rankChange: 3 }]}
+        />
+      );
+
+      expect(noteCalls()).toEqual([[NOTE, [{ team: 'Team c', rankChange: 3 }]]]);
+    });
   });
 });

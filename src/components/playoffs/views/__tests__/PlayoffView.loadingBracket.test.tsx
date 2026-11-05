@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -6,8 +7,17 @@ import { describe, expect, it, vi } from 'vitest';
 // loads for a moment, and until it arrived the page kept showing the division
 // list the reader had just tapped. While the bracket is on its way the page now
 // says so, and the list is out of the way.
+// The list stands in for the real one with a single "View Live Bracket" button,
+// so a test can tap it the way a reader taps a division's bracket.
 vi.mock('@/components/playoffs/BracketList', () => ({
-  default: () => <div data-testid="bracket-list">Bracket list</div>,
+  default: ({ onViewBracket }: { onViewBracket: (id: string) => void }) => (
+    <div data-testid="bracket-list">
+      Bracket list
+      <button type="button" onClick={() => onViewBracket('bracket-1')}>
+        View Live Bracket
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock('@/components/playoffs/BracketDetail', () => ({
@@ -67,6 +77,17 @@ const listIsHidden = () =>
   screen.getByTestId('bracket-list').parentElement?.className.includes('hidden');
 
 describe('PlayoffView while the chosen bracket loads', () => {
+  it('asks the page to open the bracket the reader taps in the list', async () => {
+    const setSelectedBracketId = vi.fn();
+    renderView(makeData({ setSelectedBracketId }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'View Live Bracket' }));
+
+    // The page owns the choice (address, scroll, preload); the view only passes the id on.
+    expect(setSelectedBracketId).toHaveBeenCalledTimes(1);
+    expect(setSelectedBracketId).toHaveBeenCalledWith('bracket-1');
+  });
+
   it('says the bracket is loading and hides the division list', () => {
     renderView(makeData({ selectedBracketId: 'bracket-1', bracket: undefined }));
 
