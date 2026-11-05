@@ -1,0 +1,19 @@
+{
+  "id": "T-261105-small-leftovers-navigati",
+  "title": "Small leftovers: navigation docs and schedule page limits",
+  "kind": "polish",
+  "status": "intake",
+  "request": "Doug said: do all of these. (1) Close the old ready task T-261030-unit-test-for-an-unteste. (2) iPhone check of PLAYOFF-43. (3) navigation.md routes table omits /recap/:seasonSlug/:week and /join. (4) navigation.md says scroll is never reset but ScrollToTop is mounted. (5) The small schedule-page limits left by the polish task: keyboard pager under the sticky bar on one Tab path, the focus ring cut on the outer side of the first and last date chip, the Add reaction 30px button, the 43px team links, the load jump.",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "8b6a38896b4b1fd075d6f1f7bc403e06f8ec2208",
+  "createdAt": "2026-11-05T13:46:33.982Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-05T13:46:33.983Z"
+}
