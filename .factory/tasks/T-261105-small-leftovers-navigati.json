@@ -8,12 +8,45 @@
   "branch": "claude/affectionate-dirac-icive8",
   "baseSha": "8b6a38896b4b1fd075d6f1f7bc403e06f8ec2208",
   "createdAt": "2026-11-05T13:46:33.982Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Docs: the navigation routes table lists every route in App.tsx except the dev-only proof route and the counts agree; no page or row still says a link keeps the old scroll position; the scroll-restore finding is recorded as an open question and in B-14; totals recounted",
+      "done": false
+    },
+    {
+      "text": "(a) The tab panel stop no longer hides the pager row under the sticky bar: overlap 60 -> 0 on the phone, nothing worse on desktop (real browser, before/after)",
+      "done": false
+    },
+    {
+      "text": "(b) The focus ring is whole on the first and last date chip, including when the selected date is the first or last chip; chip widths unchanged; no neighbour sliver; the move of the chips is measured and stated",
+      "done": false
+    },
+    {
+      "text": "(c) Add reaction is 44x44 on the phone and 30x44 on desktop; (d) team links are shown to be 44px already, no change",
+      "done": false
+    },
+    {
+      "text": "(e) The Completed tab cards no longer shrink 84px when comments arrive and the date strip is 76px from the first paint; the parts not fixed (division chips, Updated row, prediction bar, footer) are named",
+      "done": false
+    },
+    {
+      "text": "Six checks pass at the final head; changed tests edited to match, none skipped or loosened; docs and the DateStrip comment say what the code does; links 0 broken",
+      "done": false
+    }
+  ],
   "checks": {},
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "CHANGES",
+      "sha": "080831d82ef10ec4e610377fe5573af6c238ca38",
+      "at": "2026-11-05T14:20:49.946Z",
+      "summary": "Independent plan review of the schedule fixes: a, c, d, e can go ahead; b needs more room and one more test. (b) The selected date becomes the first or last chip whenever it is more than 3 days back or 10 days ahead (DateStrip.tsx:40-41), and the selected chip is scale-105, so its ring sticks out about 5.45px; px-1 gives 4px on the left and 5px on the right, so about 1.45px stays cut, and the audit never tested selected-and-first. Use px-1.5 and after:w-0.5 (gap 4 + 2 = 6px) and run the ring pixel diff with the selected day first and last. The spacer comment must say 5px or 6px of room, not 1px. (a) fine; the desktop claim is unproven (both 1280 walks show no overlap before or after), drop it. (c) matches the house pattern (ScheduleFilters.tsx:57, Q14); add a short comment citing it; emoji chips 39-43px are left alone. (d) not reproducible, no change. (e) both one-liners right; strengthen the skeleton test to expect the h-11 class. Docs: only the DateStrip comment needs rewording."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T13:46:33.983Z"
+  "updatedAt": "2026-11-05T14:20:50.161Z"
 }
