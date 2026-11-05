@@ -257,8 +257,8 @@ confirmations of the same thing.
 **URL state.** The address can choose the topic and the solo box (`?type=`,
 `?solo=true`), and is read once on arrival. It can also say the visitor came from
 the Join page (`?source=join_page`). The form reads that one when the message is
-sent, and only Join the league uses it: it sets the source in the league's
-sign-up count ([what the league sees](../cross-cutting/what-the-league-sees.md#league-sign-up-totals)).
+sent, and only Join the league uses it: it sets the source on the
+sign-up event sent to Google Analytics ([what the league sees](../cross-cutting/what-the-league-sees.md#league-sign-up-totals)).
 What the reader types is never written to the address, so a part-filled form
 cannot be shared, bookmarked, or linked to.
 

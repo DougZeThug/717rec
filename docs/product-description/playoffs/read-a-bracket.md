@@ -203,7 +203,7 @@ See [`the-playoffs-page.md`](the-playoffs-page.md).
 "Tournament Complete!" once, the first time the bracket completes while the page
 is open.
 
-**URL state.** The bracket id, and the season, which the page adds beside it once it has read the bracket. A bracket that cannot be read, or an old bracket with no season, leaves only the bracket id in the address. There
+**URL state.** The bracket id, and the season, which the page adds beside it once it has read the bracket. For a bracket that cannot be read, or an old bracket with no season, the page adds no season: the address keeps what the link carried, such as `?bracket=<id>`. There
 is no address for a round, a match, or a team inside a bracket.
 
 **On a phone.** The bracket scrolls sideways: it is never scaled to fit, and a

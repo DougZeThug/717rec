@@ -319,7 +319,7 @@ team when a bracket is created, seeded, or deleted.
 
 **URL state.** The address carries a division and a bracket id after the
 automatic navigation, so a bracket can be linked to. It also carries the season
-(`?season=<id>`), which the season picker changes and which the page writes itself once it knows the season. A link to a bracket that cannot be read keeps only `?bracket=`.
+(`?season=<id>`), which the season picker changes and which the page writes itself once it knows the season. A link to a bracket that cannot be read keeps the parameters it came with, such as `?bracket=<id>`; the page cannot work out a season from the failed bracket.
 The tab, the blind draw, and the Challonge settings are not in the address.
 
 **On a phone.** Every bracket admin control is reachable, behind the **⋯**
