@@ -38,9 +38,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "sha": "75e14e72aefa06153adf895d9652016380813d3b",
       "dirty": false,
-      "at": "2026-11-05T14:35:14.490Z",
+      "at": "2026-11-05T14:56:33.823Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261105-small-leftovers-navigati/integrity.log"
@@ -48,10 +48,10 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "sha": "75e14e72aefa06153adf895d9652016380813d3b",
       "dirty": false,
-      "at": "2026-11-05T14:35:24.102Z",
-      "seconds": 10,
+      "at": "2026-11-05T14:56:46.034Z",
+      "seconds": 12,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261105-small-leftovers-navigati/typecheck.log"
     },
@@ -109,5 +109,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T14:44:23.769Z"
+  "updatedAt": "2026-11-05T14:56:46.034Z"
 }
