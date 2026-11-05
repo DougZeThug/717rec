@@ -172,8 +172,9 @@ page, usually as an empty state and a toast.
 **Permissions and roles.** Only the three guarded routes behave differently by
 role. See [`accounts-and-roles.md`](accounts-and-roles.md).
 
-**Season scoping.** The active season is never in the URL, so a link to
-`/schedule` means "whatever season is active when it is opened". See
+**Season scoping.** The active season is not in the URL of `/schedule`, so a link
+to it means "whatever season is active when it is opened". The playoffs page is
+the exception: it writes the season into the address. See
 [`seasons.md`](seasons.md).
 
 **Validation and error display.** Route parameters are not validated. A malformed
@@ -195,8 +196,9 @@ the loading spinner with no error.
 page is still visible on the next, because there is one toast area for the whole
 app.
 
-**URL state.** Two routes carry a record id. Nothing else is in the URL: no
-filters, no tabs, no sort order, no season, no pagination.
+**URL state.** Two routes carry a record id. The playoffs page carries the season
+(`?season=<id>`) and the open bracket (`?bracket=<id>`). Other pages that keep
+state in the address say so in their own documents.
 
 **On a phone.** The navigation bar becomes a menu. Everything else is the same.
 

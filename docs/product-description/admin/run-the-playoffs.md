@@ -106,8 +106,9 @@ Seeding* and *Rearrange Teams* are the controls for those.
 
 ### Leave without changing anything
 
-Nothing is recorded. The selected season and bracket are held in the page and
-lost on leaving. The Brackets/Teams tab is remembered for the browser tab.
+Nothing is recorded. The selected season and bracket are in the address, so a
+reload or the browser Back button brings them back; leaving through a link in
+the app drops them. The Brackets/Teams tab is remembered for the browser tab.
 
 ### Begin editing
 
@@ -317,8 +318,9 @@ any of these three screens does.
 team when a bracket is created, seeded, or deleted.
 
 **URL state.** The address carries a division and a bracket id after the
-automatic navigation, so a bracket can be linked to. The season, the tab, the
-blind draw, and the Challonge settings are not in the address.
+automatic navigation, so a bracket can be linked to. It also carries the season
+(`?season=<id>`), which the page writes itself and the season picker changes.
+The tab, the blind draw, and the Challonge settings are not in the address.
 
 **On a phone.** Every bracket admin control is reachable, behind the **⋯**
 menu in the bracket header. Blind draw and the Challonge settings work at every

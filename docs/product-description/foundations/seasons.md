@@ -137,10 +137,11 @@ anything has happened. See
 **Toasts and notifications.** A season changing over produces no notification to
 players. The app changes under them silently.
 
-**URL state.** The active season is never in the URL. A link to `/standings` or
-`/schedule` means "whatever season is active when you open it", so a link shared
-in one season shows different content in the next. Only history pages address a
-named season.
+**URL state.** The active season is not in the URL of `/standings` or
+`/schedule`. A link to either means "whatever season is active when you open it",
+so a link shared in one season shows different content in the next. Only the
+history pages and the playoffs page (`/playoffs?season=<id>`) address a named
+season.
 
 **On a phone.** No difference.
 
