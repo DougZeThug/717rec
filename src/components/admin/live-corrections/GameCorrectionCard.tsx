@@ -47,10 +47,11 @@ const RoundRow: React.FC<RoundRowProps> = ({
       </div>
     </div>
     {!readOnly && (
-      <div className="flex gap-1">
+      <div className="flex gap-2">
         <Button
           size="sm"
           variant="ghost"
+          className="min-w-[44px]"
           onClick={() => onEdit(round.id)}
           aria-label={`Edit round ${round.round_number}`}
         >
@@ -59,6 +60,7 @@ const RoundRow: React.FC<RoundRowProps> = ({
         <Button
           size="sm"
           variant="ghost"
+          className="min-w-[44px]"
           onClick={() => onDelete(round.id)}
           aria-label={`Delete round ${round.round_number}`}
         >

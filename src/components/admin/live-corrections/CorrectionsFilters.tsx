@@ -37,40 +37,44 @@ const CorrectionsFilters: React.FC<CorrectionsFiltersProps> = ({
   night,
   onNightChange,
 }) => (
-  <div className="flex flex-wrap items-center gap-3">
-    <label htmlFor="season-filter" className="text-sm font-medium">
-      Season
-    </label>
-    <Select value={seasonId} onValueChange={onSeasonChange}>
-      <SelectTrigger id="season-filter" className="w-[220px]">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL_SEASONS}>All seasons</SelectItem>
-        {seasons.map((s) => (
-          <SelectItem key={s.id} value={s.id}>
-            {s.is_archived ? `${s.name} (archived — read-only)` : s.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+  <div className="flex flex-wrap gap-3">
+    <div className="flex min-w-[200px] flex-1 flex-col gap-1.5 md:max-w-[240px]">
+      <label htmlFor="season-filter" className="text-sm font-medium">
+        Season
+      </label>
+      <Select value={seasonId} onValueChange={onSeasonChange}>
+        <SelectTrigger id="season-filter" className="min-h-[44px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL_SEASONS}>All seasons</SelectItem>
+          {seasons.map((s) => (
+            <SelectItem key={s.id} value={s.id}>
+              {s.is_archived ? `${s.name} (archived — read-only)` : s.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
 
-    <label htmlFor="night-filter" className="text-sm font-medium">
-      Night
-    </label>
-    <Select value={night} onValueChange={onNightChange}>
-      <SelectTrigger id="night-filter" className="w-[200px]">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL_DATES}>All nights</SelectItem>
-        {nights.map((key) => (
-          <SelectItem key={key} value={key}>
-            {formatLeagueNight(key)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="flex min-w-[200px] flex-1 flex-col gap-1.5 md:max-w-[240px]">
+      <label htmlFor="night-filter" className="text-sm font-medium">
+        Night
+      </label>
+      <Select value={night} onValueChange={onNightChange}>
+        <SelectTrigger id="night-filter" className="min-h-[44px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL_DATES}>All nights</SelectItem>
+          {nights.map((key) => (
+            <SelectItem key={key} value={key}>
+              {formatLeagueNight(key)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   </div>
 );
 
