@@ -1,0 +1,19 @@
+{
+  "id": "T-261105-polish-the-history-page-",
+  "title": "Polish the History page and a season's history on mobile",
+  "kind": "polish",
+  "status": "intake",
+  "request": "/factory-polish the history page and actually looking at an individual seasons history on mobile",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "23769bc9681f28255db756acf397676561e5e707",
+  "createdAt": "2026-11-05T19:54:20.544Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-05T19:54:20.544Z"
+}
