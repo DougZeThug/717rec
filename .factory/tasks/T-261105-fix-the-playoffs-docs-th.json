@@ -47,9 +47,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "34b67f2c5da96b1cb474ae28a4965e4b1d7c34c4",
+      "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
       "dirty": false,
-      "at": "2026-11-05T03:45:35.539Z",
+      "at": "2026-11-05T03:49:48.473Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/integrity.log"
@@ -57,29 +57,29 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "34b67f2c5da96b1cb474ae28a4965e4b1d7c34c4",
+      "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
       "dirty": false,
-      "at": "2026-11-05T03:45:45.635Z",
-      "seconds": 10,
+      "at": "2026-11-05T03:49:57.827Z",
+      "seconds": 9,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "34b67f2c5da96b1cb474ae28a4965e4b1d7c34c4",
+      "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
       "dirty": false,
-      "at": "2026-11-05T03:47:11.036Z",
-      "seconds": 85,
+      "at": "2026-11-05T03:51:27.072Z",
+      "seconds": 89,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "34b67f2c5da96b1cb474ae28a4965e4b1d7c34c4",
+      "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
       "dirty": false,
-      "at": "2026-11-05T03:47:14.084Z",
+      "at": "2026-11-05T03:51:30.013Z",
       "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/knip.log"
@@ -87,9 +87,9 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "34b67f2c5da96b1cb474ae28a4965e4b1d7c34c4",
+      "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
       "dirty": false,
-      "at": "2026-11-05T03:47:17.878Z",
+      "at": "2026-11-05T03:51:33.727Z",
       "seconds": 4,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/build.log"
@@ -154,6 +154,13 @@
       "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
       "at": "2026-11-05T03:49:45.999Z",
       "summary": "Independent re-check on 92e670e: the delta (closing lines, admin Back rows, four prefill parameters) true. One real finding: the team page docs say a reload or Back gives every section closed, but a section named in the address by the section bar (#career) opens after a reload and after Back. I had left those lines alone as a rare edge; the reviewer showed it in a browser and I confirmed it myself. My run also showed Roster and Match History are open by default, so every section closed was never right. Affected: team-details.md (Back row, reload row, closing line), team-and-player-stats.md Back row, TEAM-34 and TEAM-18. Nit: pending-scores Back row covers both the home card and the admin section. 0 broken links, totals 1,958 and 116, markdown only."
+    },
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
+      "at": "2026-11-05T03:54:34.645Z",
+      "summary": "Independent re-check on 5521f7f: my four team-page edits true (TEAM-18 and TEAM-34 followed step by step in a browser). Same section-hash pattern in history/head-to-head.md (three places) and H2H-29: #h2h opens the Matchups section after a reload and after Back. Two older wrong facts on team-details.md: the intro says the other five sections are closed (Match History is open) and four of the five bar buttons land on a folded heading (it is three), also in TEAM-21. Nit: section order in the doc. My own search then also found TEAM-10 (Roster is the only open section) and TEAM-12 (all five closed), both wrong because Match History is open. 0 broken links, totals 1,958 and 116, markdown only."
     }
   ],
   "issues": {
@@ -222,6 +229,17 @@
       ],
       "escalated": false,
       "resolved": "fixed in the seventh docs commit; links 0 broken; totals unchanged; delta re-check follows"
+    },
+    "review7-h2h-and-team-counts": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-05T03:54:34.685Z",
+          "summary": "Fix head-to-head and H2H-29 for #h2h (checked in a browser), the team page intro, section order (from TeamDetails.tsx), three-of-five bar edge case and TEAM-21, TEAM-10 and TEAM-12. No row added."
+        }
+      ],
+      "escalated": false,
+      "resolved": "fixed in the eighth docs commit; links 0 broken; totals unchanged; delta re-check follows"
     }
   },
   "interventions": [
@@ -232,7 +250,7 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T03:49:46.080Z",
+  "updatedAt": "2026-11-05T03:54:34.732Z",
   "readySha": "673af161251667af7422eaddbecf23284a4567fc",
   "readyAt": "2026-11-05T02:03:36.845Z"
 }
