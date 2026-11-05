@@ -29,10 +29,12 @@ const basic = (s) => JSON.stringify(s); // JSON string is valid TOML basic strin
 const toToml = ({ meta, body }, file) => {
   if (body.includes("'''")) throw new Error(`${file}: body must not contain '''`);
   const tools = meta.tools.split(',').map((t) => t.trim());
+  if (meta.sandbox !== undefined && meta.sandbox !== 'read-only') throw new Error(`${file}: sandbox must be "read-only" (got "${meta.sandbox}")`);
   const canWrite = tools.includes('Edit') || tools.includes('Write');
   const canRun = tools.includes('Bash');
   // Reviewers: read-only. QA runs checks (needs temp writes). Implementer edits code.
-  const sandbox = canWrite || canRun ? 'workspace-write' : 'read-only';
+  // A source file can force read-only with `sandbox: read-only` (the reviewer only runs read commands).
+  const sandbox = meta.sandbox === 'read-only' ? 'read-only' : canWrite || canRun ? 'workspace-write' : 'read-only';
   return [
     `# GENERATED from .claude/agents/${file} - do not edit. Run: node tools/sync-codex-agents.mjs`,
     `name = ${basic(meta.name)}`,
