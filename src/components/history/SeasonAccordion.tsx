@@ -65,7 +65,7 @@ const SeasonAccordion: React.FC<{ season: Season }> = ({ season }) => {
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
-          'w-full px-3 py-2 md:px-6 md:py-3 flex items-center justify-center gap-1.5',
+          'w-full min-h-11 md:min-h-0 px-3 py-2 md:px-6 md:py-3 flex items-center justify-center gap-1.5',
           'text-xs font-semibold uppercase tracking-wider transition-colors',
           'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset',
           isWinterTheme
