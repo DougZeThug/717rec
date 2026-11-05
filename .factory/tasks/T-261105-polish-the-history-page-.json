@@ -48,6 +48,26 @@
       "text": "Docs: every document that describes a changed behaviour is updated in the same change, with no broken link and the verification totals still true",
       "done": true,
       "evidence": "A docs builder rewrote the claims these changes made wrong in past-seasons.md, on-a-phone.md, accessibility.md and 4 verification rows (HIST-13, HIST-17, PHONE-16, A11Y-22; none added or removed; the HIST-17 suspected-bug marker stays), and updated UX-AUDIT-2026-09.md HI-02 (partly done) and HI-03 (done). I re-ran the link check (2,738 links, 0 broken) and recounted with the README method: 1,958 items and 120 P1 suspected-bug rows, as the README says; the reviewer checked the claims, that exactly 4 rows changed with identical ID sets, and that footers are still the last paragraph."
+    },
+    {
+      "text": "Phone standings cards show the playoff finish as '#N' for ranks 3 and up, the same number the desktop Rank column shows, and nothing for an unranked team; the cards do not shift",
+      "done": false
+    },
+    {
+      "text": "Team names are links to the team page in the opened season (phone cards, desktop rows) and the Champions card, with a 44px tap area and a keyboard focus ring; a team with an unknown name stays plain text",
+      "done": false
+    },
+    {
+      "text": "Back from a team page returns to the same view: the seasons and divisions the player had open stay open and the scroll position comes back (real browser, phone width), and a reload in the same tab keeps them",
+      "done": false
+    },
+    {
+      "text": "At 1024 and 1280px an opened season shows one column so Power and SOS are not hidden behind sideways scroll and names are not cut; phone and tablet layouts unchanged",
+      "done": false
+    },
+    {
+      "text": "Docs: every document that describes team names as plain text, the missing phone rank, the three-column layout, or the page forgetting what was open is updated in the same change",
+      "done": false
     }
   ],
   "checks": {
@@ -129,10 +149,15 @@
     }
   ],
   "issues": {},
-  "interventions": [],
+  "interventions": [
+    {
+      "at": "2026-11-05T21:18:13.755Z",
+      "why": "Owner answered the three product decisions with 'go with your recommendations': show a #N playoff rank on the phone standings cards, make team names links to the team page, drop the three-column layout at 1024 and 1280px. Folded into this task, which was READY but not yet closed."
+    }
+  ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T21:10:50.090Z",
+  "updatedAt": "2026-11-05T21:18:14.099Z",
   "readySha": "e9649ca9c475b26a6c9b76b90239a7a1a2d8b454",
   "readyAt": "2026-11-05T21:10:50.090Z"
 }
