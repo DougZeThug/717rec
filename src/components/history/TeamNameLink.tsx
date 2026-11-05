@@ -16,7 +16,7 @@ interface TeamNameLinkProps {
   /**
    * How big the tap area is.
    * `large`: 44px high (the `hit-area-44` utility), for the phone cards and the table rows.
-   * `small`: about 24px high, for the Champions card, where rows are only 6px apart and
+   * `small`: about 27px high (more when the name wraps), for the Champions card, where rows are only 6px apart and
    * two 44px areas would overlap.
    */
   tapArea?: 'large' | 'small';
