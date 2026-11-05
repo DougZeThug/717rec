@@ -87,13 +87,13 @@ test('a block found in either text wins over an ask found in the other', () => {
   const rm = 'rm -rf public';
   const before = bash(['echo hi # note\\', rm, 'echo x > .claude/set\\', 'tings.json'].join('\n'));
   assert.ok(before?.block, 'a block in the text before the join, an ask only in the joined text');
-  assert.equal(before.ask, undefined);
+  assert.equal(typeof before.ask, 'undefined');
   const after = bash([ctl, 'git push origin ma\\', 'in'].join('\n'));
   assert.ok(after?.block, 'an ask in the text before the join, a block only in the joined text');
-  assert.equal(after.ask, undefined);
+  assert.equal(typeof after.ask, 'undefined');
   const kept = bash(["cat <<'EOF'", 'foo\\', 'EOF', ctl, 'EOF'].join('\n'));
   assert.ok(kept?.ask, 'an ask found only in the text before the join is kept');
-  assert.equal(kept.block, undefined);
+  assert.equal(typeof kept.block, 'undefined');
 });
 test('an ask that shows only after the backslash-newline join is kept', () => {
   // Written, the target is `.claude/set\` and the next line is `tings.json`: no control file. Joined, it is `.claude/settings.json`.
@@ -527,8 +527,8 @@ test('a valid but weak config cannot switch the built-in protection off', () => 
     withRepo(JSON.stringify(weak), (repo) => {
       const env = hookIn(repo, 'Edit', { file_path: join(repo, '.env'), new_string: 'x' });
       assert.equal(env.status, 2, env.stderr);
-      const push = hookIn(repo, 'Bash', { command: ['git', 'push', 'origin', 'main'].join(' ') });
-      assert.equal(push.status, 2, push.stderr);
+      const pushResult = hookIn(repo, 'Bash', { command: ['git', 'push', 'origin', 'main'].join(' ') });
+      assert.equal(pushResult.status, 2, pushResult.stderr);
       assert.equal(askedFor(hookIn(repo, 'Edit', { file_path: join(repo, '.claude', 'settings.json'), new_string: 'x' })), 'ask');
       assert.equal(hookIn(repo, 'Bash', { command: 'git status' }).status, 0, 'ordinary commands still run');
     });
@@ -584,8 +584,8 @@ test('the hook command in both settings files fails closed when the guard cannot
       mkdirSync(join(home, 'factory', 'hooks'), { recursive: true });
       writeFileSync(join(home, 'factory', 'hooks', 'guard.mjs'), 'export const = ;\n');
       assert.equal(sh(home).status, 2, `${file}: guard file has a syntax error`);
-      const push = JSON.stringify({ tool_name: 'Bash', cwd: root, tool_input: { command: ['git', 'push', 'origin', 'main'].join(' ') } });
-      assert.equal(sh(root, push).status, 2, `${file}: the real guard still blocks`);
+      const pushInput = JSON.stringify({ tool_name: 'Bash', cwd: root, tool_input: { command: ['git', 'push', 'origin', 'main'].join(' ') } });
+      assert.equal(sh(root, pushInput).status, 2, `${file}: the real guard still blocks`);
       assert.equal(sh(root, JSON.stringify({ tool_name: 'Bash', cwd: root, tool_input: { command: 'git status' } })).status, 0, `${file}: the real guard still allows`);
     } finally {
       rmSync(home, { recursive: true, force: true });
@@ -640,14 +640,14 @@ test('part A: reads and writes outside the control files stay silent', () => {
     'rm -rf /tmp/w/factory', 'rm -rf .factory/evidence/T-1', 'rm -rf dist', 'rm .claude/../dist/a.txt',
     `cat ${GUARD_FILE}`, 'ls -la factory/hooks .claude', `diff ${GUARD_FILE} /tmp/x`, `sed -n 1,5p ${GUARD_FILE}`, 'grep -n x .claude/settings.json', 'head -3 .claude/settings.json | tee /tmp/h.txt',
     'echo hi > /tmp/out.txt', 'echo hi 2>/dev/null', 'echo hi > /dev/null 2>&1', 'echo x > notes.txt', 'echo x > .claude/agents/new.md', 'echo x > .factory/evidence/T-1/unit.json', 'cd src && echo x > a.txt', 'cd factory/spec && echo x > a.txt',
-    `echo "cp x ${GUARD_FILE}" > /tmp/note.txt`, `echo 'rm -rf .claude' && echo ok`, `cat > /tmp/n.md <<EOF\ncp x ${GUARD_FILE}\necho x > .claude/settings.json\nEOF`,
-    `curl -o /tmp/x https://example.com/x`, 'wget -O /tmp/x https://example.com/x', 'curl -s http://127.0.0.1:8080/',
+    `echo "cp x ${GUARD_FILE}" > /tmp/note.txt`, "echo 'rm -rf .claude' && echo ok", `cat > /tmp/n.md <<EOF\ncp x ${GUARD_FILE}\necho x > .claude/settings.json\nEOF`,
+    'curl -o /tmp/x https://example.com/x', 'wget -O /tmp/x https://example.com/x', 'curl -s http://127.0.0.1:8080/',
     ['git commit -m "$(cat <<\'EOF\'', `Guard: ${GUARD_FILE} now asks`, '', 'Also .claude/settings.json, "cp x factory/hooks/" and node -e in prose.', 'EOF', ')"'].join('\n'),
   ]) stays(command);
 });
 test('part A: the control list comes from the config, and a folder that holds a control path asks too', () => {
-  const wide = { ...cfg, controlPlanePaths: [...cfg.controlPlanePaths, '.github/workflows/'] };
-  const run = (command) => decide({ tool_name: 'Bash', tool_input: { command } }, wide, 'factory/x');
+  const wideCfg = { ...cfg, controlPlanePaths: [...cfg.controlPlanePaths, '.github/workflows/'] };
+  const run = (command) => decide({ tool_name: 'Bash', tool_input: { command } }, wideCfg, 'factory/x');
   assert.ok(run('echo x > .github/workflows/ci.yml')?.ask);
   assert.ok(run('rm -rf .github')?.ask);
   assert.equal(run('echo x > .github/CODEOWNERS'), null);
@@ -692,8 +692,8 @@ test('part B: python, node, ruby, perl, bash and sh one-liners and heredocs that
   for (const command of [
     `python3 -c "open('${GUARD_FILE}', 'w').write('x')"`, `python -c "open('${GUARD_FILE}', 'w').write('x')"`, `python3 -c 'import shutil; shutil.rmtree("factory/hooks")'`,
     `node -e "require('fs').writeFileSync('${GUARD_FILE}', 'x')"`, `node -p "require('fs').rmSync('.claude/settings.json')"`, `ruby -e "File.write('${GUARD_FILE}', 'x')"`, `perl -e "unlink '${GUARD_FILE}'"`,
-    `bash -c "echo x > ${GUARD_FILE}"`, `sh -c 'cp x factory/hooks/guard.mjs'`, `cd src && node -e "require('fs').rmSync('../.claude/settings.json')"`,
-    `bash <<EOF\necho x > ${GUARD_FILE}\nEOF`, `sh <<'EOF'\nrm -f .claude/settings.json\nEOF`, `bash <<-EOF\n\tcp x ${GUARD_FILE}\nEOF`,
+    `bash -c "echo x > ${GUARD_FILE}"`, "sh -c 'cp x factory/hooks/guard.mjs'", `cd src && node -e "require('fs').rmSync('../.claude/settings.json')"`,
+    `bash <<EOF\necho x > ${GUARD_FILE}\nEOF`, "sh <<'EOF'\nrm -f .claude/settings.json\nEOF", `bash <<-EOF\n\tcp x ${GUARD_FILE}\nEOF`,
   ]) asks(command);
 });
 test('part B: look-alike commands stay silent', () => {
@@ -701,8 +701,8 @@ test('part B: look-alike commands stay silent', () => {
     gitLine('checkout -b factory/T-1'), gitLine('checkout factory/T-1'), gitLine('checkout main'), gitLine('switch main'), gitLine('switch -c factory/T-2'), gitLine('checkout -- src/a.ts'), gitLine('checkout main -- src/a.ts'),
     gitLine('restore --staged .claude/settings.json'), gitLine('restore src/a.ts'), gitLine('restore -s HEAD src/a.ts'),
     gitLine('apply --check fix.patch'), gitLine('apply --stat fix.patch'), gitLine('apply --numstat fix.patch'), gitLine('apply --summary fix.patch'), gitLine('apply --check --verbose fix.patch'),
-    'python3 -c "print(1)"', 'node -e "console.log(1)"', 'bash -c "echo hi"', 'bash <<EOF\necho hi\nEOF', `python3 script.py ${GUARD_FILE}`, `node ${GUARD_FILE}`, `node --check ${GUARD_FILE}`, 'python3 -m pytest factory/spec', `bash factory/bin/run.sh .claude/settings.json`,
-    `echo "python3 -c ${GUARD_FILE}"`, `echo 'node -e .claude/settings.json'`, `grep -n "node -e" ${GUARD_FILE}`, `cat > /tmp/n.md <<EOF\nnode -e ${GUARD_FILE}\nbash <<X\nEOF`,
+    'python3 -c "print(1)"', 'node -e "console.log(1)"', 'bash -c "echo hi"', 'bash <<EOF\necho hi\nEOF', `python3 script.py ${GUARD_FILE}`, `node ${GUARD_FILE}`, `node --check ${GUARD_FILE}`, 'python3 -m pytest factory/spec', 'bash factory/bin/run.sh .claude/settings.json',
+    `echo "python3 -c ${GUARD_FILE}"`, "echo 'node -e .claude/settings.json'", `grep -n "node -e" ${GUARD_FILE}`, `cat > /tmp/n.md <<EOF\nnode -e ${GUARD_FILE}\nbash <<X\nEOF`,
     ['git commit -m "$(cat <<\'EOF\'', `fix: python3 -c and node -e now ask when they name ${GUARD_FILE}`, 'EOF', ')"'].join('\n'),
   ]) stays(command);
 });
