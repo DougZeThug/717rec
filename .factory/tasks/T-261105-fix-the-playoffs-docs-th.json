@@ -2,7 +2,7 @@
   "id": "T-261105-fix-the-playoffs-docs-th",
   "title": "Fix the playoffs docs that say the season is not in the address",
   "kind": "fix",
-  "status": "building",
+  "status": "repairing",
   "request": "Fix the older playoffs doc lines that say the season is not in the address. The page itself puts ?season=<id> in the address, keeps it on reload, and the picker sets it.",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -30,11 +30,82 @@
       "done": false
     }
   ],
-  "checks": {},
-  "reviews": [],
-  "issues": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fa3bf3d439099bc4da485e91e4b80a2057d4e446",
+      "dirty": false,
+      "at": "2026-11-05T01:38:15.230Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fa3bf3d439099bc4da485e91e4b80a2057d4e446",
+      "dirty": false,
+      "at": "2026-11-05T01:38:26.095Z",
+      "seconds": 11,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fa3bf3d439099bc4da485e91e4b80a2057d4e446",
+      "dirty": false,
+      "at": "2026-11-05T01:39:50.661Z",
+      "seconds": 85,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fa3bf3d439099bc4da485e91e4b80a2057d4e446",
+      "dirty": false,
+      "at": "2026-11-05T01:39:54.001Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fa3bf3d439099bc4da485e91e4b80a2057d4e446",
+      "dirty": false,
+      "at": "2026-11-05T01:39:58.123Z",
+      "seconds": 4,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/build.log"
+    }
+  },
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "3f8104ded72bcf228fad8174eef9ebc640f6af9e",
+      "at": "2026-11-05T01:49:56.252Z",
+      "summary": "Independent reviewer on fa3bf3d: my edits are true (checked against the code and in a real browser), but the same false claim was left in sister docs: admin/run-the-playoffs.md (two places), verification/admin.md PLAYADMIN-23 and PLAYADMIN-25, standings.md PLAYOFF-20 (leaves an open bracket open: wrong, it closes it), PLAYOFF-26 and PLAYOFF-11 step 1, foundations/seasons.md and navigation.md. Nits: the season is not written while a link bracket cannot be read; the admin tab is kept for the browser tab. Totals recounted by the reviewer: 1,958 items, 116 suspected-bug rows."
+    }
+  ],
+  "issues": {
+    "review1-sister-docs": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-05T01:49:56.292Z",
+          "summary": "Fix the same wrong claim in the sister docs and the imprecise wording found by the review: admin run-the-playoffs (two places), PLAYADMIN-23 and 25, PLAYOFF-11 step, PLAYOFF-20 and 26, foundations seasons and navigation, and the page doc exceptions. Each read against the code first."
+        }
+      ],
+      "escalated": false,
+      "resolved": "fixed in the second docs commit; recount still 1,958 items and 116; fresh review follows"
+    }
+  },
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T01:38:01.722Z"
+  "updatedAt": "2026-11-05T01:49:56.335Z"
 }
