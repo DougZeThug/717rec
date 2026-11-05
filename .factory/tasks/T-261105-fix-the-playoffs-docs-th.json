@@ -47,9 +47,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
+      "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
       "dirty": false,
-      "at": "2026-11-05T03:49:48.473Z",
+      "at": "2026-11-05T03:54:37.103Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/integrity.log"
@@ -57,29 +57,29 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
+      "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
       "dirty": false,
-      "at": "2026-11-05T03:49:57.827Z",
-      "seconds": 9,
+      "at": "2026-11-05T03:54:46.734Z",
+      "seconds": 10,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
+      "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
       "dirty": false,
-      "at": "2026-11-05T03:51:27.072Z",
-      "seconds": 89,
+      "at": "2026-11-05T03:56:09.548Z",
+      "seconds": 83,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
+      "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
       "dirty": false,
-      "at": "2026-11-05T03:51:30.013Z",
+      "at": "2026-11-05T03:56:12.684Z",
       "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/knip.log"
@@ -87,9 +87,9 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "531c32aa3fa499844d6f864236ab40b7515d50d2",
+      "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
       "dirty": false,
-      "at": "2026-11-05T03:51:33.727Z",
+      "at": "2026-11-05T03:56:16.405Z",
       "seconds": 4,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/build.log"
@@ -161,6 +161,13 @@
       "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
       "at": "2026-11-05T03:54:34.645Z",
       "summary": "Independent re-check on 5521f7f: my four team-page edits true (TEAM-18 and TEAM-34 followed step by step in a browser). Same section-hash pattern in history/head-to-head.md (three places) and H2H-29: #h2h opens the Matchups section after a reload and after Back. Two older wrong facts on team-details.md: the intro says the other five sections are closed (Match History is open) and four of the five bar buttons land on a folded heading (it is three), also in TEAM-21. Nit: section order in the doc. My own search then also found TEAM-10 (Roster is the only open section) and TEAM-12 (all five closed), both wrong because Match History is open. 0 broken links, totals 1,958 and 116, markdown only."
+    },
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "85e2addba37f76f762c47be34fa968ada689c919",
+      "at": "2026-11-05T03:58:41.466Z",
+      "summary": "Independent re-check on dc94dda: every changed sentence true (render order, default open sections, hashes, rows TEAM-10/12/18/21/34 and H2H-29 followed in a browser). Three more lines contradict the new text: head-to-head.md URL state says nothing is in the URL (the section is linkable as #h2h); glossary says which sections are open is never remembered; team-details.md says the section bar buttons all land on a closed section (not Overview or Matches). One older claim looked stale: the section bar starts by highlighting Stats. I measured it at 1280, 1024 and 390 wide: it starts on Overview. 0 broken links, totals 1,958 and 116, markdown only."
     }
   ],
   "issues": {
@@ -240,6 +247,17 @@
       ],
       "escalated": false,
       "resolved": "fixed in the eighth docs commit; links 0 broken; totals unchanged; delta re-check follows"
+    },
+    "review8-h2h-url-glossary-bar": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-05T03:58:41.520Z",
+          "summary": "Fix head-to-head URL state, the glossary entry and the bar paragraph; remove the stale starts-on-Stats edge case and turn TEAM-22 into a true check (starts on Overview, follows the scroll). No row added."
+        }
+      ],
+      "escalated": false,
+      "resolved": "fixed in the ninth docs commit; links 0 broken; totals unchanged; delta re-check follows"
     }
   },
   "interventions": [
@@ -250,7 +268,7 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T03:54:34.732Z",
+  "updatedAt": "2026-11-05T03:58:41.580Z",
   "readySha": "673af161251667af7422eaddbecf23284a4567fc",
   "readyAt": "2026-11-05T02:03:36.845Z"
 }
