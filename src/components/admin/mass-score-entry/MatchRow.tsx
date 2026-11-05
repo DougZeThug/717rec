@@ -163,6 +163,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
           </label>
           <Switch
             id={`mark-complete-${match.id}`}
+            className="hit-area-44"
             checked={isMatchCompleted(match)}
             onCheckedChange={handleCompletedChange}
             disabled={isSubmitting}

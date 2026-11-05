@@ -60,7 +60,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-2 overflow-hidden">
       <CollapsibleTrigger
         className={cn(
-          'flex w-full items-center justify-between p-2 text-left text-sm rounded transition-all',
+          'flex min-h-[44px] w-full items-center justify-between p-2 text-left text-sm rounded transition-all',
           'bg-accent/60 hover:bg-accent'
         )}
       >
