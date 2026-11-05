@@ -11,14 +11,14 @@
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
 const ID = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const SEASON = ID(1);
-const BRAVO = 1; // index in T of the team whose page is filled in
+const BRAVO = 1; // index in TEAM_ROWS of the team whose page is filled in
 // tier = season-style label (team_season_stats, career tiers); weight/display = divisions table columns
 const DIVS = [
   { id: ID(11), name: 'Fake Division North', tier: 'Competitive 1', display: 'Competitive', weight: 0.95 },
   { id: ID(12), name: 'Fake Division South', tier: 'Intermediate 1', display: 'Intermediate', weight: 0.75 },
 ];
 // [name, division index, wins, losses, game wins, game losses, power score, sos]
-const T = [
+const TEAM_ROWS = [
   ['Fake Team Alpha', 0, 9, 1, 19, 6, 88.2, 0.56],
   ['Fake Team Bravo With A Very Long Name Here', 0, 8, 2, 17, 8, 79.5, 0.54],
   ['Fake Team Charlie', 0, 6, 4, 14, 12, 61.3, 0.5],
@@ -31,10 +31,10 @@ const T = [
   ['Fake Team Juliet', 1, 2, 8, 6, 17, 28.7, 0.47],
 ];
 // v_team_details rows. `players` is an array of name strings (the view returns text[]).
-const teams = T.map(([name, d, w, l, gw, gl, ps, sos], i) => ({
+const teams = TEAM_ROWS.map(([name, d, w, l, gw, gl, ps, sos], i) => ({
   team_id: ID(100 + i), name, logo_url: null, image_url: null, wins: w, losses: l, game_wins: gw, game_losses: gl,
   division_id: DIVS[d].id, divisionname: DIVS[d].name, sos, power_score: ps, career_power_score: ps,
-  win_percentage: +(w / (w + l)).toFixed(3), game_win_percentage: +(gw / (gw + gl)).toFixed(3),
+  win_percentage: Number((w / (w + l)).toFixed(3)), game_win_percentage: Number((gw / (gw + gl)).toFixed(3)),
   players: ['A', 'B', ...(i === BRAVO ? ['C', 'D With A Long Name'] : [])].map((s) => `Fake Player ${i}${s}`),
   created_at: '2026-01-01T00:00:00Z', close_match_losses: i % 3,
 }));
@@ -103,14 +103,14 @@ const teamRows = teams.map((t) => ({
 }));
 // Playoff order per old season, best first (North teams only). Bravo: runner-up, then champion, then third.
 const FINISH = [[0, 1, 2, 3], [1, 0, 2, 4], [0, 2, 1, 3]];
-const seasonStats = OLD.flatMap((s, si) => T.map(([, d, w, , , , ps, sos], i) => {
+const seasonStats = OLD.flatMap((s, si) => TEAM_ROWS.map(([, d, w, , , , ps, sos], i) => {
   const mw = Math.min(10, Math.max(0, w + [-1, 1, 0][si] * (i % 2 ? 1 : -1)));
   const ml = 10 - mw;
   const rank = FINISH[si].indexOf(i) + 1 || null;
-  const power = +Math.min(0.97, Math.max(0.05, ps / 100 + [-0.04, 0.03, -0.02][si])).toFixed(3); // 0-1 scale here
+  const power = Number(Math.min(0.97, Math.max(0.05, ps / 100 + [-0.04, 0.03, -0.02][si])).toFixed(3)); // 0-1 scale here
   return {
     team_id: teamId(i), season_id: s.id, match_wins: mw, match_losses: ml,
-    game_wins: 2 * mw + Math.ceil(ml / 2), game_losses: 2 * ml + Math.ceil(mw / 2), sos: +(sos + (si - 1) * 0.01).toFixed(3),
+    game_wins: 2 * mw + Math.ceil(ml / 2), game_losses: 2 * ml + Math.ceil(mw / 2), sos: Number((sos + (si - 1) * 0.01).toFixed(3)),
     power_score: power, career_power_score: power, champion: rank === 1, runner_up: rank === 2, playoff_rank: rank,
     division_name: DIVS[d].tier, seasons: { id: s.id, name: s.name, start_date: s.start_date },
   };
@@ -158,10 +158,10 @@ const snapshots = [...teams].sort((a, b) => b.power_score - a.power_score).map((
 // ---- Home page: weekly power-score snapshots (Team of the Week, Recap movers) ----
 // Week 17 matches v_team_details. Week 16 = week 17 minus a delta, so Bravo, Charlie and Foxtrot rose and Echo fell.
 // Team of the Week is the biggest riser (Bravo). The recap shows the next two risers and the one faller.
-const WEEK_DELTA = { 1: 6, 2: 3, 5: 1.5, 4: -4 }; // team index in T -> power score change into week 17
+const WEEK_DELTA = { 1: 6, 2: 3, 5: 1.5, 4: -4 }; // team index in TEAM_ROWS -> power score change into week 17
 const powerSnapshots = [16, 17].flatMap((week) => teams.map((t, i) => ({
   id: ID(800 + (week - 16) * 10 + i), season_id: SEASON, team_id: t.team_id, week_number: week,
-  power_score: +(t.power_score - (week === 16 ? (WEEK_DELTA[i] ?? 0) : 0)).toFixed(1), division_id: t.division_id,
+  power_score: Number((t.power_score - (week === 16 ? (WEEK_DELTA[i] ?? 0) : 0)).toFixed(1)), division_id: t.division_id,
   snapshot_date: week === 16 ? '2026-04-27' : '2026-05-04', created_at: '2026-05-04T06:00:00Z',
   match_wins: t.wins, match_losses: t.losses, game_wins: t.game_wins, game_losses: t.game_losses, sos: t.sos,
 })));
@@ -220,9 +220,9 @@ const H2H = [
   [0, 6, 1, 7, 12, '2026-04-05'], [2, 4, 4, 8, 3, '2026-04-26'], [3, 3, 2, 5, 3, '2026-04-12'],
   [4, 2, 2, 4, 0, '2026-03-22'], [5, 4, 2, 6, 6, '2026-05-03'], [6, 3, 3, 6, 1, '2025-11-15'],
 ];
-const headToHead = (id) => (id !== teamId(BRAVO) ? [] : H2H.map(([o, played, wins, gw, gl, last]) => ({
-  team_id: id, opponent_id: teamId(o), matches_played: played, wins, losses: played - wins, game_wins: gw, game_losses: gl,
-  win_pct: +((wins / played) * 100).toFixed(1), last_played_at: `${last}T23:00:00Z`,
+const headToHead = (id) => (id !== teamId(BRAVO) ? [] : H2H.map(([o, playedCount, wins, gw, gl, last]) => ({
+  team_id: id, opponent_id: teamId(o), matches_played: playedCount, wins, losses: playedCount - wins, game_wins: gw, game_losses: gl,
+  win_pct: Number(((wins / playedCount) * 100).toFixed(1)), last_played_at: `${last}T23:00:00Z`,
 })));
 
 // RPC answers by function name. Each gets the JSON body the app sent.
@@ -255,8 +255,8 @@ const test = (cell, spec) => {
 };
 // "col" or an embedded column written "embed(col)", as in order=seasons(start_date).desc
 const cellOf = (row, path) => {
-  const m = /^(\w+)\((\w+)\)$/.exec(path);
-  return m ? row[m[1]]?.[m[2]] : row[path];
+  const match = /^(\w+)\((\w+)\)$/.exec(path);
+  return match ? row[match[1]]?.[match[2]] : row[path];
 };
 const sortRows = (rows, order) => {
   const keys = order.split(',').map((o) => { const [path, dir] = o.split('.'); return [path, dir === 'desc' ? -1 : 1]; });
