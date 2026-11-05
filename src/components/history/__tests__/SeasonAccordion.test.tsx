@@ -30,6 +30,24 @@ const season = {
   end_date: '2025-03-01',
   is_active: false,
 };
+const makeRow = (divisionName: string | null): SeasonData => ({
+  team_id: 'row-1',
+  division_name: divisionName,
+  champion: false,
+  team_name: 'Row Team',
+  match_wins: 1,
+  match_losses: 1,
+  game_wins: 2,
+  game_losses: 2,
+  power_score: 0.2,
+  season_id: 's1',
+  sos: null,
+  runner_up: false,
+  playoff_rank: null,
+  team_logo_url: null,
+  team_image_url: null,
+});
+const EMPTY_SEASON_MESSAGE = 'No standings recorded for this season';
 const wrap = (ui: React.ReactNode) =>
   render(
     <QueryClientProvider
@@ -121,6 +139,51 @@ describe('SeasonAccordion expanded paths', () => {
     wrap(<SeasonAccordion season={{ ...season, is_active: true }} />);
     fireEvent.click(screen.getByText('Full Season Recap'));
     expect(await screen.findByText('Season in progress – check back later')).toBeInTheDocument();
+  });
+
+  it('says so when a past season has no standings rows', async () => {
+    fetchSeasonStatsForAccordion.mockResolvedValueOnce([]);
+    wrap(<SeasonAccordion season={season} />);
+    fireEvent.click(screen.getByText('Full Season Recap'));
+    expect(await screen.findByText(EMPTY_SEASON_MESSAGE)).toBeInTheDocument();
+    expect(screen.queryByText('Failed to load season data')).not.toBeInTheDocument();
+    expect(screen.queryByText('Season in progress – check back later')).not.toBeInTheDocument();
+  });
+
+  it('shows the error, not the empty message, when a past season fails to load', async () => {
+    fetchSeasonStatsForAccordion.mockRejectedValueOnce(new Error('boom'));
+    wrap(<SeasonAccordion season={season} />);
+    fireEvent.click(screen.getByText('Full Season Recap'));
+    expect(
+      await screen.findByText('Failed to load season data', {}, { timeout: 5000 })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Try Again' })).toBeInTheDocument();
+    expect(screen.queryByText(EMPTY_SEASON_MESSAGE)).not.toBeInTheDocument();
+  });
+
+  it('says so when a past season has only hidden divisions, and keeps the admin Edit button', async () => {
+    fetchSeasonStatsForAccordion.mockResolvedValueOnce([makeRow('Hidden Alpha')]);
+    wrap(<SeasonAccordion season={season} />);
+    fireEvent.click(screen.getByText('Full Season Recap'));
+    expect(await screen.findByText(EMPTY_SEASON_MESSAGE)).toBeInTheDocument();
+    // The hidden teams still exist, so an admin must be able to move them.
+    expect(screen.getByText('Edit Divisions')).toBeInTheDocument();
+  });
+
+  it('keeps its own text for an active season and does not show the empty message', async () => {
+    fetchSeasonStatsForAccordion.mockResolvedValueOnce([]);
+    wrap(<SeasonAccordion season={{ ...season, is_active: true }} />);
+    fireEvent.click(screen.getByText('Full Season Recap'));
+    expect(await screen.findByText('Season in progress – check back later')).toBeInTheDocument();
+    expect(screen.queryByText(EMPTY_SEASON_MESSAGE)).not.toBeInTheDocument();
+  });
+
+  it('shows the divisions, not the empty message, when a past season has standings', async () => {
+    fetchSeasonStatsForAccordion.mockResolvedValueOnce([makeRow('Competitive')]);
+    wrap(<SeasonAccordion season={season} />);
+    fireEvent.click(screen.getByText('Full Season Recap'));
+    expect(await screen.findByText('Competitive')).toBeInTheDocument();
+    expect(screen.queryByText(EMPTY_SEASON_MESSAGE)).not.toBeInTheDocument();
   });
 
   it('enters edit mode', async () => {

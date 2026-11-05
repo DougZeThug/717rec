@@ -2,6 +2,7 @@ import { Pencil, RefreshCw, Trophy } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
+import { InlineEmptyState } from '@/components/ui/inline-empty-state';
 import { cn } from '@/lib/utils';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
@@ -106,14 +107,20 @@ const SeasonAccordionExpandedContent: React.FC<SeasonAccordionExpandedContentPro
             </Button>
           </div>
         )}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6">
-          {sortHistoryDivisions(Object.entries(divisionData)).map(([divisionName, teams]) => (
-            <DivisionPanel key={divisionName} divisionName={divisionName} teams={teams} />
-          ))}
-        </div>
-        <div className="hidden md:block">
-          <SeasonMetaBar season={season} seasonData={seasonData || []} />
-        </div>
+        {!season.is_active && seasonData && Object.keys(divisionData).length === 0 ? (
+          <InlineEmptyState icon={Trophy} message="No standings recorded for this season" />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6">
+              {sortHistoryDivisions(Object.entries(divisionData)).map(([divisionName, teams]) => (
+                <DivisionPanel key={divisionName} divisionName={divisionName} teams={teams} />
+              ))}
+            </div>
+            <div className="hidden md:block">
+              <SeasonMetaBar season={season} seasonData={seasonData || []} />
+            </div>
+          </>
+        )}
       </div>
     )}
   </div>
