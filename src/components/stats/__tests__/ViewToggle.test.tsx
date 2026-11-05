@@ -35,6 +35,17 @@ describe('ViewToggle', () => {
     );
   });
 
+  // The toggle's own selected-state text colour beats a plain text-white, so the
+  // selected label needs data-[state=on]:text-white, and the darker amber end
+  // keeps the 12-14px label at 4.5:1. jsdom ignores CSS, so the test reads classes.
+  it('gives the selected option white text on the darker gradient', () => {
+    render(<ViewToggle view="division" onViewChange={onViewChange} />);
+    const selected = screen.getByRole('radio', { name: 'View by Division' });
+    expect(selected).toHaveClass('to-amber-700', 'data-[state=on]:text-white');
+    expect(selected).not.toHaveClass('to-amber-600');
+    expect(screen.getByRole('radio', { name: 'View All Teams' })).not.toHaveClass('to-amber-700');
+  });
+
   it('calls onViewChange with "all" when the All option is clicked', async () => {
     render(<ViewToggle view="division" onViewChange={onViewChange} />);
     await userEvent.click(screen.getByRole('radio', { name: 'View All Teams' }));

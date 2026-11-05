@@ -154,7 +154,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               !detailedView
                 ? isWinterTheme
                   ? 'btn-winter-primary'
-                  : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-xs'
+                  : 'bg-gradient-to-br from-blue-600 to-amber-700 data-[state=on]:text-white shadow-xs'
                 : isWinterTheme
                   ? 'text-[hsl(var(--muted-foreground))] hover:bg-frost-primary/10'
                   : 'text-muted-foreground hover:bg-accent'
@@ -169,7 +169,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               detailedView
                 ? isWinterTheme
                   ? 'btn-winter-primary'
-                  : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-xs'
+                  : 'bg-gradient-to-br from-blue-600 to-amber-700 data-[state=on]:text-white shadow-xs'
                 : isWinterTheme
                   ? 'text-[hsl(var(--muted-foreground))] hover:bg-frost-primary/10'
                   : 'text-muted-foreground hover:bg-accent'
