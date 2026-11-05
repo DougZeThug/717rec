@@ -115,7 +115,9 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
           aria-label="User menu"
         >
           <User className="size-4 mr-1" />
-          {profile?.username || 'User'}
+          {/* Below 640px only the icon shows, as the Sign in button does. The
+              aria-label keeps the button's name. */}
+          <span className="hidden sm:inline">{profile?.username || 'User'}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

@@ -75,6 +75,17 @@ describe('UserMenu', () => {
     expect(screen.getByText('Sign in')).toHaveClass('hidden!', 'min-[380px]:block!');
   });
 
+  // Below 640px only the icon shows, so the name no longer crowds the header.
+  // jsdom ignores CSS, so the test reads the classes. The button keeps its name.
+  it('hides the username below 640px and keeps the button name', () => {
+    renderMenu();
+
+    const button = screen.getByRole('button', { name: 'User menu' });
+
+    expect(button).toHaveAttribute('aria-label', 'User menu');
+    expect(screen.getByText('doug')).toHaveClass('hidden', 'sm:inline');
+  });
+
   it('sends an approved member to /my-team, where Leave Team lives', async () => {
     mockUseTeamMembership.mockReturnValue({
       activeMembership: { team_id: 'team-1', team: { name: 'Rail Riders' } },
