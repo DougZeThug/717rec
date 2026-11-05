@@ -33,6 +33,14 @@
       "text": "E5 No other doc in docs/ still says the old thing (search for the old phrases comes back empty).",
       "done": true,
       "evidence": "Searches of docs/ (not audits or quality-review) with the old phrases and then wider ones (never in the URL, held in the page, memory only, not in the address, lives in the URL, leaves an open bracket open, nothing else is in the URL) come back with nothing left that is about the playoffs season. The reviewer searched with its own terms and found nothing more. The wider navigation.md claim is a separate follow-up."
+    },
+    {
+      "text": "E6 The docs no longer say that no other page keeps state in the address. foundations/navigation.md (While editing, URL state), NAV-09, teams/compare-teams.md, and the two docs that call next an exception to that rule (sign-in-and-sign-up.md, set-up-your-profile.md) say what the code does: the schedule (night, search, chips), the standings view, Compare, the playoffs page, the admin section and the team section carry state in the address, a few pages take a prefill from it, and sort orders, most tabs and expanded panels are still lost on navigation. Every claim read against the code and shown in a real browser where it is a new statement.",
+      "done": false
+    },
+    {
+      "text": "E7 The broken link at verification/admin.md:340 (LIVEFIX-02c) points at a heading that exists. A link check over docs/product-description (every relative link and anchor) reports zero broken links, and it reported exactly that one before the fix.",
+      "done": false
     }
   ],
   "checks": {
@@ -144,10 +152,15 @@
       "resolved": "fixed in the third docs commit; recount still 1,958 items and 116; reviewer confirms the final head"
     }
   },
-  "interventions": [],
+  "interventions": [
+    {
+      "at": "2026-11-05T03:13:37.002Z",
+      "why": "Doug asked for the two follow-ups I reported to be fixed too (the wider stale URL-state claims in navigation.md, NAV-09 and compare-teams.md, and the broken link at verification/admin.md:340). He did not type approve for the first part, so both are folded into this task and one approval covers all of it."
+    }
+  ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T02:03:36.845Z",
+  "updatedAt": "2026-11-05T03:13:37.087Z",
   "readySha": "673af161251667af7422eaddbecf23284a4567fc",
   "readyAt": "2026-11-05T02:03:36.845Z"
 }
