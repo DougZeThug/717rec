@@ -11,36 +11,42 @@
   "criteria": [
     {
       "text": "Docs: the navigation routes table lists every route in App.tsx except the dev-only proof route and the counts agree; no page or row still says a link keeps the old scroll position; the scroll-restore finding is recorded as an open question and in B-14; totals recounted",
-      "done": false
+      "done": true,
+      "evidence": "Routes table checked row by row against src/App.tsx and routeReachability.test.ts: 24 named routes (added /recap/:seasonSlug/:week, /join, /forgot-password, /reset-password); counts now twenty-four; the six never-in-a-menu routes match the test. Scroll measured in a real browser on the dev server and the production build (before/scroll-check-out.txt, scroll-matrix-prod-out.txt, scroll-matrix-wide2-out.txt, scroll-matrix-team-out.txt, scroll-reload-prod-out.txt): a link resets scroll (337 -> 0 on both builds); Back and Forward landed at 0 on /schedule, /teams, /history, /insights and on /stats after a top-bar link; /stats after a team page restored 300 of 300; a probe showed the saved /stats position overwritten with 0 as the page was left; a reload keeps scroll on /stats, /teams, /history. About 20 pages and 18 rows rewritten, the finding recorded as an open question, under B-14 and as suspected-bug marks on NAV-02, BROWSE-04, BROWSE-37, TEAM-33 and PHONE-22 (NAV-01 lost its mark). Recount by the README method: 1958 items, 120 P1 suspected-bug rows (was 116). Not fixed on purpose: the scroll restore itself is a product bug, not decided."
     },
     {
       "text": "(a) The tab panel stop no longer hides the pager row under the sticky bar: overlap 60 -> 0 on the phone, nothing worse on desktop (real browser, before/after)",
-      "done": false
+      "done": true,
+      "evidence": "Keyboard walk at 390x844, before/tabwalk-390-upcoming.txt vs after/tabwalk-390-upcoming-after.txt (production build): the tab panel stop was top 0 with 60 of 60 px under the sticky bar, now top 64 with 0 hidden, and the sweep from scroll 0 to 200 shows the same. Desktop 1280: panel top 97, overlap 0, and 6 overlap lines before and 6 after (the left-alone Shift+Tab team links), so nothing worse. The three TabsContent carry scroll-mt-16 (computed 64px)."
     },
     {
       "text": "(b) The focus ring is whole on the first and last date chip, including when the selected date is the first or last chip; chip widths unchanged; no neighbour sliver; the move of the chips is measured and stated",
-      "done": false
+      "done": true,
+      "evidence": "Ring pixel diff (audit2/ring2.mjs) with the selected date middle, first and last, at 390 and 1280: before (production build of the old code, before/ring-before-prod.txt) the first and last chip had 0 to 2 px of room, and with the selected date first or last the ring was cut to one column at the left and zero at the right; after (after/ring-after-dev.txt) room is 6 px each side and the full ring pattern shows in all three cases. Chip widths unchanged (50 px phone, 52.6 desktop), box edges unchanged (4..386 and 20..1260) so no neighbour sliver; the chips sit 4 px further in (phone x 6 -> 10, desktop 22 -> 26). Pixel diff of full-page shots at 390 and 1280, Upcoming and Completed (after/pixdiff.txt, after/diff-crops.png): only the strip rows, the Add reaction button, and clock text (Updated time, minutes until match) differ."
     },
     {
       "text": "(c) Add reaction is 44x44 on the phone and 30x44 on desktop; (d) team links are shown to be 44px already, no change",
-      "done": false
+      "done": true,
+      "evidence": "Tap targets (audit2/targets.mjs, before/targets-prod.txt vs after/targets-prod.txt): Add reaction 30 x 44 -> 44 x 44 on the phone, 30 x 44 unchanged on desktop. Team links already 44 px tall on both widths (logo 44 x 44, names 44 x 87..120); the 43 was getBoundingClientRect read during the animate-scale-in start, offsetHeight 44 throughout. No change made for the team links."
     },
     {
       "text": "(e) The Completed tab cards no longer shrink 84px when comments arrive and the date strip is 76px from the first paint; the parts not fixed (division chips, Updated row, prediction bar, footer) are named",
-      "done": false
+      "done": true,
+      "evidence": "Load jump (audit2/completedgrow.mjs with the comments delayed 700 ms, and load2.mjs with every answer delayed 300 ms): Completed card 326 px then 242 px (an 84 px shrink) -> 242 px from the first paint, page height identical when loaded; date strip 68 px then 76 px (an 8 px jump when the dots arrive) -> 76 px from the first paint. Not fixed, named in the commits: division chip pop-in (+52 px), Updated row (+52 px), prediction bar pop-in (about +60 px a card), the app-wide footer shift. Total layout shift score is about the same, 0.2532 before and 0.2559 after, because the footer shift (0.20) dominates; so the fix removes two visible jumps and does not make the page steady."
     },
     {
       "text": "Six checks pass at the final head; changed tests edited to match, none skipped or loosened; docs and the DateStrip comment say what the code does; links 0 broken",
-      "done": false
+      "done": true,
+      "evidence": "All six required checks pass at the final code and docs commit cbe00dd: integrity, typecheck, lint, knip, build, unit (826 files, 7530 tests; was 826 and 7524). Changed and new tests only add exact class checks (scroll-mt-16 on the three tab panels, px-1.5 and after:w-0.5 and after:shrink-0 on the strip row, min-h-16 on chips with and without a dot, min-w-11 and md:min-w-0 on Add reaction, the single h-11 skeleton); the builder showed the 7 new or strengthened tests fail on the old source. No skip, only, todo, ts-expect-error or eslint-disable added. Links: 2735 checked, 0 broken."
     }
   ],
   "checks": {
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "75e14e72aefa06153adf895d9652016380813d3b",
+      "sha": "cbe00ddc8bab9322b67e2d92c96ba5a706f1f3cf",
       "dirty": false,
-      "at": "2026-11-05T14:56:33.823Z",
+      "at": "2026-11-05T14:58:00.474Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261105-small-leftovers-navigati/integrity.log"
@@ -48,39 +54,39 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "75e14e72aefa06153adf895d9652016380813d3b",
+      "sha": "cbe00ddc8bab9322b67e2d92c96ba5a706f1f3cf",
       "dirty": false,
-      "at": "2026-11-05T14:56:46.034Z",
-      "seconds": 12,
+      "at": "2026-11-05T14:58:10.596Z",
+      "seconds": 10,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261105-small-leftovers-navigati/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "sha": "cbe00ddc8bab9322b67e2d92c96ba5a706f1f3cf",
       "dirty": false,
-      "at": "2026-11-05T14:36:42.120Z",
-      "seconds": 78,
+      "at": "2026-11-05T14:59:39.337Z",
+      "seconds": 89,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261105-small-leftovers-navigati/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "sha": "cbe00ddc8bab9322b67e2d92c96ba5a706f1f3cf",
       "dirty": false,
-      "at": "2026-11-05T14:36:45.917Z",
-      "seconds": 4,
+      "at": "2026-11-05T14:59:42.706Z",
+      "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261105-small-leftovers-navigati/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "sha": "cbe00ddc8bab9322b67e2d92c96ba5a706f1f3cf",
       "dirty": false,
-      "at": "2026-11-05T14:36:51.171Z",
+      "at": "2026-11-05T14:59:47.899Z",
       "seconds": 5,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261105-small-leftovers-navigati/build.log"
@@ -88,10 +94,10 @@
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "e9e871bcf2e219420bdb6c931f63809d7565c487",
+      "sha": "cbe00ddc8bab9322b67e2d92c96ba5a706f1f3cf",
       "dirty": false,
-      "at": "2026-11-05T14:44:23.769Z",
-      "seconds": 453,
+      "at": "2026-11-05T15:07:03.197Z",
+      "seconds": 435,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261105-small-leftovers-navigati/unit.log"
     }
@@ -103,11 +109,18 @@
       "sha": "080831d82ef10ec4e610377fe5573af6c238ca38",
       "at": "2026-11-05T14:20:49.946Z",
       "summary": "Independent plan review of the schedule fixes: a, c, d, e can go ahead; b needs more room and one more test. (b) The selected date becomes the first or last chip whenever it is more than 3 days back or 10 days ahead (DateStrip.tsx:40-41), and the selected chip is scale-105, so its ring sticks out about 5.45px; px-1 gives 4px on the left and 5px on the right, so about 1.45px stays cut, and the audit never tested selected-and-first. Use px-1.5 and after:w-0.5 (gap 4 + 2 = 6px) and run the ring pixel diff with the selected day first and last. The spacer comment must say 5px or 6px of room, not 1px. (a) fine; the desktop claim is unproven (both 1280 walks show no overlap before or after), drop it. (c) matches the house pattern (ScheduleFilters.tsx:57, Q14); add a short comment citing it; emoji chips 39-43px are left alone. (d) not reproducible, no change. (e) both one-liners right; strengthen the skeleton test to expect the h-11 class. Docs: only the DateStrip comment needs rewording."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "cbe00ddc8bab9322b67e2d92c96ba5a706f1f3cf",
+      "at": "2026-11-05T15:07:31.892Z",
+      "summary": "Independent reviewer, four rounds, final APPROVE at cbe00dd (docs, last confirmation) over the four code commits. Round 1: code APPROVE-quality (Tailwind v4 classes confirmed in the built CSS, new tests assert exact classes and fail without them, no skip or only or todo or ts-expect-error or eslint-disable, no assertion loosened, evidence supports the commit messages) but CHANGES on docs: A11Y-03 and accessibility.md still said the new page does not scroll to the top, team-details still said Back to /teams restores scroll in bold, the playoffs footer did not name B-14, plus reload-keeps-scroll, team Back via navigate(-1), deep links, wording. All verified against the code and fixed. Round 2: one more stale passage (past-seasons said navigation.md called /teams the only restoring route) and nits, fixed. Round 3 at cbe00dd: APPROVE, fresh-term sweep found nothing, recount 1958 items and 120 suspected-bug rows, links 0 broken. The reviewer re-measured scroll on the production preview and agreed. Stated limits: the load jump is only partly fixed (total shift score about 0.253 before and 0.256 after; the footer and the filter chips are left alone); at 390 wide four different emoji now wrap the reaction row; desktop Chromium only, no iPhone."
     }
   ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T14:56:46.034Z"
+  "updatedAt": "2026-11-05T15:07:32.156Z"
 }
