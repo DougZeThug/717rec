@@ -111,7 +111,7 @@ const SeasonAccordionExpandedContent: React.FC<SeasonAccordionExpandedContentPro
           <InlineEmptyState icon={Trophy} message="No standings recorded for this season" />
         ) : (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 gap-3 md:gap-6">
               {sortHistoryDivisions(Object.entries(divisionData)).map(([divisionName, teams]) => (
                 <DivisionPanel key={divisionName} divisionName={divisionName} teams={teams} />
               ))}
