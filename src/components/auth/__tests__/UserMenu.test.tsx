@@ -86,6 +86,17 @@ describe('UserMenu', () => {
     expect(screen.getByText('doug')).toHaveClass('hidden', 'sm:inline');
   });
 
+  // With only the icon showing, the button would be about 28px wide. It keeps a
+  // 44px tap target below 640px, as the Sign in button does below 380px.
+  it('keeps a 44px tap target on a phone while only the icon shows', () => {
+    renderMenu();
+
+    const button = screen.getByRole('button', { name: 'User menu' });
+
+    expect(button).toHaveClass('min-w-11', 'sm:min-w-0');
+    expect(button.querySelector('svg')).toHaveClass('mr-0', 'sm:mr-1');
+  });
+
   it('sends an approved member to /my-team, where Leave Team lives', async () => {
     mockUseTeamMembership.mockReturnValue({
       activeMembership: { team_id: 'team-1', team: { name: 'Rail Riders' } },
