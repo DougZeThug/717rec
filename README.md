@@ -70,7 +70,7 @@ manual QA expectations, and the coverage hang triage playbook.
 
 ## Continuous integration
 
-Four GitHub Actions workflows live in `.github/workflows/`:
+GitHub Actions workflows live in `.github/workflows/` (the opt-in `factory-issue.yml` is described in [`factory/README.md`](factory/README.md)):
 
 | Workflow             | File              | What it runs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | -------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
