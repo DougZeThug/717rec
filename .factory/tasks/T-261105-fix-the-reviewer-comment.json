@@ -45,9 +45,14 @@
       "evidence": "node --test factory/spec: 117 of 117 pass after every factory change; settings rule is now node --test factory/spec/*.spec.mjs* with two new negative cases; mock filters gt/gte/lt/lte; guard loads imports together and reads its config in readConfig(); reviewer ran old and new guard on the same inputs, identical"
     },
     {
-      "text": "DeepSource: the 26 code-style findings are fixed with the behaviour unchanged, and every new-code line it listed as uncovered has a test that asserts real behaviour",
+      "text": "DeepSource: 25 of the 26 code-style findings are fixed with the behaviour unchanged, the 26th (useRef(undefined)) is kept with a justified skipcq note, and every new-code line it listed as uncovered has a test that asserts real behaviour",
       "done": true,
       "evidence": "DeepSource: 25 of the 26 style findings fixed with behaviour unchanged (strings compared with a parser, 35 mock responses compared, installer run 16 times old versus new, all identical); the 26th (useRef(undefined)) is kept with a skipcq note because React 19 types require the argument (typecheck fails otherwise, reviewer confirmed in @types/react); all 24 uncovered lines now have tests, the four files measured at 100% by the builder; reviewer broke the new tests on purpose 47 times in a scratch copy and 46 were caught; six checks pass at 967818d"
+    },
+    {
+      "text": "Review threads: every bot review thread on PR 1729 is answered (fixed with a commit, or left with a reason) and resolved, and the bots' later notes are handled",
+      "done": true,
+      "evidence": "Checked through the GitHub API after the replies: 48 of 48 review threads resolved, 0 open (44 at the start plus 6 later cubic threads made 50; React Doctor then removed its own 2 after its clean run); 19 replies posted on the open threads, each naming the fix commit or the reason (GitHub refused 2 replies to React Doctor comments that no longer existed); the 2 later cubic notes about this record are answered in their threads and fixed in this record; React Doctor reports no new issues on 44e4040"
     }
   ],
   "checks": {
@@ -132,7 +137,7 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T17:05:38.080Z",
+  "updatedAt": "2026-11-05T17:10:28.411Z",
   "readySha": "967818d332fd87e31b1fa42eb7c7014f408578f2",
   "readyAt": "2026-11-05T17:05:38.080Z"
 }
