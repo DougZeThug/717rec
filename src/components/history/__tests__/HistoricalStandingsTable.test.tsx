@@ -359,6 +359,20 @@ describe('HistoricalStandingsTable', () => {
       expect(screen.queryByText(/Playoff rank/)).not.toBeInTheDocument();
     });
 
+    it('treats a finish of 0 as no finish, as the wide screen does', () => {
+      const teams = [team({ team_name: 'Foxtrots', playoff_rank: 0 })];
+      const { unmount } = render(<HistoricalStandingsTable teams={teams} />);
+      expect(cardOf('Foxtrots').textContent).not.toMatch(/#\d/);
+      unmount();
+
+      state.isMobile = false;
+      render(<HistoricalStandingsTable teams={teams} />);
+      const row = screen
+        .getByRole('link', { name: 'Foxtrots' })
+        .closest('div.flex.items-center.text-sm');
+      expect((row?.firstElementChild as HTMLElement).textContent).toBe('-');
+    });
+
     it('still shows the number when an admin edit leaves the crown on another finish', () => {
       // An edit renumbers the finish by position but never moves the champion or runner-up flag.
       render(

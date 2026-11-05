@@ -122,7 +122,8 @@ const MobileStatsArea: React.FC<{
  */
 const getPhoneRankLabel = (team: SeasonData): number | null => {
   const rank = team.playoff_rank;
-  if (rank === null || rank === undefined) return null;
+  // No finish, or a finish of 0: the wide screen's Rank column shows a dash for both.
+  if (!rank) return null;
   if (team.champion && rank === 1) return null;
   if (team.runner_up && rank === 2) return null;
   return rank;
