@@ -33,6 +33,8 @@ const getDivisionColorClass = (division: string) => getDivisionSoftClasses(divis
 // min-w-0 lets the title block shrink; without it the description row
 // pushes the admin menu past the card's clipped right edge on a phone.
 // The description wraps between its parts, and each part stays on one line.
+// A bullet travels with the value after it, so a bullet can lead a line but
+// never ends one.
 const BracketTitleBlock: React.FC<{ bracket: PlayoffBracket }> = ({ bracket }) => (
   <div className="min-w-0">
     <CardTitle
@@ -42,14 +44,16 @@ const BracketTitleBlock: React.FC<{ bracket: PlayoffBracket }> = ({ bracket }) =
     </CardTitle>
     <CardDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
       <span className="whitespace-nowrap font-medium">{bracket.division} Division</span>
-      <span className="text-muted-foreground">•</span>
-      <span className="whitespace-nowrap">{bracket.format}</span>
+      <span className="inline-flex items-center gap-x-2 whitespace-nowrap">
+        <span className="text-muted-foreground">•</span>
+        <span>{bracket.format}</span>
+      </span>
       {bracket.state && (
-        <>
+        <span className="inline-flex items-center gap-x-2 whitespace-nowrap">
           <span className="text-muted-foreground">•</span>
           <span
             className={cn(
-              'whitespace-nowrap px-2 py-0.5 rounded-full text-xs font-medium',
+              'px-2 py-0.5 rounded-full text-xs font-medium',
               bracket.state === 'pending'
                 ? 'bg-muted text-muted-foreground'
                 : bracket.state === 'in_progress'
@@ -59,7 +63,7 @@ const BracketTitleBlock: React.FC<{ bracket: PlayoffBracket }> = ({ bracket }) =
           >
             {bracket.state.charAt(0).toUpperCase() + bracket.state.slice(1)}
           </span>
-        </>
+        </span>
       )}
     </CardDescription>
   </div>
