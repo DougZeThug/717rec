@@ -49,7 +49,7 @@ const ChampionsSummaryCard: React.FC<ChampionsSummaryCardProps> = ({
             <div className="min-w-0">
               <p
                 className={cn(
-                  'text-xs font-semibold truncate leading-tight',
+                  'text-xs font-semibold line-clamp-2 break-words leading-tight',
                   isWinterTheme ? 'text-white' : 'text-foreground'
                 )}
               >
@@ -57,7 +57,7 @@ const ChampionsSummaryCard: React.FC<ChampionsSummaryCardProps> = ({
               </p>
               <p
                 className={cn(
-                  'text-xs leading-tight',
+                  'text-xs leading-tight line-clamp-3',
                   isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
                 )}
               >
@@ -102,7 +102,7 @@ const HighlightRow: React.FC<{ label: string; value: string; isWinterTheme: bool
     </p>
     <p
       className={cn(
-        'text-xs font-semibold truncate leading-tight',
+        'text-xs font-semibold line-clamp-2 break-words leading-tight',
         isWinterTheme ? 'text-white' : 'text-foreground'
       )}
     >
