@@ -131,7 +131,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSav
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent transition-colors w-full sm:w-auto"
+            className="min-h-11 px-4 py-2 text-sm font-medium rounded-md hover:bg-accent transition-colors w-full sm:w-auto"
           >
             Cancel
           </button>
@@ -139,7 +139,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSav
             type="button"
             onClick={handleByeForfeit}
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 w-full sm:w-auto"
+            className="min-h-11 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 w-full sm:w-auto"
           >
             {isSubmitting ? 'Saving...' : `Award Win (${match.bestOf}-0)`}
           </button>
