@@ -290,7 +290,7 @@ the player's side.
 | The user's role (visitor, player, admin) | Only an admin reaches the screen; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). | Losing admin elsewhere leaves the screen on display and the writes fail. |
 | The record's state | A team already assigned on the chosen date is absent from the grid rather than shown as taken. | An assignment made in another browser reaches this screen within a minute, and the team then vanishes from the grid under the cursor. |
 | The season's state (active, archived, playoffs on) | **No effect.** Timeslots carry a date and a team and no season at all. | No effect. Archiving a season does not clear or archive its timeslots. |
-| Viewport | The section stacks its two columns. The team grid is one across below 640px and two above, so a long team name has room to wrap. | No effect beyond re-flowing. |
+| Viewport | The section stacks its two columns. The team grid is one across below 640px and two above, so a long team name has room to wrap. On a 320 pixel phone both columns shrink to the card, and the Current Timeslots table scrolls sideways inside its own box. | No effect beyond re-flowing. |
 | Keys the form honours | Tab reaches Select All, then each team tile, then each block button, then submit. Team tiles respond to Enter and Space. | Enter on the submit button assigns. Escape closes the date popover or the confirmation dialog. |
 
 ## Cancel and interrupt
@@ -437,3 +437,4 @@ behaviour above, which was changed after that commit — see
 L4, from the change and its tests rather than a fresh pass over the running app.
 The look of the block buttons and the 44-pixel Double Header switch changed after
 that commit too (the admin phone polish).
+The narrow-width layout fixes (commits `b603506` to `4b4325c`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.

@@ -143,7 +143,7 @@ Any of these writes moves standings, records, badges, and power scores.
 | The user's role (visitor, player, admin) | A visitor and a player see the Pending Scores card and its Report buttons and nothing else. An admin sees the same card **plus** the review list at `/admin`. Being on a team in a listed match grants nothing extra — no team owns its own pending matches. | Admin granted or revoked elsewhere does not change what is on screen until the profile is re-fetched. |
 | The record's state | Decides which queue a thing is in. A match with no result is on the card; a report awaiting review is in the admin list; a completed match with no winner is in neither and is invisible. | A match given a result elsewhere leaves the card the next time the home page fetches. A submission decided in another tab stays on screen here until this list is re-fetched. |
 | The season's state (active, archived, playoffs on) | **No effect on any of the three.** None of these queues filters by season, which is unusual for this app — nearly everything else does. | No effect. |
-| Viewport | The card's rows stack on a narrow screen, putting the Report button under the team names. The review cards stack at any width. | No effect beyond re-flowing. |
+| Viewport | The card's rows stack on a narrow screen, putting the Report button under the team names. The review cards stack at any width. Below 359 pixels wide a review card's footer wraps: the "Submitted" date takes one row, and Reject and Approve take the next, so both buttons stay inside the card. | No effect beyond re-flowing. |
 | Keys the form honours | Tab reaches each Report button on the card, and Reject then Approve on each review card. Nothing is focused on arrival. | Enter or Space activates the focused button. There are no shortcuts, no select-all, and no bulk action. |
 
 ## Cancel and interrupt
@@ -267,3 +267,4 @@ so numbers elsewhere move some time afterwards.
 
 Verified against `717rec` commit `ea5c8f4`, except the "Match:" line on a review
 card, which was changed after that commit (the admin phone polish).
+The narrow-width layout fixes (commits `b603506` to `4b4325c`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.

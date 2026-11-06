@@ -260,7 +260,10 @@ keeps its width; from 768 pixels wide they sit beside it. The Full Season Recap
 strip is 44 pixels high; from 768 pixels wide it is 41. In edit mode, once there
 is a change, the Reset, Cancel and Save Changes buttons wrap onto a second line
 when they do not fit below 640 pixels wide, so Save Changes stays on the screen.
-From 640 pixels wide they stay in one row. Dragging in edit mode needs a
+From 640 pixels wide they stay in one row. The grey hint "Drag teams between
+divisions to reorganize" shows only from 700 pixels wide. From 640 to 699 the
+toolbar holds the status badge and the buttons, so Save Changes stays inside it.
+Dragging in edit mode needs a
 press-and-hold of about a fifth of a second before it starts, so a normal swipe
 still scrolls.
 
@@ -368,10 +371,12 @@ moves; power scores and records are untouched.
 - Not confirmed by hand: the History phone polish, which is described in the
   passages above on the phone start state, the chevron, the empty past season, the
   season card layout, the wrapped names, the colours and the edit buttons. It was
-  read from the code and its tests, and from the change's own measurements. Those
-  notes say that between 640 and about 669 pixels wide (a small phone on its side)
-  Save Changes is still clipped at the right edge by up to 30 pixels. This
-  document has not re-measured that.
+  read from the code and its tests, and from the change's own measurements. Between
+  640 and about 669 pixels wide (a small phone on its side) Save Changes used to run
+  up to 30 pixels past the toolbar and was cut off. The drag hint is now hidden below
+  700 pixels wide, and a real browser with fake data measured no pixel past the
+  toolbar at any width from 640 to 1280. This document has not checked it on a real
+  device.
 - Not confirmed by hand: the one-column layout, the team-name links, the phone
   "#N" and the remembered open state. They are described from the code, its tests
   and the change's own measurements on the dev server with fake data. Not
@@ -393,3 +398,4 @@ Verified against `717rec` commit `ea5c8f4`.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 The History phone polish changed the passages on the phone start state, the division chevron, the empty past season, the season card layout, the wrapped names, the colours and the edit buttons after that commit.
 The History page then changed again: an opened season is one column at every width, every team name is a link (not "Unknown Team"), a phone card shows the playoff rank as "#N", and the page remembers which seasons and divisions are open for Back, Forward and a reload. This changed the passages on the simple case, leaving the page, beginning, the viewport and keys rows, back and reload, URL state, on a phone, accessibility and the rank column. The scroll restore on Back then changed on this branch (not yet live): it is no longer best effort, and the passages on leaving the page, Back or Forward and the open questions say what was measured on 2026-11-06.
+The History edit toolbar then changed: from 640 to 699 pixels wide the drag hint is hidden, so Save Changes no longer runs past the toolbar (commit `ce136a4`). It was measured in a real browser against fake data, not on a real phone or tablet.

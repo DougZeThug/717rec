@@ -265,7 +265,7 @@ window could never be opened — see
 | The user's role (visitor, player, admin) | Only an admin reaches the dashboard at all; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). Every admin sees every control. | Losing admin elsewhere leaves the buttons on screen. The server refuses the writes. |
 | The record's state | An archived season shows an Archived badge and an Edit button, and no Activate button. A season that is neither active nor archived also shows Activate. A playoffs-in-progress season shows both Activate and Finalize Playoffs. Only the active season shows the **Archive Season** button in the header; every other un-archived season shows an **Archive** button on its card. | A season archived in another browser keeps showing its old badge here for up to ten minutes. |
 | The season's state (active, archived, playoffs on) | With no active season, the top card reads "None" and the Archive Season button is absent rather than disabled. Every un-archived season still offers Activate, and its dialog shows no deactivation warning and no tick box, so the league can be restarted from here. | If the active season changes elsewhere, this screen does not notice until it re-fetches. |
-| Viewport | The three cards stack on a narrow screen. The form's two date fields stack. The list is one card per season either way. The buttons and badges wrap onto more rows instead of running off the screen. | No effect beyond re-flowing. |
+| Viewport | The three cards stack on a narrow screen. The form's two date fields stack. The list is one card per season either way. The buttons and badges wrap onto more rows instead of running off the screen. The form's Cancel and Create buttons wrap onto two rows below 372 pixels wide, so Cancel stays on the screen. A confirm dialog (Activate, Archive) that is taller than the screen scrolls inside itself, so its title and confirm button can be reached on a short screen. | No effect beyond re-flowing. |
 | Keys the form honours | Tab moves through Name, Start Date, End Date, Cancel, and the submit button. | Enter in a text field submits the form. Escape closes an open dialog, which cancels the archive or the finalise. |
 
 ## Cancel and interrupt
@@ -373,3 +373,4 @@ them.
 
 Verified against `717rec` commit `ea5c8f4`, except the wrapping buttons and
 badges above, which were changed after that commit (the admin phone polish).
+The narrow-width layout fixes (commits `b603506` to `4b4325c`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.
