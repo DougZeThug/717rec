@@ -78,11 +78,14 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
+        {/* Two columns from 840px. From 768px the admin sidebar takes 240px, so two columns left
+            the four result buttons (2–0, 2–1, 1–2, 0–2) 29-35px wide each and "2–0" broke onto
+            two lines (768-810px). From 840px they are 38px or wider and fit on one line. */}
         <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
-          className="pt-2 grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="pt-2 grid grid-cols-1 min-[840px]:grid-cols-2 gap-4"
         >
           {matches.map((match, localIndex) => {
             // Extract the global index from the match ID
