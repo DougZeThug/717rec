@@ -2,7 +2,7 @@
   "id": "T-261106-fix-admin-and-history-la",
   "title": "Fix admin and History layout clips at narrow widths",
   "kind": "polish",
-  "status": "intake",
+  "status": "ready",
   "request": "Work on the still open tasks (admin defects at 320px, History edit toolbar clip at 640-669px, tablet score card wrap)",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -61,7 +61,8 @@
     },
     {
       "text": "At 390px and 1280px, and at every width above each fix's limit, each touched screen measures the same before and after. Named exceptions: the batch date copy (hidden under 440px; the button grows to 284px from 440px), the History drag hint (hidden at 640-699px), and the Scores match rows (one column at 768-839px instead of two). No new console errors, no sideways page scroll, existing tests pass, and the 3 new tests fail on the old code",
-      "done": false
+      "done": true,
+      "evidence": "Full compare of before and after at 390x844 and 1280x800 for the 8 class-only screens: identical, except the named exceptions (batch date copy at 390 and 1280; History hint 640-699; Scores one column 768-839) and a 2.4px text width at 1280 in the pending footer that is the clock (old and new code both 198.2px at the same moment). Console errors 3 -> 3 on every page (none new); page sideways scroll 0 everywhere. 3 new tests (ThursdayDatePicker, EditModeToolbar, TimeSlotMatchGroup) each fail on the old code and pass on the new. Six checks pass at cf559bc: unit 837 files / 7761 tests."
     },
     {
       "text": "Admin Scores (/admin/scores) at 768-839px wide: each of the four result buttons (2-0, 2-1, 1-2, 0-2) shows its text on one line; before: the text split into '2-' and '0' at 768-810px (buttons 29-35px wide, 62px tall)",
@@ -73,9 +74,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "50b5701a0ed365400833e1d791594d0000997ced",
+      "sha": "cf559bcbd2c17996520049a1f81dee04659754c9",
       "dirty": false,
-      "at": "2026-11-06T17:30:44.186Z",
+      "at": "2026-11-06T17:38:37.085Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-fix-admin-and-history-la/integrity.log"
@@ -83,42 +84,52 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "50b5701a0ed365400833e1d791594d0000997ced",
+      "sha": "cf559bcbd2c17996520049a1f81dee04659754c9",
       "dirty": false,
-      "at": "2026-11-06T17:30:53.493Z",
-      "seconds": 9,
+      "at": "2026-11-06T17:38:45.466Z",
+      "seconds": 8,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261106-fix-admin-and-history-la/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "50b5701a0ed365400833e1d791594d0000997ced",
+      "sha": "cf559bcbd2c17996520049a1f81dee04659754c9",
       "dirty": false,
-      "at": "2026-11-06T17:32:09.019Z",
-      "seconds": 75,
+      "at": "2026-11-06T17:40:03.943Z",
+      "seconds": 78,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261106-fix-admin-and-history-la/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "50b5701a0ed365400833e1d791594d0000997ced",
+      "sha": "cf559bcbd2c17996520049a1f81dee04659754c9",
       "dirty": false,
-      "at": "2026-11-06T17:32:12.815Z",
-      "seconds": 4,
+      "at": "2026-11-06T17:40:06.974Z",
+      "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261106-fix-admin-and-history-la/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "50b5701a0ed365400833e1d791594d0000997ced",
+      "sha": "cf559bcbd2c17996520049a1f81dee04659754c9",
       "dirty": false,
-      "at": "2026-11-06T17:32:18.231Z",
+      "at": "2026-11-06T17:40:11.947Z",
       "seconds": 5,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261106-fix-admin-and-history-la/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "cf559bcbd2c17996520049a1f81dee04659754c9",
+      "dirty": false,
+      "at": "2026-11-06T17:47:10.242Z",
+      "seconds": 418,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261106-fix-admin-and-history-la/unit.log"
     }
   },
   "reviews": [
@@ -135,6 +146,13 @@
       "sha": "50b5701a0ed365400833e1d791594d0000997ced",
       "at": "2026-11-06T17:37:31.258Z",
       "summary": "Code review: code sound and in scope. 3 off-by-one mismatches between class, comment and docs: SeasonForm max-[371px] wraps at <=370 but comment/docs/criterion say under 372; TeamForm max-[328px] vs 'under 329'; TeamLogoCard comment says 356 but class is 355. Nits: past-seasons.md says measured 640-1280 (fine steps only 640-768); sidebar can also collapse to 60px. Lead is fixing the class/words and re-running the six checks."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "cf559bcbd2c17996520049a1f81dee04659754c9",
+      "at": "2026-11-06T17:47:29.429Z",
+      "summary": "Independent code review APPROVE at cf559bc after one CHANGES round (3 off-by-one mismatches between class, comment and docs, all fixed and re-reviewed). Verified: Tailwind 4.3.3 max-[N] is width<N; shared alert-dialog change safe for all 25 callers; TeamForm used in 3 places, no change where there is room; 3 new tests fail on old code; every number in docs and comments matches its class; no rows added to the docs; no protected path touched."
     }
   ],
   "issues": {},
@@ -154,5 +172,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T17:37:31.258Z"
+  "updatedAt": "2026-11-06T17:47:32.720Z",
+  "readySha": "cf559bcbd2c17996520049a1f81dee04659754c9",
+  "readyAt": "2026-11-06T17:47:32.720Z"
 }
