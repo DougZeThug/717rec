@@ -61,16 +61,16 @@
     {
       "text": "Other small controls: checkboxes, contact email links, the hero card name and colour swatch buttons, and the schedule page calendar arrows have a tap area of at least 44px; before: 16px, 15px, 40px and 32px, and 28px",
       "done": true,
-      "evidence": "Checkboxes (16px), contact email links (15px tall), the hero card name button (40px tall) and colour swatch button (32px), and the schedule page calendar arrows (28px wide) now have a 44px tap area (hit-area-44, min-w-[44px]). Contact link, hero buttons, checkbox and arrows are pinned by tests that fail on the old code."
+      "evidence": "Checkboxes (16px), contact email links (15px tall), the hero card name button (40px tall) and colour swatch button (32px), and the schedule page calendar arrows (28px wide) now have a 44px tap area (hit-area-44, min-w-[44px]). Contact link, hero buttons, checkbox and arrows are pinned by tests that fail on the old code. Code review round 1 added: the Auto Schedule team rows (16px rows 24px apart) are 44px tall so the checkbox tap areas do not overlap (scan with the widened check: 9 overlaps without, 0 with), the playoff walkover Cancel and Award Win buttons (36px) and the rearrange team chip (34px) are min-h-11."
     }
   ],
   "checks": {
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "sha": "8f9ab47776d2cabe7f08b941f8b4a6ec6bc7ac9b",
       "dirty": false,
-      "at": "2026-11-06T19:56:46.058Z",
+      "at": "2026-11-06T20:11:33.139Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/integrity.log"
@@ -141,8 +141,12 @@
     {
       "at": "2026-11-06T19:56:08.827Z",
       "text": "Criteria 3, 6, 7 reworded by hand (and criteria 10, 11 added) after the plan review: the review found more small controls than the first plan listed, and that stacked switches closer than 44px cannot both have a 44px area. Plan review recorded CHANGES; all notes taken."
+    },
+    {
+      "at": "2026-11-06T20:12:46.754Z",
+      "text": "Code review round 1: CHANGES (one blocking finding: the shared Checkbox hit area stole taps in the dense Auto Schedule team list). Fixed (row min-h-11 + test), scanner widened to 'tap area over another control's visible box' and proven (9 overlaps without the fix, 0 with). Also taken: stronger tests, playoff walkover buttons and rearrange chip. Known visible changes from min-w-[44px] on the small Button sizes (reviewer list): reaction picker grid 140 -> 188px wide, reaction pills at least 44 wide, History chevron 44 wide, stats compare link, comment send button, round size-8 buttons now 44x44 circles instead of 32x44 ovals. The remaining scan overlaps are all calendar day cells (44px tall buttons in 36px rows), unchanged by this task."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T20:06:45.621Z"
+  "updatedAt": "2026-11-06T20:11:33.140Z"
 }
