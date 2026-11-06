@@ -264,7 +264,7 @@ const ContactInboxSection: React.FC = () => {
                   <div className="wrap-break-word text-xs text-muted-foreground">
                     {item.contact ? (
                       href ? (
-                        <a className="hover:underline" href={href}>
+                        <a className="hit-area-44 hover:underline" href={href}>
                           {item.contact}
                         </a>
                       ) : (

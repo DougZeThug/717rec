@@ -93,6 +93,8 @@ describe('ContactInboxSection', () => {
 
     const email = screen.getByRole('link', { name: /a\.very\.long\.fake\.visitor\.address/ });
     expect(email.parentElement).toHaveClass('wrap-break-word');
+    // The link was 15px tall: an invisible 44px tap area, same look.
+    expect(email).toHaveClass('hit-area-44');
     expect(screen.getByText(longName).parentElement).toHaveClass('wrap-break-word');
   });
 
