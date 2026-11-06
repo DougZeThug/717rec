@@ -75,6 +75,27 @@ describe('ContactInboxSection', () => {
     expect(within(list()).getAllByRole('listitem')).toHaveLength(2);
   });
 
+  // jsdom does no layout, so this pins the classes. A 49-character email with no break point
+  // ran 17.5px past a 320px phone screen; the message below it already wrapped.
+  it('lets a long name, team or email wrap inside its card', () => {
+    const longName = 'Maximilian-Alexander-Bartholomew-Throckmorton-Smythe';
+    mockUseContactRequests.mockReturnValue({
+      data: [
+        {
+          ...leagueRequest,
+          submitter_name: longName,
+          submitter_contact: 'a.very.long.fake.visitor.address@example.test',
+        },
+      ],
+      isLoading: false,
+    });
+    render(<ContactInboxSection />);
+
+    const email = screen.getByRole('link', { name: /a\.very\.long\.fake\.visitor\.address/ });
+    expect(email.parentElement).toHaveClass('wrap-break-word');
+    expect(screen.getByText(longName).parentElement).toHaveClass('wrap-break-word');
+  });
+
   it('keeps a phone link valid when the number has a + in the middle', () => {
     mockUseContactRequests.mockReturnValue({
       data: [{ ...leagueRequest, submitter_contact: '011 +44 20 7946 0958' }],
