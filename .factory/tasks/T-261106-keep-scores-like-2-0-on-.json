@@ -11,27 +11,33 @@
   "criteria": [
     {
       "text": "Live Corrections round rows (/admin/live-corrections, 768-940px): the score (N – N) never splits across two lines; before: 14 of 21 round rows split",
-      "done": false
+      "done": true,
+      "evidence": "Live Corrections round rows: split scores 14 of 23 -> 0 of 23 at 768, 820, 900 and 940px (same 23 scores found, same console errors). Pictures: .factory/evidence/T-261106-keep-scores-like-2-0-on-/sheetA.png. Test pin fails on old code (MatchCorrectionsPanel 'keeps every score on one line')."
     },
     {
       "text": "Live Corrections game card title (968-1000px): the score never splits; before: '21 –' on one line and '16' on the next",
-      "done": false
+      "done": true,
+      "evidence": "Live Corrections game title: '21 –' / '16' split at 968 and 1000px -> 0 splits at 968, 1000 and 1024px."
     },
     {
       "text": "League Night status, Unrecorded live matches (744-1016px): the score stays on one line and the spaces between name, score and date are back; before: 2 of 3 rows showed '2–' and '0' on two lines and no spaces",
-      "done": false
+      "done": true,
+      "evidence": "League Night unsaved list: 1-3 split scores at 744-1016px -> 0 at 744, 768, 776, 820, 900, 1016 and 1032px (same 7 scores found). The link wraps its parts with a 4px gap, so the spaces are back. Test pin fails on old code."
     },
     {
       "text": "League Night status, drift card: 'stored W-L' and 'derived W-L' never split; before: 'derived 9-' and '1' at 776px",
-      "done": false
+      "done": true,
+      "evidence": "League Night drift card: 'derived 9-' / '1' at 776px -> 0 splits at 776px (included in the 744-1032 sweep). Test pin fails on old code (CounterDriftCard)."
     },
     {
       "text": "Live match page (/matches/<id>/live), 'wins the match' panel: the score stays on one line at 768 and 1024px; before: '2–' and '1' on two lines",
-      "done": false
+      "done": true,
+      "evidence": "Live match 'wins the match' panel: '2–' / '1' on two lines at 768 and 1024px -> '2–1' on one line (1 split -> 0 at both widths). Picture: .factory/evidence/T-261106-keep-scores-like-2-0-on-/sheetB.png. LiveMatchView finalize test pins it and fails on old code."
     },
     {
       "text": "Live match, Save official result dialog: each 'Game N: A 17–21 B' score stays on one line; before: '17–' and '21' on two lines",
-      "done": false
+      "done": true,
+      "evidence": "Save official result dialog: '17–' / '21' split at 768 and 1024px -> 0 splits (2 -> 0 including the panel behind it). Picture: .factory/evidence/T-261106-keep-scores-like-2-0-on-/sheetB.png. CompleteMatchDialog test pins the class and fails on old code."
     },
     {
       "text": "Nothing else moves: same visible text on every touched screen, no new console errors, no sideways page scroll, existing tests pass (two assertions read the whole text because the score now sits in its own no-break span)",
@@ -52,5 +58,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-06T18:18:18.538Z"
+  "updatedAt": "2026-11-06T18:35:45.010Z"
 }
