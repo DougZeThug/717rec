@@ -98,7 +98,8 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
         <Button
           variant={status === 'optimized' ? 'outline' : 'default'}
           size="sm"
-          className="w-full"
+          // Under 356px wide the two-column cards are too narrow for "Add Logo" on one line.
+          className="w-full max-[355px]:whitespace-normal"
           onClick={handleUploadClick}
           disabled={isUploading}
         >
