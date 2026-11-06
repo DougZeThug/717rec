@@ -157,7 +157,7 @@ themselves say it is at, and scoring is possible again.
 | The user's role | Saving needs the right to score — an approved member of either team, or an admin. **Reopening the match needs admin**, unlike reopening a game, which any scorer can do. | Losing the right to score leaves the button on screen until the screen refetches; the write then fails. |
 | The record's state | A decided match shows the save panel. A saved one shows the review. The review is read-only for every role. | The other scorer saving first moves this screen to the review, mid-dialog. |
 | The season's state | No effect on saving. The result feeds the season the match belongs to. | No effect. |
-| Viewport | The review is a long scroll on a phone; the statistics table scrolls sideways inside its own box. The match score in the decided panel ("wins the match 2–0") and each game score in the save dialog stay on one line at every width. | No effect. |
+| Viewport | The review is a long scroll on a phone; the statistics table scrolls sideways inside its own box. The match score in the decided panel ("wins the match 2–0") and each game score in the save dialog stay on one line at every width (measured at 768 and 1024 pixels; the no-wrap class holds at any width). | No effect. |
 | Keys the app honours | Both dialogs are proper dialogs: Escape closes, focus is trapped and returns. | Escape is the same as "Not yet" or "Cancel". |
 
 ## Cancel and interrupt

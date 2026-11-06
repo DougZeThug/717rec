@@ -161,7 +161,7 @@ again, losing their approval in the meantime.
 | The user's role (visitor, player, admin) | A visitor gets the "No Teams Available" empty state, because the app asks for nothing when nobody is signed in. A player and an admin see the same panel; an admin cannot approve their own request. | Signing out in another tab leaves the panel on screen; pressing the button then gives "Authentication required — You must be logged in to join a team". |
 | The record's state | The membership decides which of the four panels is drawn. Approved adds "You can edit team details" and the team edit form below it on `/my-team`. | Nothing arrives on its own. The panel only changes state after the user's own action or a refetch. |
 | The season's state (active, archived, playoffs on) | No effect. A membership is not scoped to a season and carries into the next one. | No effect. |
-| Viewport | The card's contents sit in a row on a wide screen and stay in a row on a narrow one, so a long team name and the Leave Team button can crowd each other. | No effect beyond re-flowing on rotation. |
+| Viewport | The card stacks on a phone: the team block first, the Leave Team button under it on the left. From 640 pixels the two share a row, and a long team name is cut with an ellipsis. | No effect beyond re-flowing on rotation. |
 | Keys the panel honours | Tab reaches the dropdown and then the button. Space or Enter opens the dropdown; arrows move through it; Enter chooses. | Enter on the button submits. Escape closes the dropdown or the confirmation dialog. |
 
 ## Cancel and interrupt
@@ -298,3 +298,4 @@ appear on the team's matches; see
 Verified against `717rec` commit `ea5c8f4`, except the duplicate-membership
 behaviour above, which was changed after that commit — see B-07 in
 [`bug-triage.md`](../bug-triage.md#b-07-a-second-membership-row-permanently-breaks-every-member-ability).
+The Viewport row was corrected after that commit: the card stacks on a phone, as the code and the [My Team](../teams/my-team.md) document say. This was read from the code, not measured on a phone.

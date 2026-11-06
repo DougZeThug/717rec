@@ -132,7 +132,8 @@ step. Its six documents start at
   and group headings, the clear-search cross, every select box (they were 40
   pixels, and five of them set their own 24 to 40), every tab, the theme button in the top
   bar, the calendar's month arrows, the close cross of a dialog, the small round
-  and remove buttons, the text fields that once set their own height, and the
+  and remove buttons (the remove-signup, hero card remove and reaction picker
+  buttons are pinned by tests, not measured in a browser), the text fields that once set their own height, and the
   block buttons in Timeslots and the Scores time-slot headers. A switch or a
   checkbox looks the same as before and has an invisible 44-pixel tap area. In a
   list of options or a menu, each row is 44 pixels tall on a touch screen; a
@@ -147,13 +148,15 @@ step. Its six documents start at
 - A few controls are still under 44 pixels, on purpose: the day cells of a
   calendar are 36 pixels wide and 44 tall (seven must fit a 320-pixel phone), the
   two Auto Schedule switches that sit one above the other share the 36-pixel gap
-  between them, and the small clear cross inside a multi-select was left alone.
+  between them, the Auto Schedule team checkbox has a tap area 30 pixels wide (its
+  scrolling list cuts the left side, and the team name beside it toggles the same
+  box), and the small clear cross inside a multi-select was left alone.
   The select box, tab, switch, checkbox, close cross and small buttons are shared
   pieces, so they have the same size on the public pages. The home page's "Score
   live" button, the schedule card's live-score and recap buttons and the recap
   dialog's "Open full recap" link are 44 pixels tall too (they were 40). Only the
   admin console was scanned control by control; the public pages were not.
-- Elsewhere, control size is whatever the component library gives, which is
+- Other controls are whatever size the component library gives, which is
   smaller — but no row is now under **24 pixels**, the accessibility floor. The rows raised to it are the home page's
   weekly-recap team links, the teams page's Sort/View/Style row, a team page's
   last-match and head-to-head rows, and the footer's two links, all of which
@@ -324,4 +327,4 @@ and [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phon
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the opening story, the interrupt table and the edge cases describe it.
 The 44-pixel controls in the admin console, listed under Touch and reach, changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too.
-The tap-size fixes (commits `96b6036` to `8626e6c`) changed the first two bullets under Touch and reach, and the phone-overflow fixes (commits `2af1fa1` to `e3a8bdd`) added the bullet that starts "Nothing in these places", after that commit. The three 44-pixel buttons named there came in commit `fd5d43a` and are pinned by tests, not measured in a browser. They were measured in a real browser against fake data, not on a real phone or tablet.
+The tap-size fixes (commits `96b6036` to `8626e6c`) changed the first two bullets under Touch and reach, and the phone-overflow fixes (commits `2af1fa1` to `e3a8bdd`) added the bullet that starts "Nothing in these places", after that commit. They were measured in a real browser against fake data, not on a real phone or tablet. The three 44-pixel buttons named there came later, in commit `fd5d43a`; they are pinned by tests and were not measured in a browser.
