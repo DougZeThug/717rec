@@ -34,7 +34,12 @@
   "reviews": [],
   "issues": {},
   "interventions": [],
-  "notes": [],
+  "notes": [
+    {
+      "at": "2026-11-06T22:09:36.706Z",
+      "text": "Review round 1 (factory-reviewer): CHANGES, small. Taken: (1) the career rankings panel had a copy of the sort-button code at min-h-[36px]: now 44px with a test that fails on the old code (commit 0524ba6; it is covered by criterion 1's wording only through the standings pills, and was fixed from the code, not scanned: the fake data has no career panel); (2) the team name link doc wording now says 32px box, about 26px answering a tap; (3) the docs list the scan states that timed out and the career panel as not scanned."
+    }
+  ],
   "waivers": [],
-  "updatedAt": "2026-11-06T22:03:20.220Z"
+  "updatedAt": "2026-11-06T22:09:36.706Z"
 }
