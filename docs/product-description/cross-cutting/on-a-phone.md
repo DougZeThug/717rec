@@ -156,7 +156,7 @@ step. Its six documents start at
   live" button, the schedule card's live-score and recap buttons and the recap
   dialog's "Open full recap" link are 44 pixels tall too (they were 40). On a
   phone the Teams page's division header bars are 44 pixels tall (they were 40)
-  and the standings sort buttons (Power, Win %, SOS, Wins) are 44 (they were 36); so are the career rankings sort buttons, which share the same code.
+  and the standings sort buttons (Power, Win %, SOS, Wins) are 44 (they were 36); so are the career rankings sort buttons, which are a copy of the same code.
   The public pages were scanned control by control at 390 and 320 pixels, with
   fake data, after the admin console. Left as they are: the standings badge
   buttons (32 pixels, side by side), the "View … team details" rows in the
@@ -324,7 +324,7 @@ much of its traffic is phones. Nothing more precise is stored. See
   rankings panel (its sort buttons were fixed from the code and pinned by a test),
   dialogs that need real data, live scoring while a game is under way, or three
   states whose steps timed out (the team page badge pop-up, the "What is Power
-  Score?" dialog and the "View All Teams" switch on the standings). Live scoring, the
+  Score?" pop-up and the "View All Teams" switch on the standings). Live scoring, the
   hamburger, the bracket admin menu and its seeding drag handle, the history
   recap strip, the history team-name links and the shared pieces named under
   Touch and reach (select box, tab, switch, checkbox, close cross, small buttons)
@@ -342,4 +342,4 @@ and [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phon
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the opening story, the interrupt table and the edge cases describe it.
 The 44-pixel controls in the admin console, listed under Touch and reach, changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too.
-The tap-size fixes (commits `96b6036` to `8626e6c`) changed the first two bullets under Touch and reach, and the phone-overflow fixes (commits `2af1fa1` to `e3a8bdd`) added the bullet that starts "Nothing in these places", after that commit. They were measured in a real browser against fake data, not on a real phone or tablet. The three 44-pixel buttons named there came later, in commit `fd5d43a`; they are pinned by tests and were not measured in a browser. The division header bars, the sort buttons and the 32 to 36-pixel links came in commit `6e15b27` (the career sort buttons in `0524ba6`, test-pinned only); they were measured in a real browser against fake data at 320, 390, 768 and 1280 pixels.
+The tap-size fixes (commits `96b6036` to `8626e6c`) changed the first two bullets under Touch and reach, and the phone-overflow fixes (commits `2af1fa1` to `e3a8bdd`) added the bullet that starts "Nothing in these places", after that commit. They were measured in a real browser against fake data, not on a real phone or tablet. The three 44-pixel buttons named there came later, in commit `fd5d43a`; they are pinned by tests and were not measured in a browser. The division header bars, the standings sort buttons and the 32 to 36-pixel links came in commit `6e15b27`; they were measured in a real browser against fake data at 320, 390, 768 and 1280 pixels. The career sort buttons came in commit `0524ba6` and are pinned by a test only.
