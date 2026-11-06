@@ -43,9 +43,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "50ee277820b226e6b139c5ded5c9906a1f09aa18",
+      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
       "dirty": false,
-      "at": "2026-11-06T07:14:03.015Z",
+      "at": "2026-11-06T07:40:50.192Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/integrity.log"
@@ -53,50 +53,50 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "50ee277820b226e6b139c5ded5c9906a1f09aa18",
+      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
       "dirty": false,
-      "at": "2026-11-06T07:14:12.980Z",
-      "seconds": 10,
+      "at": "2026-11-06T07:41:02.063Z",
+      "seconds": 12,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "50ee277820b226e6b139c5ded5c9906a1f09aa18",
+      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
       "dirty": false,
-      "at": "2026-11-06T07:15:22.958Z",
-      "seconds": 70,
+      "at": "2026-11-06T07:42:13.427Z",
+      "seconds": 71,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "50ee277820b226e6b139c5ded5c9906a1f09aa18",
+      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
       "dirty": false,
-      "at": "2026-11-06T07:15:26.857Z",
-      "seconds": 4,
+      "at": "2026-11-06T07:42:16.493Z",
+      "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "50ee277820b226e6b139c5ded5c9906a1f09aa18",
+      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
       "dirty": false,
-      "at": "2026-11-06T07:15:31.492Z",
-      "seconds": 5,
+      "at": "2026-11-06T07:42:20.923Z",
+      "seconds": 4,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "50ee277820b226e6b139c5ded5c9906a1f09aa18",
+      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
       "dirty": false,
-      "at": "2026-11-06T07:22:35.074Z",
-      "seconds": 424,
+      "at": "2026-11-06T07:49:31.992Z",
+      "seconds": 431,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/unit.log"
     }
@@ -108,6 +108,13 @@
       "sha": "436768ab6828e3761969cc23f37ee23d6cd5fcb6",
       "at": "2026-11-06T04:50:10.478Z",
       "summary": "Independent plan review. Both causes real and complete, no third cause found; no reason to reject. Cause 2 arithmetic verified (1153-844=309, hook line 85 tests scrollHeight >= saved, page shell is min-h-dvh so the test is almost always true). Cause 1: router changes window.location.pathname before any DOM swap, so a pathname guard is correct whatever React's cleanup timing. Three blocking repairs accepted and written into the plan as AMENDMENTS: (1) one stop() helper with a cancelled flag and the rAF id, called from exhaustion, user input and cleanup, so an unmounted page can never scroll the next page (test + mutation); (2) test plan repairs: global scrollTo stub in setupTests, clamp stub must accept both call shapes, fake rAF/cancelAnimationFrame, userEvent under fake timers, jsdom path is / while the router is /history, no exported constants (knip), fractional case; (3) acceptance: report n of n observed, assert the saved offset equals the pre-click scrollY in every run, scrollTo spy, vary offsets, also run the production build, add a CPU/network throttle run. Non-blocking adopted: capture the path at effect start for the guard; reword Cause 1 to what was measured; try/catch fallback for behavior instant (iOS 16.0 Safari unverified, WebKit not installed); keydown ignores repeat. Could not verify: browser behaviour, scrollbar pointerdown, iOS 16 instant, lint on new code."
+    },
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "50ee277820b226e6b139c5ded5c9906a1f09aa18",
+      "at": "2026-11-06T07:28:06.342Z",
+      "summary": "Independent code review at 50ee277: code APPROVED in substance (no logic defect found; StrictMode, cleanup order, timers, listeners, isRestoring stuck-true all traced; 43 of 43 tests pass; no old test changed). Two BLOCKING doc errors: (1) '5 of 5 at each of 100/200/250px' was false, the file holds 5 runs in total (two, two, one); (2) the 'ScrollToTop glides on a link tap' finding is not shown by the saved frames (900,111,25,0 with 91 frames, identical with reduced motion; the '20' came from a scratch note), so it was stated beyond the evidence in 17 places. Also: 'fixed' credited where the old code did not fail (BROWSE-04, BROWSE-37, TEAM-33, PHONE-22), a self-contradiction in navigation.md, lead evidence only in scratch, small gaps (Ctrl/Cmd+F sends keydown; touch/key tested in unit tests only). Optional code notes accepted as documented limits: unreachable saved spot keeps saving off up to about 15 s unless the reader scrolls; scrolls that send no input event can be pulled back while the restore runs; the cancelled flag is redundant with cancelAnimationFrame/clearTimeout."
     }
   ],
   "issues": {},
@@ -119,5 +126,5 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-06T07:23:09.155Z"
+  "updatedAt": "2026-11-06T07:49:31.992Z"
 }
