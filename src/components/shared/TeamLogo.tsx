@@ -9,7 +9,8 @@ export interface TeamLogoProps {
   imageUrl: string | null | undefined;
   teamName: string;
   teamId?: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  /** `fill` takes the size of the box it sits in (a fixed-size preview), instead of a size of its own. */
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'fill';
   rounded?: boolean;
   clickable?: boolean;
   className?: string;
@@ -21,6 +22,7 @@ const sizeClasses = {
   sm: 'size-8 min-w-8 min-h-8',
   md: 'size-10 min-w-10 min-h-10',
   lg: 'size-36 min-w-36 min-h-36',
+  fill: 'size-full min-w-0 min-h-0',
 };
 
 export const TeamLogo: React.FC<TeamLogoProps> = ({
