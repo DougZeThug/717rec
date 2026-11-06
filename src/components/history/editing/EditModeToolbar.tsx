@@ -51,9 +51,9 @@ const EditModeToolbar: React.FC<EditModeToolbarProps> = ({
           )}
         </div>
 
-        {/* From 640px the buttons sit on one row beside this hint. Under 700px there is no room
-            for both (Save Changes ran up to 30px past the toolbar and was cut off), and from 700px
-            to about 900px the hint wraps to two to four lines. It fits on one line from 1024px. */}
+        {/* Hidden below 1024px. From 640px the buttons sit on one row beside the status badge; with this
+            hint beside them Save Changes ran up to 30px past the toolbar under 670px, and from 700px
+            to about 900px the hint wrapped to two to four lines. It fits on one line from 1024px. */}
         <span className="text-sm text-muted-foreground hidden lg:block">
           Drag teams between divisions to reorganize
         </span>
