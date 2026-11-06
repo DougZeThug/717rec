@@ -197,7 +197,8 @@ describe('MatchCorrectionsPanel', () => {
     setLiveMatch({ bundle: makeBundle(), derived: makeDerived() });
     renderPanel();
 
-    expect(screen.getByText(/Game 1 · Team A 2 – 1 Team B/u)).toBeInTheDocument();
+    // The score sits in its own no-break span, so read the whole title, not just its own text.
+    expect(screen.getByText(/^Game 1 · Team A/u)).toHaveTextContent('Game 1 · Team A 2 – 1 Team B');
     expect(screen.getByText('Winner: Team A')).toBeInTheDocument();
     expect(screen.getByText('Round 1')).toBeInTheDocument();
     // Game 2 has no rounds recorded yet.
@@ -240,7 +241,18 @@ describe('MatchCorrectionsPanel', () => {
 
     expect(screen.getByText('Round 1')).toBeInTheDocument();
     // The game header and the round row both carry the score.
-    expect(screen.getAllByText(/Team A 2 – 1 Team B/u).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('2 – 1').length).toBeGreaterThan(0);
+  });
+
+  // jsdom does no layout, so this pins the class. Without it, a long team name pushed the score
+  // onto two lines ("3 –" then "0") on a tablet (768-1000px wide).
+  it('keeps every score on one line', () => {
+    setLiveMatch({ bundle: makeBundle(), derived: makeDerived() });
+    renderPanel();
+
+    const scores = screen.getAllByText(/^\d+ – \d+$/u);
+    expect(scores.length).toBeGreaterThan(0);
+    for (const score of scores) expect(score).toHaveClass('whitespace-nowrap');
   });
 
   it('drops the finalized warning on an archived season, which cannot be edited anyway', () => {
