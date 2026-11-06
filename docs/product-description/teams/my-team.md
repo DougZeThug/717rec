@@ -188,8 +188,8 @@ team block first, the Leave Team button under it on the left; from 640 pixels
 the two share a row, and a long team name is cut with an ellipsis. In Team
 Management the logo, the team name and the team ID share a row; on a 320-pixel
 phone the text drops under the logo when it would have less than 128 pixels
-beside it, and the long team ID breaks (before, the row was 30 pixels wider than
-its card and the ID took 5 lines).
+beside it, and the long team ID breaks (before, the row's content was 30 pixels wider
+than the row, so the ID took 5 lines and ran a few pixels past the card).
 
 **Accessibility.** Both fields in the edit form have real labels. The three
 membership states replace one another with no announcement, so a screen reader
