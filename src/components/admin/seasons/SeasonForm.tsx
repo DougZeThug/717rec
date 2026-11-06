@@ -85,7 +85,7 @@ const SeasonFormActions: React.FC<SeasonFormActionsProps> = ({
 }) => (
   // Under 372px wide the two buttons are wider than the card and Cancel sticks out of it
   // (off screen under 340px). Wrap there only: from 372px up the row looks as it always did.
-  <div className="flex justify-end gap-2 pt-4 max-[371px]:flex-wrap">
+  <div className="flex justify-end gap-2 pt-4 max-[372px]:flex-wrap">
     <Button type="button" variant="outline" onClick={onClose}>
       <X className="size-4 mr-2" />
       Cancel
