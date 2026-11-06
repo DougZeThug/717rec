@@ -183,7 +183,8 @@ bookmarked, or reached by a link.
 **On a phone.** Grid cards drop to two per row and carry only a logo, a name,
 and a record, with no "…" menu — so an admin on a phone must switch to List
 before they can edit or delete. Grouping defaults to By Division on a first
-visit.
+visit. Each division header bar is 44 pixels tall on a phone (it was 40), and the
+team name on a card is a link with a 32-pixel tap area (it was 20).
 
 **Accessibility.** Each card's picture, name, and menu are separate links, so
 every team is reached three times by Tab. Each division header is a single
@@ -261,3 +262,4 @@ browser on arrival even if nothing is touched. Nothing is sent to the league.
 Verified against `717rec` commit `ea5c8f4`.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the summary, the simple case, the interrupt table and the open questions describe it.
+The 44-pixel division header bars and the 32-pixel team name link under "On a phone" came in the public tap-size fix (commit `6e15b27`); measured in a real browser against fake data at 320, 390, 768 and 1280 pixels, not on a real phone.

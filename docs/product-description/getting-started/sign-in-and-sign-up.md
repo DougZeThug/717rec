@@ -240,8 +240,9 @@ in the address are listed in
 [`foundations/navigation.md`](../foundations/navigation.md#while-editing).
 
 **On a phone.** The card fills the width. The email field asks for the email
-keyboard. Both tab triggers are at least 44 pixels tall. The bottom tab bar stays
-visible below the card.
+keyboard. Both tab triggers are at least 44 pixels tall. The "Forgot password?" link
+has a 36-pixel tap area (it was 20). The bottom tab bar stays visible below the
+card.
 
 **Accessibility.** Both fields have real labels tied to them. The failure panel is
 announced as an alert when it appears. The two tabs are a proper tab list and
@@ -305,3 +306,4 @@ Verified against `717rec` commit `ea5c8f4`, except password recovery and the
 per-field errors on "Set a new password", added after that commit alongside UX
 audit item X-04 and written from the change and its tests rather than a fresh
 pass over the running app.
+The 36-pixel tap area of "Forgot password?" came in the public tap-size fix (commit `6e15b27`); measured in a real browser against fake data at 320, 390, 768 and 1280 pixels, not on a real phone.
