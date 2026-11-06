@@ -65,7 +65,8 @@ describe('CompleteMatchDialog', () => {
     expect(screen.getByText(/^Game 3: Baggers/iu)).toHaveTextContent(
       'Game 3: Baggers 22–20 Tossers'
     );
-    // jsdom does no layout, so this pins the class that keeps "21–18" from splitting ("21–" then "18").
+    // jsdom does no layout, so this pins the class that keeps "21–18" from splitting
+    // ("21–" then "18").
     for (const score of ['21–18', '15–21', '22–20']) {
       expect(screen.getByText(score)).toHaveClass('whitespace-nowrap');
     }

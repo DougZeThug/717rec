@@ -240,8 +240,9 @@ describe('MatchCorrectionsPanel', () => {
     renderArchivedPanel();
 
     expect(screen.getByText('Round 1')).toBeInTheDocument();
-    // The game header and the round row both carry the score.
-    expect(screen.getAllByText('2 – 1').length).toBeGreaterThan(0);
+    // The game header and the round row both carry the score, with the team names around it.
+    expect(screen.getByText(/^Game 1 · Team A/u)).toHaveTextContent('Team A 2 – 1 Team B');
+    expect(screen.getByText('Round 1').nextElementSibling).toHaveTextContent('Team A 2 – 1 Team B');
   });
 
   // jsdom does no layout, so this pins the class. Without it, a long team name pushed the score

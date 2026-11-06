@@ -75,6 +75,7 @@ describe('UnsavedLiveMatchesCard', () => {
     expect(await screen.findByText('2–0')).toHaveClass('whitespace-nowrap');
     expect(screen.getByRole('link', { name: /save the result for/i })).toHaveClass(
       'flex-wrap',
+      'content-center',
       'gap-x-1'
     );
   });
