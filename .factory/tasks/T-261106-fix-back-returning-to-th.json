@@ -35,7 +35,15 @@
     }
   ],
   "checks": {},
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "CHANGES",
+      "sha": "436768ab6828e3761969cc23f37ee23d6cd5fcb6",
+      "at": "2026-11-06T04:50:10.478Z",
+      "summary": "Independent plan review. Both causes real and complete, no third cause found; no reason to reject. Cause 2 arithmetic verified (1153-844=309, hook line 85 tests scrollHeight >= saved, page shell is min-h-dvh so the test is almost always true). Cause 1: router changes window.location.pathname before any DOM swap, so a pathname guard is correct whatever React's cleanup timing. Three blocking repairs accepted and written into the plan as AMENDMENTS: (1) one stop() helper with a cancelled flag and the rAF id, called from exhaustion, user input and cleanup, so an unmounted page can never scroll the next page (test + mutation); (2) test plan repairs: global scrollTo stub in setupTests, clamp stub must accept both call shapes, fake rAF/cancelAnimationFrame, userEvent under fake timers, jsdom path is / while the router is /history, no exported constants (knip), fractional case; (3) acceptance: report n of n observed, assert the saved offset equals the pre-click scrollY in every run, scrollTo spy, vary offsets, also run the production build, add a CPU/network throttle run. Non-blocking adopted: capture the path at effect start for the guard; reword Cause 1 to what was measured; try/catch fallback for behavior instant (iOS 16.0 Safari unverified, WebKit not installed); keydown ignores repeat. Could not verify: browser behaviour, scrollbar pointerdown, iOS 16 instant, lint on new code."
+    }
+  ],
   "issues": {},
   "interventions": [
     {
@@ -45,5 +53,5 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-06T04:42:50.932Z"
+  "updatedAt": "2026-11-06T04:50:10.479Z"
 }
