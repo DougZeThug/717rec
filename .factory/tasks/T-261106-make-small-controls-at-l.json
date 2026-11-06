@@ -64,7 +64,68 @@
       "evidence": "Checkboxes (16px), contact email links (15px tall), the hero card name button (40px tall) and colour swatch button (32px), and the schedule page calendar arrows (28px wide) now have a 44px tap area (hit-area-44, min-w-[44px]). Contact link, hero buttons, checkbox and arrows are pinned by tests that fail on the old code."
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "dirty": false,
+      "at": "2026-11-06T19:56:46.058Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261106-make-small-controls-at-l/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "dirty": false,
+      "at": "2026-11-06T19:56:58.985Z",
+      "seconds": 13,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261106-make-small-controls-at-l/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "dirty": false,
+      "at": "2026-11-06T19:58:30.652Z",
+      "seconds": 92,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261106-make-small-controls-at-l/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "dirty": false,
+      "at": "2026-11-06T19:58:34.324Z",
+      "seconds": 4,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261106-make-small-controls-at-l/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "dirty": false,
+      "at": "2026-11-06T19:58:40.383Z",
+      "seconds": 6,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261106-make-small-controls-at-l/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "dirty": false,
+      "at": "2026-11-06T20:06:45.621Z",
+      "seconds": 485,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261106-make-small-controls-at-l/unit.log"
+    }
+  },
   "reviews": [
     {
       "mode": "plan",
@@ -83,5 +144,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T19:56:20.820Z"
+  "updatedAt": "2026-11-06T20:06:45.621Z"
 }
