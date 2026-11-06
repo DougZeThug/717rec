@@ -102,3 +102,43 @@ describe('SeasonAccordionSummary champions card', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 });
+
+describe('SeasonAccordionSummary highlights card', () => {
+  const renderHighlights = (name: string) =>
+    render(
+      <SeasonAccordionSummary
+        isLoading={false}
+        seasonData={[row()]}
+        championTeams={[]}
+        highlights={{
+          mostWins: row({ team_name: name, match_wins: 9 }),
+          highestPS: row({ team_name: name, power_score: 0.882 }),
+          mostGameWins: row({ team_name: name, game_wins: 19 }),
+        }}
+        isWinterTheme={false}
+      />,
+      { wrapper: MemoryRouter }
+    );
+
+  it('shows each name with its number after it', () => {
+    renderHighlights('Bag Bandits');
+
+    expect(screen.getAllByText('Bag Bandits')).toHaveLength(3);
+    expect(screen.getByText('(9)')).toBeInTheDocument();
+    expect(screen.getByText('(88.2)')).toBeInTheDocument();
+    expect(screen.getByText('(19)')).toBeInTheDocument();
+  });
+
+  // jsdom does no layout, so this pins the classes. The name and the number were one clamped line
+  // of text: a name that filled both lines pushed the number into the cut part.
+  it('clamps only the name, so a long name never hides the number', () => {
+    renderHighlights('Fake Team Golf Supercalifragilistic Roster With A Very Long Name');
+
+    const name = screen.getAllByText(/Supercalifragilistic/)[0];
+    expect(name).toHaveClass('line-clamp-2', 'break-words', 'min-w-0');
+    const number = screen.getByText('(9)');
+    expect(number).toHaveClass('shrink-0');
+    expect(number).not.toHaveClass('line-clamp-2');
+    expect(number.parentElement).toBe(name.parentElement);
+  });
+});

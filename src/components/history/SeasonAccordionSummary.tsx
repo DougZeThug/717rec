@@ -91,12 +91,16 @@ interface HighlightsSummaryCardProps {
   isWinterTheme: boolean;
 }
 
-/** One "Most Wins — Bag Bandits (9)" line inside the highlights card. */
-const HighlightRow: React.FC<{ label: string; value: string; isWinterTheme: boolean }> = ({
-  label,
-  value,
-  isWinterTheme,
-}) => (
+/**
+ * One "Most Wins — Bag Bandits (9)" line inside the highlights card. A long team name wraps to
+ * two lines and is cut after that; the number after it is never cut.
+ */
+const HighlightRow: React.FC<{
+  label: string;
+  name: string;
+  score: string;
+  isWinterTheme: boolean;
+}> = ({ label, name, score, isWinterTheme }) => (
   <div>
     <p
       className={cn(
@@ -108,11 +112,12 @@ const HighlightRow: React.FC<{ label: string; value: string; isWinterTheme: bool
     </p>
     <p
       className={cn(
-        'text-xs font-semibold line-clamp-2 break-words leading-tight',
+        'flex items-baseline gap-1 text-xs font-semibold leading-tight',
         isWinterTheme ? 'text-white' : 'text-foreground'
       )}
     >
-      {value}
+      <span className="min-w-0 line-clamp-2 break-words">{name}</span>
+      <span className="shrink-0">({score})</span>
     </p>
   </div>
 );
@@ -129,12 +134,14 @@ const HighlightRows: React.FC<{ highlights: Highlights; isWinterTheme: boolean }
   const rows = [
     {
       label: 'Most Wins',
-      value: `${highlights.mostWins.team_name} (${highlights.mostWins.match_wins})`,
+      name: highlights.mostWins.team_name,
+      score: String(highlights.mostWins.match_wins),
     },
-    { label: 'Best Power Score', value: `${highlights.highestPS.team_name} (${bestPowerScore})` },
+    { label: 'Best Power Score', name: highlights.highestPS.team_name, score: bestPowerScore },
     {
       label: 'Most Game Wins',
-      value: `${highlights.mostGameWins.team_name} (${highlights.mostGameWins.game_wins})`,
+      name: highlights.mostGameWins.team_name,
+      score: String(highlights.mostGameWins.game_wins),
     },
   ];
 
