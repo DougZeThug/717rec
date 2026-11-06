@@ -27,7 +27,7 @@ type PendingMembership = ReturnType<typeof usePendingMemberships>['pendingMember
 type PendingMembershipUser = PendingMembership['user'];
 
 const MembershipUser: React.FC<{ user: PendingMembershipUser }> = ({ user }) => (
-  <div className="flex items-center gap-2">
+  <div className="flex min-w-0 items-center gap-2">
     <div className="size-8 bg-muted rounded-full flex items-center justify-center">
       {user.avatar_url ? (
         <img
@@ -60,16 +60,16 @@ interface MembershipSummaryProps {
 // wrap onto more rows instead of stretching the card past the screen.
 const MembershipSummary: React.FC<MembershipSummaryProps> = ({ membership }) => (
   <div className="flex flex-wrap items-center justify-between gap-y-2">
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex min-w-0 flex-wrap items-center gap-3">
       <MembershipUser user={membership.user} />
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2">
         <TeamLogo
           imageUrl={membership.team.image_url || membership.team.logo_url}
           teamName={membership.team.name}
           size="sm"
           rounded
         />
-        <span className="wrap-break-word font-medium">{membership.team.name}</span>
+        <span className="min-w-0 wrap-break-word font-medium">{membership.team.name}</span>
       </div>
     </div>
     <Badge variant="outline">
@@ -258,7 +258,9 @@ const TeamMembershipApprovalTab: React.FC = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        // One column that can shrink: a grid column is sized by its widest content, so an
+        // unbroken long name widened every card past the screen.
+        <div className="grid grid-cols-1 gap-4">
           {pendingMemberships.map((membership) => (
             <MembershipCard
               key={membership.id}

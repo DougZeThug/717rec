@@ -140,6 +140,25 @@ describe('TeamMembershipApprovalTab', () => {
     expect(screen.getByText('Team mem-1')).toHaveClass('wrap-break-word');
   });
 
+  // jsdom does no layout, so this pins the classes. A name with no spaces ("johnnythecorn...")
+  // widened its card past a 320px screen: the card list was a grid column sized by its widest
+  // content, and none of the flex parts above the name could shrink.
+  it('lets a long name with no spaces shrink instead of widening the card', () => {
+    mockUsePendingMemberships.mockReturnValue({
+      ...defaultHookState,
+      pendingMemberships: [makeMembership()],
+    });
+
+    render(<TeamMembershipApprovalTab />);
+
+    const person = screen.getByText('User mem-1').closest('div.flex.flex-wrap');
+    expect(screen.getByText('User mem-1').closest('div.grid')).toHaveClass('grid-cols-1');
+    expect(person).toHaveClass('min-w-0');
+    expect(screen.getByText('User mem-1').parentElement?.parentElement).toHaveClass('min-w-0');
+    expect(screen.getByText('Team mem-1')).toHaveClass('min-w-0');
+    expect(screen.getByText('Team mem-1').parentElement).toHaveClass('min-w-0');
+  });
+
   it('shows joined date on each card', () => {
     mockUsePendingMemberships.mockReturnValue({
       ...defaultHookState,
