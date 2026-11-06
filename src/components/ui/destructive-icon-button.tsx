@@ -38,6 +38,8 @@ const DestructiveIconButton: React.FC<DestructiveIconButtonProps> = ({
       title={title}
       aria-label={ariaLabel ?? title}
       className={cn(
+        // At least 44px wide to tap, even when a caller passes `size-8` or the small size.
+        'min-w-[44px]',
         'hover:bg-destructive/10 hover:text-destructive-text',
         'disabled:opacity-30',
         className
