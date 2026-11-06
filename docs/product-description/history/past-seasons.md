@@ -27,16 +27,18 @@ Each card gives the season's name, the months it ran, and a line reading
 something like "12 teams · 66 matches". Under that sit two small panels side by
 side: **Champions**, listing each division's winning team with its record, and
 **Highlights**, giving Most Wins, Best Power Score, and Most Game Wins. On the
-Champions panel each team name is a link to that team's page. The Highlights
-panel has no links.
+Champions panel each team name is a link to that team's page, except "Unknown
+Team", which is plain text because it has no page. The Highlights panel has no
+links.
 
 At the foot of every card is a strip reading **Full Season Recap**. Pressing it
 slides open the final standings, one panel per division, ordered Competitive
 first and Recreational last. The panels sit one above another in **one column at
 every width**. Each panel is a table: rank, team, match record, win percentage,
 game record, game win percentage, power score, and strength of schedule. Each
-team name in a table row is a link to that team's page. The champion's row is
-tinted gold with a crown; the runner up's is grey with a medal.
+team name in a table row is a link to that team's page, except "Unknown Team",
+which is plain text. The champion's row is tinted gold with a crown; the runner
+up's is grey with a medal.
 
 Pressing the strip again closes it. Nothing is sent to the league. The page does
 remember which cards and panels are open, for this browser tab only, so the
@@ -88,18 +90,22 @@ Nothing is focused on arrival. Nothing is recorded beyond an ordinary pageview.
 ### Leave without changing anything
 
 Nothing is sent to the league. The page remembers which seasons and divisions are
-open, in the browser tab's session storage (key `history_open_state`), for this
-tab only.
+open, for this browser tab only.
 
-**Back, Forward and a reload keep them open.** Arriving by a link to `/history`
-or by the top-bar menu clears the memory first, so the page opens fully collapsed.
+> **Technical note:** the browser keeps this memory in the tab's session storage,
+> so it goes when the tab closes.
+
+**Back, Forward and a reload keep them open.** Arriving by an in-app link to
+`/history`, or by the top-bar menu, clears the memory first, so the page opens
+fully collapsed.
 A top-bar link is not Back. An address typed or bookmarked into the same tab is a
 full page load, so it counts as a reload and keeps what the tab left open. With nothing remembered, a division still
 starts closed on a phone and open on a wide screen. A wide window shrunk to phone
 width still closes its divisions and remembers that they are closed; they stay
 closed when the window grows back. A season or division left open appears at full
-height, with no grow-in animation. A new tab starts closed. If the browser blocks
-or breaks storage, everything starts closed, as it did before.
+height, with no grow-in animation. A new tab has nothing remembered: season cards
+start closed, and divisions start as described above. If the browser blocks or
+breaks storage, the same defaults apply.
 
 `/history` also remembers its **scroll position** and restores it when the user
 comes back with the browser's back button — one of four routes that do (how it
@@ -187,9 +193,9 @@ still in place.
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on the read-only page and Escape does nothing. | Escape closes a division rename box. The toolbar's **Cancel** asks "You have unsaved changes. Are you sure you want to cancel?" through the browser's own confirmation box, and discards everything if confirmed. Neither can stop a save already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. Which cards and panels were open is remembered for this tab. It comes back on Back, Forward or a reload, and is cleared by a return through a link. | **Every unsaved change is lost with no warning.** The confirmation only guards the Cancel button, not leaving the page. A save already sent still lands, unseen. |
+| In-app navigation away, or switching tab within the page | Nothing is lost. Which cards and panels were open is remembered for this tab. It comes back on Back, Forward or a reload, and is cleared by a return through an in-app link. | **Every unsaved change is lost with no warning.** The confirmation only guards the Cancel button, not leaving the page. A save already sent still lands, unseen. |
 | Browser back or forward | Returns to the previous page. Coming back to this page with Back or Forward keeps the open seasons and divisions open. The page restores its scroll position too: measured 2026-11-06 (dev server, fake data, headless Chromium, 390 pixels wide), Back from a team page brought it back within 1 pixel in 10 of 10 runs with the data cached and 10 of 10 after the team page was reloaded (see [Leave without changing anything](#leave-without-changing-anything) for the limits). A top-bar link to the page is not Back: it opens collapsed. | Same as navigating away, and the app cannot prevent it. Edit mode is not kept. |
-| Reload, or the tab closed | The page rebuilds itself: every season fetched again. A reload keeps the open seasons and divisions open, in the same tab. Closing the tab forgets them, and a new tab starts closed. | **Every unsaved change is lost.** A save already sent may have landed; after reloading the standings themselves are the only evidence. |
+| Reload, or the tab closed | The page rebuilds itself: every season fetched again. A reload keeps the open seasons and divisions open, in the same tab. Closing the tab forgets them, and a new tab has nothing remembered, so its season cards start closed. | **Every unsaved change is lost.** A save already sent may have landed; after reloading the standings themselves are the only evidence. |
 | Network lost mid-request | The season list fails and the whole page becomes "Failed to load season history". A single card failing shows its own error inside the opened recap, with a **Try Again** button. | The save fails and the red "Update Failed" toast carries the network error. Nothing is queued and nothing is retried. |
 | The request fails or times out | The season list is retried once. A single season's standings are retried **twice**, a second apart, before the card gives up. | The save is not retried. Changes stay on screen for the admin to press Save again. |
 | The session expires | No effect. Everything on this page reads public data. | The save is refused by the database and the refusal is shown. The board keeps the changes, so pressing Save again after signing back in works. |
@@ -235,9 +241,9 @@ Division", and "Update Failed". Up to three at a time, as everywhere. See
 [`../foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md#toasts).
 
 **URL state.** Nothing. Not the season, not the opened card, not edit mode. A
-link to `/history` always opens on a fully collapsed page. The open cards and
-panels are kept in this tab's session storage instead, and come back only on Back,
-Forward or a reload.
+link from within the app to `/history` opens on a fully collapsed page. The open
+cards and panels are kept in this tab's session storage instead, and come back
+only on Back, Forward or a reload.
 
 **On a phone.** With nothing remembered, division panels start closed; one this
 tab left open stays open. Standings become stacked cards with
@@ -261,8 +267,9 @@ strip is 44 pixels high; from 768 pixels wide it is 41. In edit mode, once there
 is a change, the Reset, Cancel and Save Changes buttons wrap onto a second line
 when they do not fit below 640 pixels wide, so Save Changes stays on the screen.
 From 640 pixels wide they stay in one row. The grey hint "Drag teams between
-divisions to reorganize" shows only from 700 pixels wide. From 640 to 699 the
-toolbar holds the status badge and the buttons, so Save Changes stays inside it.
+divisions to reorganize" shows only from 1024 pixels wide, where it fits on one
+line. Below that the toolbar holds the status badge and the buttons, so Save
+Changes stays inside it.
 Dragging in edit mode needs a
 press-and-hold of about a fifth of a second before it starts, so a normal swipe
 still scrolls.
@@ -374,8 +381,9 @@ moves; power scores and records are untouched.
   read from the code and its tests, and from the change's own measurements. Between
   640 and about 669 pixels wide (a small phone on its side) Save Changes used to run
   up to 30 pixels past the toolbar and was cut off. The drag hint is now hidden below
-  700 pixels wide, and a real browser with fake data measured no pixel past the
-  toolbar from 640 to 768 pixels in small steps, and at 1024 and 1280. This
+  1024 pixels wide (from 700 to about 900 it wrapped to two to four lines), and a
+  desktop browser window with fake data measured no pixel past the toolbar from
+  640 to 768 pixels in small steps, and at 1024 and 1280. This
   document has not checked it on a real device.
 - Not confirmed by hand: the one-column layout, the team-name links, the phone
   "#N" and the remembered open state. They are described from the code, its tests
@@ -398,4 +406,4 @@ Verified against `717rec` commit `ea5c8f4`.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 The History phone polish changed the passages on the phone start state, the division chevron, the empty past season, the season card layout, the wrapped names, the colours and the edit buttons after that commit.
 The History page then changed again: an opened season is one column at every width, every team name is a link (not "Unknown Team"), a phone card shows the playoff rank as "#N", and the page remembers which seasons and divisions are open for Back, Forward and a reload. This changed the passages on the simple case, leaving the page, beginning, the viewport and keys rows, back and reload, URL state, on a phone, accessibility and the rank column. The scroll restore on Back then changed on this branch (not yet live): it is no longer best effort, and the passages on leaving the page, Back or Forward and the open questions say what was measured on 2026-11-06.
-The History edit toolbar then changed: from 640 to 699 pixels wide the drag hint is hidden, so Save Changes no longer runs past the toolbar (commit `ce136a4`). It was measured in a real browser against fake data, not on a real phone or tablet.
+The History edit toolbar then changed: below 1024 pixels wide the drag hint is hidden, so Save Changes no longer runs past the toolbar at 640 to 669 pixels (commit `ce136a4`) and the hint no longer wraps to several lines from 700 to 900 (the fix for the PR 1730 review). It was measured in a desktop browser window against fake data, not on a real phone or tablet.

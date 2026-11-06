@@ -135,7 +135,8 @@ step. Its six documents start at
   and remove buttons (the remove-signup, hero card remove and reaction picker
   buttons are pinned by tests, not measured in a browser), the text fields that once set their own height, and the
   block buttons in Timeslots and the Scores time-slot headers. A switch or a
-  checkbox looks the same as before and has an invisible 44-pixel tap area. In a
+  checkbox looks the same as before and has an invisible 44-pixel tap area (the
+  Auto Schedule team checkbox is the one exception, in the next bullet). In a
   list of options or a menu, each row is 44 pixels tall on a touch screen; a
   mouse keeps the 36-pixel row. The four Scores result buttons (2–0, 2–1, 1–2,
   0–2) sit in one row from 342 pixels wide and in two rows of two below that, so

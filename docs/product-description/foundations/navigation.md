@@ -101,16 +101,16 @@ scrolling off. The cause was not isolated. See [Open questions](#open-questions-
 Browser Back and Forward are not reset, which leaves the browser free to put the
 user back where they were. Four routes also have code of their own that does it:
 **`/teams`, `/stats`, `/history`, and `/insights`**. While one of them is open it
-saves how far the reader has scrolled, one value per route, in the tab's session
-storage. On Back or Forward it then:
+remembers how far the reader has scrolled, one place per route, for that tab. On
+Back or Forward it then:
 
 - **Jumps to the saved spot at once**, with no glide, and checks where the page
   really landed. If the page is still too short to reach the spot, because its data
-  has not arrived, it goes as far as it can and tries again, with growing gaps, up
-  to 20 times (roughly fifteen seconds in all).
+  has not arrived, it goes as far as it can and tries again, for roughly fifteen
+  seconds in all.
 - **Keeps watching for up to three seconds** once it is there, because content that
-  arrives late can move the page. It checks every 50 milliseconds, jumps back if the
-  page has moved, and ends after one second in which it needed no correction.
+  arrives late can move the page. It puts the page back if it has moved, and ends
+  after one second in which it needed no correction.
 - **Gives way to the reader.** A wheel turn, a touch, a key press (a held key
   repeating does not count) or a mouse press, including a press on a desktop
   scrollbar, ends the restore at once, so it does not pull back a reader who scrolls with one
@@ -118,13 +118,12 @@ storage. On Back or Forward it then:
 - **Does not save the position while it runs**, which is about 1.1 seconds when the
   data is cached, and saves again as soon as it ends.
 
+> **Technical note:** the saved place is kept in the tab's session storage, one
+> value per route. The restore retries up to 20 times with growing gaps, and once
+> it is there it checks every 50 milliseconds.
+
 A scroll event that arrives while a link click is leaving the page, after the
-address has changed, is not saved. On `/history`, after a team link, such an event
-used to overwrite the saved spot with a smaller number: the saved offset was right in
-only 6 of 10 runs before the fix (measured 2026-11-06, fake data). It was not the
-cause of every failed Back: after the phone's bottom tab bar the saved offset was
-already right in 9 of 9 runs before the fix (see the measurements under Open
-questions).
+address has changed, is not saved.
 
 > **Technical note:** one cause of a late move is Chrome's scroll anchoring. When
 > content above the view changes size, the browser shifts the page, and the restore
@@ -132,13 +131,10 @@ questions).
 > which switching scroll anchoring off made the same code exact (reduced-motion reload
 > 5 of 5 against 0 of 5, `/teams` at 304px 3 of 3 against 0 of 5).
 
-Measured on 2026-11-06 in headless Chromium against fake data: Back to `/history`
-at 390px landed within 1px of the saved offset in 10 of 10 runs with the page's data
-cached and in 10 of 10 after the team page was reloaded. Before the fix the same
-scripts gave 6 of 10 and 2 of 10. The full numbers, the limits, and what was not
-tested are in [Open questions](#open-questions-and-verification). `/history` also
-keeps its open seasons and divisions on Back (see
+`/history` also keeps its open seasons and divisions on Back (see
 [`history/past-seasons.md`](../history/past-seasons.md#leave-without-changing-anything)).
+The measurements, the limits, and what was not tested are in
+[Open questions](#open-questions-and-verification).
 
 Every other route — the home page, the schedule, a team's page, the playoffs, the
 message board, live scoring — does not save or restore its own scroll position; the
@@ -332,10 +328,12 @@ development build the analytics call does nothing.
   did not (337px before, 337px after), which was [B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation). Measured again in a real
   browser against fake data, on the dev server and on the production build:
   337px before, 0 after.
-- **Settled on this branch, not yet live: the four routes' own scroll restoration
-  now works in every case measured except the late-data stress run (see the known limit below)** ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation),
-  checklist item `NAV-02`). On 2026-11-05, on the production build against fake data,
-  it mostly did not: `/stats`, then a team page, then Back came back at 300 of
+- **Open: in the scripted runs the four routes' own scroll restoration came back
+  within 1px of the saved offset in every case measured except the late-data stress
+  run (see the known limit below), but no person has run the checklist steps by
+  hand** (checklist item `NAV-02`, which also asks for the intermediate page to be
+  scrolled; the scripts did not do that). On 2026-11-05, on the production build
+  against fake data, it mostly did not: `/stats`, then a team page, then Back came back at 300 of
   300px, and Back landed at 0 in every other case tried (from `/stats`, `/teams`,
   `/history` and `/insights` after Help or Schedule, and from `/teams` after a team).
   Two faults were found in the shared scroll-restore code, and the 2026-11-06
@@ -343,8 +341,7 @@ development build the analytics call does nothing.
   click was leaving the page could save a smaller offset over the real one. And the
   restore compared the page's height with the saved offset instead of checking where
   the browser had really landed, so on a page that was still loading it ended short.
-  The code now ignores scroll events once the address has changed, jumps, reads back
-  where it landed, and retries, up to 20 times (about fifteen seconds), until it is there. The first fault is measured for
+  The first fault is measured for
   `/history` after a team link. For `/teams` after the phone's bottom tab bar the saved
   offset was right and the restore landed short (below; the cause was not isolated,
   INFERRED to be the height comparison). That the two faults explain every 2026-11-05
@@ -355,8 +352,8 @@ development build the analytics call does nothing.
     landed within 1px of the saved offset; the before and after used the same
     scripts. `/history` at 390px wide, Back from a team page: **10 of 10** with the
     page's data cached and **10 of 10** after the team page was reloaded (so
-    `/history` had to load its data again). On a slow phone (CPU slowed four times,
-    data delayed): 6 of 6. On the production build: 10 of 10 and 10 of 10. With
+    `/history` had to load its data again). With the CPU slowed four
+    times and the data delayed (headless Chromium, not a real phone): 6 of 6. On the production build: 10 of 10 and 10 of 10. With
     reduced motion on: 5 of 5 and 5 of 5. At 1280px wide: 5 of 5 and 5 of 5.
     `/teams` at 390px: 5 of 5 at an offset of 304px, and 5 of 5 runs across offsets of 100, 200
     and 250px (two, two and one runs). `/stats` 1 of 1 after a team link and `/insights` 1 of 1 after a footer link.
@@ -440,7 +437,12 @@ browser against fake data on 2026-11-05. The routes table now lists every route
 in `src/App.tsx` except the dev-only test route. The scroll behaviour changed
 after that commit and was measured the same way on 2026-11-05; see [B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation).
 The restore of the scroll position on Back changed again after that, on this
-branch and not yet live. The passages on Back and Forward, the interrupt rows, the
-edge case and the open questions describe it, and it was measured in headless
-Chromium against fake data on 2026-11-06. Safari, iOS and real phones were not
-tested.
+branch and not yet live, as part of the same follow-up ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)).
+The passages on Back and Forward, the interrupt rows, the edge case and the open
+questions describe it. It was measured by script only, in headless Chromium against
+fake data, on 2026-11-06: Back to `/history` at 390px landed within 1px of the
+saved offset in 10 of 10 runs with the page's data cached and in 10 of 10 after the
+team page was reloaded, where the same scripts gave 6 of 10 and 2 of 10 before the
+change. The numbers for the other routes are in the open questions. No person has
+run it by hand, and the scripts did not scroll the intermediate page. Safari, iOS
+and real phones were not tested.

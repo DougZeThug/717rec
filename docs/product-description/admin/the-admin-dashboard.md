@@ -324,5 +324,8 @@ long as the dashboard is open.
   order the sections were added rather than any workflow.
 
 Verified against `717rec` commit `ea5c8f4`, except the phone drawer's search box,
-group headings and clear cross above, which were changed after that commit (the
-admin phone polish).
+group headings and clear cross above, which were changed after that commit
+(commit `0588cc6`, the admin phone polish). The search box and the six group
+headings were 40 pixels high, and the clear cross had a 16-pixel tap area. Now
+the box and the headings are 44 pixels high, and the cross has a 44-pixel tap area
+around the same small icon.

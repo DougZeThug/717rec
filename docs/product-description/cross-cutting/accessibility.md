@@ -223,18 +223,16 @@ stateDiagram-v2
 ```
 
 After a link the new page opens at the top, where focus has moved. On the way the
-position passes through two in-between values (900, 111, 25, 0 on 2026-11-06, and the
-same with reduced motion on); it is not shown to be a glide and the cause was not
-isolated. After Back or Forward nothing resets the scroll. The browser may put the
+position passes through two in-between values; it is not shown to be a glide.
+After Back or Forward nothing resets the scroll. The browser may put the
 page back, and four pages (`/teams`, `/stats`, `/history`, `/insights`) also put it
 back themselves. They jump to the saved spot, hold it for up to three seconds, and
 stop as soon as the reader scrolls with a wheel, a touch, a key press or a mouse
 press. Scrolling that sends none of those, such as find-in-page opened from the browser
-menu (Ctrl or Cmd+F is expected to send a key press, which stops the restore; not tried), a screen reader or
-voice control, is not seen as the reader taking over. Read from the code, not tried:
-the page can be pulled back against such scrolling while the restore runs. The
-restore was measured on 2026-11-06 in headless Chromium against fake data (see
-[navigation](../foundations/navigation.md#arrive)). Either way, the part of the page
+menu, a screen reader or voice control, may not be seen as the reader taking over,
+so the page can be pulled back against such scrolling while the restore runs (see the
+last paragraph of this document). How the restore works is in
+[navigation](../foundations/navigation.md#arrive). Either way, the part of the page
 on screen and the element focused can disagree.
 
 ## Cancel and interrupt
@@ -384,5 +382,5 @@ commit — see
 X-08 and Q12, and written from the change and its tests rather than a fresh pass
 over the running app.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
-The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the passage on route changes and focus describes it.
+The restore of the scroll position on Back changed again on this branch (not yet live), as part of the same follow-up ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). The passage on route changes and focus describes it. It was measured by script only, in headless Chromium against fake data, on 2026-11-06; no person has run it by hand. In the same run the position after a link read 900, 111, 25, 0 frame by frame, and the same with reduced motion on; the cause was not isolated. Find-in-page opened from the browser menu (Ctrl or Cmd+F is expected to send a key press, which stops the restore), a screen reader and voice control were not tried; from the code, the page can be pulled back against them while the restore runs.
 The 44-pixel touch targets in the admin console changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip and the history standings colours (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too. The tap-size fixes (commits `96b6036` to `8626e6c`) widened the 44-pixel list to nearly all of the admin console; they were measured in a real browser against fake data, not on a real phone (the remove-signup, hero card remove and reaction picker buttons are pinned by tests only).

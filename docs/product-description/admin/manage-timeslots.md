@@ -343,9 +343,10 @@ dismissed, so a reload does not repeat the instruction. Anything the address
 does not understand is ignored: a day that does not exist, a team that is not an
 id, and a time that starts no block.
 
-**On a phone.** The section stacks. The team grid stays two tiles across, which
-is tight but usable. The time buttons wrap. The Double Header switch has a
-44-pixel tap area around a switch that looks the same.
+**On a phone.** The section stacks. The team grid is one tile across below 640
+pixels and two above, so a long team name has room to wrap. The time buttons
+wrap. The Double Header switch has a 44-pixel tap area around a switch that looks
+the same.
 
 **Accessibility.** Team tiles are keyboard-operable and announce their ticked
 state. The removal confirmation names the team and the time. The times are plain
@@ -437,4 +438,4 @@ behaviour above, which was changed after that commit — see
 L4, from the change and its tests rather than a fresh pass over the running app.
 The look of the block buttons and the 44-pixel Double Header switch changed after
 that commit too (the admin phone polish).
-The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.
+The narrow-width layout fix (commit `db6db56`, in the range `b603506` to `6efea84`) changed the Viewport row above after that commit: at 320 pixels the two columns stuck out past the card. It was measured with a desktop browser window at set widths against fake data, not on a real phone or tablet.

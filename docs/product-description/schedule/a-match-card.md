@@ -202,7 +202,7 @@ Home's "my match" row is built that way. The card holds no other state, and its
 live scoring address still only exists for matches opened there.
 
 **On a phone.** Cards are full width and one per row. The live-scoring and recap
-buttons are 44 pixels tall (they were 40) and full width, so they are the easiest things on the
+buttons are 44 pixels tall and full width, so they are the easiest things on the
 card to press. The recap dialog scrolls inside itself and is capped at 85 percent
 of the screen height.
 

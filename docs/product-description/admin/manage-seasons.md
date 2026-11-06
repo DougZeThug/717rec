@@ -371,6 +371,14 @@ them.
 - Assumption: `is_archived` is set only by the archive and finalise server
   operations. No other writer was found.
 
-Verified against `717rec` commit `ea5c8f4`, except the wrapping buttons and
-badges above, which were changed after that commit (the admin phone polish).
-The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.
+Verified against `717rec` commit `ea5c8f4`, except three things that changed
+after that commit. First, the season buttons and badges now wrap: they used to
+run off the right edge of a 390 pixel screen, and the Playoffs In Progress badge
+used to squash into a circle (commit `8bd933e`, the admin phone polish). Second,
+the form's Cancel and Create buttons wrap below 372 pixels wide: at 320 pixels
+Cancel used to start off the left edge of the screen (commits `b603506` and
+`6efea84`). Third, a confirm dialog taller than the screen scrolls inside itself:
+at 320 pixels the Activate Season dialog used to push its title and confirm button
+off the screen (commit `1244167`). The last two changed the Viewport row above.
+They were measured with a desktop browser window at set widths against fake data,
+not on a real phone or tablet.

@@ -265,6 +265,11 @@ so numbers elsewhere move some time afterwards.
 - Assumption: the sixteen-hour delay exists so that a match is not asked about
   while it is still being played. Nothing in the code says why.
 
-Verified against `717rec` commit `ea5c8f4`, except the "Match:" line on a review
-card, which was changed after that commit (the admin phone polish).
-The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.
+Verified against `717rec` commit `ea5c8f4`, except two things on a review card
+that changed after that commit. First, the "Match:" line keeps its icon at full
+size and the date follows the team names on one line (commit `ea8b862`, the admin
+phone polish). Second, below 359 pixels wide the card's footer wraps, so Reject
+and Approve stay inside the card and the "Submitted" date stays on one line
+(commit `e318f29`, which changed the Viewport row above). That second fix was
+measured with a desktop browser window at widths from 320 to 1280 pixels against
+fake data, not on a real phone or tablet.
