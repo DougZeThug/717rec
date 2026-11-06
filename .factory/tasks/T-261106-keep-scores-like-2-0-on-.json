@@ -39,10 +39,18 @@
     }
   ],
   "checks": {},
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "CHANGES",
+      "sha": "cf559bcbd2c17996520049a1f81dee04659754c9",
+      "at": "2026-11-06T18:18:18.537Z",
+      "summary": "Plan review: lines VERIFIED. Missing from the test list: LiveMatchView.test.tsx:900 and MatchCorrectionsPanel.test.tsx:243 (own-text matches that break when the score gets its own span); use toHaveTextContent on the li/h2/h3. Optional: content-center on the flex-wrap link; group 'stored a-b' and 'derived c-d' as units. Lead takes all of them."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-06T18:15:34.360Z"
+  "updatedAt": "2026-11-06T18:18:18.538Z"
 }
