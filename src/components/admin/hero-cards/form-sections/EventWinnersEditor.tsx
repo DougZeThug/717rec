@@ -106,7 +106,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({
                 <Input
                   type="number"
                   inputMode="numeric"
-                  className="w-16 h-8 text-sm"
+                  className="w-16 text-sm"
                   value={weekData.week}
                   onChange={(e) => updateWeekNumber(weekIndex, parseInt(e.target.value) || 0)}
                 />
@@ -116,7 +116,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => removeWeek(weekIndex)}
-                className="text-destructive-text hover:text-destructive-text size-8 p-0"
+                className="text-destructive-text hover:text-destructive-text size-8 min-w-11 p-0"
                 aria-label={`Remove week ${weekData.week}`}
               >
                 <Trash2 className="size-4" />
@@ -132,7 +132,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({
                   {placeLabels[winnerIndex] || `#${winner.place}`}
                 </span>
                 <Input
-                  className="h-8 text-sm flex-1"
+                  className="text-sm flex-1"
                   placeholder="Winner name(s)"
                   value={winner.names}
                   onChange={(e) => updateWinnerNames(weekIndex, winnerIndex, e.target.value)}
@@ -142,7 +142,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => removeWinner(weekIndex, winnerIndex)}
-                  className="text-destructive-text hover:text-destructive-text size-8 p-0 shrink-0"
+                  className="text-destructive-text hover:text-destructive-text size-8 min-w-11 p-0 shrink-0"
                   aria-label="Remove winner"
                 >
                   <Trash2 className="size-3" />
