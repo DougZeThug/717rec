@@ -1,0 +1,40 @@
+{
+  "id": "T-261106-make-small-controls-on-t",
+  "title": "Make small controls on the public pages big enough to tap (division headers, standings sort buttons, team name links, breadcrumb, auth links)",
+  "kind": "polish",
+  "status": "intake",
+  "request": "do both of these now - Public pages: I scanned only the admin screens control by control. Other small controls may exist on the public pages. I can scan them as a new task if you want. (after the admin tap-size task; fix what the scan finds)",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "577ba7e172e9068c155a3820994f55f32108d5e5",
+  "createdAt": "2026-11-06T21:45:40.729Z",
+  "criteria": [
+    {
+      "text": "Standings sort buttons (Power, Win %, SOS, Wins): at least 44px tall; before: 36px",
+      "done": true,
+      "evidence": "Standings sort buttons at 390 and 320: boxes 116x36, 63x36, 79x36, 55x36 (Power, Win %, SOS, Wins) before; absent from the small-controls list after, and the layout probe reads the Power button 36 -> 44px tall at 320 and 390 (page 8px taller). Pinned by a test that fails on the old code. Files: .factory/evidence/T-261106-make-small-controls-on-t/before|after/taps-390.json, layout-before.json, layout-after.json. Commit 6e15b27."
+    },
+    {
+      "text": "Teams page division header buttons (the full-width Fake Division North Division (5) bars): at least 44px tall; before: 40px",
+      "done": true,
+      "evidence": "Teams page division header bars (the full-width bars) at 390 and 320: 382x40 and 312x40 before; absent from the list after. Layout probe: the first team card moves down 4px at 320 and 390 (one header above it), unchanged at 768 and 1280 where the bar is already taller than 44. Pinned by a test that fails on the old code."
+    },
+    {
+      "text": "Text links that were under the 24px floor (team name link on a team card, Home breadcrumb link, Forgot password?, Back to login): a tap area of at least 24px tall with the same look and the same layout; before: 20px",
+      "done": true,
+      "evidence": "Links under the 24px floor, measured at 390 and 320: team name link on a team card 174x20 -> 174x32 (139x20 -> 139x32 at 320); Home breadcrumb 57x20 -> 57x32; Forgot password? 118x20 -> 118x36; Back to login 85x20 -> 85x36. The effective tap height the scanner reads on the team links is 26px (the neighbouring card edge limits it), above the 24px floor. Layout probe at 320, 390, 768, 1280: the breadcrumb bar, the card and the auth form do not move (the boxes grow by an equal negative margin). Four tests (team card, breadcrumb new test file, auth form, forgot password) fail on the old code."
+    },
+    {
+      "text": "Nothing else changes: same text and layout at 320, 390, 768 and 1280px except the sort bar (8px taller) and division headers (4px taller); no new console errors; no sideways scroll; no invisible tap area covers another control; existing tests pass and each new test fails on the old code",
+      "done": true,
+      "evidence": "Layout fingerprint of the touched pages at 320, 390, 768 and 1280px, before and after (20 views): the only changes are the sort bar (+8px, phones) and the division headers (+4px, phones) plus the larger link boxes with unchanged surroundings; History page height 3206px on 4 of 4 runs with and without the breadcrumb change (one earlier 3302 reading was a one-off load difference). Sideways scroll: none on 16 public routes at 390 and 1280. Console on those routes: only the harness's blocked-backend loads and the fake data's own errors (a deliberate fake season failure, two fake playoffs-active seasons); 0 page errors. Tap scan conflicts after: 7 at 390 and 6 at 320, the same as before the change (sticky team-page section pills and standings badge buttons; not touched by this task). Six new tests proved to fail on the old code (stash of the six source files: 6 failed, 54 passed). The six checks run again at the final head."
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-06T22:03:20.220Z"
+}
