@@ -199,7 +199,7 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
             <div className="max-h-60 overflow-y-auto space-y-2">
               {teams && teams.length > 0 ? (
                 teams.map((team) => (
-                  <div key={team.id} className="flex items-center space-x-2">
+                  <div key={team.id} className="flex min-h-11 items-center space-x-2">
                     <Checkbox
                       id={`team-${team.id}`}
                       checked={selectedTeamIds.includes(team.id)}
