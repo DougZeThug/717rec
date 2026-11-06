@@ -50,8 +50,9 @@
       "evidence": "Admin Scores result buttons: 38.5px wide at 320px -> 83px wide in two rows of two; at 342px and up four buttons of 44px or more in one row (sweep 320, 330, 340, 341: 83, 88, 93, 93.5px; 342: 44px; 360: 48.5px). Test fails on the old code."
     },
     {
-      "text": "No invisible tap area covers the centre of another control on the audited screens; nothing else moves (same text and layout at 768 and 1280px, no new console errors, no sideways scroll); existing tests pass and each new test fails on the old code",
-      "done": false
+      "text": "No invisible tap area covers the centre of another control on the audited screens; nothing else changes (the same text and layout at 768 and 1280px, apart from the intended taller select boxes and tabs; no new console errors; no sideways scroll); existing tests pass and each new test fails on the old code",
+      "done": true,
+      "evidence": "Tap scans of every audited admin screen with fake data (59 screens each; files .factory/evidence/T-261106-make-small-controls-at-l/after/taps-390.json and taps-320.json). At 390x844: 90 covered centres, all calendar day-cell buttons (44px-tall buttons in 36px rows, unchanged by this task); no other. At 320x640: 89, all day cells except one: the header Open menu button under the open Edit Team dialog (it sits under the modal overlay, so it cannot be tapped there anyway). The remaining rows that read under 44 with a box under 44 are the two stacked Auto Schedule switches (36px gap, criterion 6) and the Auto Schedule team checkbox, whose tap area is cut on the left by its scrolling list (30px wide) while its team-name label beside it toggles the same box in the same 44px row. Console scan of every admin section at 390 and 1280: 92 messages, all one text, Failed to load resource: net::ERR_FAILED (the harness blocks the real backend); 0 page errors; 0 sideways scroll. Desktop and tablet: before/after shots of Teams, Divisions and Batch at 1280 and 768 (before-desktop, after-desktop) differ only by the intended taller select boxes and tabs. Full unit suite at 8626e6c: 850 files, 7818 tests passed; the six checks are run again at the final head. Each new test was proved to fail on the old code."
     },
     {
       "text": "Text fields that set their own small height (admin sidebar search, weekly-content blurb boxes, History rename and add-division boxes, division edit fields, hero editor fields) are the standard 44px; before: 32 to 40px",
@@ -62,6 +63,11 @@
       "text": "Other small controls: checkboxes, contact email links, the hero card name and colour swatch buttons, and the schedule page calendar arrows have a tap area of at least 44px; before: 16px, 15px, 40px and 32px, and 28px",
       "done": true,
       "evidence": "Checkboxes (16px), contact email links (15px tall), the hero card name button (40px tall) and colour swatch button (32px), and the schedule page calendar arrows (28px wide) now have a 44px tap area (hit-area-44, min-w-[44px]). Contact link, hero buttons, checkbox and arrows are pinned by tests that fail on the old code. Code review round 1 added: the Auto Schedule team rows (16px rows 24px apart) are 44px tall so the checkbox tap areas do not overlap (scan with the widened check: 9 overlaps without, 0 with), the playoff walkover Cancel and Award Win buttons (36px) and the rearrange team chip (34px) are min-h-11."
+    },
+    {
+      "text": "The home page Score live button, the schedule card Live score this match and View match recap buttons, and the recap dialog Open full recap link are 44px tall; before: 40px",
+      "done": true,
+      "evidence": "Four tests pin min-h-[44px] on the four buttons (MyMatchRow, MatchCard x2, MatchRecapDialog) and fail on the old code: I ran them against the old files (git stash of the three components): 4 failed, 16 passed; with the fix 20 passed. The class is the same one the Button uses, so it is emitted. Not measured in a browser: these buttons sit on public pages, which I did not scan. Commit fd5d43a."
     }
   ],
   "checks": {
@@ -152,8 +158,12 @@
     {
       "at": "2026-11-06T20:12:46.754Z",
       "text": "Code review round 1: CHANGES (one blocking finding: the shared Checkbox hit area stole taps in the dense Auto Schedule team list). Fixed (row min-h-11 + test), scanner widened to 'tap area over another control's visible box' and proven (9 overlaps without the fix, 0 with). Also taken: stronger tests, playoff walkover buttons and rearrange chip. Known visible changes from min-w-[44px] on the small Button sizes (reviewer list): reaction picker grid 140 -> 188px wide, reaction pills at least 44 wide, History chevron 44 wide, stats compare link, comment send button, round size-8 buttons now 44x44 circles instead of 32x44 ovals. The remaining scan overlaps are all calendar day cells (44px tall buttons in 36px rows), unchanged by this task."
+    },
+    {
+      "at": "2026-11-06T20:33:39.001Z",
+      "text": "Criterion 9 reworded by hand: \"nothing else moves\" could not hold, because the select boxes (40 to 44px, division fields 36 to 44px) and tabs (42 to 44px) are taller by design, which moves what sits below them. The new wording says so. Also a new criterion 12 for three public 40px buttons found while updating the docs (Score live, Live score this match / View match recap, Open full recap); public pages were not scanned control by control."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T20:23:11.815Z"
+  "updatedAt": "2026-11-06T20:33:50.111Z"
 }
