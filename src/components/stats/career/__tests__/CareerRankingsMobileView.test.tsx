@@ -122,6 +122,19 @@ describe('CareerRankingsMobileView', () => {
     expect(localStorage.getItem('careerRankingsDetailedView')).toBe('true');
   });
 
+  // jsdom does no layout, so this pins the class. The career sort buttons were 36px tall, under the
+  // 44px tap size every other button has (the same fix as the standings sort buttons).
+  it('makes every sort button 44px tall', () => {
+    localStorage.setItem('careerRankingsDetailedView', 'true');
+    renderView();
+
+    for (const name of ['Win %', /Titles/]) {
+      const button = screen.getByRole('button', { name });
+      expect(button).toHaveClass('min-h-[44px]');
+      expect(button).not.toHaveClass('min-h-[36px]');
+    }
+  });
+
   it('switches back to compact and remembers that too', async () => {
     const user = userEvent.setup();
     localStorage.setItem('careerRankingsDetailedView', 'true');

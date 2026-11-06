@@ -338,7 +338,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                   size="sm"
                   onClick={() => onSortChange(field.id)}
                   className={cn(
-                    'rounded-lg py-2 px-3 text-xs font-medium transition-all whitespace-nowrap min-h-[36px]',
+                    'rounded-lg py-2 px-3 text-xs font-medium transition-all whitespace-nowrap min-h-[44px]',
                     isWinterTheme &&
                       (sortOptions.field === field.id
                         ? 'btn-winter-primary'
