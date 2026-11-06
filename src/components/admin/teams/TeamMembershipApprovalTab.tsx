@@ -28,7 +28,7 @@ type PendingMembershipUser = PendingMembership['user'];
 
 const MembershipUser: React.FC<{ user: PendingMembershipUser }> = ({ user }) => (
   <div className="flex min-w-0 items-center gap-2">
-    <div className="size-8 bg-muted rounded-full flex items-center justify-center">
+    <div className="size-8 shrink-0 bg-muted rounded-full flex items-center justify-center">
       {user.avatar_url ? (
         <img
           src={user.avatar_url}

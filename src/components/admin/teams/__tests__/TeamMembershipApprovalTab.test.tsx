@@ -157,6 +157,8 @@ describe('TeamMembershipApprovalTab', () => {
     expect(screen.getByText('User mem-1').parentElement?.parentElement).toHaveClass('min-w-0');
     expect(screen.getByText('Team mem-1')).toHaveClass('min-w-0');
     expect(screen.getByText('Team mem-1').parentElement).toHaveClass('min-w-0');
+    // The letter avatar must keep its 32px round shape while the text shrinks beside it.
+    expect(screen.getByText('U').parentElement).toHaveClass('shrink-0');
   });
 
   it('shows joined date on each card', () => {
