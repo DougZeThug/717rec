@@ -1,0 +1,100 @@
+{
+  "id": "T-261106-fix-the-verified-cubic-r",
+  "title": "Fix the verified cubic review findings on PR 1730",
+  "kind": "fix",
+  "status": "intake",
+  "request": "Watch the pr and autofix (cubic AI review of PR 1730: 45 findings, 29 inline; verify each, fix the real ones, answer the rest on their threads)",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
+  "createdAt": "2026-11-06T23:08:46.077Z",
+  "criteria": [
+    {
+      "text": "Real code findings fixed, each with a test that fails on the old code: History highlight rows keep the score visible with a long team name; pending score card values wrap instead of widening the card; scroll restore saves a scroll made in the 100ms after it ends; the winter theme gets its own success colours (Approve text 3.1:1 -> at least 4.5:1); the History edit hint shows only where it fits on one line (from 1024px)",
+      "done": true,
+      "evidence": "Five real findings fixed, each in its own commit with a test that fails on the old code (every test was run against the old file: failed there, passes now). (1) Winter success colours, commit 0152efc: Approve text on the winter card 3.13:1 -> 8.28:1, season badge 6.54:1, measured in a browser before and after in light, dark and winter. (2) History edit hint from 1024px, d257569: toolbar 108-116px tall with a 2-4 line hint at 700-900px -> 80px, hint on one line from 1024px. (3) History highlight rows, 93b6d34: the number after the name is no longer inside the clamped text; measured at 320, 360, 390, 768px: the number is inside the card on 21 of 21 rows. (4) Pending score card, b40143c: values may shrink and break. (5) Scroll restore, 8a3039e: input listeners stay on during the 100ms pause; all 44 existing tests pass, the new one fails on the old code."
+    },
+    {
+      "text": "Eight weak tests strengthened as the review asked (long-name member card, career sort buttons, saved-open accordion, long team ID, division row selector, event winners fields, score button payload, calendar day cell); each still passes and fails when its class is removed",
+      "done": true,
+      "evidence": "Eight tests strengthened in commit df267ba (TeamMembershipApprovalTab long names, CareerRankingsMobileView all four sort buttons, SeasonAccordion.animation open season drawn open, TeamEditSection 36-character team ID, DivisionRow both layouts and the selector, EventWinnersEditor h-11 on both fields, ScoreButtonGroup all four payload fields for all four buttons, calendar day cell). All pass. DivisionRow was also run against the old component: 2 failed. No source file changed in that commit."
+    },
+    {
+      "text": "Docs findings: each claim verified against the code and docs rules; wrong or overclaimed text corrected (footers carry post-commit notes, no implementation detail in rows, no real-phone wording for headless runs); no table row added or removed; link check unchanged",
+      "done": true,
+      "evidence": "Every docs finding was checked against the code and the docs rules by two helpers and by an independent reviewer, and fixed only where true (commits 8a4ddca and 12e5580). Fixed: scroll-on-Back text claims no more than the scripted runs showed (footers carry the numbers and B-14; the rows say scripted, team page not scrolled); technical detail moved into Technical notes; the team tile paragraph agrees with its row; footers name the concrete bug; HIST-13, DASH-18, DASH-19, DASH-20 rewritten in place; past-seasons says in-app link, the closed fallback, the Unknown Team exception, no storage key, hint from 1024px; bell titles wrap only below 640px; checkbox claim names its exception. Not valid or partly valid (reasons given on the threads): cubic overstated HI-02 (the spec describes the non-focusable name, it does not call it intentional). Row counts unchanged in verification/admin 408, foundations 71, home-and-teams 318, standings 396, bug-triage 60 (compared with the PR head eb120c6); link check 2,758 links, 0 broken."
+    },
+    {
+      "text": "Findings not fixed are answered on their threads with what was traced (team name link and breadcrumb padding, season badge colours, team link slug, DivisionPanel effect) and nothing else changes: six checks pass at the final head and an independent code review approves",
+      "done": false
+    }
+  ],
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "12e5580e056c28969d8ef7c217a1c628fbb27015",
+      "dirty": false,
+      "at": "2026-11-06T23:33:36.578Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "12e5580e056c28969d8ef7c217a1c628fbb27015",
+      "dirty": false,
+      "at": "2026-11-06T23:33:45.586Z",
+      "seconds": 9,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "12e5580e056c28969d8ef7c217a1c628fbb27015",
+      "dirty": false,
+      "at": "2026-11-06T23:34:50.082Z",
+      "seconds": 64,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "12e5580e056c28969d8ef7c217a1c628fbb27015",
+      "dirty": false,
+      "at": "2026-11-06T23:34:52.756Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "12e5580e056c28969d8ef7c217a1c628fbb27015",
+      "dirty": false,
+      "at": "2026-11-06T23:34:57.405Z",
+      "seconds": 5,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "12e5580e056c28969d8ef7c217a1c628fbb27015",
+      "dirty": false,
+      "at": "2026-11-06T23:41:11.845Z",
+      "seconds": 374,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/unit.log"
+    }
+  },
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-06T23:41:48.067Z"
+}
