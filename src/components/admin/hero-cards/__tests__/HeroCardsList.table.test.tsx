@@ -101,6 +101,19 @@ describe('HeroCardsList', () => {
     expect(screen.getByText('3')).toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the class. The card name and colour swatch buttons were 40px
+  // and 32px tall; each now has an invisible 44px tap area.
+  it('gives the card name and the colour swatch a 44px tap area', () => {
+    renderList();
+
+    expect(screen.getByText('Blind Draw').closest('button')).toHaveClass('hit-area-44');
+    const swatchButtons = screen
+      .getAllByRole('button')
+      .filter((b) => b.querySelector('div.size-8.rounded-md'));
+    expect(swatchButtons.length).toBeGreaterThan(0);
+    for (const b of swatchButtons) expect(b).toHaveClass('hit-area-44');
+  });
+
   it('says whether the card is on the homepage, in words as well as by switch', () => {
     renderList([card({ is_visible: false })]);
     expect(screen.getByText('Hidden')).toBeInTheDocument();
