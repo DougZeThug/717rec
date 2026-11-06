@@ -174,4 +174,16 @@ describe('ScheduleHeader', () => {
 
     expect(screen.queryByText('chip row')).not.toBeInTheDocument();
   });
+
+  // jsdom does no layout, so this pins the classes. This calendar has its own copy of the arrow
+  // classes; they were 28px wide. The day cells stay narrow so seven fit a phone.
+  it('makes the calendar month arrows at least 44px wide', async () => {
+    renderHeader();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Filter schedule by date' }));
+    await screen.findByRole('grid');
+
+    expect(screen.getByRole('button', { name: /previous month/i })).toHaveClass('min-w-[44px]');
+    expect(screen.getByRole('button', { name: /next month/i })).toHaveClass('min-w-[44px]');
+  });
 });

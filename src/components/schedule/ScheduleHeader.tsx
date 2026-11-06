@@ -36,7 +36,7 @@ interface ScheduleHeaderProps {
 // drawn later, from covering the arrows.
 const monthArrowClass = cn(
   buttonVariants({ variant: 'outline' }),
-  'size-7 bg-transparent p-0 opacity-50 hover:opacity-100'
+  'size-7 min-w-[44px] bg-transparent p-0 opacity-50 hover:opacity-100'
 );
 const calendarClassNames = {
   months: 'relative flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
