@@ -92,6 +92,8 @@ describe('MatchRecapDialog', () => {
 
     const fullRecap = screen.getByRole('link', { name: /open full recap/i });
     expect(fullRecap).toHaveAttribute('href', '/matches/match-1/live');
+    // jsdom does no layout, so this pins the class. The link was 40px tall, under the 44px tap size.
+    expect(fullRecap).toHaveClass('min-h-[44px]');
   });
 
   it('shows a loading state while the bundle is fetching', async () => {

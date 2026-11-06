@@ -8,8 +8,10 @@ import type { Match } from '@/types';
 
 import type { MatchWithOpponent, TeamInfo } from '../myMatchesTypes';
 
+const mockUseCanScoreMatch = vi.hoisted(() => vi.fn(() => ({ canScore: false })));
+
 vi.mock('@/hooks/live-scoring/useCanScoreMatch', () => ({
-  useCanScoreMatch: () => ({ canScore: false }),
+  useCanScoreMatch: mockUseCanScoreMatch,
 }));
 
 const myTeam: TeamInfo = { id: 'team-1', name: 'Three Amigos', logoUrl: null };
@@ -68,5 +70,15 @@ describe('MyMatchRow link', () => {
     renderRow(makeMatchInfo({ date: null as unknown as string }));
 
     expect(scheduleLink()).toBe('/schedule');
+  });
+});
+
+describe('MyMatchRow Score live button', () => {
+  // jsdom does no layout, so this pins the class. The button was 40px tall, under the 44px tap size.
+  it('is 44px tall to tap', () => {
+    mockUseCanScoreMatch.mockReturnValue({ canScore: true });
+    renderRow();
+
+    expect(screen.getByRole('link', { name: /score .* live/i })).toHaveClass('min-h-[44px]');
   });
 });

@@ -6,8 +6,9 @@ import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { Match } from '@/types';
 import { isMatchOpenForScoring } from '@/utils/matchStatus';
 
+// 44px tall, like every other button: these two were 40px.
 const ctaClasses =
-  'flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-lg text-sm font-medium transition-colors';
+  'flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg text-sm font-medium transition-colors';
 
 interface MatchCardCtasProps {
   match: Match;
