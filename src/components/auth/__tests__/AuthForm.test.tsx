@@ -36,6 +36,14 @@ describe('AuthForm password recovery link', () => {
     expect(link).toHaveAttribute('href', '/forgot-password');
   });
 
+  // jsdom does no layout, so this pins the classes. The link was 20px tall, under the 24px floor;
+  // the negative margin cancels the padding so the row does not grow.
+  it('gives the link a 36px tap area without moving the row', () => {
+    renderForm('login');
+
+    expect(screen.getByRole('link', { name: 'Forgot password?' })).toHaveClass('py-2', '-my-2');
+  });
+
   it('does not offer it while signing up, where there is nothing to recover', () => {
     renderForm('signup');
 

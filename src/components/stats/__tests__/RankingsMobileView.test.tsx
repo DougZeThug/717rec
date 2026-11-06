@@ -152,6 +152,20 @@ describe('RankingsMobileView', () => {
     expect(localStorage.getItem('rankingsDetailedView')).toBe('true');
   });
 
+  // jsdom does no layout, so this pins the class. The sort buttons were 36px tall, under the 44px
+  // tap size every other button has.
+  it('makes every sort button 44px tall', async () => {
+    render(<RankingsMobileView {...defaultProps} />);
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Detailed' }));
+
+    for (const name of ['Power', 'Win %', 'SOS', 'Wins']) {
+      const button = screen.getByRole('button', { name });
+      expect(button).toHaveClass('min-h-[44px]');
+      expect(button).not.toHaveClass('min-h-[36px]');
+    }
+  });
+
   it('restores the detailed view preference from localStorage', () => {
     localStorage.setItem('rankingsDetailedView', 'true');
     render(<RankingsMobileView {...defaultProps} />);
