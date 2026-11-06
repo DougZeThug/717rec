@@ -186,7 +186,7 @@ The consequences are worth stating plainly:
 a status of Optimized, Legacy or Missing, a percentage bar, a search box, a
 status filter and a sort. Choosing a file for a card uploads and saves it
 immediately, with no confirmation and no preview step, and raises "Logo Updated".
-There is no way to remove a logo from this tab.
+There is no way to remove a logo from this tab. The preview box on each card (80 pixels) shows the whole logo; before, the logo was drawn at 144 pixels and only its middle 80 showed, with 32 pixels cut off on every side.
 
 **Member Approvals** carries a red count badge on its tab when people are
 waiting. It is described in [`handle-requests.md`](handle-requests.md).
@@ -316,4 +316,4 @@ Cancel behaviour above, which was changed after that commit — see
 [B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed) — and the
 wrapping tabs and 44-pixel selects above, changed after it too (the admin phone
 polish).
-The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.
+The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. The Update Logos preview (commit `0942667`) and the Member Approvals phone layout (commits `afda9d1` to `e3a8bdd`) changed after that too, and the tap-size fixes made the tabs, the division dropdowns and the text fields 44 pixels (commits `96b6036` to `8626e6c`). They were measured in a real browser against fake data, not on a real phone or tablet. They were measured in a real browser against fake data, not on a real phone or tablet.

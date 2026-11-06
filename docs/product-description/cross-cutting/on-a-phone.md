@@ -127,21 +127,48 @@ step. Its six documents start at
 ## Touch and reach
 
 - The hamburger button is 44 by 44 pixels. Every control on the live scoring
-  screen is at least 44 pixels tall. So are parts of the admin console: the
-  Sections drawer's search box and group headings, the clear-search cross, the
-  select boxes in Teams, Requests and Live Corrections, the block buttons in
-  Timeslots, and the Scores time-slot headers. The switches in Scores, Timeslots
-  and Auto Schedule have a 44-pixel tap area around a switch that looks the same.
+  screen is at least 44 pixels tall. So are nearly all the controls in the admin
+  console, measured at 390 and 320 pixels wide: the Sections drawer's search box
+  and group headings, the clear-search cross, every select box (they were 40
+  pixels, and five of them set their own 24 to 40), every tab, the theme button in the top
+  bar, the calendar's month arrows, the close cross of a dialog, the small round
+  and remove buttons, the text fields that once set their own height, and the
+  block buttons in Timeslots and the Scores time-slot headers. A switch or a
+  checkbox looks the same as before and has an invisible 44-pixel tap area. In a
+  list of options or a menu, each row is 44 pixels tall on a touch screen; a
+  mouse keeps the 36-pixel row. The four Scores result buttons (2–0, 2–1, 1–2,
+  0–2) sit in one row from 342 pixels wide and in two rows of two below that, so
+  each is at least 44 pixels wide on a 320-pixel phone (it was 38.5).
   The Full Season Recap strip on each history card is 44 pixels high on a phone
   too (41 from 768 pixels wide; it was 33 on a phone). So is the tap area of a
   team name on a history phone card or table row, which is a link. On the
   Champions panel it is about 27 pixels high, because the rows there are only 6
-  pixels apart. Elsewhere, control size is
-  whatever the component library gives, which is
+  pixels apart.
+- A few controls are still under 44 pixels, on purpose: the day cells of a
+  calendar are 36 pixels wide and 44 tall (seven must fit a 320-pixel phone), the
+  two Auto Schedule switches that sit one above the other share the 36-pixel gap
+  between them, and the small clear cross inside a multi-select was left alone.
+  The select box, tab, switch, checkbox, close cross and small buttons are shared
+  pieces, so they have the same size on the public pages. The home page's "Score
+  live" button, the schedule card's live-score and recap buttons and the recap
+  dialog's "Open full recap" link are 44 pixels tall too (they were 40). Only the
+  admin console was scanned control by control; the public pages were not.
+- Elsewhere, control size is whatever the component library gives, which is
   smaller — but no row is now under **24 pixels**, the accessibility floor. The rows raised to it are the home page's
   weekly-recap team links, the teams page's Sort/View/Style row, a team page's
   last-match and head-to-head rows, and the footer's two links, all of which
   were 16 to 20 pixels.
+- **Nothing in these places runs past the screen edge on a 320-pixel phone.** A
+  select box's list is never wider than the screen, so a long option name wraps
+  instead of being cut off. The bell's panel is never taller than the screen and
+  scrolls inside, a long notification title wraps and a long list scrolls to its
+  end. A Member Approvals request card is the screen width minus the page
+  margins, and a long name with no spaces breaks. A long email, name or team
+  in the contact inbox wraps inside its card. The team logo in Update Logos shows
+  whole (the box showed only the middle 80 of 144 pixels). The My Team edit row
+  drops its text under the logo when it would have less than 128 pixels, and the
+  long team ID breaks. These are measured in a real browser against fake data,
+  not on a real phone.
 - **No label is under 12 pixels** on the home page, the standings, the teams
   list or history. Labels there were 9 to 11 pixels, which is unreadable in a
   bar. The schedule's weekday strip and the playoff bracket's participant names
@@ -217,8 +244,8 @@ season and bracket. A sort order, an open tab or an expanded panel is not shared
 **On a phone.** This document is the definition.
 
 **Accessibility.** Touch target sizes are set deliberately on live scoring, the
-hamburger, the history recap strip, the history team-name links and parts of the
-admin console, at 44 pixels,
+hamburger, the history recap strip, the history team-name links and nearly all of
+the admin console, at 44 pixels,
 and to a 24-pixel floor on the rows listed under
 [Touch and reach](#touch-and-reach). See
 [`accessibility.md`](accessibility.md).
@@ -277,12 +304,14 @@ much of its traffic is phones. Nothing more precise is stored. See
   The app shell and every table wrapper prevent it, but no page was measured.
 - Not confirmed by hand: how the app behaves when installed to a home screen and
   opened with no connection.
-- Not confirmed by hand: whether touch targets outside live scoring meet the
-  44-pixel guideline. Only live scoring, the hamburger, the bracket admin menu
-  and its seeding drag handle, the history recap strip, the history team-name
-  links, and the admin console controls named under Touch and reach set it
-  explicitly; the rows listed above
-  meet the lower 24-pixel floor, not 44.
+- Not confirmed by hand: whether touch targets on the public pages meet the
+  44-pixel guideline. The admin console was scanned control by control (390 and
+  320 pixels wide, fake data); the public pages were not. Live scoring, the
+  hamburger, the bracket admin menu and its seeding drag handle, the history
+  recap strip, the history team-name links and the shared pieces named under
+  Touch and reach (select box, tab, switch, checkbox, close cross, small buttons)
+  set it explicitly; the rows listed above
+  meet the lower 24-pixel floor, not 44. Not tested on a real phone.
 - Assumption: nothing in the product reads device orientation directly. Only the
   width is watched.
 
@@ -295,3 +324,4 @@ and [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phon
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the opening story, the interrupt table and the edge cases describe it.
 The 44-pixel controls in the admin console, listed under Touch and reach, changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too.
+The tap-size fixes (commits `96b6036` to `8626e6c`) changed the first two bullets under Touch and reach, and the phone-overflow fixes (commits `2af1fa1` to `e3a8bdd`) added the bullet that starts "Nothing in these places", after that commit. The three 44-pixel buttons named there came in commit `fd5d43a` and are pinned by tests, not measured in a browser. They were measured in a real browser against fake data, not on a real phone or tablet.

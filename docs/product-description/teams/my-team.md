@@ -183,9 +183,13 @@ approved. See
 
 **URL state.** None. `/my-team` carries nothing.
 
-**On a phone.** One narrow column throughout. The membership card puts the team
-block and the Leave Team button on the same row at every width, so a long team
-name is squeezed.
+**On a phone.** One narrow column throughout. The membership card stacks: the
+team block first, the Leave Team button under it on the left; from 640 pixels
+the two share a row, and a long team name is cut with an ellipsis. In Team
+Management the logo, the team name and the team ID share a row; on a 320-pixel
+phone the text drops under the logo when it would have less than 128 pixels
+beside it, and the long team ID breaks (it took 5 lines and ran 30 pixels past
+its card before).
 
 **Accessibility.** Both fields in the edit form have real labels. The three
 membership states replace one another with no announcement, so a screen reader
@@ -261,3 +265,4 @@ changes its name everywhere in the app, including its address — see
 Verified against `717rec` commit `ea5c8f4`, except the duplicate-membership
 behaviour above, which was changed after that commit — see B-07 in
 [`bug-triage.md`](../bug-triage.md#b-07-a-second-membership-row-permanently-breaks-every-member-ability).
+The phone paragraph above was corrected after that commit: the membership card stacks on a phone (the Viewport row already said so), and the Team Management row wraps (commit `dcd0693`). The wrap was measured in a real browser against fake data at 320, 360 and 390 pixels, not on a real phone.

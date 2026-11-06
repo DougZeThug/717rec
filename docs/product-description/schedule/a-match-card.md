@@ -202,7 +202,7 @@ Home's "my match" row is built that way. The card holds no other state, and its
 live scoring address still only exists for matches opened there.
 
 **On a phone.** Cards are full width and one per row. The live-scoring and recap
-buttons are 40 pixels tall and full width, so they are the easiest things on the
+buttons are 44 pixels tall (they were 40) and full width, so they are the easiest things on the
 card to press. The recap dialog scrolls inside itself and is capped at 85 percent
 of the screen height.
 
@@ -273,4 +273,4 @@ reverses the statistics that match produced.
 - Assumption: hiding the live-scoring button on a postponed match is deliberate,
   and a postponed match that is played anyway must be scored by an admin.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the button height under "On a phone" (44 pixels, was 40), which changed after that commit (`fd5d43a`). It is pinned by a test; it was not measured in a browser.
