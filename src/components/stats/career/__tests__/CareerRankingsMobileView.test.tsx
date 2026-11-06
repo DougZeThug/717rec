@@ -128,7 +128,7 @@ describe('CareerRankingsMobileView', () => {
     localStorage.setItem('careerRankingsDetailedView', 'true');
     renderView();
 
-    for (const name of ['Win %', /Titles/]) {
+    for (const name of [/Power/, 'Win %', /SOS/, /Titles/]) {
       const button = screen.getByRole('button', { name });
       expect(button).toHaveClass('min-h-[44px]');
       expect(button).not.toHaveClass('min-h-[36px]');

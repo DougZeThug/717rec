@@ -50,7 +50,36 @@ describe('DivisionRow', () => {
 
     await user.click(screen.getByRole('button', { name: /edit/i }));
 
-    for (const field of [screen.getByLabelText('Division name'), screen.getByRole('spinbutton')]) {
+    for (const field of [
+      screen.getByLabelText('Division name'),
+      screen.getByRole('spinbutton'),
+      screen.getByRole('combobox'),
+    ]) {
+      expect(field).not.toHaveClass('h-9');
+      expect(field).not.toHaveClass('h-10');
+      expect(field).toHaveClass('h-11');
+    }
+  });
+
+  // The same fields in the table row used by wide screens (the card above is for phones).
+  it('keeps the edit fields and the division selector at 44px in the table row too', async () => {
+    const user = userEvent.setup();
+    render(
+      <table>
+        <tbody>
+          <DivisionRow division={division} layout="row" />
+        </tbody>
+      </table>
+    );
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+
+    const fields = [
+      screen.getByDisplayValue('Competitive A'),
+      screen.getByRole('spinbutton'),
+      screen.getByRole('combobox'),
+    ];
+    for (const field of fields) {
       expect(field).not.toHaveClass('h-9');
       expect(field).not.toHaveClass('h-10');
       expect(field).toHaveClass('h-11');

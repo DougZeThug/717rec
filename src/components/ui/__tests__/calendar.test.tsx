@@ -19,6 +19,9 @@ describe('Calendar', () => {
 
     expect(screen.getByRole('button', { name: /previous month/i })).toHaveClass('min-w-[44px]');
     expect(screen.getByRole('button', { name: /next month/i })).toHaveClass('min-w-[44px]');
-    expect(screen.getByRole('button', { name: /November 12th, 2026/ })).toHaveClass('size-9');
+    const day = screen.getByRole('button', { name: /November 12th, 2026/ });
+    expect(day).toHaveClass('size-9');
+    // The cell around the button sets the column width of the seven-column week.
+    expect(day.parentElement).toHaveClass('size-9');
   });
 });

@@ -144,21 +144,30 @@ describe('TeamMembershipApprovalTab', () => {
   // widened its card past a 320px screen: the card list was a grid column sized by its widest
   // content, and none of the flex parts above the name could shrink.
   it('lets a long name with no spaces shrink instead of widening the card', () => {
+    // 29 and 37 characters with no break point, as in the case that widened the card.
+    const longUser = 'johnnythecornholechampion_2026';
+    const longTeam = 'TheBagBanditsOfTheWholeLeagueAndMore1';
+    const membership = makeMembership();
+    membership.user.full_name = longUser;
+    membership.team.name = longTeam;
     mockUsePendingMemberships.mockReturnValue({
       ...defaultHookState,
-      pendingMemberships: [makeMembership()],
+      pendingMemberships: [membership],
     });
 
     render(<TeamMembershipApprovalTab />);
 
-    const person = screen.getByText('User mem-1').closest('div.flex.flex-wrap');
-    expect(screen.getByText('User mem-1').closest('div.grid')).toHaveClass('grid-cols-1');
+    const userName = screen.getByText(longUser);
+    const teamName = screen.getByText(longTeam);
+    const person = userName.closest('div.flex.flex-wrap');
+    expect(userName.closest('div.grid')).toHaveClass('grid-cols-1');
     expect(person).toHaveClass('min-w-0');
-    expect(screen.getByText('User mem-1').parentElement?.parentElement).toHaveClass('min-w-0');
-    expect(screen.getByText('Team mem-1')).toHaveClass('min-w-0');
-    expect(screen.getByText('Team mem-1').parentElement).toHaveClass('min-w-0');
+    expect(userName.parentElement?.parentElement).toHaveClass('min-w-0');
+    expect(userName).toHaveClass('wrap-break-word');
+    expect(teamName).toHaveClass('min-w-0', 'wrap-break-word');
+    expect(teamName.parentElement).toHaveClass('min-w-0');
     // The letter avatar must keep its 32px round shape while the text shrinks beside it.
-    expect(screen.getByText('U').parentElement).toHaveClass('shrink-0');
+    expect(screen.getByText('J').parentElement).toHaveClass('shrink-0');
   });
 
   it('shows joined date on each card', () => {

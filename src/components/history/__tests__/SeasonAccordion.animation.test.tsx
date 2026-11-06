@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -54,6 +54,9 @@ describe('SeasonAccordion opening animation', () => {
       </QueryClientProvider>
     );
 
+    // The saved-open season really is drawn open (the mocked content only exists when it is), so
+    // `initial={false}` is the answer for an open season and not just a hard-coded prop.
+    expect(screen.getByText('expanded content')).toBeInTheDocument();
     expect(presenceSpy).toHaveBeenCalledWith(false);
   });
 });

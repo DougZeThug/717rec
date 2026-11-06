@@ -31,7 +31,9 @@ describe('EventWinnersEditor', () => {
 
     expect(screen.getByRole('button', { name: 'Remove week 3' })).toHaveClass('min-w-11');
     expect(screen.getByRole('button', { name: 'Remove winner' })).toHaveClass('min-w-11');
-    expect(screen.getByDisplayValue('3')).not.toHaveClass('h-8');
-    expect(screen.getByDisplayValue('Corn Stars')).not.toHaveClass('h-8');
+    for (const field of [screen.getByDisplayValue('3'), screen.getByDisplayValue('Corn Stars')]) {
+      expect(field).not.toHaveClass('h-8');
+      expect(field).toHaveClass('h-11');
+    }
   });
 });

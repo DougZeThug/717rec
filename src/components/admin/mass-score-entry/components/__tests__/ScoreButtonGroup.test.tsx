@@ -19,8 +19,29 @@ describe('ScoreButtonGroup', () => {
     expect(screen.getAllByRole('button')).toHaveLength(4);
     await userEvent.click(screen.getByRole('button', { name: /2–0/ }));
 
+    // All four fields: a wrong match score or a wrong game score must both fail here.
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange.mock.calls[0][0]).toMatchObject({ team1GameWins: 2, team2GameWins: 0 });
+    expect(onChange).toHaveBeenCalledWith({
+      team1Score: 1,
+      team2Score: 0,
+      team1GameWins: 2,
+      team2GameWins: 0,
+    });
+  });
+
+  it('reports the other three results with their own match and game scores', async () => {
+    const onChange = vi.fn();
+    render(<ScoreButtonGroup value={null} onChange={onChange} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /2–1/ }));
+    await userEvent.click(screen.getByRole('button', { name: /1–2/ }));
+    await userEvent.click(screen.getByRole('button', { name: /0–2/ }));
+
+    expect(onChange.mock.calls.map(([payload]) => payload)).toEqual([
+      { team1Score: 1, team2Score: 0, team1GameWins: 2, team2GameWins: 1 },
+      { team1Score: 0, team2Score: 1, team1GameWins: 1, team2GameWins: 2 },
+      { team1Score: 0, team2Score: 1, team1GameWins: 0, team2GameWins: 2 },
+    ]);
   });
 
   // jsdom does no layout, so this pins the classes. On a 320px phone the four buttons in one row

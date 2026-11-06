@@ -72,10 +72,17 @@ describe('TeamEditSection', () => {
   // the 36-character team ID sat in one no-wrap row 30px wider than its card, with the ID squeezed
   // into 5 lines.
   it('lets the team name and ID drop under the logo, and the long team ID break', () => {
+    const longId = '3f2504e0-4f89-11d3-9a0c-0305e82c3301';
+    mockUseTeamMembership.mockReturnValue({
+      membership: { ...approved, team: { ...approved.team, id: longId } },
+      refreshMembership: mockRefresh,
+    });
     renderSection();
 
     const name = screen.getByRole('heading', { name: 'Corn Stars' });
     const id = screen.getByText(/Team ID:/);
+    expect(longId).toHaveLength(36);
+    expect(id).toHaveTextContent(longId);
     expect(name).toHaveClass('wrap-break-word');
     expect(id).toHaveClass('break-all');
     expect(name.parentElement).toHaveClass('min-w-0', 'flex-1', 'basis-32');
