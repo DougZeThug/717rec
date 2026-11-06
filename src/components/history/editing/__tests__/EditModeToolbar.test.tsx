@@ -76,14 +76,16 @@ describe('EditModeToolbar', () => {
     expect(row).not.toHaveClass('flex-nowrap');
   });
 
-  it('shows the drag hint only from 700px up, so the buttons fit beside it', () => {
+  it('shows the drag hint only from 1024px up, where it fits on one line', () => {
     setup();
 
     // From 640px the buttons stay on one row (above). With the hint beside them, Save Changes
-    // ran up to 30px past the toolbar between 640px and 669px. jsdom does no layout, so this
-    // checks the classes: hidden by default, shown from 700px, not from `sm` (640px).
+    // ran up to 30px past the toolbar between 640px and 669px, and from 700px to about 900px the
+    // hint wrapped to two to four lines. jsdom does no layout, so this checks the classes:
+    // hidden by default, shown from `lg` (1024px), not from `sm` (640px) or 700px.
     const hint = screen.getByText('Drag teams between divisions to reorganize');
-    expect(hint).toHaveClass('hidden', 'min-[700px]:block');
+    expect(hint).toHaveClass('hidden', 'lg:block');
     expect(hint).not.toHaveClass('sm:block');
+    expect(hint).not.toHaveClass('min-[700px]:block');
   });
 });
