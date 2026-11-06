@@ -43,8 +43,10 @@ const MembershipUser: React.FC<{ user: PendingMembershipUser }> = ({ user }) => 
         </span>
       )}
     </div>
-    <div>
-      <p className="font-medium">{user.full_name || user.username || 'Anonymous User'}</p>
+    <div className="min-w-0">
+      <p className="wrap-break-word font-medium">
+        {user.full_name || user.username || 'Anonymous User'}
+      </p>
       <p className="text-xs text-muted-foreground">wants to join</p>
     </div>
   </div>
@@ -54,9 +56,11 @@ interface MembershipSummaryProps {
   membership: PendingMembership;
 }
 
+// The three parts (person, team, date) are 390px wide side by side, wider than a phone, so they
+// wrap onto more rows instead of stretching the card past the screen.
 const MembershipSummary: React.FC<MembershipSummaryProps> = ({ membership }) => (
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-3">
+  <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="flex flex-wrap items-center gap-3">
       <MembershipUser user={membership.user} />
       <div className="flex items-center gap-2">
         <TeamLogo
@@ -65,7 +69,7 @@ const MembershipSummary: React.FC<MembershipSummaryProps> = ({ membership }) => 
           size="sm"
           rounded
         />
-        <span className="font-medium">{membership.team.name}</span>
+        <span className="wrap-break-word font-medium">{membership.team.name}</span>
       </div>
     </div>
     <Badge variant="outline">

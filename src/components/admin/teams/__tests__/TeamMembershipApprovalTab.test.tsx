@@ -121,6 +121,24 @@ describe('TeamMembershipApprovalTab', () => {
     expect(screen.getByText('2 pending')).toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the classes. The person, team and date sat in one
+  // no-wrap row 390px wide, which stretched the card past every phone screen.
+  it('lets the person, team and date wrap onto more rows instead of widening the card', () => {
+    mockUsePendingMemberships.mockReturnValue({
+      ...defaultHookState,
+      pendingMemberships: [makeMembership()],
+    });
+
+    render(<TeamMembershipApprovalTab />);
+
+    const person = screen.getByText('User mem-1').closest('div.flex.flex-wrap');
+    const row = person?.parentElement;
+    expect(person).not.toBeNull();
+    expect(row).toHaveClass('flex-wrap', 'gap-2');
+    expect(screen.getByText('User mem-1')).toHaveClass('wrap-break-word');
+    expect(screen.getByText('Team mem-1')).toHaveClass('wrap-break-word');
+  });
+
   it('shows joined date on each card', () => {
     mockUsePendingMemberships.mockReturnValue({
       ...defaultHookState,
