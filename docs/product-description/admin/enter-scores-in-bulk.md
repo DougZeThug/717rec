@@ -192,7 +192,7 @@ on other rows.
 | The user's role | Admin only. The whole dashboard is gated; see [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). A visitor or player never reaches this tool. | Losing admin mid-session leaves the tool on screen and every write begins failing with the generic per-row message. |
 | The record's state | A completed match shows its recorded result selected and its switch on. It is fully editable, and re-scoring it replaces the old result. A match with no date is not shown at all. | Another admin resulting the same match does not reach this screen. The next refresh shows the new value unless the row has been edited here, in which case the local edit wins. |
 | The season's state | No effect. The tool lists matches by date and bracket, not by season, so archived seasons' matches are reachable and editable. | No effect. |
-| Viewport | Cards are one column below 840 pixels wide and two from 840. From 768 the admin sidebar takes 240 pixels, so two columns any earlier left each result button 29 to 35 pixels wide, and "2–0" split onto two lines at 768 to 810 pixels. The four score buttons stay in one row of four at every width, 44 pixels tall. Below 359 pixels wide the "Mark as final" row wraps onto a second line, so its label and the status badges stay inside the card. | No effect beyond re-flowing. |
+| Viewport | Cards are one column below 840 pixels wide and two from 840. From 768 the open admin sidebar takes 240 pixels (60 when it is collapsed), so two columns any earlier left each result button 29 to 35 pixels wide, and "2–0" split onto two lines at 768 to 810 pixels. The four score buttons stay in one row of four at every width, 44 pixels tall. Below 359 pixels wide the "Mark as final" row wraps onto a second line, so its label and the status badges stay inside the card. | No effect beyond re-flowing. |
 | Keys the form honours | Tab reaches every score button, the switch, and the bin. Space or Enter presses the focused control. There is no keyboard shortcut for submit. | Escape closes the date picker, the bracket list, or the delete dialog. It never clears an edit. |
 
 ## Cancel and interrupt
@@ -334,4 +334,4 @@ failure does not fail the score. Deleting a match reverses all of it.
 Verified against `717rec` commit `ea5c8f4`, except the team names, the "Final"
 tag and the 44-pixel tap areas above, which were changed after that commit (the
 admin phone polish).
-The narrow-width layout fixes (commits `b603506` to `4b4325c`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.
+The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.

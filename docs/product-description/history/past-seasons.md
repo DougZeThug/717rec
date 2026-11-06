@@ -375,8 +375,8 @@ moves; power scores and records are untouched.
   640 and about 669 pixels wide (a small phone on its side) Save Changes used to run
   up to 30 pixels past the toolbar and was cut off. The drag hint is now hidden below
   700 pixels wide, and a real browser with fake data measured no pixel past the
-  toolbar at any width from 640 to 1280. This document has not checked it on a real
-  device.
+  toolbar from 640 to 768 pixels in small steps, and at 1024 and 1280. This
+  document has not checked it on a real device.
 - Not confirmed by hand: the one-column layout, the team-name links, the phone
   "#N" and the remembered open state. They are described from the code, its tests
   and the change's own measurements on the dev server with fake data. Not

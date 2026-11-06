@@ -373,4 +373,4 @@ them.
 
 Verified against `717rec` commit `ea5c8f4`, except the wrapping buttons and
 badges above, which were changed after that commit (the admin phone polish).
-The narrow-width layout fixes (commits `b603506` to `4b4325c`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.
+The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.

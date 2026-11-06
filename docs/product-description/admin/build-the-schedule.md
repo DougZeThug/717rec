@@ -341,4 +341,4 @@ and the two navigation buttons, changed after it too; see
 [B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed). The 44-pixel
 tap areas on the Match Rules switches changed after that commit as well (the
 admin phone polish).
-The narrow-width layout fixes (commits `b603506` to `4b4325c`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.
+The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.

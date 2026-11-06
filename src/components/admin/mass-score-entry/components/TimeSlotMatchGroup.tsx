@@ -78,7 +78,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        {/* Two columns from 840px. From 768px the admin sidebar takes 240px, so two columns left
+        {/* Two columns from 840px. From 768px the open admin sidebar takes 240px, so two columns left
             the four result buttons (2–0, 2–1, 1–2, 0–2) 29-35px wide each and "2–0" broke onto
             two lines (768-810px). From 840px they are 38px or wider and fit on one line. */}
         <m.div

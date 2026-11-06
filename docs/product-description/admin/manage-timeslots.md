@@ -437,4 +437,4 @@ behaviour above, which was changed after that commit — see
 L4, from the change and its tests rather than a fresh pass over the running app.
 The look of the block buttons and the 44-pixel Double Header switch changed after
 that commit too (the admin phone polish).
-The narrow-width layout fixes (commits `b603506` to `4b4325c`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.
+The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.

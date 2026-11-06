@@ -189,8 +189,8 @@ const TeamFormActions: React.FC<TeamFormActionsProps> = ({
   isEditing,
   onCancel,
 }) => (
-  // Under 329px wide the two buttons are wider than the card and Cancel sticks out of it.
-  // Wrap there only: from 329px up the row looks as it always did.
+  // Under 328px wide the two buttons are wider than the card and Cancel sticks out of it.
+  // Wrap there only: from 328px up the row looks as it always did.
   <div className="flex justify-end gap-2 mt-4 max-[328px]:flex-wrap">
     <Button type="button" variant="outline" onClick={onCancel}>
       <X className="size-4 mr-2" />
