@@ -11,43 +11,53 @@
   "criteria": [
     {
       "text": "Season form (/admin/seasons, Create New Season): Cancel and Create Season buttons stay inside the card at 320px wide (the row wraps under 372px); before: Cancel left edge at x=-19.6, off screen",
-      "done": false
+      "done": true,
+      "evidence": "Measured at 320-400px (before: main tree; after: final code). Cancel was 19.6px off the left screen edge at 320px; now inside the card at every width under 372px (row wraps, 2 rows, 112px tall) and identical from 372px up (sweep 320..400). Picture: .factory/evidence/T-261106-fix-admin-and-history-la/sheet3.png (E)."
     },
     {
       "text": "Timeslots (/admin/timeslots): card content stays inside its card at 320px; before: grid column 279.8px in a 238px card",
-      "done": false
+      "done": true,
+      "evidence": "Column 279.8px -> 238px in the 238px card at 320px; past card border 16.8px -> -25px (inside). Element scan: 13 elements stuck out at 320 before, 0 after (also 330, 360, 390). 390px to 1280px identical in the full compare. Table now scrolls inside its box (204px box, 246px content). Picture: .factory/evidence/T-261106-fix-admin-and-history-la/sheet1.png (A)."
     },
     {
       "text": "Batch Matches date button (/admin/batch-matches): the whole date is inside the button at 320px, and the small (yyyy-mm-dd) copy never sticks out of the button at any width from 320 to 1280px; before: the copy stuck out 26.7px at every width, and at 320px the button was cut 34px",
-      "done": false
+      "done": true,
+      "evidence": "Sweep 320-1280 (12 widths): the (yyyy-mm-dd) copy stuck out of the button by 26.7px at EVERY width before; now 0px outside at every width (inside by 14.7px at 320, 48.7px at 360-439, 17px at 440+). Button 240 -> 206px at 320 (was cut 34px), 240px at 360-439, 283.7px from 440. Picture: .factory/evidence/T-261106-fix-admin-and-history-la/sheet1.png (B)."
     },
     {
       "text": "Confirm dialogs (Activate and Archive season): title and the confirm button are reachable at 320x844 and 320x640; before: Activate dialog 949px tall in an 844px screen",
-      "done": false
+      "done": true,
+      "evidence": "Dialogs at 320x568, 320x640, 320x844: title off screen and confirm button unreachable before; now the title is on screen and the confirm button is on screen after scrolling inside the dialog (e.g. 483-527 in a 568px screen). Archive 320x844, and every dialog at 390x844 and 1280x800, identical. Picture: .factory/evidence/T-261106-fix-admin-and-history-la/sheet4.png (M)."
     },
     {
       "text": "Auto-Schedule tabs (Auto-Loaded Teams / Manual Assignment): labels do not overlap at 320px (they wrap under 345px); before: overlap 11.1px",
-      "done": false
+      "done": true,
+      "evidence": "Label overlap 11.1px -> 0 at 320-344px (both pills 56px tall, equal). From 345px up identical (sweep 320..1280, 15 widths). Picture: .factory/evidence/T-261106-fix-admin-and-history-la/sheet2.png (C)."
     },
     {
       "text": "Pending Scores card footer (/admin/pending-matches): the Reject and Approve buttons stay inside the card at 320px (the footer wraps under 359px); before: 6.9px past the border",
-      "done": false
+      "done": true,
+      "evidence": "Reject and Approve 6.9px past the border and the date squeezed to 4 lines at 320 -> inside the card (50.7px spare) and the date on 1 line, for 320-358px. From 359px up identical. Picture: .factory/evidence/T-261106-fix-admin-and-history-la/sheet2.png (D). The 2.4px difference at 1280 in the full compare is the clock: old and new code both measure 198.2px at the same moment."
     },
     {
       "text": "Scores entry row (/admin/scores): the Mark as final row and its badges stay inside the match box at 320px (the row wraps under 359px); before: badges 8px past the box",
-      "done": false
+      "done": true,
+      "evidence": "Badges 8px past the match box and 'Mark as final' on 3 lines at 320 -> inside by 78px and 1 line, for 320-358px. From 359px up identical (sweep 320..430; 390 and 1280 in the full compare). Picture: .factory/evidence/T-261106-fix-admin-and-history-la/sheet4.png (L)."
     },
     {
       "text": "Create Team form (/admin/teams): the fields, Cancel and Create Team stay inside the card at 320px; before: the single column was 269.6px wide in a 238px card (Create Team 6.6px past the card border)",
-      "done": false
+      "done": true,
+      "evidence": "Before at 320: column 269.6px in a 238px card, Create Team 6.6px past the card border. After: fields and Create Team 0px past the card at 320-430; Cancel inside the card at every width (row wraps under 329px). 352px and up identical (320..430 sweep). Picture: .factory/evidence/T-261106-fix-admin-and-history-la/sheet3.png (F)."
     },
     {
       "text": "Update Logos card (/admin/teams): the Add Logo icon and label stay inside the button at 320px (the label wraps under 355px); before: spill 8.7px",
-      "done": false
+      "done": true,
+      "evidence": "Add Logo spill 8.7px at 320 -> 6.7px inside; no spill at any width 320-640 (sweeps before and after). 355px and up identical. Pictures: .factory/evidence/T-261106-fix-admin-and-history-la/before/K-logo-cards-320x640.png and .factory/evidence/T-261106-fix-admin-and-history-la/after-K/K-logo-cards-320x640.png."
     },
     {
       "text": "History edit toolbar (/history, Edit Divisions, with unsaved changes): Save Changes is fully visible and inside the toolbar from 640 to 700px wide (the drag hint shows from 700px, not 640px); before: 29.9px past the toolbar at 640px",
-      "done": false
+      "done": true,
+      "evidence": "Save Changes past the toolbar: 29.9px (640), 19.9 (650), 9.9 (660), 0.9 (669) -> 18px inside at all of them; also 0px cut by the season card. Toolbar 156px -> 88px. 700px and up identical (h116/108/80); edge sweep 640-768 clean; 390px identical. Picture: .factory/evidence/T-261106-fix-admin-and-history-la/sheet5.png."
     },
     {
       "text": "At 390px and 1280px, and at every width above each fix's limit, each touched screen measures the same before and after. Named exceptions: the batch date copy (hidden under 440px; the button grows to 284px from 440px), the History drag hint (hidden at 640-699px), and the Scores match rows (one column at 768-839px instead of two). No new console errors, no sideways page scroll, existing tests pass, and the 3 new tests fail on the old code",
@@ -55,7 +65,8 @@
     },
     {
       "text": "Admin Scores (/admin/scores) at 768-839px wide: each of the four result buttons (2-0, 2-1, 1-2, 0-2) shows its text on one line; before: the text split into '2-' and '0' at 768-810px (buttons 29-35px wide, 62px tall)",
-      "done": false
+      "done": true,
+      "evidence": "Admin Scores, 4 result buttons: 768-810px wrapped 4 of 4 (29-35px wide, 62px tall) -> 0 wrapped at every width 744-1280 (78-96px wide at 768-839px). From 840px identical (38.3, 40.3, 45.8, 61.3 ... 93.3px). Pictures: .factory/evidence/T-261106-fix-admin-and-history-la/after-tablet/admin-scores-768x1024.png vs .factory/evidence/open-items-audit/tablet/admin-scores-FULLVIEW-768x1024.png."
     }
   ],
   "checks": {},
@@ -81,5 +92,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T17:22:25.486Z"
+  "updatedAt": "2026-11-06T17:30:33.012Z"
 }
