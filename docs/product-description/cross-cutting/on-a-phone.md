@@ -34,9 +34,11 @@ tab bar never covers its last line.
 
 They tap Teams. The teams list arrives grouped by division rather than in one
 long list, because that is the default on a small screen and not on a large one.
-They open a team, read it, and press back. `/teams` is built to put them back
-where they were, but in a 2026-11-05 test in desktop Chromium it landed at the top
-(see [navigation](../foundations/navigation.md#open-questions-and-verification)).
+They open a team, read it, and press back. `/teams` puts them back where they were:
+in a 2026-11-06 test in headless Chromium at 390 pixels wide it did, within 1 pixel,
+in every run (see
+[navigation](../foundations/navigation.md#open-questions-and-verification)). Safari
+and iOS were not tested.
 
 They tap a control that fails. A red panel appears across the **top** of the
 screen, not the bottom.
@@ -165,7 +167,7 @@ step. Its six documents start at
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | A phone keyboard has no Escape, so on a phone nothing can be cancelled by key; only by tapping a Cancel or Close control. **The hamburger menu has no close-by-tapping-away** — it closes on a route change or by pressing the button again. It does close on Escape, which reaches it from an attached keyboard but not from a touch keyboard. | Same. A dialog's Cancel button works; there is no key that reaches it. |
-| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top; switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). Back does not put the old page back where it was: `/teams` is built to, and landed at the top in the 2026-11-05 test. | Everything typed is lost with no warning, exactly as on a desktop. |
+| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top; switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). Back puts `/teams`, `/stats`, `/history` and `/insights` back where they were, and every other page wherever the browser puts it. Measured 2026-11-06 for `/teams` at 390 pixels wide in headless Chromium with fake data: within 1 pixel in every run. The fix is on this branch and not yet live. Safari, iOS, and a real phone's back swipe were not tried. | Everything typed is lost with no warning, exactly as on a desktop. |
 | Browser back or forward | The gesture-based back swipe is the browser's, and the app cannot intercept it. It behaves as an in-app navigation. | Same. On a phone this is the most likely way work is lost, because the swipe is easy to trigger by accident. |
 | Reload, or the tab closed | Everything in memory is lost and every page refetches. A mobile browser closing a background tab to save memory looks identical to a reload when the user comes back. | A sent write still lands. An unsent one is gone. |
 | Network lost mid-request | Nothing to lose. Cached data stays on screen and looks current, which on a phone at a venue is the common case. | The request fails and is lost. **Nothing is queued.** This matters most during live scoring, which is the one thing done on a phone at a place with poor signal. |
@@ -235,7 +237,9 @@ much of its traffic is phones. Nothing more precise is stored. See
   rather than documenting.**
 - **A link opens the new page at the top**, which matters most on a phone: a long
   schedule followed by a short page no longer leaves a blank screen ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation),
-  fixed). Back mostly does not restore the old position, though; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+  fixed). The move is a glide, not a jump; see [navigation](../foundations/navigation.md#arrive).
+  Back restores the old position on the four routes that save it, since a fix on
+  this branch that is not yet live; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 - **A large phone in landscape is a desktop** as far as the app is concerned, so
   the bottom tab bar vanishes at an angle rather than at a device.
 - **The command palette's keyboard shortcut is unreachable on a phone**, which is
@@ -243,8 +247,10 @@ much of its traffic is phones. Nothing more precise is stored. See
   pixels.
 - **Only one dialog in the app becomes a drawer.** Every other dialog is a
   centred modal on a phone, including the live scoring confirmations.
-- **The teams page is built to remember its scroll position, and in the 2026-11-05
-  test it did not.**
+- **The teams page remembers its scroll position, and in the 2026-11-06 test it
+  came back to it every time** (headless Chromium, 390 pixels wide, fake data; the
+  fix is on this branch and not yet live). Safari, iOS and a real phone were not
+  tested.
 - **A backgrounded tab that the browser discards** returns as a cold load: the
   cache is gone, every page refetches, and any unsaved work is gone with it.
 - **Winter theme adds two hundred animated snowflakes** to the home page, which
@@ -287,4 +293,5 @@ commit — see
 [B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog)
 and [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone).
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the opening story, the interrupt table and the edge cases describe it.
 The 44-pixel controls in the admin console, listed under Touch and reach, changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too.

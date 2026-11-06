@@ -11,9 +11,10 @@ sorted are remembered in the browser between visits. They are remembered per
 browser, not per account, and they are never in the address, so the choice
 cannot be shared or linked to.
 
-It is also built to **remember where the user was scrolled to** and put them
-back when they come back with the browser's Back button. In a 2026-11-05 test in a
-real browser it did not: Back landed at the top.
+It also **remembers where the user was scrolled to** and puts them back when they
+come back with the browser's Back button. In a 2026-11-06 test in headless Chromium
+against fake data it did so in every run tried; the interrupt table has the
+numbers.
 
 ## The simple case
 
@@ -26,8 +27,8 @@ card has the team's logo, its name, a division badge, its record, and its power
 score. Clicking any of them opens that team's page.
 
 The user opens a team, reads it, and presses Back. `/teams` returns with the
-same layout and the same grouping. It is built to return to the same scroll
-position too; in the 2026-11-05 test it landed at the top.
+same layout and the same grouping, and at the same scroll position: in the
+2026-11-06 test it landed within 1 pixel of where the user had left.
 
 ## The interaction, event by event
 
@@ -71,7 +72,9 @@ the browser on the first render, whether or not the user touches anything.
 ### Leave without changing anything
 
 The preferences are already saved. The scroll position is saved continuously
-while the page is open, under the name of this route.
+while the page is open, under the name of this route. A scroll event that arrives
+as a link is clicked, after the address has changed, is not saved, so the saved
+spot is the one the user left from.
 
 Nothing else is recorded, and no draft of anything is kept.
 
@@ -134,8 +137,8 @@ item, **View Details**.
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes an open dropdown or card menu. It does not undo a preference that has already been chosen — there is no undo. |
-| In-app navigation away, or switching tab within the page | Preferences are already saved. The scroll position is saved too, but leaving by a top-bar link overwrites it with 0 (seen on `/stats`, which runs the same code). An open division is not: coming back opens the default one again. | Same. No request is ever in flight from this page except the initial read. |
-| Browser back or forward | **Back into `/teams` is built to restore the scroll position, and did not in the 2026-11-05 test:** after a team, Help or Schedule the list came back at the top. Three other routes (`/stats`, `/history`, `/insights`) run the same code. Forward is the same kind of move and was not measured. | Same. |
+| In-app navigation away, or switching tab within the page | Preferences are already saved. The scroll position is saved too, and was right at the moment of leaving in every 2026-11-06 run (on this page the code before the fix saved it right as well: 5 of 5 after a team link and 3 of 3 after the bottom tab bar; the overwrite with a smaller number was measured on `/history`). An open division is not: coming back opens the default one again. | Same. No request is ever in flight from this page except the initial read. |
+| Browser back or forward | **Back into `/teams` restores the scroll position.** Measured 2026-11-06 (fake data, headless Chromium, 390 pixels wide): within 1 pixel in 5 of 5 runs at an offset of 304 pixels and in 5 of 5 at each of 100, 200 and 250; after the Schedule tab of the bottom tab bar, then Back, 3 of 3. The page jumps to the saved spot, holds it for up to three seconds, and stops at once when the reader scrolls (a wheel turn, a touch, a key press or a mouse press). Three other routes (`/stats`, `/history`, `/insights`) run the same code. Forward is the same kind of move; it was not measured in a browser and is covered by unit tests only. Safari and iOS were not tested. | Same. |
 | Reload, or the tab closed | Preferences survive; they are stored in the browser. Scroll position survives a reload (300px before, 300px after in the 2026-11-05 test). A closed tab was not tested. The open division does not. | Same. |
 | Network lost mid-request | Nothing loads. In **By Division** the page shows "We couldn't load the teams. Please try again." with a Try Again button. In **All Teams** the same message appears only when nothing was cached; if a stale list is held, it is shown instead with no warning that it is old. | Preferences still save; they never touch the network. |
 | The request fails or times out | The read is retried once, then one of the two states above. | As above. |
@@ -229,13 +232,22 @@ browser on arrival even if nothing is touched. Nothing is sent to the league.
 - Settled: four routes run the scroll restoration (`/teams`, `/stats`, `/history`,
   `/insights`), as [`foundations/navigation.md`](../foundations/navigation.md#arrive)
   now says.
-- **A suspected bug: the scroll restoration did not land on `/teams` in a
-  2026-11-05 test.** After a team, Help or Schedule, Back came back at the top
-  (fake data, scrolled 300px down a 1,080px page). The code waits for the page to
-  grow tall enough, retrying with increasing gaps for roughly fifteen seconds
-  before giving up; a probe on `/stats` showed the saved position had already been
-  overwritten with 0 as the page was left, so there was nothing to restore. See
-  [navigation](../foundations/navigation.md#open-questions-and-verification). Not tried: a very long list.
+- **Fixed on this branch, not yet live: the scroll restoration now lands on
+  `/teams`.** On 2026-11-05 (production build, fake data, scrolled 300px down a
+  1,080px page) Back after a team, Help or Schedule came back at the top. A probe on
+  `/stats`, which runs the same code, showed the saved position overwritten with 0
+  as the page was left; the fix stops that overwrite. On 2026-11-06 a test on
+  `/teams` landed within 1 pixel in every run; the numbers are in the
+  interrupt table above and in
+  [navigation](../foundations/navigation.md#open-questions-and-verification). The
+  2026-11-06 scripts on the code before the fix gave 5 of 5 at 304 pixels after a team
+  link, which does not match the 2026-11-05 result, and 0 of 3 after the Schedule tab
+  of the phone's bottom tab bar (the page landed at 86 pixels although the saved
+  offset was right), which agrees with it in kind. What differed between the two days
+  is not known. While the page is
+  still too short to reach the saved spot the code retries with increasing gaps for
+  roughly fifteen seconds before giving up. Not tried: a very long list, and Forward
+  in a browser.
 - Not confirmed by hand: whether the division that opens first looks arbitrary
   to a user.
 - Not confirmed by hand: what a very long team name does to a phone grid card,
@@ -248,3 +260,4 @@ browser on arrival even if nothing is touched. Nothing is sent to the league.
 
 Verified against `717rec` commit `ea5c8f4`.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the summary, the simple case, the interrupt table and the open questions describe it.

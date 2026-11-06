@@ -101,19 +101,24 @@ closed when the window grows back. A season or division left open appears at ful
 height, with no grow-in animation. A new tab starts closed. If the browser blocks
 or breaks storage, everything starts closed, as it did before.
 
-`/history` is also built to remember **scroll position** and restore it when the
-user comes back with the browser's back button — one of four routes that try. That
-part is **best effort**. Measured 2026-11-05 on the dev server with fake data,
-going Back from a team page at 390 pixels wide: the season and the division stayed
-open in 10 of 10 runs. The scroll position came back exactly in 3 of 10 runs with
-the page's data already cached, and in 2 of 10 when the history page had to load
-its data again. Otherwise it landed higher on the page, at about 25 pixels from
-the top or at about 309 pixels. The cause is in the shared scroll-restore code,
-which the open-state memory does not change: it saves a clamped position as the
-history page is replaced by the shorter team page, and on a reload it restores the
-position before the page has grown to full height. Do not rely on the exact
-position. An earlier 2026-11-05 test, with a top-bar link to another page and
-then Back, landed at the top.
+`/history` also remembers its **scroll position** and restores it when the user
+comes back with the browser's back button — one of four routes that do (how it
+works is in [navigation](../foundations/navigation.md#arrive)). The page jumps
+straight to the saved spot, keeps it for up to three seconds while late content
+settles, and stops at once if the reader scrolls. Measured 2026-11-06 on the dev
+server with fake data in headless Chromium, going Back from a team page at 390
+pixels wide: the position came back within 1 pixel in 10 of 10 runs with the page's
+data already cached, and in 10 of 10 after the team page was reloaded, so that the
+history page had to load its data again. On a slow phone (CPU slowed four times,
+data delayed) it was 6 of 6. On the production build it was 10 of 10 and 10 of 10;
+with reduced motion on, 5 of 5 and 5 of 5; at 1280 pixels wide, 5 of 5 and 5 of 5.
+The same scripts before the fix gave 6 of 10 and 2 of 10 (production build 7 of 10
+and 5 of 10), and 1 of 5 with reduced motion. The season and the division stayed
+open in 10 of 10 runs in the earlier 2026-11-05 test; the open state is kept
+separately from the scroll position. Two limits. Data that arrives later than the
+three-second watch window is not caught. And a link other than a team link, then
+Back, was not tried on this page after the fix (the 2026-11-05 test, with such a
+link, landed at the top). Safari, iOS and a real phone were not tested.
 
 ### Begin editing
 
@@ -183,7 +188,7 @@ still in place.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on the read-only page and Escape does nothing. | Escape closes a division rename box. The toolbar's **Cancel** asks "You have unsaved changes. Are you sure you want to cancel?" through the browser's own confirmation box, and discards everything if confirmed. Neither can stop a save already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. Which cards and panels were open is remembered for this tab. It comes back on Back, Forward or a reload, and is cleared by a return through a link. | **Every unsaved change is lost with no warning.** The confirmation only guards the Cancel button, not leaving the page. A save already sent still lands, unseen. |
-| Browser back or forward | Returns to the previous page. Coming back to this page with Back or Forward keeps the open seasons and divisions open. The page is built to restore its scroll position too, but that is **best effort**: measured 2026-11-05 (dev server, fake data, 390 pixels wide), Back from a team page kept the season and division open in 10 of 10 runs, and the scroll position came back exactly in 3 of 10 runs with the data cached and 2 of 10 when the page had to load its data again. A top-bar link to the page is not Back: it opens collapsed. | Same as navigating away, and the app cannot prevent it. Edit mode is not kept. |
+| Browser back or forward | Returns to the previous page. Coming back to this page with Back or Forward keeps the open seasons and divisions open. The page restores its scroll position too: measured 2026-11-06 (dev server, fake data, headless Chromium, 390 pixels wide), Back from a team page brought it back within 1 pixel in 10 of 10 runs with the data cached and 10 of 10 after the team page was reloaded (see [Leave without changing anything](#leave-without-changing-anything) for the limits). A top-bar link to the page is not Back: it opens collapsed. | Same as navigating away, and the app cannot prevent it. Edit mode is not kept. |
 | Reload, or the tab closed | The page rebuilds itself: every season fetched again. A reload keeps the open seasons and divisions open, in the same tab. Closing the tab forgets them, and a new tab starts closed. | **Every unsaved change is lost.** A save already sent may have landed; after reloading the standings themselves are the only evidence. |
 | Network lost mid-request | The season list fails and the whole page becomes "Failed to load season history". A single card failing shows its own error inside the opened recap, with a **Try Again** button. | The save fails and the red "Update Failed" toast carries the network error. Nothing is queued and nothing is retried. |
 | The request fails or times out | The season list is retried once. A single season's standings are retried **twice**, a second apart, before the card gives up. | The save is not retried. Changes stay on screen for the admin to press Save again. |
@@ -350,10 +355,11 @@ moves; power scores and records are untouched.
   worth treating as a bug rather than documenting.**
 - Settled: four routes run scroll restoration (`/teams`, `/stats`, `/history`,
   `/insights`), as [`foundations/navigation.md`](../foundations/navigation.md#arrive)
-  now says. Whether they restore is answered in part for `/history`: the open
-  seasons and divisions come back open on Back and reload, and the scroll position
-  is best effort (see [Leave without changing anything](#leave-without-changing-anything)
-  and HIST-12).
+  now says. For `/history` the open seasons and divisions come back open on Back
+  and reload, and since the fix on this branch (not yet live) the scroll position
+  comes back too, in every run measured on 2026-11-06 (see
+  [Leave without changing anything](#leave-without-changing-anything) and HIST-12).
+  Not tested: Safari, iOS, a real phone, and a link other than a team link, then Back.
 - Not confirmed by hand: whether opening a division from its chevron by keyboard
   works in practice, or whether the press is swallowed before it reaches the
   header that handles it. A test shows that a click on the named chevron reaches
@@ -386,4 +392,4 @@ moves; power scores and records are untouched.
 Verified against `717rec` commit `ea5c8f4`.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 The History phone polish changed the passages on the phone start state, the division chevron, the empty past season, the season card layout, the wrapped names, the colours and the edit buttons after that commit.
-The History page then changed again: an opened season is one column at every width, every team name is a link (not "Unknown Team"), a phone card shows the playoff rank as "#N", and the page remembers which seasons and divisions are open for Back, Forward and a reload. This changed the passages on the simple case, leaving the page, beginning, the viewport and keys rows, back and reload, URL state, on a phone, accessibility and the rank column. Scroll position stays best effort.
+The History page then changed again: an opened season is one column at every width, every team name is a link (not "Unknown Team"), a phone card shows the playoff rank as "#N", and the page remembers which seasons and divisions are open for Back, Forward and a reload. This changed the passages on the simple case, leaving the page, beginning, the viewport and keys rows, back and reload, URL state, on a phone, accessibility and the rank column. The scroll restore on Back then changed on this branch (not yet live): it is no longer best effort, and the passages on leaving the page, Back or Forward and the open questions say what was measured on 2026-11-06.

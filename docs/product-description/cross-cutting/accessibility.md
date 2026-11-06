@@ -222,12 +222,19 @@ stateDiagram-v2
     announced_only --> reading
 ```
 
-After a link the new page opens at the top, where focus has moved. After Back or
-Forward nothing resets the scroll. The browser may put the page back, and four
-pages (`/teams`, `/stats`, `/history`, `/insights`) also try to put it back
-themselves; in the 2026-11-05 test most pages still came back at the top (see
-[navigation](../foundations/navigation.md#arrive)). Either way, the part of the page on
-screen and the element focused can disagree.
+After a link the new page opens at the top, where focus has moved. The move is a
+glide rather than a jump (measured 2026-11-06); with reduced motion on it should be
+a jump, because the site turns smooth scrolling off (read from the style sheet, not
+measured). After Back or Forward nothing resets the scroll. The browser may put the
+page back, and four pages (`/teams`, `/stats`, `/history`, `/insights`) also put it
+back themselves. They jump to the saved spot, hold it for up to three seconds, and
+stop as soon as the reader scrolls with a wheel, a touch, a key press or a mouse
+press. Scrolling that sends none of those, such as find-in-page, a screen reader or
+voice control, is not seen as the reader taking over. Read from the code, not tried:
+the page can be pulled back against such scrolling while the restore runs. The
+restore was measured on 2026-11-06 in headless Chromium against fake data (see
+[navigation](../foundations/navigation.md#arrive)). Either way, the part of the page
+on screen and the element focused can disagree.
 
 ## Cancel and interrupt
 
@@ -375,4 +382,5 @@ commit — see
 X-08 and Q12, and written from the change and its tests rather than a fresh pass
 over the running app.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the passage on route changes and focus describes it.
 The 44-pixel touch targets in the admin console changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip and the history standings colours (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too.

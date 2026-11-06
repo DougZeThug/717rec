@@ -60,9 +60,16 @@ everything, not a skeleton per card.
 A fourth query, for Division Matchups, runs independently and fills that one card
 in later. Its card shows three grey bars while it waits.
 
-The page is built to restore its scroll position when the user comes back with the
-browser's back button. In a 2026-11-05 test (a top-bar link, then Back) it landed at
-the top.
+The page restores its scroll position when the user comes back with the browser's
+back button. In a 2026-11-05 test (a top-bar link, then Back) it landed at the top.
+On 2026-11-06 (fake data, headless Chromium, dev server) the page came back at the
+saved offset in 1 of 1 run after a footer link and in 3 of 3 runs after the Schedule
+tab of the phone's bottom tab bar. The same Schedule-tab test on the code before the
+fix on this branch (not yet live) also gave 3 of 3, so the 2026-11-05 result did not
+repeat and this test does not show the fix changing this page; what differed is not
+known (the real top bar was not tried). Back from a
+team page was not tried, because the fake data has no link to one on this page. How
+the restore works is in [navigation](../foundations/navigation.md#arrive).
 
 **Nothing is written by arriving.**
 
@@ -150,7 +157,7 @@ The six top performers, in order:
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | No effect. Nothing on this page can be in progress. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. There is nothing to lose. | Nothing is lost. |
-| Browser back or forward | Returns to the standings, which is where nearly everybody arrives from. | Coming back is built to restore the scroll position; in the 2026-11-05 test (a top-bar link, then Back) it landed at the top. Nothing else about the page has state. |
+| Browser back or forward | Returns to the standings, which is where nearly everybody arrives from. | Coming back restores the scroll position. In the 2026-11-05 test (a top-bar link, then Back) it landed at the top. On 2026-11-06 (dev server, fake data) it came back at the saved offset in 1 of 1 run after a footer link and 3 of 3 after the phone's Schedule tab; the code before the fix on this branch (not yet live) also gave 3 of 3 for the Schedule tab, so the 2026-11-05 result did not repeat and why is not known. Nothing else about the page has state. |
 | Reload, or the tab closed | Reloads everything, spinner and all. | Same. |
 | Network lost mid-request | The whole page is replaced by a card reading "We could not load league insights. Please try again", with a "Try again" button that refetches all three sources. **The underlying reason is discarded** in favour of that sentence. | A background refetch that fails leaves the numbers on screen unchanged, with nothing marking them stale. |
 | The request fails or times out | As above. Any one of the three sources failing replaces the whole page, even when the other two succeeded. | As above. The Division Matchups query failing is different: that card shows its grey bars forever, with no error and no retry. |
@@ -255,3 +262,4 @@ here directly is not.
 
 Verified against `717rec` commit `ea5c8f4`.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the passages on arriving and on Back or Forward describe it.

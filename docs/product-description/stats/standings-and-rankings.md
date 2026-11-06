@@ -63,9 +63,16 @@ for everyone it played.
 **Nothing is written by arriving.** The trend baseline is written by a scheduled
 job on the server, never by a page being opened.
 
-The page is built to restore its scroll position when the user comes back to it
-with the browser's back button. In a 2026-11-05 test it did after a team page
-(back at 300 of 300px) and did not after a top-bar link (it landed at the top).
+The page restores its scroll position when the user comes back to it with the
+browser's back button. In a 2026-11-05 test it did after a team page (back at 300
+of 300px) and did not after a top-bar link (it landed at the top). On 2026-11-06
+(fake data, headless Chromium, dev server) `/stats` came back at the saved offset in
+1 of 1 run after a footer link and in 3 of 3 runs after the Schedule tab of the
+phone's bottom tab bar. The same Schedule-tab test on the code before the fix on this
+branch (not yet live) also gave 3 of 3, so the 2026-11-05 top-bar result did not
+repeat and this test does not show the fix changing `/stats`; what differed is not
+known (the real top bar was not tried). How the
+restore works is in [navigation](../foundations/navigation.md#arrive).
 
 ### Leave without changing anything
 
@@ -171,7 +178,7 @@ first playoff match shows `L1` even after a winning regular season.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | No effect. Nothing on this page can be cancelled, because nothing is in progress. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | The sort and the expanded row are lost. The division-or-all choice is in the address as `?view=all`: it comes back with Back and with a reload, not when the reader returns by a link to plain `/stats`. The compact/detailed choice on a phone survives, because it is stored in the browser. |
-| Browser back or forward | Returns to the previous page. | Coming back from a team page restores the scroll position and the view, but not the sort (a top-bar link instead lands at the top). A user who sorted by SOS, opened a team, and came back is looking at a differently-ordered table at the same scroll offset. |
+| Browser back or forward | Returns to the previous page. | Coming back restores the scroll position and the view, but not the sort. It did from a team page in the 2026-11-05 test; a top-bar link then landed at the top. On 2026-11-06 (dev server, fake data) a link did not: 1 of 1 after a footer link and 3 of 3 after the phone's Schedule tab, and the code before the fix on this branch (not yet live) also gave 3 of 3 for the Schedule tab, so the 2026-11-05 result did not repeat and why is not known. A user who sorted by SOS, opened a team, and came back is looking at a differently-ordered table at the same scroll offset. |
 | Reload, or the tab closed | Reloads everything. | After a reload the sort and the expanded row are lost, the view stays (it is in the address), and the scroll position stays where it was (300px before, 300px after in the 2026-11-05 test). A closed tab was not tested. The page saves its scroll position in the tab's session storage, and a new visit to `/stats` starts from the default sort and view. |
 | Network lost mid-request | The page shows a full-screen red panel: "There was an error loading the statistics data. Please try refreshing the page", with the underlying message and a "Try again" button. | Nothing in flight to lose. A background refetch that fails leaves the old numbers on screen with no sign that it failed. |
 | The request fails or times out | As above. Reads are retried once before the panel appears. | As above. |
@@ -272,3 +279,4 @@ Verified against `717rec` commit `ea5c8f4`, except the sorting and keyboard
 behaviour above, which was changed after that commit — see
 [B-34](../bug-triage.md#b-34-four-standings-columns-silently-sort-by-power-score-instead).
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the passages on arriving and on Back or Forward describe it.
