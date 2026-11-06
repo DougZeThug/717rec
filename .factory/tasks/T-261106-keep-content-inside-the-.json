@@ -2,7 +2,7 @@
   "id": "T-261106-keep-content-inside-the-",
   "title": "Keep content inside the screen on phones (select popups, bell, member approvals, contact email, logo preview)",
   "kind": "polish",
-  "status": "intake",
+  "status": "ready",
   "request": "please fix everything that comes up, dont just wait until you are done with a task to ask me if you can fix (the 320px audit found content running past the screen or its box on phones)",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -41,7 +41,8 @@
     },
     {
       "text": "Nothing else moves: same visible text on every touched screen, no new console errors, no sideways page scroll, existing tests pass, and each new test fails on the old code",
-      "done": false
+      "done": true,
+      "evidence": "Desktop and tablet (1280, 768) compared before and after for select, contact, bell, members, preview, batch and My Team: identical except the named fixes (bell title wraps so the popover is 80px taller; logo preview 80px instead of a cropped 144px; Member Approvals with a very long name wraps its row at 768px). Console errors unchanged within noise (the same 2-3 fake-network errors on every page); no sideways page scroll anywhere. 10 new or changed tests fail on the old code. Six checks pass at e3a8bdd: unit 840 files / 7779 passed (7779)."
     },
     {
       "text": "My Team page, team edit row (logo, name, 36-character team ID): no overflow at phone widths and the ID is not squeezed; before: row content 260px in a 230px row at 320px, ID text 4.7px past the card and 5 lines at 320 and 360px",
@@ -53,9 +54,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "a45050147d57bf1cabdd458cf774b88e293dd1d5",
+      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
       "dirty": false,
-      "at": "2026-11-06T19:19:54.621Z",
+      "at": "2026-11-06T19:22:19.066Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-keep-content-inside-the-/integrity.log"
@@ -63,29 +64,29 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "a45050147d57bf1cabdd458cf774b88e293dd1d5",
+      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
       "dirty": false,
-      "at": "2026-11-06T19:20:03.126Z",
-      "seconds": 8,
+      "at": "2026-11-06T19:22:31.624Z",
+      "seconds": 13,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261106-keep-content-inside-the-/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "63e2138ea5d257790a6e07a315e29e14c40ad31c",
+      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
       "dirty": false,
-      "at": "2026-11-06T19:09:05.816Z",
-      "seconds": 82,
+      "at": "2026-11-06T19:24:02.500Z",
+      "seconds": 91,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261106-keep-content-inside-the-/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "63e2138ea5d257790a6e07a315e29e14c40ad31c",
+      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
       "dirty": false,
-      "at": "2026-11-06T19:09:09.195Z",
+      "at": "2026-11-06T19:24:05.780Z",
       "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261106-keep-content-inside-the-/knip.log"
@@ -93,12 +94,22 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "63e2138ea5d257790a6e07a315e29e14c40ad31c",
+      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
       "dirty": false,
-      "at": "2026-11-06T19:09:22.931Z",
-      "seconds": 14,
+      "at": "2026-11-06T19:24:11.502Z",
+      "seconds": 6,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261106-keep-content-inside-the-/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
+      "dirty": false,
+      "at": "2026-11-06T19:31:36.240Z",
+      "seconds": 445,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261106-keep-content-inside-the-/unit.log"
     }
   },
   "reviews": [
@@ -108,6 +119,13 @@
       "sha": "a1271dc51f955f415791e64490296756e3c99bb4",
       "at": "2026-11-06T18:52:20.003Z",
       "summary": "Plan review APPROVE (no blocking finding). Lines VERIFIED; Radix select/popover vars exist; selectors and trailing-! syntax compile. Taken: select class inside the popper block; probe the bell Viewport max-height (20 items) and a horizontal scrollbar; min-w-0 break-words on the member name; lg stays (other users); contact name/team wrap; TeamEditSection row; MessageFeed probe."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
+      "at": "2026-11-06T19:31:55.647Z",
+      "summary": "Independent code review APPROVE at e3a8bdd after two rounds. Round 1: no blocking defect, suggestions all taken (unbroken member names via grid-cols-1 + min-w-0, other season selects probed, evidence files saved, vertical-only gap). Round 2: APPROVE; cosmetic suggestion (shrink-0 on the letter avatar) implemented; evidence gaps closed. Verified: Tailwind syntax and Radix vars, select has no caller className conflicts, TeamLogo size union has no other consumer, no protected path, each new test fails on the old code."
     }
   ],
   "issues": {},
@@ -119,5 +137,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T19:20:03.127Z"
+  "updatedAt": "2026-11-06T19:31:55.751Z",
+  "readySha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
+  "readyAt": "2026-11-06T19:31:55.751Z"
 }
