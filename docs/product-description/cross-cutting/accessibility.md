@@ -195,8 +195,10 @@ theme they also lighten, because the app's primary blue is the same value in
 both themes and sits at 3.84:1 on a near-black card.
 
 **Coloured figures in an opened history season were corrected.** The Win% and
-Game% figures and the champion's crown now read at 4.5:1 or better: darker green,
-orange and amber in the light theme, and lighter blue and red in the dark theme.
+Game% figures and the champion's crown now read at 4.5:1 or better. The figures
+use four colours by value, green from 75 percent, blue from 60, orange from 40 and
+red below: darker shades in the light theme, lighter shades in the dark theme. The
+crown is dark amber in the light theme and yellow in the dark theme.
 The ratios were measured when the change was made. The SOS figure and the power
 score dial in the same cards keep colours shared with other pages and were not
 part of that change. See

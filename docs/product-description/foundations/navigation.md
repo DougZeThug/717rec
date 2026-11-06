@@ -148,8 +148,10 @@ deliberately not, so they show the loading spinner.
 
 ### Leave without changing anything
 
-Nothing is recorded beyond the pageview that already happened on arrival. No
-page in the app keeps a draft of anything on leaving.
+Nothing is recorded beyond the pageview that already happened on arrival, except
+that the four routes that restore their scroll position keep that position in the
+tab so Back can return to it. No page in the app keeps a draft of anything on
+leaving.
 
 ### Begin editing
 
@@ -292,8 +294,9 @@ development build the analytics call does nothing.
 
 ## Edge cases
 
-- **Back and Forward bring `/teams`, `/stats`, `/history` and `/insights` back
-  where they were left (Forward was not tried in a browser); every other page comes back wherever the browser puts it.**
+- **In scripted runs, Back brought `/teams`, `/stats`, `/history` and `/insights`
+  back where they were left; nobody has checked it by hand, and Forward was not
+  tried in a browser. Every other page comes back wherever the browser puts it.**
   The four routes jump to the saved spot and hold it for a moment, and give way
   when the reader scrolls (see *Arrive*). A user who presses Back to `/schedule`
   gets what the browser gives: the top, in the 2026-11-05 test. Data that arrives
