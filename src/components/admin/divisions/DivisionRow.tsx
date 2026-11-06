@@ -167,7 +167,7 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
         className="h-10"
       />
       <Select value={display} onValueChange={(v) => setDisplay(v as DisplayDivision)}>
-        <SelectTrigger className="h-10">
+        <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -280,7 +280,7 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
         <td className="py-3 px-3 align-middle">
           {editing ? (
             <Select value={display} onValueChange={(v) => setDisplay(v as DisplayDivision)}>
-              <SelectTrigger className="h-9 w-40">
+              <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

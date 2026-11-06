@@ -78,7 +78,7 @@ const TimeBlockHeader: React.FC<{
           </Button>
 
           <Select value={moveToBlock} onValueChange={onMoveToBlockChange}>
-            <SelectTrigger className="h-6 w-24 text-xs">
+            <SelectTrigger className="w-24 text-xs">
               <Move className="size-3" />
             </SelectTrigger>
             <SelectContent>
