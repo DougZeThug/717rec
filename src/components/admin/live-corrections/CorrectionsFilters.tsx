@@ -23,6 +23,62 @@ interface CorrectionsFiltersProps {
   onNightChange: (value: string) => void;
 }
 
+/** A label above one picker, with the width and stacking the two pickers share. */
+const FilterField: React.FC<{ id: string; label: string; children: React.ReactNode }> = ({
+  id,
+  label,
+  children,
+}) => (
+  <div className="flex min-w-[200px] flex-1 flex-col gap-1.5 md:max-w-[240px]">
+    <label htmlFor={id} className="text-sm font-medium">
+      {label}
+    </label>
+    {children}
+  </div>
+);
+
+const SeasonField: React.FC<
+  Pick<CorrectionsFiltersProps, 'seasons' | 'seasonId' | 'onSeasonChange'>
+> = ({ seasons, seasonId, onSeasonChange }) => (
+  <FilterField id="season-filter" label="Season">
+    <Select value={seasonId} onValueChange={onSeasonChange}>
+      <SelectTrigger id="season-filter" className="min-h-[44px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={ALL_SEASONS}>All seasons</SelectItem>
+        {seasons.map((s) => (
+          <SelectItem key={s.id} value={s.id}>
+            {s.is_archived ? `${s.name} (archived — read-only)` : s.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </FilterField>
+);
+
+const NightField: React.FC<Pick<CorrectionsFiltersProps, 'nights' | 'night' | 'onNightChange'>> = ({
+  nights,
+  night,
+  onNightChange,
+}) => (
+  <FilterField id="night-filter" label="Night">
+    <Select value={night} onValueChange={onNightChange}>
+      <SelectTrigger id="night-filter" className="min-h-[44px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={ALL_DATES}>All nights</SelectItem>
+        {nights.map((key) => (
+          <SelectItem key={key} value={key}>
+            {formatLeagueNight(key)}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </FilterField>
+);
+
 /**
  * Season and night pickers for the corrections list.
  *
@@ -38,43 +94,8 @@ const CorrectionsFilters: React.FC<CorrectionsFiltersProps> = ({
   onNightChange,
 }) => (
   <div className="flex flex-wrap gap-3">
-    <div className="flex min-w-[200px] flex-1 flex-col gap-1.5 md:max-w-[240px]">
-      <label htmlFor="season-filter" className="text-sm font-medium">
-        Season
-      </label>
-      <Select value={seasonId} onValueChange={onSeasonChange}>
-        <SelectTrigger id="season-filter" className="min-h-[44px]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={ALL_SEASONS}>All seasons</SelectItem>
-          {seasons.map((s) => (
-            <SelectItem key={s.id} value={s.id}>
-              {s.is_archived ? `${s.name} (archived — read-only)` : s.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-
-    <div className="flex min-w-[200px] flex-1 flex-col gap-1.5 md:max-w-[240px]">
-      <label htmlFor="night-filter" className="text-sm font-medium">
-        Night
-      </label>
-      <Select value={night} onValueChange={onNightChange}>
-        <SelectTrigger id="night-filter" className="min-h-[44px]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={ALL_DATES}>All nights</SelectItem>
-          {nights.map((key) => (
-            <SelectItem key={key} value={key}>
-              {formatLeagueNight(key)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <SeasonField seasons={seasons} seasonId={seasonId} onSeasonChange={onSeasonChange} />
+    <NightField nights={nights} night={night} onNightChange={onNightChange} />
   </div>
 );
 

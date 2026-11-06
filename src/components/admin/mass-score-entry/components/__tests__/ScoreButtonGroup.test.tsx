@@ -17,7 +17,7 @@ describe('ScoreButtonGroup', () => {
     );
 
     expect(screen.getAllByRole('button')).toHaveLength(4);
-    await userEvent.click(screen.getByRole('button', { name: /2–0/ }));
+    await userEvent.click(screen.getByRole('button', { name: /2–0/u }));
 
     // All four fields: a wrong match score or a wrong game score must both fail here.
     expect(onChange).toHaveBeenCalledTimes(1);
@@ -33,9 +33,9 @@ describe('ScoreButtonGroup', () => {
     const onChange = vi.fn();
     render(<ScoreButtonGroup value={null} onChange={onChange} />);
 
-    await userEvent.click(screen.getByRole('button', { name: /2–1/ }));
-    await userEvent.click(screen.getByRole('button', { name: /1–2/ }));
-    await userEvent.click(screen.getByRole('button', { name: /0–2/ }));
+    await userEvent.click(screen.getByRole('button', { name: /2–1/u }));
+    await userEvent.click(screen.getByRole('button', { name: /1–2/u }));
+    await userEvent.click(screen.getByRole('button', { name: /0–2/u }));
 
     expect(onChange.mock.calls.map(([payload]) => payload)).toEqual([
       { team1Score: 1, team2Score: 0, team1GameWins: 2, team2GameWins: 1 },
