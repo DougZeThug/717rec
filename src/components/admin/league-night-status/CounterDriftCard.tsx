@@ -41,8 +41,14 @@ const DriftSummary: React.FC<{ rows: DriftRow[] }> = ({ rows }) => {
       <ul className="max-h-40 overflow-auto rounded-md border border-border bg-muted/30 p-2 text-xs">
         {rows.slice(0, 10).map((r) => (
           <li key={r.team_id} className="tabular-nums">
-            <span className="font-medium">{r.name}</span>: stored {r.counter_wins}-
-            {r.counter_losses} · derived {r.derived_wins}-{r.derived_losses}
+            <span className="font-medium">{r.name}</span>:{' '}
+            <span className="whitespace-nowrap">
+              stored {r.counter_wins}-{r.counter_losses}
+            </span>{' '}
+            ·{' '}
+            <span className="whitespace-nowrap">
+              derived {r.derived_wins}-{r.derived_losses}
+            </span>
           </li>
         ))}
         {rows.length > 10 && (

@@ -74,6 +74,16 @@ describe('CounterDriftCard', () => {
     expect(screen.getByText(/In sync/)).toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the class. A record such as "derived 9-1" split onto two
+  // lines ("9-" then "1") on a tablet.
+  it('keeps each stored and derived record on one line', () => {
+    mockUseCounterDrift.mockReturnValue(drift({ data: [row(3)] }));
+    render(<CounterDriftCard />);
+
+    expect(screen.getByText('stored 3-0')).toHaveClass('whitespace-nowrap');
+    expect(screen.getByText('derived 4-0')).toHaveClass('whitespace-nowrap');
+  });
+
   it('lists up to ten teams that are out of sync and counts the rest', () => {
     mockUseCounterDrift.mockReturnValue(
       drift({ data: Array.from({ length: 12 }, (_, i) => row(i + 1)) })
