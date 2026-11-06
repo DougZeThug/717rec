@@ -1,0 +1,56 @@
+{
+  "id": "T-261106-keep-content-inside-the-",
+  "title": "Keep content inside the screen on phones (select popups, bell, member approvals, contact email, logo preview)",
+  "kind": "polish",
+  "status": "intake",
+  "request": "please fix everything that comes up, dont just wait until you are done with a task to ask me if you can fix (the 320px audit found content running past the screen or its box on phones)",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "a1271dc51f955f415791e64490296756e3c99bb4",
+  "createdAt": "2026-11-06T18:52:11.971Z",
+  "criteria": [
+    {
+      "text": "Select popups (season filters on Live Corrections, Weekly Content, Participation): the popup is never wider than the screen and long option names wrap; before: 376.9px wide on a 320px phone with 4 options cut off",
+      "done": false
+    },
+    {
+      "text": "Batch Matches team dropdown: the popup stays inside the screen at 320, 360 and 390px; before: 111px, 71px and 41px past the right edge",
+      "done": false
+    },
+    {
+      "text": "Contact Inbox (/admin/contact-inbox): a long email address, name or team wraps inside its card; before: the email was 17.5px past the screen at 320px",
+      "done": false
+    },
+    {
+      "text": "Header bell popover: a long notification title wraps inside the list, all notifications can be reached by scrolling, and the popover fits the screen height and scrolls when taller; before: the list was 756px wide in a 270px box (text cut) and the popover was 648.5px tall on a 640px screen with no scroll",
+      "done": false
+    },
+    {
+      "text": "Member Approvals (/admin/teams): the request card is no wider than the screen and its Approve and Reject buttons are on screen; before: the card was 390px wide on every phone width (cut 86px at 320px)",
+      "done": false
+    },
+    {
+      "text": "Update Logos card: the whole team logo or initials circle shows inside the 80px preview box; before: a 144px logo in an 80px box, 32px cropped on every side, at every width",
+      "done": false
+    },
+    {
+      "text": "Nothing else moves: same visible text on every touched screen, no new console errors, no sideways page scroll, existing tests pass, and each new test fails on the old code",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "APPROVE",
+      "sha": "a1271dc51f955f415791e64490296756e3c99bb4",
+      "at": "2026-11-06T18:52:20.003Z",
+      "summary": "Plan review APPROVE (no blocking finding). Lines VERIFIED; Radix select/popover vars exist; selectors and trailing-! syntax compile. Taken: select class inside the popper block; probe the bell Viewport max-height (20 items) and a horizontal scrollbar; min-w-0 break-words on the member name; lg stays (other users); contact name/team wrap; TeamEditSection row; MessageFeed probe."
+    }
+  ],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-06T18:52:20.003Z"
+}
