@@ -1,0 +1,56 @@
+{
+  "id": "T-261106-make-small-controls-at-l",
+  "title": "Make small controls at least 44px to tap (theme toggle, calendar arrows, close X, select and menu rows, switches, tabs, score buttons)",
+  "kind": "polish",
+  "status": "intake",
+  "request": "please fix everything that comes up, dont just wait until you are done with a task to ask me if you can fix (the audit found controls smaller than the 44px tap size this app uses for buttons)",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
+  "createdAt": "2026-11-06T19:32:23.694Z",
+  "criteria": [
+    {
+      "text": "Theme toggle (header, every page): at least 44px wide and tall; before: 42px wide",
+      "done": false
+    },
+    {
+      "text": "Calendar Previous and Next Month arrows: at least 44px wide; before: 28px wide (day cells stay 36px wide on purpose so seven fit a 320px phone, and are 44px tall)",
+      "done": false
+    },
+    {
+      "text": "Dialog close X: a tap area of at least 44px with the same look; before: 16px",
+      "done": false
+    },
+    {
+      "text": "Select triggers are 44px tall like text fields; before: 40px. Select options and user-menu items are at least 44px tall on touch screens (desktop rows unchanged); before: 36px",
+      "done": false
+    },
+    {
+      "text": "Tabs: tap area at least 44px tall with the same look; before: 42px",
+      "done": false
+    },
+    {
+      "text": "Switches (Double Header, Batch Match, Avoid rematches and others): tap area at least 44px tall with the same look; before: 24px",
+      "done": false
+    },
+    {
+      "text": "Remove buttons (Remove match pair, Remove signup, hero card remove): at least 44px wide; before: 40px, 32px and 32px",
+      "done": false
+    },
+    {
+      "text": "Admin Scores result buttons (2–0, 2–1, 1–2, 0–2) are at least 44px wide on every phone; before: 38.5px wide at 320px",
+      "done": false
+    },
+    {
+      "text": "No invisible tap area covers the centre of another control on the audited screens; nothing else moves (same text and layout at 768 and 1280px, no new console errors, no sideways scroll); existing tests pass and each new test fails on the old code",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-06T19:32:24.041Z"
+}
