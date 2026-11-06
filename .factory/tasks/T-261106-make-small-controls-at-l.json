@@ -68,9 +68,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "8f9ab47776d2cabe7f08b941f8b4a6ec6bc7ac9b",
+      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
       "dirty": false,
-      "at": "2026-11-06T20:11:33.139Z",
+      "at": "2026-11-06T20:12:49.242Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/integrity.log"
@@ -78,29 +78,29 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
       "dirty": false,
-      "at": "2026-11-06T19:56:58.985Z",
-      "seconds": 13,
+      "at": "2026-11-06T20:13:00.564Z",
+      "seconds": 11,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
       "dirty": false,
-      "at": "2026-11-06T19:58:30.652Z",
-      "seconds": 92,
+      "at": "2026-11-06T20:14:33.909Z",
+      "seconds": 93,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
       "dirty": false,
-      "at": "2026-11-06T19:58:34.324Z",
+      "at": "2026-11-06T20:14:37.781Z",
       "seconds": 4,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/knip.log"
@@ -108,20 +108,20 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
       "dirty": false,
-      "at": "2026-11-06T19:58:40.383Z",
-      "seconds": 6,
+      "at": "2026-11-06T20:14:43.285Z",
+      "seconds": 5,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
+      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
       "dirty": false,
-      "at": "2026-11-06T20:06:45.621Z",
-      "seconds": 485,
+      "at": "2026-11-06T20:22:29.055Z",
+      "seconds": 466,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/unit.log"
     }
@@ -133,6 +133,13 @@
       "sha": "aa7a3eea0462ac7c53b1d2a25b74675c011a1405",
       "at": "2026-11-06T19:55:38.537Z",
       "summary": "Plan review: classes VERIFIED. Taken: success metric is the effective tap size, not the box, for invisible areas; tabs become min-h-[44px] (wrapped tab rows touch, so an invisible area cannot grow); dialog X may reuse hit-area-44; the small Button sizes get min-w-[44px] (one place fixes ~10 icon buttons; default size left alone for calendar day cells); extra controls found: SeasonForm Close, Checkbox, hero swatch and name triggers, schedule header arrows, contact links, division and other fields with their own h-8/h-9/h-10, ReactionPicker. Scan also at 320 and overlap test."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
+      "at": "2026-11-06T20:23:11.814Z",
+      "summary": "Independent code review APPROVE at 8626e6c after two rounds. Round 1 CHANGES: one blocking finding (shared Checkbox hit area overlapped the next row in the Auto Schedule team list, 24px pitch); fixed with min-h-11 + test, the scan widened to any overlap with another control's visible box and proven (9 overlaps without the fix, 0 with). Suggestions taken: stronger tests, playoff walkover buttons and rearrange chip. Round 2: APPROVE; no other dense checkbox/switch list found. Verified: min-w on xs/sm leaves the default size (calendar day cells) untouched, hit-area-44 vs absolute order in the compiled CSS, pointer-coarse compiles, no protected path touched."
     }
   ],
   "issues": {},
@@ -148,5 +155,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T20:11:33.140Z"
+  "updatedAt": "2026-11-06T20:23:11.815Z"
 }
