@@ -90,7 +90,9 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
         <span className="min-w-0 flex-1 truncate">← {team1Name}</span>
         <span className="min-w-0 flex-1 truncate text-right">{team2Name} →</span>
       </div>
-      <div className="grid grid-cols-4 gap-1.5 sm:gap-3 w-full">
+      {/* Four buttons are only 44px wide from 342px up (they were 38.5px at 320px): under that,
+          two rows of two. */}
+      <div className="grid grid-cols-4 max-[342px]:grid-cols-2 gap-1.5 sm:gap-3 w-full">
         {SCORE_OPTIONS.map((option) => (
           <ScoreButton
             key={`${matchId}-${option.label}`}
