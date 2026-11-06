@@ -1020,7 +1020,7 @@ finding read a superseded migration.
   four routes, and after a team page on `/teams`. A probe on `/stats`, then Help,
   showed the saved position overwritten with 0 as the page was left. Not fixed at
   that point; the checklist item is `NAV-02`.
-  **Follow-up, 2026-11-06: the restore is fixed on this branch.** The change is
+  **Follow-up, 2026-11-06: the restore was changed on this branch and passed every case measured.** The change is
   `bf63233` in the shared scroll-restore hook. It is **not yet live**, and it was
   measured only in headless Chromium against fake data. Safari, iOS and real phones
   were not tested. Two faults in the hook caused it. A scroll event that fired while
@@ -1044,18 +1044,21 @@ finding read a superseded migration.
   all four routes, are in
   [`foundations/navigation.md`](foundations/navigation.md#open-questions-and-verification).
   **Limits:** data that arrives later than the watch window is not caught (a stress run
-  with the real content at 6.8 seconds: 0 of 2 ended at the saved spot). Find-in-page,
-  a screen reader and voice control send no input event, so the restore can pull the
-  page back against them while it runs (read from the code, not tried). Forward in a
+  with the real content at 6.8 seconds: 0 of 2 ended at the saved spot). Find-in-page
+  opened from the browser menu (Ctrl or Cmd+F sends a key press, which stops the
+  restore), a screen reader and voice control may send no input event, so the restore
+  can pull the page back against them while it runs (read from the code, not tried). Forward in a
   browser and a closed tab were not tried. The hook now has 43 unit tests; it had none.
   The rows that carried a suspected-bug mark for this (`NAV-02`, `BROWSE-04`,
   `BROWSE-37`, `TEAM-33`, `PHONE-22`) lost it, so the count of such rows went from 120
   to 115. `HIST-12`, `STAND-09` and `INSIGHT-06` record the measurements.
-  **Still open, and separate: the move to the top after a link is a visible glide, not
-  a jump.** Measured 2026-11-06, frame by frame the scroll position read 900, 111, 25,
-  20, 0. The `ScrollToTop` component calls the plain `scrollTo(0, 0)` and the site's
-  smooth scrolling animates it. Its unit test and `e2e/navigation-scroll.spec.ts` both
-  assert that call, so a fix has to change both. Not decided.
+  **Observed, not understood, and separate: the move to the top after a link passes
+  through two in-between positions.** Measured 2026-11-06, frame by frame the scroll
+  position read 900, 111, 25, 0 (91 frames), and the same with reduced motion on. That
+  does not show a glide. The `ScrollToTop` component calls the plain `scrollTo(0, 0)`;
+  the browser clamping the position as the shorter page replaces the old one is the
+  INFERRED cause. No change was made. Its unit test and `e2e/navigation-scroll.spec.ts`
+  both assert that call, so any change has to update both. Not decided.
 - **Raised by:** [`foundations/navigation.md`](foundations/navigation.md#open-questions-and-verification),
   [`teams/browse-teams.md`](teams/browse-teams.md#open-questions-and-verification),
   [`cross-cutting/accessibility.md`](cross-cutting/accessibility.md#open-questions-and-verification).

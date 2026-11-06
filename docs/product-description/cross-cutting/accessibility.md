@@ -222,14 +222,15 @@ stateDiagram-v2
     announced_only --> reading
 ```
 
-After a link the new page opens at the top, where focus has moved. The move is a
-glide rather than a jump (measured 2026-11-06); with reduced motion on it should be
-a jump, because the site turns smooth scrolling off (read from the style sheet, not
-measured). After Back or Forward nothing resets the scroll. The browser may put the
+After a link the new page opens at the top, where focus has moved. On the way the
+position passes through two in-between values (900, 111, 25, 0 on 2026-11-06, and the
+same with reduced motion on); it is not shown to be a glide and the cause was not
+isolated. After Back or Forward nothing resets the scroll. The browser may put the
 page back, and four pages (`/teams`, `/stats`, `/history`, `/insights`) also put it
 back themselves. They jump to the saved spot, hold it for up to three seconds, and
 stop as soon as the reader scrolls with a wheel, a touch, a key press or a mouse
-press. Scrolling that sends none of those, such as find-in-page, a screen reader or
+press. Scrolling that sends none of those, such as find-in-page opened from the browser
+menu (Ctrl or Cmd+F sends a key press, which stops the restore), a screen reader or
 voice control, is not seen as the reader taking over. Read from the code, not tried:
 the page can be pulled back against such scrolling while the restore runs. The
 restore was measured on 2026-11-06 in headless Chromium against fake data (see

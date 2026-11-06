@@ -92,10 +92,11 @@ on the schedule, `#career` on a team) then scrolls to that place. The new page u
 position, which was a defect; see [B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation). Measured in a real
 browser against fake data on 2026-11-05, on the dev server and on the production
 build: scrolled 337px down `/schedule`, followed the Help link, arrived at 0.
-**The move to the top is a visible glide, not a jump**, because the site's smooth
-scrolling applies to it. Measured on 2026-11-06 (fake data, headless Chromium),
-frame by frame the scroll position read 900, 111, 25, 20 and 0. That is a separate
-finding and it is still open; see [Open questions](#open-questions-and-verification).
+**The move to the top passes through two in-between positions.** Measured on
+2026-11-06 (fake data, headless Chromium), frame by frame the scroll position read
+900, 111, 25 and 0 over 91 frames. It is not shown to be a glide: the run with
+reduced motion on read the same list, and with reduced motion the site turns smooth
+scrolling off. The cause was not isolated. See [Open questions](#open-questions-and-verification).
 
 Browser Back and Forward are not reset, which leaves the browser free to put the
 user back where they were. Four routes also have code of their own that does it:
@@ -206,7 +207,7 @@ Not applicable to navigation itself.
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No global effect. There is no global Escape handler. | No global effect; individual dialogs handle their own. |
-| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top, by a glide rather than a jump (see *Arrive*). Switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). | **The page's state is discarded with no warning.** No route in the app blocks navigation for unsaved work. Requests already sent still complete, unseen. |
+| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top (the position passes through two in-between values on the way, see *Arrive*). Switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). | **The page's state is discarded with no warning.** No route in the app blocks navigation for unsaved work. Requests already sent still complete, unseen. |
 | Browser back or forward | Works normally; the app cannot intercept it. | Same as navigating away. Coming back gives a freshly mounted page, not the one that was left. |
 | Reload, or the tab closed | The whole app is re-fetched and re-initialised. Sign-in state survives; everything else does not. | Everything in memory is lost. |
 | Network lost mid-request | If the page's own code has not arrived, the loading spinner stays indefinitely — there is no timeout and no error for a chunk that never loads. | Data requests fail and each page reports it in its own way. |
@@ -282,7 +283,7 @@ the tab's session storage.
 
 **Accessibility.** A skip link reaches the main content. Route changes are
 announced and move focus to the main content, except on the first load, and the
-new page opens at the top (by a glide, see *Arrive*), so once it ends what is on
+new page opens at the top (after two in-between positions, see *Arrive*), so once it settles what is on
 screen matches where focus went. The
 command palette is the only keyboard route to fast navigation and it
 is absent below 768 pixels.
@@ -341,8 +342,10 @@ development build the analytics call does nothing.
   restore compared the page's height with the saved offset instead of checking where
   the browser had really landed, so on a page that was still loading it ended short.
   The code now ignores scroll events once the address has changed, jumps, reads back
-  where it landed, and retries until it is there. These two faults are measured for
-  `/history` and, for the second, `/teams` (below). That they explain every 2026-11-05
+  where it landed, and retries until it is there. The first fault is measured for
+  `/history` after a team link. For `/teams` after the phone's bottom tab bar the saved
+  offset was right and the restore landed short (below; the cause was not isolated,
+  INFERRED to be the height comparison). That the two faults explain every 2026-11-05
   result, `/stats` and `/insights` included, is not shown: see the before-fix numbers
   below.
   - **Measured on 2026-11-06.** Fake data from a mock, headless Chromium, a fresh
@@ -353,8 +356,8 @@ development build the analytics call does nothing.
     `/history` had to load its data again). On a slow phone (CPU slowed four times,
     data delayed): 6 of 6. On the production build: 10 of 10 and 10 of 10. With
     reduced motion on: 5 of 5 and 5 of 5. At 1280px wide: 5 of 5 and 5 of 5.
-    `/teams` at 390px: 5 of 5 at an offset of 304px, and 5 of 5 at each of 100, 200
-    and 250px. `/stats` 1 of 1 and `/insights` 1 of 1, each after a footer link.
+    `/teams` at 390px: 5 of 5 at an offset of 304px, and 5 of 5 runs across offsets of 100, 200
+    and 250px (two, two and one runs). `/stats` 1 of 1 and `/insights` 1 of 1, each after a footer link.
     After the Schedule tab of the phone's bottom tab bar, then Back, at 390px:
     `/stats`, `/teams` and `/insights` 3 of 3 each. In every run the saved offset
     equalled the offset before the click, and four seconds after the restore a
@@ -385,23 +388,33 @@ development build the analytics call does nothing.
     offset, and nothing between.
   - **Known limit: data that arrives later than the watch window is not caught.** In a
     stress run the page was tall at 3.6 seconds and its real content arrived at 6.8
-    seconds; 0 of 2 runs ended at the saved spot.
+    seconds; 0 of 2 runs ended at the saved spot. Saving is back on by then, so the
+    moved position (965px) was saved over the restored one (907px) and the next Back
+    would land there. A second effect of the same design: if the saved spot is below
+    the end of a page that is now shorter, the restore retries for about fifteen
+    seconds and does not save the position meanwhile, unless the reader scrolls (read
+    from the code, not tried).
   - **Not tested:** Safari, iOS and any other WebKit browser (none is installed), a
     real phone, real network timing, Forward in a browser (it takes the same code path
     as Back and is covered by unit tests only), and a closed tab. Scrolling that sends
-    no input event, such as find-in-page, a screen reader or voice control, does not
-    count as the reader taking over. Read from the code, not tried: the restore can
+    no input event, such as find-in-page opened from the browser menu (Ctrl or Cmd+F
+    sends a key press, which stops the restore), a screen reader or voice control,
+    does not count as the reader taking over. A touch or key press was tried only in
+    unit tests; the browser runs saw a wheel turn and a mouse press. Read from the code, not tried: the restore can
     pull the page back against such scrolling while it runs. Not tried either:
     `/insights` after a team page (the fake data had no link to one on that page when
     this was first tried).
-- **Open, a finding: the move to the top after a link is a glide.** Measured on
-  2026-11-06 (fake data, headless Chromium): frame by frame the scroll position read
-  900, 111, 25, 20 and 0. The component that sends the page to the top asks for a plain jump, but
-  the site's smooth scrolling turns it into a glide; the restore on Back does not have
-  this fault, because it asks for an instant jump. With reduced motion on, the site
-  turns smooth scrolling off, so the move should be a jump then (read from the style
-  sheet, not measured). Not fixed and not decided: the component's unit test and an
-  end-to-end spec both assert the plain call, so a change has to update them.
+- **Open, a finding: the move to the top after a link passes through two in-between
+  positions.** Measured on 2026-11-06 (fake data, headless Chromium): frame by frame
+  the scroll position read 900, 111, 25 and 0 over 91 frames. The component that sends
+  the page to the top asks for a plain jump (`scrollTo(0, 0)`), and the site's smooth
+  scrolling could turn that into a glide. The data do not show one: the run with
+  reduced motion on, where smooth scrolling is off, read the same list, and a glide
+  would show many values, as the old Back restore did (0, 3, 19, 81 ... 111).
+  INFERRED, not shown: the browser clamps the position as the shorter new page replaces
+  the old one. No change was made and it is not decided whether it matters. The
+  component's unit test and an end-to-end spec both assert the plain call, so a change
+  would have to update them.
 - Not confirmed by hand: what `/my-team`, `/message-board`, and `/setup-profile`
   show to a visitor. They have no route guard.
 - Not confirmed by hand: whether the post-sign-in redirect returns the user to
