@@ -357,7 +357,7 @@ moves; power scores and records are untouched.
   `/insights`), as [`foundations/navigation.md`](../foundations/navigation.md#arrive)
   now says. For `/history` the open seasons and divisions come back open on Back
   and reload, and since the fix on this branch (not yet live) the scroll position
-  comes back too, in every run measured on 2026-11-06 (see
+  comes back too, in every run measured on 2026-11-06 except the late-data stress run (see
   [Leave without changing anything](#leave-without-changing-anything) and HIST-12).
   Not tested: Safari, iOS, a real phone, and a link other than a team link, then Back.
 - Not confirmed by hand: whether opening a division from its chevron by keyboard

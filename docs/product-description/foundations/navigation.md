@@ -384,7 +384,7 @@ development build the analytics call does nothing.
     A press on a desktop scrollbar at 1280px (a classic 15px scrollbar): 3 of 3 times
     the press reached the window as a pointer event and the restore stopped. A wheel
     turn during the one-second watch window: 3 of 3 stopped it.
-  - **No glide on Back.** In the cached run at 390px the frames read 0, then the saved
+  - **No glide from the hook on Back.** In the cached run at 390px the frames read 0, then the saved
     offset, and nothing between. With reduced motion on they read 0, 111, then the
     saved offset; the 111 comes before the hook's jump (its only `scrollTo` call was
     made when the position read 111), so its source is not shown.

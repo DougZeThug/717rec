@@ -233,8 +233,8 @@ Not checkable by hand:
 - Settled: four routes run scroll restoration, as
   [`foundations/navigation.md`](../foundations/navigation.md#arrive) says. Whether
   it restores was answered on 2026-11-06: on `/teams` it did, within 1 px in every
-  run, after a fix on this branch that is not yet live (BROWSE-04, BROWSE-37,
-  TEAM-33). It did not in the 2026-11-05 test.
+  run, on this branch (not yet live; the old code also passed after a team link)
+  (BROWSE-04, BROWSE-37, TEAM-33). It did not in the 2026-11-05 test.
 
 ## teams/team-details.md
 
