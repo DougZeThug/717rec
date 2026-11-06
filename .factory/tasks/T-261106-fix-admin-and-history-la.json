@@ -47,7 +47,7 @@
     {
       "text": "Create Team form (/admin/teams): the fields, Cancel and Create Team stay inside the card at 320px; before: the single column was 269.6px wide in a 238px card (Create Team 6.6px past the card border)",
       "done": true,
-      "evidence": "Before at 320: column 269.6px in a 238px card, Create Team 6.6px past the card border. After: fields and Create Team 0px past the card at 320-430; Cancel inside the card at every width (row wraps under 329px). 352px and up identical (320..430 sweep). Picture: .factory/evidence/T-261106-fix-admin-and-history-la/sheet3.png (F)."
+      "evidence": "Before at 320: column 269.6px in a 238px card, Create Team 6.6px past the card border. After: fields and Create Team 0px past the card at 320-430; Cancel inside the card at every width (row wraps under 328px). 352px and up identical (320..430 sweep). Picture: .factory/evidence/T-261106-fix-admin-and-history-la/sheet3.png (F)."
     },
     {
       "text": "Update Logos card (/admin/teams): the Add Logo icon and label stay inside the button at 320px (the label wraps under 355px); before: spill 8.7px",
@@ -69,7 +69,58 @@
       "evidence": "Admin Scores, 4 result buttons: 768-810px wrapped 4 of 4 (29-35px wide, 62px tall) -> 0 wrapped at every width 744-1280 (78-96px wide at 768-839px). From 840px identical (38.3, 40.3, 45.8, 61.3 ... 93.3px). Pictures: .factory/evidence/T-261106-fix-admin-and-history-la/after-tablet/admin-scores-768x1024.png vs .factory/evidence/open-items-audit/tablet/admin-scores-FULLVIEW-768x1024.png."
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "50b5701a0ed365400833e1d791594d0000997ced",
+      "dirty": false,
+      "at": "2026-11-06T17:30:44.186Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261106-fix-admin-and-history-la/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "50b5701a0ed365400833e1d791594d0000997ced",
+      "dirty": false,
+      "at": "2026-11-06T17:30:53.493Z",
+      "seconds": 9,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261106-fix-admin-and-history-la/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "50b5701a0ed365400833e1d791594d0000997ced",
+      "dirty": false,
+      "at": "2026-11-06T17:32:09.019Z",
+      "seconds": 75,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261106-fix-admin-and-history-la/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "50b5701a0ed365400833e1d791594d0000997ced",
+      "dirty": false,
+      "at": "2026-11-06T17:32:12.815Z",
+      "seconds": 4,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261106-fix-admin-and-history-la/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "50b5701a0ed365400833e1d791594d0000997ced",
+      "dirty": false,
+      "at": "2026-11-06T17:32:18.231Z",
+      "seconds": 5,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261106-fix-admin-and-history-la/build.log"
+    }
+  },
   "reviews": [
     {
       "mode": "plan",
@@ -77,6 +128,13 @@
       "sha": "ce13c13977aa16a02a6dabf31a39a11322e4cd20",
       "at": "2026-11-06T16:52:55.024Z",
       "summary": "Plan review: line/class check VERIFIED. Blocking: item 8 leaves the TeamForm buttons row (TeamForm.tsx:192) unwrapped; items 6/7 flex-wrap would change 390px; item 10 (remove sm:flex-nowrap) re-flows 670-950px; item 3 conflicts with criterion 3; item 4 should use the vh/dvh pattern; verification needs sweeps 340-480 and 700-1024. Lead is revising the plan."
+    },
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "50b5701a0ed365400833e1d791594d0000997ced",
+      "at": "2026-11-06T17:37:31.258Z",
+      "summary": "Code review: code sound and in scope. 3 off-by-one mismatches between class, comment and docs: SeasonForm max-[371px] wraps at <=370 but comment/docs/criterion say under 372; TeamForm max-[328px] vs 'under 329'; TeamLogoCard comment says 356 but class is 355. Nits: past-seasons.md says measured 640-1280 (fine steps only 640-768); sidebar can also collapse to 60px. Lead is fixing the class/words and re-running the six checks."
     }
   ],
   "issues": {},
@@ -89,8 +147,12 @@
     {
       "at": "2026-11-06T17:24:12.038Z",
       "text": "Criterion 11 reworded again by hand to add the Scores tablet exception (criterion 12 was added after the tablet audit confirmed the '2-0' wrap at 768-810px). Tablet audit also found same-family score-text wraps on /admin/live-corrections (768-940px), /admin/league-night-status (744-1016px), /matches/<id>/live panel and dialog (long names); these are NOT fixed in this task and are reported to the owner."
+    },
+    {
+      "at": "2026-11-06T17:38:28.998Z",
+      "text": "After the code review (CHANGES): SeasonForm class changed max-[371px] -> max-[372px] (commit 6efea84) so it wraps at 371px and below as its comment and criterion 1 say; comments/docs corrected to the real class limits (TeamForm 'under 328px', TeamLogoCard 'under 355px'); evidence text of criterion 8 corrected by hand from 'under 329px' to 'under 328px'. Earlier check results (integrity, typecheck, lint, knip, build at 50b5701) are stale and are being re-run at the new head."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T17:30:33.012Z"
+  "updatedAt": "2026-11-06T17:37:31.258Z"
 }
