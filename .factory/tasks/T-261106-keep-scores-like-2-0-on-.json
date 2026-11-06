@@ -1,0 +1,48 @@
+{
+  "id": "T-261106-keep-scores-like-2-0-on-",
+  "title": "Keep scores like 2–0 on one line on tablets (Live Corrections, League Night, live match)",
+  "kind": "polish",
+  "status": "intake",
+  "request": "please fix everything that comes up, dont just wait until you are done with a task to ask me if you can fix (the tablet audit found score text such as 2–0 splitting across two lines on Live Corrections, League Night status and the live match page)",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "cf559bcbd2c17996520049a1f81dee04659754c9",
+  "createdAt": "2026-11-06T18:14:21.532Z",
+  "criteria": [
+    {
+      "text": "Live Corrections round rows (/admin/live-corrections, 768-940px): the score (N – N) never splits across two lines; before: 14 of 21 round rows split",
+      "done": false
+    },
+    {
+      "text": "Live Corrections game card title (968-1000px): the score never splits; before: '21 –' on one line and '16' on the next",
+      "done": false
+    },
+    {
+      "text": "League Night status, Unrecorded live matches (744-1016px): the score stays on one line and the spaces between name, score and date are back; before: 2 of 3 rows showed '2–' and '0' on two lines and no spaces",
+      "done": false
+    },
+    {
+      "text": "League Night status, drift card: 'stored W-L' and 'derived W-L' never split; before: 'derived 9-' and '1' at 776px",
+      "done": false
+    },
+    {
+      "text": "Live match page (/matches/<id>/live), 'wins the match' panel: the score stays on one line at 768 and 1024px; before: '2–' and '1' on two lines",
+      "done": false
+    },
+    {
+      "text": "Live match, Save official result dialog: each 'Game N: A 17–21 B' score stays on one line; before: '17–' and '21' on two lines",
+      "done": false
+    },
+    {
+      "text": "Nothing else moves: same visible text on every touched screen, no new console errors, no sideways page scroll, existing tests pass (two assertions read the whole text because the score now sits in its own no-break span)",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-06T18:15:34.360Z"
+}
