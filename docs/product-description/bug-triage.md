@@ -1020,10 +1020,10 @@ finding read a superseded migration.
   four routes, and after a team page on `/teams`. A probe on `/stats`, then Help,
   showed the saved position overwritten with 0 as the page was left. Not fixed at
   that point; the checklist item is `NAV-02`.
-  **Follow-up, 2026-11-06: the restore was changed on this branch and passed every case measured.** The change is
+  **Follow-up, 2026-11-06: the restore was changed on this branch and passed every case measured except the late-data stress run (see Limits).** The change is
   `bf63233` in the shared scroll-restore hook. It is **not yet live**, and it was
   measured only in headless Chromium against fake data. Safari, iOS and real phones
-  were not tested. Two faults in the hook caused it. A scroll event that fired while
+  were not tested. Two faults were found in the hook; the second is measured on `/history` and only INFERRED for the `/teams` miss at 86px. A scroll event that fired while
   a link click was leaving the page saved a clamped offset over the real one. That is
   measured on `/history` after a team link (the saved offset was right in 6 of 10 runs
   before the fix). It does not explain every failed Back: after the Schedule tab of the
@@ -1045,8 +1045,8 @@ finding read a superseded migration.
   [`foundations/navigation.md`](foundations/navigation.md#open-questions-and-verification).
   **Limits:** data that arrives later than the watch window is not caught (a stress run
   with the real content at 6.8 seconds: 0 of 2 ended at the saved spot). Find-in-page
-  opened from the browser menu (Ctrl or Cmd+F sends a key press, which stops the
-  restore), a screen reader and voice control may send no input event, so the restore
+  opened from the browser menu (Ctrl or Cmd+F is expected to send a key press, which stops the
+  restore; not tried), a screen reader and voice control may send no input event, so the restore
   can pull the page back against them while it runs (read from the code, not tried). Forward in a
   browser and a closed tab were not tried. The hook now has 43 unit tests; it had none.
   The rows that carried a suspected-bug mark for this (`NAV-02`, `BROWSE-04`,

@@ -155,7 +155,7 @@ comment as agreed with the league admin):
   position passes through two in-between values, a separate open finding. Back and Forward are
   not reset. **Four** routes — `/teams`, `/stats`, `/history`, `/insights` — save
   the scroll position and put it back on Back. That was changed on this branch (not
-  yet live) and measured passing on 2026-11-06 in headless Chromium against fake data;
+  yet live) and measured passing on 2026-11-06 in headless Chromium against fake data (except a late-data stress run);
   Safari and iOS were not tested. See `foundations/navigation.md`.
 - The URL carries record ids, the open admin section, the schedule's night and
   search, the standings view, the compared teams, the playoff season and

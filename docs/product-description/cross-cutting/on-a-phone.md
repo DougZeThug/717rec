@@ -238,8 +238,8 @@ much of its traffic is phones. Nothing more precise is stored. See
 - **A link opens the new page at the top**, which matters most on a phone: a long
   schedule followed by a short page no longer leaves a blank screen ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation),
   fixed). On the way the position passes through two in-between values; see [navigation](../foundations/navigation.md#arrive).
-  Back restores the old position on the four routes that save it, since a fix on
-  this branch that is not yet live; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+  Back restores the old position on the four routes that save it, and passed every case measured on
+  this branch (not yet live; not every case failed before it); see [navigation](../foundations/navigation.md#open-questions-and-verification).
 - **A large phone in landscape is a desktop** as far as the app is concerned, so
   the bottom tab bar vanishes at an angle rather than at a device.
 - **The command palette's keyboard shortcut is unreachable on a phone**, which is

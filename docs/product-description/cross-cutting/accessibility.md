@@ -230,7 +230,7 @@ page back, and four pages (`/teams`, `/stats`, `/history`, `/insights`) also put
 back themselves. They jump to the saved spot, hold it for up to three seconds, and
 stop as soon as the reader scrolls with a wheel, a touch, a key press or a mouse
 press. Scrolling that sends none of those, such as find-in-page opened from the browser
-menu (Ctrl or Cmd+F sends a key press, which stops the restore), a screen reader or
+menu (Ctrl or Cmd+F is expected to send a key press, which stops the restore; not tried), a screen reader or
 voice control, is not seen as the reader taking over. Read from the code, not tried:
 the page can be pulled back against such scrolling while the restore runs. The
 restore was measured on 2026-11-06 in headless Chromium against fake data (see

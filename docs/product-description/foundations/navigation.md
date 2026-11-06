@@ -331,7 +331,7 @@ development build the analytics call does nothing.
   browser against fake data, on the dev server and on the production build:
   337px before, 0 after.
 - **Settled on this branch, not yet live: the four routes' own scroll restoration
-  now works in every case measured** ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation),
+  now works in every case measured except the late-data stress run (see the known limit below)** ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation),
   checklist item `NAV-02`). On 2026-11-05, on the production build against fake data,
   it mostly did not: `/stats`, then a team page, then Back came back at 300 of
   300px, and Back landed at 0 in every other case tried (from `/stats`, `/teams`,
@@ -357,7 +357,7 @@ development build the analytics call does nothing.
     data delayed): 6 of 6. On the production build: 10 of 10 and 10 of 10. With
     reduced motion on: 5 of 5 and 5 of 5. At 1280px wide: 5 of 5 and 5 of 5.
     `/teams` at 390px: 5 of 5 at an offset of 304px, and 5 of 5 runs across offsets of 100, 200
-    and 250px (two, two and one runs). `/stats` 1 of 1 and `/insights` 1 of 1, each after a footer link.
+    and 250px (two, two and one runs). `/stats` 1 of 1 after a team link and `/insights` 1 of 1 after a footer link.
     After the Schedule tab of the phone's bottom tab bar, then Back, at 390px:
     `/stats`, `/teams` and `/insights` 3 of 3 each. In every run the saved offset
     equalled the offset before the click, and four seconds after the restore a
@@ -385,7 +385,9 @@ development build the analytics call does nothing.
     the press reached the window as a pointer event and the restore stopped. A wheel
     turn during the one-second watch window: 3 of 3 stopped it.
   - **No glide on Back.** In the cached run at 390px the frames read 0, then the saved
-    offset, and nothing between.
+    offset, and nothing between. With reduced motion on they read 0, 111, then the
+    saved offset; the 111 comes before the hook's jump (its only `scrollTo` call was
+    made when the position read 111), so its source is not shown.
   - **Known limit: data that arrives later than the watch window is not caught.** In a
     stress run the page was tall at 3.6 seconds and its real content arrived at 6.8
     seconds; 0 of 2 runs ended at the saved spot. Saving is back on by then, so the
@@ -398,7 +400,7 @@ development build the analytics call does nothing.
     real phone, real network timing, Forward in a browser (it takes the same code path
     as Back and is covered by unit tests only), and a closed tab. Scrolling that sends
     no input event, such as find-in-page opened from the browser menu (Ctrl or Cmd+F
-    sends a key press, which stops the restore), a screen reader or voice control,
+    is expected to send a key press, which stops the restore; not tried), a screen reader or voice control,
     does not count as the reader taking over. A touch or key press was tried only in
     unit tests; the browser runs saw a wheel turn and a mouse press. Read from the code, not tried: the restore can
     pull the page back against such scrolling while it runs. Not tried either:
