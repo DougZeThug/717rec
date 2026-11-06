@@ -59,7 +59,7 @@ interface MembershipSummaryProps {
 // The three parts (person, team, date) are 390px wide side by side, wider than a phone, so they
 // wrap onto more rows instead of stretching the card past the screen.
 const MembershipSummary: React.FC<MembershipSummaryProps> = ({ membership }) => (
-  <div className="flex flex-wrap items-center justify-between gap-2">
+  <div className="flex flex-wrap items-center justify-between gap-y-2">
     <div className="flex flex-wrap items-center gap-3">
       <MembershipUser user={membership.user} />
       <div className="flex items-center gap-2">

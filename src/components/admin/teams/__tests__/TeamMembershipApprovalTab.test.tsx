@@ -134,7 +134,8 @@ describe('TeamMembershipApprovalTab', () => {
     const person = screen.getByText('User mem-1').closest('div.flex.flex-wrap');
     const row = person?.parentElement;
     expect(person).not.toBeNull();
-    expect(row).toHaveClass('flex-wrap', 'gap-2');
+    // Only a gap between rows: a sideways gap would make a row that fits at 768px wrap.
+    expect(row).toHaveClass('flex-wrap', 'gap-y-2');
     expect(screen.getByText('User mem-1')).toHaveClass('wrap-break-word');
     expect(screen.getByText('Team mem-1')).toHaveClass('wrap-break-word');
   });
