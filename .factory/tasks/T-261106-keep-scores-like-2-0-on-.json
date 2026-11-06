@@ -44,7 +44,58 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "0ca8b0f93f7473f3d73df461ce1c6a08363594af",
+      "dirty": false,
+      "at": "2026-11-06T18:36:03.728Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261106-keep-scores-like-2-0-on-/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "0ca8b0f93f7473f3d73df461ce1c6a08363594af",
+      "dirty": false,
+      "at": "2026-11-06T18:36:15.720Z",
+      "seconds": 12,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261106-keep-scores-like-2-0-on-/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "0ca8b0f93f7473f3d73df461ce1c6a08363594af",
+      "dirty": false,
+      "at": "2026-11-06T18:37:35.429Z",
+      "seconds": 80,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261106-keep-scores-like-2-0-on-/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "0ca8b0f93f7473f3d73df461ce1c6a08363594af",
+      "dirty": false,
+      "at": "2026-11-06T18:37:38.876Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261106-keep-scores-like-2-0-on-/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "0ca8b0f93f7473f3d73df461ce1c6a08363594af",
+      "dirty": false,
+      "at": "2026-11-06T18:37:45.356Z",
+      "seconds": 6,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261106-keep-scores-like-2-0-on-/build.log"
+    }
+  },
   "reviews": [
     {
       "mode": "plan",
@@ -58,5 +109,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-06T18:35:45.010Z"
+  "updatedAt": "2026-11-06T18:37:45.357Z"
 }
