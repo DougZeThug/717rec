@@ -38,6 +38,16 @@ describe('ThursdayDatePicker', () => {
     expect(screen.queryByText('Pick a Thursday')).not.toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this checks the classes that keep the date inside the button:
+  // the button never outgrows its card (it was cut off at 320px), and the small (yyyy-mm-dd)
+  // copy of the date shows only on screens wide enough to hold it (it stuck out of the border).
+  it('keeps the date inside the button on narrow phones', () => {
+    render(<ThursdayDatePicker selected={THURSDAY} onSelect={vi.fn()} />);
+    const button = screen.getByRole('button', { name: new RegExp(`${THURSDAY.getFullYear()}`) });
+    expect(button).toHaveClass('max-w-full');
+    expect(screen.getByText(/^\(\d{4}-\d{2}-\d{2}\)$/)).toHaveClass('hidden', 'min-[440px]:inline');
+  });
+
   it('opens the calendar and returns the picked Thursday at noon', async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();

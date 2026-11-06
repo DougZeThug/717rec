@@ -29,7 +29,10 @@ const ThursdayPopover = ({ selected, onSelect }: ThursdayPopoverProps) => (
       <Button
         variant="outline"
         className={cn(
-          'w-[240px] justify-start text-left font-normal',
+          // 240px, but never wider than the card (it was cut off at 320px). The small
+          // (yyyy-mm-dd) copy of the date needs about 283px, so it shows, and the button grows
+          // to fit it, only from 440px up. Below that it stuck out of the button's border.
+          'w-[240px] max-w-full min-[440px]:w-fit min-[440px]:min-w-[240px] justify-start text-left font-normal',
           !selected && 'text-muted-foreground'
         )}
       >
@@ -37,7 +40,9 @@ const ThursdayPopover = ({ selected, onSelect }: ThursdayPopoverProps) => (
         {selected ? (
           <span>
             {format(selected, 'PPP')}
-            <span className="ml-1 text-xs opacity-50">({normalizeDate(selected, 'display')})</span>
+            <span className="ml-1 hidden text-xs opacity-50 min-[440px]:inline">
+              ({normalizeDate(selected, 'display')})
+            </span>
           </span>
         ) : (
           <span>Pick a Thursday</span>
