@@ -79,13 +79,16 @@ const UnsavedLiveMatchesCard: React.FC = () => {
                   <li key={m.id}>
                     <TransitionLink
                       to={`/matches/${m.id}/live`}
-                      className="rounded-sm underline-offset-2 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                      // The link is a flex box (TransitionLink), which drops the spaces between the
+                      // name, score and date and squeezed the score onto two lines. Wrap the parts
+                      // as units and give them back their gap.
+                      className="flex-wrap content-center gap-x-1 rounded-sm underline-offset-2 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={`Save the result for ${m.team1Name} versus ${m.team2Name}`}
                     >
                       <span className="font-medium">
                         {m.team1Name} v {m.team2Name}
                       </span>{' '}
-                      <span className="tabular-nums">
+                      <span className="whitespace-nowrap tabular-nums">
                         {m.team1GameWins}–{m.team2GameWins}
                       </span>{' '}
                       <span className="text-muted-foreground">· {formatMatchDate(m.date)}</span>

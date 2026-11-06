@@ -66,6 +66,19 @@ describe('UnsavedLiveMatchesCard', () => {
     expect(screen.getByText('2–0')).toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the classes. The link is a flex box, which squeezed the
+  // score onto two lines ("2–" then "0") and dropped the spaces around it on a tablet.
+  it('keeps the game score on one line and lets the link wrap its parts', async () => {
+    fetchUnsavedLiveMatches.mockResolvedValueOnce([match()]);
+    renderCard();
+
+    expect(await screen.findByText('2–0')).toHaveClass('whitespace-nowrap');
+    expect(screen.getByRole('link', { name: /save the result for/i })).toHaveClass(
+      'flex-wrap',
+      'gap-x-1'
+    );
+  });
+
   it('pluralises the warning for several matches', async () => {
     fetchUnsavedLiveMatches.mockResolvedValueOnce([
       match(),
