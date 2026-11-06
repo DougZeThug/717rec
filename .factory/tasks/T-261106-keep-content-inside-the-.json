@@ -12,7 +12,7 @@
     {
       "text": "Select popups (season filters on Live Corrections, Weekly Content, Participation): the popup is never wider than the screen and long option names wrap; before: 376.9px wide on a 320px phone with 4 options cut off",
       "done": true,
-      "evidence": "Probe at 320x640, 360x740, 390x844: popup was 376.9px wide with 4, 1 and 0 options cut by the screen edge; now 300, 340 and 370px wide with 0 cut (long names wrap). At 1280 and 768px the popup is identical (376.9 x 262). Picture: .factory/evidence/T-261106-keep-content-inside-the-/sheetP1.png. Test pin fails on the old code."
+      "evidence": "Probe at 320x640, 360x740, 390x844: popup was 376.9px wide with 4, 1 and 0 options cut by the screen edge; now 300, 340 and 370px wide with 0 cut (long names wrap). At 1280 and 768px the popup is identical (376.9 x 262). Picture: .factory/evidence/T-261106-keep-content-inside-the-/sheetP1.png. Test pin fails on the old code. Also probed Weekly Content and Participation season selects at 320, 360, 390px (after only): popup 300, 340 and 355.8px wide, 10px inside the screen, 0 of 6 options cut at all three (before, from the audit: 4 options cut at 320px on these pages)."
     },
     {
       "text": "Batch Matches team dropdown: the popup stays inside the screen at 320, 360 and 390px; before: 111px, 71px and 41px past the right edge",
@@ -32,7 +32,7 @@
     {
       "text": "Member Approvals (/admin/teams): the request card is no wider than the screen and its Approve and Reject buttons are on screen; before: the card was 390px wide on every phone width (cut 86px at 320px)",
       "done": true,
-      "evidence": "Member Approvals card was 389.9px wide on every phone (16..406 on a 320px screen, cut off) -> 288, 328, 358px = screen width minus 32 at 320, 360, 390px (picture .factory/evidence/T-261106-keep-content-inside-the-/sheetM.png). 1280px identical. At 768px with the very long fake name the row now wraps (card 178 -> 222px tall), still fully visible."
+      "evidence": "Member Approvals card was 389.9px wide on every phone (16..406 on a 320px screen, cut off) -> 288, 328, 358px = screen width minus 32 at 320, 360, 390px (picture .factory/evidence/T-261106-keep-content-inside-the-/sheetM.png). 1280px identical. At 768px with the very long fake name the row now wraps (card 178 -> 222px tall), still fully visible. Second round (review): a long name with no spaces (29-character username, 37-character team name) ran 15.6px past a 320px screen because the card list was a grid column sized by its widest content; now grid-cols-1 plus min-w-0 on the flex parts: row exactly the card width (238, 278, 308px), 41px inside the screen at all three. Test pin fails on the old code. Files: after-long/ and before-long/ numbers in the probe output."
     },
     {
       "text": "Update Logos card: the whole team logo or initials circle shows inside the 80px preview box; before: a 144px logo in an 80px box, 32px cropped on every side, at every width",
@@ -46,10 +46,61 @@
     {
       "text": "My Team page, team edit row (logo, name, 36-character team ID): no overflow at phone widths and the ID is not squeezed; before: row content 260px in a 230px row at 320px, ID text 4.7px past the card and 5 lines at 320 and 360px",
       "done": true,
-      "evidence": "My Team page at 320, 360, 390px: row content 260 vs row 230 at 320px (ID 4.7px past the card, 5 lines at 320 and 360px) -> no overflow (scroll width = row width: 230, 270, 300px), ID 2 lines at 320 and 360px; 390px unchanged (3 lines); 768 and 1280px: ID on 1 line as before. Test pin fails on the old code. Not changed: the Message Board feed, probed with a long unbroken link: it already wraps inside the feed (no overflow)."
+      "evidence": "My Team page at 320, 360, 390px: row content 260 vs row 230 at 320px (ID 4.7px past the card, 5 lines at 320 and 360px) -> no overflow (scroll width = row width: 230, 270, 300px), ID 2 lines at 320 and 360px; 390px unchanged (3 lines); 768 and 1280px: ID on 1 line as before. Test pin fails on the old code. Not changed: the Message Board feed, probed with a long unbroken link: it already wraps inside the feed (no overflow). Numbers saved: before-myteam/numbers.txt, after-myteam/numbers.txt. Close-ups before | after at 320 and 360px: sheetT.png (before: the Team ID runs to the card edge beside the 144px logo; after: logo above, name and ID below, inside the card). Message Board feed probe numbers: before-feed-numbers.txt (no overflow, no change made)."
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "63e2138ea5d257790a6e07a315e29e14c40ad31c",
+      "dirty": false,
+      "at": "2026-11-06T19:07:33.088Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261106-keep-content-inside-the-/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "63e2138ea5d257790a6e07a315e29e14c40ad31c",
+      "dirty": false,
+      "at": "2026-11-06T19:07:43.317Z",
+      "seconds": 10,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261106-keep-content-inside-the-/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "63e2138ea5d257790a6e07a315e29e14c40ad31c",
+      "dirty": false,
+      "at": "2026-11-06T19:09:05.816Z",
+      "seconds": 82,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261106-keep-content-inside-the-/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "63e2138ea5d257790a6e07a315e29e14c40ad31c",
+      "dirty": false,
+      "at": "2026-11-06T19:09:09.195Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261106-keep-content-inside-the-/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "63e2138ea5d257790a6e07a315e29e14c40ad31c",
+      "dirty": false,
+      "at": "2026-11-06T19:09:22.931Z",
+      "seconds": 14,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261106-keep-content-inside-the-/build.log"
+    }
+  },
   "reviews": [
     {
       "mode": "plan",
@@ -61,7 +112,12 @@
   ],
   "issues": {},
   "interventions": [],
-  "notes": [],
+  "notes": [
+    {
+      "at": "2026-11-06T19:19:52.209Z",
+      "text": "Code review round 1: APPROVE with suggestions, all taken (long unbroken member names fixed with grid-cols-1 + min-w-0; Weekly Content/Participation selects probed; evidence for criterion 8 saved; vertical-only gap). Not changed on purpose: nested scroll in the bell panel (popover 574px inside a 320x640 screen holding a 400px list) and calendar day cells (36px wide so seven fit a 320px phone; 44px tall). At 375px the My Team row now wraps under the logo (switch point is about 378px); this is consistent with 320 and 360."
+    }
+  ],
   "waivers": [],
-  "updatedAt": "2026-11-06T19:07:14.117Z"
+  "updatedAt": "2026-11-06T19:09:22.931Z"
 }
