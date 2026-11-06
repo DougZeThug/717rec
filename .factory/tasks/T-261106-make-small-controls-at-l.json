@@ -2,7 +2,7 @@
   "id": "T-261106-make-small-controls-at-l",
   "title": "Make small controls at least 44px to tap (theme toggle, calendar arrows, close X, select and menu rows, switches, tabs, score buttons)",
   "kind": "polish",
-  "status": "intake",
+  "status": "ready",
   "request": "please fix everything that comes up, dont just wait until you are done with a task to ask me if you can fix (the audit found controls smaller than the 44px tap size this app uses for buttons)",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -74,9 +74,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T20:12:49.242Z",
+      "at": "2026-11-06T20:44:34.702Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/integrity.log"
@@ -84,39 +84,39 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T20:13:00.564Z",
-      "seconds": 11,
+      "at": "2026-11-06T20:44:44.944Z",
+      "seconds": 10,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T20:14:33.909Z",
-      "seconds": 93,
+      "at": "2026-11-06T20:46:06.869Z",
+      "seconds": 82,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T20:14:37.781Z",
-      "seconds": 4,
+      "at": "2026-11-06T20:46:10.059Z",
+      "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T20:14:43.285Z",
+      "at": "2026-11-06T20:46:15.496Z",
       "seconds": 5,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/build.log"
@@ -124,10 +124,10 @@
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T20:22:29.055Z",
-      "seconds": 466,
+      "at": "2026-11-06T20:53:24.601Z",
+      "seconds": 429,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261106-make-small-controls-at-l/unit.log"
     }
@@ -146,6 +146,13 @@
       "sha": "8626e6c5d57a53b27fe0b862806c6010f9c6cbb6",
       "at": "2026-11-06T20:23:11.814Z",
       "summary": "Independent code review APPROVE at 8626e6c after two rounds. Round 1 CHANGES: one blocking finding (shared Checkbox hit area overlapped the next row in the Auto Schedule team list, 24px pitch); fixed with min-h-11 + test, the scan widened to any overlap with another control's visible box and proven (9 overlaps without the fix, 0 with). Suggestions taken: stronger tests, playoff walkover buttons and rearrange chip. Round 2: APPROVE; no other dense checkbox/switch list found. Verified: min-w on xs/sm leaves the default size (calendar day cells) untouched, hit-area-44 vs absolute order in the compiled CSS, pointer-coarse compiles, no protected path touched."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
+      "at": "2026-11-06T21:11:18.878Z",
+      "summary": "Independent review (factory-reviewer, read-only) at the final commit 9a5d54e. Earlier approval at 8626e6c, then commit fd5d43a (three 40px buttons made 44px: MyMatchRow, MatchCardCtas, MatchRecapDialog): reviewer found it correct and minimal, no other min-h-[40px] button left in src, four tests pin the exact class and would fail on the old code (I ran them on the old files: 4 failed). The docs commit was reviewed: breakpoints and numbers match the classes, no table row added or removed; its nine findings and two follow-ups were fixed in 1bec9e3 and 9a5d54e (the last two edits follow the reviewer's exact suggestion and were not read by it again). The reviewer ran no tests; the six checks above did."
     }
   ],
   "issues": {},
@@ -165,5 +172,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T20:33:50.111Z"
+  "updatedAt": "2026-11-06T21:11:33.742Z",
+  "readySha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
+  "readyAt": "2026-11-06T21:11:33.742Z"
 }

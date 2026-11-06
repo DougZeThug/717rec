@@ -49,9 +49,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "a1271dc51f955f415791e64490296756e3c99bb4",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T18:42:41.289Z",
+      "at": "2026-11-06T20:53:24.733Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-keep-scores-like-2-0-on-/integrity.log"
@@ -59,29 +59,29 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "a1271dc51f955f415791e64490296756e3c99bb4",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T18:42:49.811Z",
-      "seconds": 8,
+      "at": "2026-11-06T20:53:33.479Z",
+      "seconds": 9,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261106-keep-scores-like-2-0-on-/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "a1271dc51f955f415791e64490296756e3c99bb4",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T18:44:09.078Z",
-      "seconds": 79,
+      "at": "2026-11-06T20:54:53.712Z",
+      "seconds": 80,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261106-keep-scores-like-2-0-on-/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "a1271dc51f955f415791e64490296756e3c99bb4",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T18:44:11.874Z",
+      "at": "2026-11-06T20:54:56.519Z",
       "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261106-keep-scores-like-2-0-on-/knip.log"
@@ -89,9 +89,9 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "a1271dc51f955f415791e64490296756e3c99bb4",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T18:44:16.727Z",
+      "at": "2026-11-06T20:55:01.465Z",
       "seconds": 5,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261106-keep-scores-like-2-0-on-/build.log"
@@ -99,9 +99,9 @@
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "a1271dc51f955f415791e64490296756e3c99bb4",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T18:51:27.750Z",
+      "at": "2026-11-06T21:02:12.381Z",
       "seconds": 431,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261106-keep-scores-like-2-0-on-/unit.log"
@@ -121,6 +121,13 @@
       "sha": "a1271dc51f955f415791e64490296756e3c99bb4",
       "at": "2026-11-06T18:51:55.086Z",
       "summary": "Independent code review APPROVE at a1271dc after two rounds. Round 1: no blocking finding, 5 suggestions (all taken: archived-season test strengthened, content-center pinned, comment wrapped, close-up pictures of the League Night cards added, criterion 7 wording). Round 2 (tests only): APPROVE. Verified: visible text unchanged, twMerge keeps min-h-[44px] on the link, no protected path, each new test fails on old code."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
+      "at": "2026-11-06T21:11:18.795Z",
+      "summary": "Independent review (factory-reviewer, read-only) re-checked this task at the final commit 9a5d54e. None of its five source files or their tests changed after the earlier approval at a1271dc; the shared pieces they use (Button, AlertDialog, ScrollArea) cannot undo the fix, and the fix is inline whitespace-nowrap spans that no later class touches. Docs for this task (Live Corrections row, League Night cards, decided panel and save dialog) were checked against the code; the reviewer's findings on the docs were fixed in 1bec9e3 and 9a5d54e. The reviewer ran no tests; the six checks above did."
     }
   ],
   "issues": {},
@@ -132,7 +139,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T18:51:55.185Z",
-  "readySha": "a1271dc51f955f415791e64490296756e3c99bb4",
-  "readyAt": "2026-11-06T18:51:55.185Z"
+  "updatedAt": "2026-11-06T21:11:33.812Z",
+  "readySha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
+  "readyAt": "2026-11-06T21:11:33.812Z"
 }

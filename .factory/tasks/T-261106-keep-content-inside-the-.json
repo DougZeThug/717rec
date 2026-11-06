@@ -54,9 +54,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T19:22:19.066Z",
+      "at": "2026-11-06T21:02:12.518Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-keep-content-inside-the-/integrity.log"
@@ -64,29 +64,29 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T19:22:31.624Z",
-      "seconds": 13,
+      "at": "2026-11-06T21:02:22.127Z",
+      "seconds": 10,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261106-keep-content-inside-the-/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T19:24:02.500Z",
-      "seconds": 91,
+      "at": "2026-11-06T21:03:42.601Z",
+      "seconds": 80,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261106-keep-content-inside-the-/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T19:24:05.780Z",
+      "at": "2026-11-06T21:03:45.579Z",
       "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261106-keep-content-inside-the-/knip.log"
@@ -94,20 +94,20 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T19:24:11.502Z",
-      "seconds": 6,
+      "at": "2026-11-06T21:03:50.273Z",
+      "seconds": 5,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261106-keep-content-inside-the-/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
       "dirty": false,
-      "at": "2026-11-06T19:31:36.240Z",
-      "seconds": 445,
+      "at": "2026-11-06T21:11:01.471Z",
+      "seconds": 431,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261106-keep-content-inside-the-/unit.log"
     }
@@ -126,6 +126,13 @@
       "sha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
       "at": "2026-11-06T19:31:55.647Z",
       "summary": "Independent code review APPROVE at e3a8bdd after two rounds. Round 1: no blocking defect, suggestions all taken (unbroken member names via grid-cols-1 + min-w-0, other season selects probed, evidence files saved, vertical-only gap). Round 2: APPROVE; cosmetic suggestion (shrink-0 on the letter avatar) implemented; evidence gaps closed. Verified: Tailwind syntax and Radix vars, select has no caller className conflicts, TeamLogo size union has no other consumer, no protected path, each new test fails on the old code."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
+      "at": "2026-11-06T21:11:18.837Z",
+      "summary": "Independent review (factory-reviewer, read-only) re-checked this task at the final commit 9a5d54e. After the earlier approval at e3a8bdd only ContactInboxSection (email link gained hit-area-44; wrap classes and test kept) and select.tsx (trigger h-11, touch rows; the max-width class and test kept) changed. The reviewer read the CSS for hit-area-44 and expected no sideways overflow; I then re-measured the 49-character email at 320, 360 and 390px: it ends 13.8, 15.9 and 15.4px inside its card, 0 sideways scroll. Docs for this task (bell, Member Approvals, contact inbox, logo preview, My Team) were checked against the code; findings fixed in 1bec9e3 and 9a5d54e."
     }
   ],
   "issues": {},
@@ -137,7 +144,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T19:31:55.751Z",
-  "readySha": "e3a8bdd9b627182c44a98ab6d674d32f46385ece",
-  "readyAt": "2026-11-06T19:31:55.751Z"
+  "updatedAt": "2026-11-06T21:11:33.871Z",
+  "readySha": "9a5d54e46d87233f5fda8c9a70886f952b384d6a",
+  "readyAt": "2026-11-06T21:11:33.870Z"
 }
