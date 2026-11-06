@@ -1,0 +1,41 @@
+{
+  "id": "T-261106-align-bun-lock-with-pack",
+  "title": "Align bun.lock with package-lock.json",
+  "kind": "chore",
+  "status": "blocked",
+  "request": "Work on the still open tasks: bun.lock vs package-lock.json sync",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "ce13c13977aa16a02a6dabf31a39a11322e4cd20",
+  "createdAt": "2026-11-06T14:54:40.875Z",
+  "criteria": [
+    {
+      "text": "After the change, bun.lock resolves every direct dependency to the same version as package-lock.json (script: direct dependencies compared N, different 0; today 8 of 108 differ, 6 of them runtime: react, react-dom, @tanstack/react-query, framer-motion, lucide-react, react-window)",
+      "done": false
+    },
+    {
+      "text": "package-lock.json and package.json are byte-identical to before; bun install --frozen-lockfile succeeds on the new bun.lock",
+      "done": false
+    },
+    {
+      "text": "A bun-installed copy of the repo (frozen install in a scratch folder) builds with npm run build, the same way the deploy does",
+      "done": false
+    },
+    {
+      "text": "Six checks pass at the final commit; independent code review approves",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [
+    {
+      "at": "2026-11-06T14:55:08.688Z",
+      "text": "BLOCKED by the factory guard: bun.lock is in protectedPaths in .factory/config.json ('FACTORY GUARD: bun.lock is protected (artwork, secrets or history). Ask the human.'). Nothing was changed. Measured read-only before the block: bun frozen install passes, but 155 of 1023 top-level packages and 8 of 108 direct dependencies resolve to different versions in the two lock files (runtime: react 19.3.0 npm vs 19.3.1 bun, react-dom same, @tanstack/react-query 5.105.0 vs 5.104.5, framer-motion 14.7.1 vs 14.6.0, lucide-react 1.62.0 vs 1.61.0, react-window 2.5.1 vs 2.5.0). So CI tests one set and a frozen bun deploy would install another. Needs the owner's yes to touch bun.lock. Plan: delete bun.lock, run bun install --lockfile-only so bun migrates the versions from package-lock.json, then verify the 4 criteria."
+    }
+  ],
+  "waivers": [],
+  "updatedAt": "2026-11-06T14:55:08.689Z"
+}
