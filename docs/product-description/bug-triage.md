@@ -1048,7 +1048,7 @@ finding read a superseded migration.
   opened from the browser menu (Ctrl or Cmd+F is expected to send a key press, which stops the
   restore; not tried), a screen reader and voice control may send no input event, so the restore
   can pull the page back against them while it runs (read from the code, not tried). Forward in a
-  browser and a closed tab were not tried. The hook now has 43 unit tests; it had none.
+  browser and a closed tab were not tried. The hook now has 44 unit tests; it had none.
   The rows that carried a suspected-bug mark for this (`NAV-02`, `BROWSE-04`,
   `BROWSE-37`, `TEAM-33`, `PHONE-22`) lost it, so the count of such rows went from 120
   to 115. `HIST-12`, `STAND-09` and `INSIGHT-06` record the measurements.

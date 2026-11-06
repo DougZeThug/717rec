@@ -160,7 +160,7 @@ discards every local change at once and asks nothing.
 
 The URL never changes. `/history` is `/history` throughout, so an opened season,
 an opened division, and edit mode cannot be linked to or bookmarked. What the tab
-left open is kept in session storage, not in the address, so it cannot be shared.
+left open is kept in this tab's memory, not in the address, so it cannot be shared.
 Edit mode is not remembered at all.
 
 ### Submit
@@ -194,7 +194,7 @@ still in place.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on the read-only page and Escape does nothing. | Escape closes a division rename box. The toolbar's **Cancel** asks "You have unsaved changes. Are you sure you want to cancel?" through the browser's own confirmation box, and discards everything if confirmed. Neither can stop a save already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. Which cards and panels were open is remembered for this tab. It comes back on Back, Forward or a reload, and is cleared by a return through an in-app link. | **Every unsaved change is lost with no warning.** The confirmation only guards the Cancel button, not leaving the page. A save already sent still lands, unseen. |
-| Browser back or forward | Returns to the previous page. Coming back to this page with Back or Forward keeps the open seasons and divisions open. The page restores its scroll position too: measured 2026-11-06 (dev server, fake data, headless Chromium, 390 pixels wide), Back from a team page brought it back within 1 pixel in 10 of 10 runs with the data cached and 10 of 10 after the team page was reloaded (see [Leave without changing anything](#leave-without-changing-anything) for the limits). A top-bar link to the page is not Back: it opens collapsed. | Same as navigating away, and the app cannot prevent it. Edit mode is not kept. |
+| Browser back or forward | Returns to the previous page. Coming back to this page with Back or Forward keeps the open seasons and divisions open. The page restores its scroll position too: in a script on 2026-11-06 (dev server, fake data, headless Chromium, 390 pixels wide; nobody by hand), Back from a team page brought it back within 1 pixel in 10 of 10 runs with the data cached and 10 of 10 after the team page was reloaded (see [Leave without changing anything](#leave-without-changing-anything) for the limits). A top-bar link to the page is not Back: it opens collapsed. | Same as navigating away, and the app cannot prevent it. Edit mode is not kept. |
 | Reload, or the tab closed | The page rebuilds itself: every season fetched again. A reload keeps the open seasons and divisions open, in the same tab. Closing the tab forgets them, and a new tab has nothing remembered, so its season cards start closed. | **Every unsaved change is lost.** A save already sent may have landed; after reloading the standings themselves are the only evidence. |
 | Network lost mid-request | The season list fails and the whole page becomes "Failed to load season history". A single card failing shows its own error inside the opened recap, with a **Try Again** button. | The save fails and the red "Update Failed" toast carries the network error. Nothing is queued and nothing is retried. |
 | The request fails or times out | The season list is retried once. A single season's standings are retried **twice**, a second apart, before the card gives up. | The save is not retried. Changes stay on screen for the admin to press Save again. |
@@ -242,7 +242,7 @@ Division", and "Update Failed". Up to three at a time, as everywhere. See
 
 **URL state.** Nothing. Not the season, not the opened card, not edit mode. A
 link from within the app to `/history` opens on a fully collapsed page. The open
-cards and panels are kept in this tab's session storage instead, and come back
+cards and panels are kept in this tab's memory instead, and come back
 only on Back, Forward or a reload.
 
 **On a phone.** With nothing remembered, division panels start closed; one this
@@ -332,7 +332,7 @@ moves; power scores and records are untouched.
   The active season keeps "Season in progress – check back later", and a failed
   load keeps its error with Try Again.
 - **Long names wrap, then are cut.** On a season card, a champion's name and a
-  highlight value wrap onto up to two lines, and the record and division line
+  highlight name wrap onto up to two lines (the number after a highlight name is never cut), and the record and division line
   under a champion wraps onto up to three, so "Intermediate 1" and
   "Intermediate 2" stay different. A longer text is still cut with an ellipsis.
   This holds at every width. On the phone cards of an opened recap a team name
@@ -363,13 +363,13 @@ moves; power scores and records are untouched.
   season is opened.** With enough seasons this is a large number of requests for
   data most users never look at, and none of it is cached between visits. **May be
   worth treating as a bug rather than documenting.**
-- Settled: four routes run scroll restoration (`/teams`, `/stats`, `/history`,
+- Open: four routes run scroll restoration (`/teams`, `/stats`, `/history`,
   `/insights`), as [`foundations/navigation.md`](../foundations/navigation.md#arrive)
   now says. For `/history` the open seasons and divisions come back open on Back
   and reload, and since the fix on this branch (not yet live) the scroll position
-  comes back too, in every run measured on 2026-11-06 except the late-data stress run (see
+  came back too, in every scripted run on 2026-11-06 except the late-data stress run (see
   [Leave without changing anything](#leave-without-changing-anything) and HIST-12).
-  Not tested: Safari, iOS, a real phone, and a link other than a team link, then Back.
+  The scripts did not scroll the team page, and nobody has run it by hand. Not tested: Safari, iOS, a real phone, and a link other than a team link, then Back.
 - Not confirmed by hand: whether opening a division from its chevron by keyboard
   works in practice, or whether the press is swallowed before it reaches the
   header that handles it. A test shows that a click on the named chevron reaches

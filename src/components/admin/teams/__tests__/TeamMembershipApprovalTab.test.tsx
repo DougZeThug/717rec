@@ -144,7 +144,7 @@ describe('TeamMembershipApprovalTab', () => {
   // widened its card past a 320px screen: the card list was a grid column sized by its widest
   // content, and none of the flex parts above the name could shrink.
   it('lets a long name with no spaces shrink instead of widening the card', () => {
-    // 29 and 37 characters with no break point, as in the case that widened the card.
+    // 30 and 37 characters with no break point, like the case that widened the card (29 and 37).
     const longUser = 'johnnythecornholechampion_2026';
     const longTeam = 'TheBagBanditsOfTheWholeLeagueAndMore1';
     const membership = makeMembership();
