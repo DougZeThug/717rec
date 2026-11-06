@@ -19,7 +19,7 @@ const DetailRow: React.FC<{
   label: string;
   children?: React.ReactNode;
 }> = ({ Icon, label, children }) => (
-  <div className="flex items-center gap-2">
+  <div className="flex min-w-0 items-center gap-2">
     <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
     <span className="text-sm text-muted-foreground">{label}</span>
     {children}
@@ -42,12 +42,12 @@ const SubmissionHeader: React.FC = () => (
 const SubmitterDetails: React.FC<{ submission: ScoreSubmission }> = ({ submission }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
     <DetailRow Icon={User} label="Submitter:">
-      <span className="font-medium">{submission.submitter_name}</span>
+      <span className="min-w-0 wrap-break-word font-medium">{submission.submitter_name}</span>
     </DetailRow>
 
     {submission.submitter_team && (
       <DetailRow Icon={Users} label="Team:">
-        <span className="font-medium">{submission.submitter_team}</span>
+        <span className="min-w-0 wrap-break-word font-medium">{submission.submitter_team}</span>
       </DetailRow>
     )}
   </div>
@@ -95,7 +95,7 @@ const ScoreSubmissionCard = ({ submission, onApprove, onReject }: ScoreSubmissio
         {/* Which match this report is about */}
         <DetailRow Icon={Swords} label="Match:">
           {/* One flex item: the date follows the names as plain text and never gets squeezed. */}
-          <span>
+          <span className="min-w-0 wrap-break-word">
             <span className="font-medium">
               {team1Name && team2Name ? `${team1Name} vs ${team2Name}` : 'Unknown match'}
             </span>
