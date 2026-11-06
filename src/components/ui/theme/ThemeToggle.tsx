@@ -90,7 +90,12 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
     <Button
       variant={variant}
       size={size}
-      className={cn('rounded-full transition-all duration-300', getButtonClasses(), className)}
+      className={cn(
+        // `size="sm"` (the header) is 42px wide; every button here is at least 44px to tap.
+        'min-w-[44px] rounded-full transition-all duration-300',
+        getButtonClasses(),
+        className
+      )}
       aria-label="Toggle theme"
       title="Toggle theme"
       onClick={cycleTheme}
