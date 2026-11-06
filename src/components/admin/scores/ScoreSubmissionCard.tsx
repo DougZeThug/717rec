@@ -111,7 +111,8 @@ const ScoreSubmissionCard = ({ submission, onApprove, onReject }: ScoreSubmissio
 
         <SubmissionMessage message={submission.message} />
 
-        <div className="flex items-center justify-between pt-4 border-t">
+        {/* Under 359px wide the buttons cannot share the row with the date: wrap there only. */}
+        <div className="flex items-center justify-between pt-4 border-t max-[359px]:flex-wrap max-[359px]:gap-2">
           <span className="text-xs text-muted-foreground">
             Submitted {formatWithPattern(submission.created_at, "MMM d, yyyy 'at' h:mm a")}
           </span>
