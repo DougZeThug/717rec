@@ -2,7 +2,7 @@
   "id": "T-261106-fix-back-returning-to-th",
   "title": "Fix Back returning to the wrong scroll position",
   "kind": "fix",
-  "status": "planned",
+  "status": "ready",
   "request": "Doug: 'Yes scroll fix' (answering: fix the shared scroll-restore hook so Back from a team page returns to the same scroll position, as found while polishing the History page)",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -17,35 +17,36 @@
     {
       "text": "Same at 1280px, and /stats, /teams and /insights still restore after a team link (or are marked not tried if the fake data has no link)",
       "done": true,
-      "evidence": "1280px: cached 5 of 5 observed, reload 5 of 5 (before 5 of 5 and 3 of 5). /teams 390px: 5 of 5 at offset 304 (round 1 had regressed to 0 of 5, fixed by the watch window) and 5 of 5 at each of 100/200/250. /stats 1 of 1 and /insights 1 of 1 after a footer link: /insights was NOT tried with a team link, the fake data has none there. Lead: bottom tab bar (Schedule) then Back at 390px, /stats, /teams, /insights 3 of 3 each after the fix. Same test on the OLD hook (lead, before/OLD-top-*.json): /stats 3 of 3, /insights 3 of 3, /teams 0 of 3 (landed at 86px, saved offset right). Files: .factory/evidence/T-261106-fix-back-returning-to-th/SUMMARY-after2.txt, .factory/evidence/T-261106-fix-back-returning-to-th/before/OLD-top-teams.json."
+      "evidence": "1280px: cached 5 of 5 observed, reload 5 of 5 (before 5 of 5 and 3 of 5). /teams 390px: 5 of 5 at offset 304 (round 1 had regressed to 0 of 5, fixed by the watch window) and 5 of 5 runs across offsets 100/200/250 (two, two and one runs). /stats 1 of 1 after a team link and /insights 1 of 1 after a footer link (/contact): /insights was NOT tried with a team link, the fake data has none there. Lead: bottom tab bar (Schedule) then Back at 390px, /stats, /teams, /insights 3 of 3 each after the fix. Same test on the OLD hook (lead, before/OLD-top-*.json): /stats 3 of 3, /insights 3 of 3, /teams 0 of 3 (landed at 86px, saved offset right). Files: .factory/evidence/T-261106-fix-back-returning-to-th/SUMMARY-after2.txt, .factory/evidence/T-261106-fix-back-returning-to-th/before/OLD-top-teams.json."
     },
     {
       "text": "A reader who scrolls while a slow restore is still waiting is not pulled back, and Back no longer glides from the top",
       "done": true,
-      "evidence": "Reader takes over, 390px, slow list: wheel 3 of 3 observed with no hook scrollTo after the event and scrollY unchanged; wheel during the 1 s watch window 3 of 3; scrollbar press at 1280px (classic 15px scrollbar, headless Chromium): pointerdown reached window 3 of 3 and the restore stopped. Control runs without a reader kept trying. Back no longer glides: distinct frame values 0 then the saved offset in 3 of 3 traced runs (before: 0,3,19,81,93,101,105,108,110,111); with reduced motion 0,111,900 where 111 is the browser's own entry restore. Saving is back on 4 s after the restore in every set. Files: .factory/evidence/T-261106-fix-back-returning-to-th/after2/dev-glide*.out, .factory/evidence/T-261106-fix-back-returning-to-th/after2/dev-reader-*.json. Safari/iOS not tested; find-in-page, screen reader and voice control send no input event (restore can fight them while it runs, read from code, not tried)."
+      "evidence": "Reader takes over, 390px, slow list: wheel 3 of 3 observed with no hook scrollTo after the event and scrollY unchanged; wheel during the 1 s watch window 3 of 3; scrollbar press at 1280px (classic 15px scrollbar, headless Chromium): pointerdown reached window 3 of 3 and the restore stopped. Control runs without a reader kept trying. Back no longer glides: distinct frame values 0 then the saved offset in 3 of 3 traced runs (before: 0,3,19,81,93,101,105,108,110,111); with reduced motion 0,111,900 where 111 comes before the hook's jump (the hook's only scrollTo call was made when the position read 111; its source is not shown). Saving is back on 4 s after the restore in every set. Files: .factory/evidence/T-261106-fix-back-returning-to-th/after2/dev-glide*.out, .factory/evidence/T-261106-fix-back-returning-to-th/after2/dev-reader-*.json. Safari/iOS not tested; find-in-page, screen reader and voice control send no input event (restore can fight them while it runs, read from code, not tried)."
     },
     {
       "text": "New hook tests exist and fail on the old code (mutation proof); existing tests unchanged; six checks pass at the final commit",
       "done": true,
-      "evidence": "New file src/hooks/__tests__/useScrollRestoration.test.tsx, 43 tests, all pass; 13 of the 42 written before the settle window fail on the round-1 hook and 20 of 30 failed on the original hook. Mutation runs: every planned mutation fails at least one test except two redundancy-only checks of the cancelled flag (stop() already calls cancelAnimationFrame and clearTimeout); hook restored by sha256 after each run. git diff 2a1c90c 50ee277 on test files shows only the one new file. Six checks PASS at 50ee277 (integrity, typecheck, lint, knip, build, unit) via factory check. Lead re-ran the new test file, prettier and eslint on both files: pass."
+      "evidence": "New file src/hooks/__tests__/useScrollRestoration.test.tsx, 43 tests, all pass; 13 of the 42 written before the settle window fail on the round-1 hook and 20 of 30 failed on the original hook. Mutation runs: every planned mutation fails at least one test except two redundancy-only checks of the cancelled flag (stop() already calls cancelAnimationFrame and clearTimeout); hook restored by sha256 after each run. git diff 2a1c90c 50ee277 on test files shows only the one new file. Six checks PASS at the final head ce13c13 (integrity, typecheck, lint, knip, build, unit) via factory check, re-run after each docs-only commit; the hook is unchanged since bf63233. Lead re-ran the new test file, prettier and eslint on both files: pass."
     },
     {
       "text": "Independent code review approves the final commit",
-      "done": false
+      "done": true,
+      "evidence": "Independent code review (factory-reviewer, read-only) APPROVE at head ce13c13 after four rounds; the hook (commit bf63233) was found sound in every round, no logic defect, 43 of 43 tests, no old test changed. The reviews found and I fixed docs over-claims: '5 of 5 at each of 100/200/250' (5 runs in total), a link-tap 'glide' not shown by the frames (900,111,25,0 over 91 frames, identical with reduced motion), '/stats after a footer link' (it was a team link), 'fixed' credited where the old code already passed, universal 'every case' lines without the late-data exception, 'three seconds late' (the window is one quiet second, three at most). Recorded as review entries on the task. Source: git diff bf63233 ce13c13 -- src is empty."
     },
     {
       "text": "Docs that call History/other scroll restore best effort or untested are updated with the new measurements; totals and links still true",
       "done": true,
-      "evidence": "15 docs under docs/product-description updated (navigation, B-14, browse-teams, team-details, past-seasons, standings, insights, on-a-phone, accessibility, goal, five verification files). Lead recount by script: 1,958 items; P1 suspected-bug rows 120 at HEAD before, 115 now (NAV-02, BROWSE-04, BROWSE-37, TEAM-33, PHONE-22 lost the mark). Link check 2,750 links, 0 broken. Two claims were corrected after the lead's before-fix test: the overwrite of the saved spot is measured on /history after a team link only (6 of 10 before), not for the bottom tab bar (9 of 9 right before the fix); /stats and /insights already came back before the fix, so the pages no longer credit the fix there. Every changed passage says fake data, headless Chromium, Safari/iOS not tested."
+      "evidence": "15 docs under docs/product-description updated (navigation, B-14, browse-teams, team-details, past-seasons, standings, insights, on-a-phone, accessibility, goal, five verification files). Lead recount by script: 1,958 items; P1 suspected-bug rows 120 at HEAD before, 115 now (NAV-02, BROWSE-04, BROWSE-37, TEAM-33, PHONE-22 lost the mark). Link check 2,750 links, 0 broken. Corrections after the lead's before-fix test and four review rounds: the glide on a link tap is not shown (frames 900,111,25,0, same with reduced motion), 'every case' lines name the late-data stress run as the exception, the watch window is one quiet second and three at most. Final head ce13c13. Totals recounted: 1,958 items, 115 P1 suspected-bug rows; links 2,751, 0 broken. Earlier corrections: the overwrite of the saved spot is measured on /history after a team link only (6 of 10 before), not for the bottom tab bar (9 of 9 right before the fix); /stats and /insights already came back before the fix, so the pages no longer credit the fix there. Every changed passage says fake data, headless Chromium, Safari/iOS not tested."
     }
   ],
   "checks": {
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
+      "sha": "ce13c13977aa16a02a6dabf31a39a11322e4cd20",
       "dirty": false,
-      "at": "2026-11-06T07:40:50.192Z",
+      "at": "2026-11-06T07:57:59.378Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/integrity.log"
@@ -53,29 +54,29 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
+      "sha": "ce13c13977aa16a02a6dabf31a39a11322e4cd20",
       "dirty": false,
-      "at": "2026-11-06T07:41:02.063Z",
-      "seconds": 12,
+      "at": "2026-11-06T07:58:09.245Z",
+      "seconds": 10,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
+      "sha": "ce13c13977aa16a02a6dabf31a39a11322e4cd20",
       "dirty": false,
-      "at": "2026-11-06T07:42:13.427Z",
-      "seconds": 71,
+      "at": "2026-11-06T07:59:22.315Z",
+      "seconds": 73,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
+      "sha": "ce13c13977aa16a02a6dabf31a39a11322e4cd20",
       "dirty": false,
-      "at": "2026-11-06T07:42:16.493Z",
+      "at": "2026-11-06T07:59:25.390Z",
       "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/knip.log"
@@ -83,20 +84,20 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
+      "sha": "ce13c13977aa16a02a6dabf31a39a11322e4cd20",
       "dirty": false,
-      "at": "2026-11-06T07:42:20.923Z",
-      "seconds": 4,
+      "at": "2026-11-06T07:59:30.272Z",
+      "seconds": 5,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "c3b34b0572027b9f309a52f0e14bc79b0f9aa3aa",
+      "sha": "ce13c13977aa16a02a6dabf31a39a11322e4cd20",
       "dirty": false,
-      "at": "2026-11-06T07:49:31.992Z",
-      "seconds": 431,
+      "at": "2026-11-06T08:06:31.301Z",
+      "seconds": 421,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261106-fix-back-returning-to-th/unit.log"
     }
@@ -115,6 +116,13 @@
       "sha": "50ee277820b226e6b139c5ded5c9906a1f09aa18",
       "at": "2026-11-06T07:28:06.342Z",
       "summary": "Independent code review at 50ee277: code APPROVED in substance (no logic defect found; StrictMode, cleanup order, timers, listeners, isRestoring stuck-true all traced; 43 of 43 tests pass; no old test changed). Two BLOCKING doc errors: (1) '5 of 5 at each of 100/200/250px' was false, the file holds 5 runs in total (two, two, one); (2) the 'ScrollToTop glides on a link tap' finding is not shown by the saved frames (900,111,25,0 with 91 frames, identical with reduced motion; the '20' came from a scratch note), so it was stated beyond the evidence in 17 places. Also: 'fixed' credited where the old code did not fail (BROWSE-04, BROWSE-37, TEAM-33, PHONE-22), a self-contradiction in navigation.md, lead evidence only in scratch, small gaps (Ctrl/Cmd+F sends keydown; touch/key tested in unit tests only). Optional code notes accepted as documented limits: unreachable saved spot keeps saving off up to about 15 s unless the reader scrolls; scrolls that send no input event can be pulled back while the restore runs; the cancelled flag is redundant with cancelAnimationFrame/clearTimeout."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "ce13c13977aa16a02a6dabf31a39a11322e4cd20",
+      "at": "2026-11-06T08:06:57.617Z",
+      "summary": "Independent code review, final verdict at head ce13c13 (docs-only commits on top of the reviewed hook commit bf63233; src unchanged, git diff bf63233 ce13c13 -- src is empty). Four rounds: round 1 CHANGES (2 blocking doc errors: '5 of 5 at each of 100/200/250' was 5 runs in total; the link-tap 'glide' was not shown by the frames, same with reduced motion), round 2 APPROVE with non-blocking points (/stats run used a team link, not a footer link; headline lacked the late-data exception), round 3 CHANGES (every-case lines, causal 'fix' wording, retries cap), round 4 CHANGES (one phrase: 'three seconds late' vs one quiet second, three at most), final APPROVE. The hook was found sound in every round: no logic defect (StrictMode, cleanup order, timers, listeners, isRestoring cannot stick true), 43 of 43 tests, no old test changed, 1,958 items and 115 P1 suspected-bug rows recounted, 2,751 links 0 broken. Accepted limits (documented): unreachable saved spot retries about 15 s with saving off unless the reader scrolls; scrolls with no input event can be pulled back while the restore runs; late data after the watch window is not caught; the cancelled flag is redundant belt-and-braces. Safari/iOS, real phones, real networks, Forward in a browser, a closed tab are UNKNOWN."
     }
   ],
   "issues": {},
@@ -126,5 +134,7 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-06T07:49:31.992Z"
+  "updatedAt": "2026-11-06T08:07:28.788Z",
+  "readySha": "ce13c13977aa16a02a6dabf31a39a11322e4cd20",
+  "readyAt": "2026-11-06T08:07:28.787Z"
 }
