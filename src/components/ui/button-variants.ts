@@ -24,8 +24,8 @@ export const buttonVariants = cva(
       },
       size: {
         default: 'h-10 min-h-[44px] px-4 py-2',
-        xs: 'h-8 min-h-[44px] px-2 text-xs',
-        sm: 'h-9 min-h-[44px] px-3',
+        xs: 'h-8 min-h-[44px] min-w-[44px] px-2 text-xs',
+        sm: 'h-9 min-h-[44px] min-w-[44px] px-3',
         lg: 'h-11 min-h-11 px-8',
         icon: 'size-10 min-h-[44px] min-w-[44px]',
         'icon-sm': 'size-8 min-h-[44px] min-w-[44px]', // Small icon but large touch target
