@@ -42,6 +42,20 @@ describe('DivisionRow', () => {
     vi.clearAllMocks();
   });
 
+  // jsdom does no layout, so this pins the classes. The edit fields set their own 36px and 40px
+  // height; text fields in this app are 44px (the Input default), like the buttons beside them.
+  it('keeps the edit fields at the standard 44px height', async () => {
+    const user = userEvent.setup();
+    renderRow();
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+
+    for (const field of [screen.getByLabelText('Division name'), screen.getByRole('spinbutton')]) {
+      expect(field).not.toHaveClass('h-9', 'h-10');
+      expect(field).toHaveClass('h-11');
+    }
+  });
+
   it('saves edited name and weight through the update mutation', async () => {
     const user = userEvent.setup();
     renderRow();
