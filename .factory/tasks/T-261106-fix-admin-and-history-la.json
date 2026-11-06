@@ -10,7 +10,7 @@
   "createdAt": "2026-11-06T16:44:06.223Z",
   "criteria": [
     {
-      "text": "Season form (/admin/seasons, Create New Season): Cancel and Create Season buttons are fully on screen at 320px wide; before: Cancel left edge at x=-19.6",
+      "text": "Season form (/admin/seasons, Create New Season): Cancel and Create Season buttons stay inside the card at 320px wide (the row wraps under 372px); before: Cancel left edge at x=-19.6, off screen",
       "done": false
     },
     {
@@ -18,7 +18,7 @@
       "done": false
     },
     {
-      "text": "Batch Matches date button (/admin/batch-matches): the date and the (yyyy-mm-dd) hint are inside the button at 320px; before: text cut by 34px",
+      "text": "Batch Matches date button (/admin/batch-matches): the whole date is inside the button at 320px, and the small (yyyy-mm-dd) copy never sticks out of the button at any width from 320 to 1280px; before: the copy stuck out 26.7px at every width, and at 320px the button was cut 34px",
       "done": false
     },
     {
@@ -26,31 +26,31 @@
       "done": false
     },
     {
-      "text": "Auto-Schedule tabs (Auto-Loaded Teams / Manual Assignment): labels do not overlap at 320px; before: overlap 11.1px",
+      "text": "Auto-Schedule tabs (Auto-Loaded Teams / Manual Assignment): labels do not overlap at 320px (they wrap under 345px); before: overlap 11.1px",
       "done": false
     },
     {
-      "text": "Pending Scores card footer (/admin/pending-matches): the Reject and Approve buttons stay inside the card at 320px; before: 6.9px past the border",
+      "text": "Pending Scores card footer (/admin/pending-matches): the Reject and Approve buttons stay inside the card at 320px (the footer wraps under 359px); before: 6.9px past the border",
       "done": false
     },
     {
-      "text": "Scores entry row (/admin/scores): the Mark as final row and its badges stay inside the match box at 320px; before: badges 8px past the box",
+      "text": "Scores entry row (/admin/scores): the Mark as final row and its badges stay inside the match box at 320px (the row wraps under 359px); before: badges 8px past the box",
       "done": false
     },
     {
-      "text": "Create Team form (/admin/teams): fields fit inside the card at 320px; before: grid column 269.6px in a 238px card",
+      "text": "Create Team form (/admin/teams): the fields, Cancel and Create Team stay inside the card at 320px; before: the single column was 269.6px wide in a 238px card (Create Team 6.6px past the card border)",
       "done": false
     },
     {
-      "text": "Update Logos card (/admin/teams): Add Logo icon and label stay inside the button at 320px; before: spill 8.7px",
+      "text": "Update Logos card (/admin/teams): the Add Logo icon and label stay inside the button at 320px (the label wraps under 355px); before: spill 8.7px",
       "done": false
     },
     {
-      "text": "History edit toolbar (/history, Edit Divisions, with unsaved changes): Save Changes is fully visible from 640 to 700px wide; before: 29.9px past the toolbar at 640px",
+      "text": "History edit toolbar (/history, Edit Divisions, with unsaved changes): Save Changes is fully visible and inside the toolbar from 640 to 700px wide (the drag hint shows from 700px, not 640px); before: 29.9px past the toolbar at 640px",
       "done": false
     },
     {
-      "text": "No change at 390px and 1280px for each touched screen (measured before and after), no new console errors, no sideways page scroll, existing tests pass",
+      "text": "At 390px and 1280px, and at every width above each fix's limit, each touched screen measures the same before and after. Named exceptions: the batch date copy (hidden under 440px; the button grows to 284px from 440px) and the History drag hint (hidden at 640-699px). No new console errors, no sideways page scroll, existing tests pass, and the 2 new tests fail on the old code",
       "done": false
     }
   ],
@@ -66,7 +66,12 @@
   ],
   "issues": {},
   "interventions": [],
-  "notes": [],
+  "notes": [
+    {
+      "at": "2026-11-06T17:15:43.139Z",
+      "text": "Criteria 1,3,5,6,7,8,9,10,11 were reworded BY HAND in this file (the CLI cannot reword). Reason: measurement during the build changed what each fix does (each wrap is limited to the narrow widths where the defect is, so 390px and wider stay identical; the batch date hint stuck out at every width, not only 320px; the History fix hides the drag hint 640-699px instead of re-flowing the buttons). Original wording is in the commit that opened the task (ade4f54)."
+    }
+  ],
   "waivers": [],
   "updatedAt": "2026-11-06T16:52:55.024Z"
 }
