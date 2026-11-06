@@ -115,8 +115,8 @@ with reduced motion on, 5 of 5 and 5 of 5; at 1280 pixels wide, 5 of 5 and 5 of 
 The same scripts before the fix gave 6 of 10 and 2 of 10 (production build 7 of 10
 and 5 of 10), and 1 of 5 with reduced motion. The season and the division stayed
 open in 10 of 10 runs in the earlier 2026-11-05 test; the open state is kept
-separately from the scroll position. Two limits. Data that arrives later than the
-three-second watch window is not caught. And a link other than a team link, then
+separately from the scroll position. Two limits. Data that arrives after the
+watch window (one quiet second, three at most) is not caught. And a link other than a team link, then
 Back, was not tried on this page after the fix (the 2026-11-05 test, with such a
 link, landed at the top). Safari, iOS and a real phone were not tested.
 

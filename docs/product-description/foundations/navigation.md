@@ -301,7 +301,7 @@ development build the analytics call does nothing.
   The four routes jump to the saved spot and hold it for a moment, and give way
   when the reader scrolls (see *Arrive*). A user who presses Back to `/schedule`
   gets what the browser gives: the top, in the 2026-11-05 test. Data that arrives
-  later than the three-second watch window is not caught; see
+  after the watch window (one quiet second, three at most) is not caught; see
   [Open questions](#open-questions-and-verification).
 - **A chunk that never downloads leaves the spinner forever.** There is no
   timeout, no retry, and no error.

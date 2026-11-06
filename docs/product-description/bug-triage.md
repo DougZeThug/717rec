@@ -1043,7 +1043,7 @@ finding read a superseded migration.
   leaving in 6 of 10 runs before the fix and in every run after it. Full numbers, for
   all four routes, are in
   [`foundations/navigation.md`](foundations/navigation.md#open-questions-and-verification).
-  **Limits:** data that arrives later than the watch window is not caught (a stress run
+  **Limits:** data that arrives after the watch window (one quiet second, three at most) is not caught (a stress run
   with the real content at 6.8 seconds: 0 of 2 ended at the saved spot). Find-in-page
   opened from the browser menu (Ctrl or Cmd+F is expected to send a key press, which stops the
   restore; not tried), a screen reader and voice control may send no input event, so the restore
