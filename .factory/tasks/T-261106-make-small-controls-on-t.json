@@ -2,7 +2,7 @@
   "id": "T-261106-make-small-controls-on-t",
   "title": "Make small controls on the public pages big enough to tap (division headers, standings sort buttons, team name links, breadcrumb, auth links)",
   "kind": "polish",
-  "status": "intake",
+  "status": "ready",
   "request": "do both of these now - Public pages: I scanned only the admin screens control by control. Other small controls may exist on the public pages. I can scan them as a new task if you want. (after the admin tap-size task; fix what the scan finds)",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -30,8 +30,77 @@
       "evidence": "Layout fingerprint of the touched pages at 320, 390, 768 and 1280px, before and after (20 views): the only changes are the sort bar (+8px, phones) and the division headers (+4px, phones) plus the larger link boxes with unchanged surroundings; History page height 3206px on 4 of 4 runs with and without the breadcrumb change (one earlier 3302 reading was a one-off load difference). Sideways scroll: none on 16 public routes at 390 and 1280. Console on those routes: only the harness's blocked-backend loads and the fake data's own errors (a deliberate fake season failure, two fake playoffs-active seasons); 0 page errors. Tap scan conflicts after: 7 at 390 and 6 at 320, the same as before the change (sticky team-page section pills and standings badge buttons; not touched by this task). Six new tests proved to fail on the old code (stash of the six source files: 6 failed, 54 passed). The six checks run again at the final head."
     }
   ],
-  "checks": {},
-  "reviews": [],
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
+      "dirty": false,
+      "at": "2026-11-06T22:11:05.683Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261106-make-small-controls-on-t/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
+      "dirty": false,
+      "at": "2026-11-06T22:11:15.713Z",
+      "seconds": 10,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261106-make-small-controls-on-t/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
+      "dirty": false,
+      "at": "2026-11-06T22:12:17.255Z",
+      "seconds": 62,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261106-make-small-controls-on-t/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
+      "dirty": false,
+      "at": "2026-11-06T22:12:20.376Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261106-make-small-controls-on-t/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
+      "dirty": false,
+      "at": "2026-11-06T22:12:25.457Z",
+      "seconds": 5,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261106-make-small-controls-on-t/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
+      "dirty": false,
+      "at": "2026-11-06T22:24:00.943Z",
+      "seconds": 399,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261106-make-small-controls-on-t/unit.log"
+    }
+  },
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
+      "at": "2026-11-06T22:31:59.855Z",
+      "summary": "Independent review (factory-reviewer, read-only), two rounds. Round 1: code correct and minimal, tests real, but it found a missed copy of the same 36px sort-button code in the career rankings panel (fixed in 0524ba6 with a test that fails on the old code), a doc overclaim (the team name link is a 32px box of which about 26px answer a tap) and an incomplete list of what the scan did not reach (both fixed in 2e626d8). Round 2: APPROVE; no table row added or removed, no other copy of the pattern in src, and three optional wording tips, which I took in 6429412 (docs only). The reviewer ran no tests; the six checks above did (851 files, 7827 tests)."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [
@@ -41,5 +110,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T22:09:36.706Z"
+  "updatedAt": "2026-11-06T22:31:59.941Z",
+  "readySha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
+  "readyAt": "2026-11-06T22:31:59.940Z"
 }

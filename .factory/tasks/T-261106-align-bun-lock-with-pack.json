@@ -34,60 +34,60 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "577ba7e172e9068c155a3820994f55f32108d5e5",
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
       "dirty": false,
-      "at": "2026-11-06T21:17:27.157Z",
-      "seconds": 0,
+      "at": "2026-11-06T22:24:03.384Z",
+      "seconds": 2,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-align-bun-lock-with-pack/integrity.log"
     },
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "577ba7e172e9068c155a3820994f55f32108d5e5",
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
       "dirty": false,
-      "at": "2026-11-06T21:17:41.396Z",
-      "seconds": 14,
+      "at": "2026-11-06T22:24:14.719Z",
+      "seconds": 11,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261106-align-bun-lock-with-pack/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "577ba7e172e9068c155a3820994f55f32108d5e5",
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
       "dirty": false,
-      "at": "2026-11-06T21:19:03.062Z",
-      "seconds": 82,
+      "at": "2026-11-06T22:25:19.538Z",
+      "seconds": 65,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261106-align-bun-lock-with-pack/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "577ba7e172e9068c155a3820994f55f32108d5e5",
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
       "dirty": false,
-      "at": "2026-11-06T21:19:06.335Z",
-      "seconds": 3,
+      "at": "2026-11-06T22:25:23.734Z",
+      "seconds": 4,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261106-align-bun-lock-with-pack/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "577ba7e172e9068c155a3820994f55f32108d5e5",
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
       "dirty": false,
-      "at": "2026-11-06T21:19:11.605Z",
-      "seconds": 5,
+      "at": "2026-11-06T22:25:29.707Z",
+      "seconds": 6,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261106-align-bun-lock-with-pack/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "577ba7e172e9068c155a3820994f55f32108d5e5",
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
       "dirty": false,
-      "at": "2026-11-06T21:26:07.626Z",
-      "seconds": 416,
+      "at": "2026-11-06T22:31:41.467Z",
+      "seconds": 372,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261106-align-bun-lock-with-pack/unit.log"
     }
@@ -99,6 +99,13 @@
       "sha": "577ba7e172e9068c155a3820994f55f32108d5e5",
       "at": "2026-11-06T21:44:36.068Z",
       "summary": "Independent review (factory-reviewer, read-only, own scripts) of commit 577ba7e: APPROVE as it stands, with three open points for the owner. VERIFIED by the reviewer: only bun.lock changed; package.json and package-lock.json byte-identical; 108 of 108 direct dependencies match package-lock.json (old file: 8 differ); the same 1,159 name@version pairs on both sides; workspaces and overrides agree with package.json; the file is byte-identical when regenerated with bun install --lockfile-only (no hand edits); frozen installs on bun 1.4.0 and 1.4.4 work and give the same node_modules as npm ci on Linux x64 apart from five wasm32 helper packages; native binaries for all platforms are kept; configVersion 0 and 1 install the same layout. OPEN POINTS, to the owner: (A) 604 of 1,233 entries have no integrity hash, where the old file had hashes for all; the gap is inherited from package-lock.json, and regenerating it does not fix it (npm 12 --package-lock-only keeps the same 606 entries without integrity; a full npm 12 install refuses the Lovable cache host); (B) 213 entries now download from the Lovable package cache (the old file used npmjs only), the same 214 URLs package-lock.json already has; (E) lockfileVersion 3 needs bun 1.4.0 or newer on the deploy (bun 1.3.x rejects it), same before and after this commit. The reviewer did not run the build; I did (scratch copy, exit 0)."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
+      "at": "2026-11-06T22:31:59.891Z",
+      "summary": "Re-attested at 6429412. The independent review (factory-reviewer, own scripts) approved commit 577ba7e with three open points for the owner (integrity hashes, Lovable package cache, bun 1.4.0 or newer). Since then only UI class changes, tests and docs landed: git diff 577ba7e..HEAD shows no change to bun.lock, package.json or package-lock.json (empty). Six checks re-run and pass at 6429412 (851 files, 7827 tests)."
     }
   ],
   "issues": {},
@@ -114,7 +121,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T21:44:36.205Z",
-  "readySha": "577ba7e172e9068c155a3820994f55f32108d5e5",
-  "readyAt": "2026-11-06T21:44:36.204Z"
+  "updatedAt": "2026-11-06T22:31:59.983Z",
+  "readySha": "6429412b48fea23bdb404e7de45c396498ff1cc3",
+  "readyAt": "2026-11-06T22:31:59.982Z"
 }
