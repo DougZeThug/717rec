@@ -79,7 +79,7 @@ const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
                 setError(null);
               }}
               onKeyDown={handleKeyDown}
-              className={cn('h-9', error && 'border-destructive')}
+              className={cn(error && 'border-destructive')}
               placeholder="Enter division name (e.g., Intermediate 2)"
             />
             {error && <p className="text-destructive-text text-xs mt-1">{error}</p>}

@@ -41,6 +41,17 @@ describe('SeasonSelector', () => {
     expect(screen.getByLabelText('Season:')).toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the classes. The picker is 44px tall; it shrinks to 40px
+  // from md up only with a mouse, so a touch tablet keeps the 44px tap size.
+  it('is 44px tall, and 40px only from md up with a mouse', () => {
+    mockUseSeasons.mockReturnValue({ data: seasons, isLoading: false });
+    render(<SeasonSelector selectedSeasonId="s1" onSeasonChange={vi.fn()} />);
+
+    const picker = screen.getByLabelText('Season:');
+    expect(picker).toHaveClass('h-11', 'md:pointer-fine:h-10');
+    expect(picker).not.toHaveClass('md:h-10');
+  });
+
   it('shows the name of the selected season', () => {
     mockUseSeasons.mockReturnValue({ data: seasons, isLoading: false });
     render(<SeasonSelector selectedSeasonId="s2" onSeasonChange={vi.fn()} />);

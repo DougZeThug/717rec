@@ -218,6 +218,16 @@ describe('AdminSidebar', () => {
     });
   });
 
+  // jsdom does no layout, so this pins the class. The search box set its own 32px height; text
+  // fields here are 44px (the Input default).
+  it('keeps the search box the standard 44px height', () => {
+    renderSidebar();
+
+    const search = screen.getByPlaceholderText('Search...');
+    expect(search).toHaveClass('h-11');
+    expect(search).not.toHaveClass('h-8');
+  });
+
   it('filters the menu as the admin searches', async () => {
     renderSidebar();
 

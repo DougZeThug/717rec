@@ -77,6 +77,15 @@ describe('BlurbEditorCard', () => {
     expect(screen.getByLabelText('Blurb for Beta')).toHaveValue('');
   });
 
+  // jsdom does no layout, so this pins the class. The blurb boxes set their own 32px height.
+  it('keeps each blurb box the standard 44px height', () => {
+    renderCard({ rankings: [team({ teamId: 'a', teamName: 'Alpha' })] });
+
+    const box = screen.getByLabelText('Blurb for Alpha');
+    expect(box).toHaveClass('h-11');
+    expect(box).not.toHaveClass('h-8');
+  });
+
   it('reports which team was edited', async () => {
     const user = userEvent.setup();
     const { onBlurbChange } = renderCard();

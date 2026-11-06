@@ -46,6 +46,17 @@ describe('EditableDivisionHeader', () => {
     expect(onRemove).not.toHaveBeenCalled();
   });
 
+  // jsdom does no layout, so this pins the class. The rename box set its own 36px height.
+  it('keeps the rename box the standard 44px height', async () => {
+    setup();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Rename division' }));
+
+    const input = screen.getByPlaceholderText('Division name');
+    expect(input).toHaveClass('h-11');
+    expect(input).not.toHaveClass('h-9');
+  });
+
   it('renames a division and leaves edit mode', async () => {
     const { onRename } = setup();
 
