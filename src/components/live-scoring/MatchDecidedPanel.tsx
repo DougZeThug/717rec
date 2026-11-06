@@ -47,7 +47,10 @@ export const MatchDecidedPanel: React.FC<MatchDecidedPanelProps> = ({
   <div className="space-y-3">
     <div className="rounded-lg border border-primary/50 bg-primary/10 p-4 text-center">
       <h2 className="text-base font-semibold">
-        {winnerName} wins the match {gameWins.team1}–{gameWins.team2}
+        {winnerName} wins the match{' '}
+        <span className="whitespace-nowrap">
+          {gameWins.team1}–{gameWins.team2}
+        </span>
       </h2>
       <p className="text-xs text-muted-foreground">
         Save the official result to update standings and team records.
