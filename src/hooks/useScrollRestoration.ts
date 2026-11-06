@@ -132,10 +132,14 @@ const useScrollRestoration = (routeKey?: string) => {
           window.addEventListener(type, onUserInput, { passive: true });
         }
 
-        /** The restore is over: stop listening, then allow saving again after a moment. */
+        /**
+         * The restore is over: allow saving again after a moment. The input listeners stay on for
+         * that moment, so a reader who acts in it ends the pause at once (stop) and their scroll
+         * is saved; they are removed when the pause ends.
+         */
         const finish = () => {
-          removeInputListeners();
           timeoutId = window.setTimeout(() => {
+            removeInputListeners();
             isRestoring.current = false;
             timeoutId = null;
           }, IS_RESTORING_RESET_DELAY_MS);

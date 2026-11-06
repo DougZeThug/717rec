@@ -309,6 +309,22 @@ describe('useScrollRestoration', () => {
       expect(setItem).toHaveBeenCalled();
     });
 
+    it('saves a scroll the reader makes in the short pause after the window ends', () => {
+      seed({ '/history': 907 });
+      mountPage();
+      // The spot is reached at 16 ms; the quiet second ends at the check at 1066 ms. Saving is
+      // switched back on 100 ms later, at 1166 ms.
+      tick(16 + 1050);
+      expect(saved()['/history']).toBe(907);
+
+      // Inside that pause the reader scrolls and stops. Nothing scrolls after it, so if the pause
+      // ignored the input this position would never be saved.
+      sendInput.wheel();
+      scrollTheReaderTo(1400);
+
+      expect(saved()['/history']).toBe(1400);
+    });
+
     it('starts the quiet period again after each correction', () => {
       seed({ '/history': 907 });
       mountPage();
