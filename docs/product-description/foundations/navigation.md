@@ -113,8 +113,8 @@ storage. On Back or Forward it then:
   page has moved, and ends after one second in which it needed no correction.
 - **Gives way to the reader.** A wheel turn, a touch, a key press (a held key
   repeating does not count) or a mouse press, including a press on a desktop
-  scrollbar, ends the restore at once, so it never pulls back a reader who has
-  started to scroll.
+  scrollbar, ends the restore at once, so it does not pull back a reader who scrolls with one
+  of these inputs.
 - **Does not save the position while it runs**, which is about 1.1 seconds when the
   data is cached, and saves again as soon as it ends.
 
@@ -128,7 +128,9 @@ questions).
 
 > **Technical note:** one cause of a late move is Chrome's scroll anchoring. When
 > content above the view changes size, the browser shifts the page, and the restore
-> jumps it back to the saved offset.
+> jumps it back to the saved offset. This cause is INFERRED from round-one runs in
+> which switching scroll anchoring off made the same code exact (reduced-motion reload
+> 5 of 5 against 0 of 5, `/teams` at 304px 3 of 3 against 0 of 5).
 
 Measured on 2026-11-06 in headless Chromium against fake data: Back to `/history`
 at 390px landed within 1px of the saved offset in 10 of 10 runs with the page's data
@@ -295,7 +297,7 @@ development build the analytics call does nothing.
 ## Edge cases
 
 - **Back and Forward bring `/teams`, `/stats`, `/history` and `/insights` back
-  where they were left; every other page comes back wherever the browser puts it.**
+  where they were left (Forward was not tried in a browser); every other page comes back wherever the browser puts it.**
   The four routes jump to the saved spot and hold it for a moment, and give way
   when the reader scrolls (see *Arrive*). A user who presses Back to `/schedule`
   gets what the browser gives: the top, in the 2026-11-05 test. Data that arrives
@@ -342,14 +344,14 @@ development build the analytics call does nothing.
   restore compared the page's height with the saved offset instead of checking where
   the browser had really landed, so on a page that was still loading it ended short.
   The code now ignores scroll events once the address has changed, jumps, reads back
-  where it landed, and retries until it is there. The first fault is measured for
+  where it landed, and retries, up to 20 times (about fifteen seconds), until it is there. The first fault is measured for
   `/history` after a team link. For `/teams` after the phone's bottom tab bar the saved
   offset was right and the restore landed short (below; the cause was not isolated,
   INFERRED to be the height comparison). That the two faults explain every 2026-11-05
   result, `/stats` and `/insights` included, is not shown: see the before-fix numbers
   below.
   - **Measured on 2026-11-06.** Fake data from a mock, headless Chromium, a fresh
-    browser for every run, the dev server unless stated. "n of n" counts runs that
+    browser context for every run, the dev server unless stated. "n of n" counts runs that
     landed within 1px of the saved offset; the before and after used the same
     scripts. `/history` at 390px wide, Back from a team page: **10 of 10** with the
     page's data cached and **10 of 10** after the team page was reloaded (so

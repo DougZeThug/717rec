@@ -1032,10 +1032,10 @@ finding read a superseded migration.
   (3 of 3 each). And the restore compared the page's height with the saved offset instead of reading back where the
   browser had landed, so when the page had to load its data again it ended short. The
   hook now ignores scroll events once the address has changed. It jumps to the saved
-  offset at once, reads back where it landed, and retries until it is there. It keeps
+  offset at once, reads back where it landed, and retries, up to 20 times (about fifteen seconds), until it is there. It keeps
   watching for up to three seconds, and jumps back if late content moves the page. It
   stops at once on a wheel turn, a touch, a key press or a mouse press, including a
-  press on a desktop scrollbar. Measured, within 1px, with the same scripts before and
+  press on a desktop scrollbar (a wheel turn and a mouse press were tried in a browser; a touch and a key press in unit tests only). Measured, within 1px, with the same scripts before and
   after: `/history` at 390px, Back from a team page, with the data cached went from 6
   of 10 to 10 of 10, and after the team page was reloaded from 2 of 10 to 10 of 10
   (production build: from 7 of 10 and 5 of 10 to 10 of 10 and 10 of 10). With reduced

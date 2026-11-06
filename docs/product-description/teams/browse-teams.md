@@ -236,7 +236,7 @@ browser on arrival even if nothing is touched. Nothing is sent to the league.
   `/teams`.** On 2026-11-05 (production build, fake data, scrolled 300px down a
   1,080px page) Back after a team, Help or Schedule came back at the top. A probe on
   `/stats`, which runs the same code, showed the saved position overwritten with 0
-  as the page was left; the fix stops that overwrite. On 2026-11-06 a test on
+  as the page was left. The code now ignores scroll events after the address changes. The 2026-11-06 runs on the old code did not show that overwrite on `/stats` (the saved offset was right 1 of 1 after a team link and 3 of 3 after the Schedule tab), so the probe was not reproduced and its cause is not known. On 2026-11-06 a test on
   `/teams` landed within 1 pixel in every run; the numbers are in the
   interrupt table above and in
   [navigation](../foundations/navigation.md#open-questions-and-verification). The
