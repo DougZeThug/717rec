@@ -23,7 +23,8 @@ describe('ThemeToggle', () => {
   // jsdom does no layout, so this pins the class. The header passes size="sm", which made the
   // button 42px wide; every button in this app is at least 44px to tap.
   it('is at least 44px wide even at the small size', () => {
-    render(<ThemeToggle size="sm" />);
+    // `default` size, so this pins the component's own class and not the small Button size's.
+    render(<ThemeToggle size="default" />);
 
     expect(screen.getByRole('button', { name: 'Toggle theme' })).toHaveClass('min-w-[44px]');
   });

@@ -17,11 +17,12 @@ describe('DestructiveIconButton', () => {
   // jsdom does no layout, so this pins the class. Remove match pair was 40px wide and Remove
   // signup 32px wide (a caller passed size-8); min-width beats width, so both are now 44px.
   it('is at least 44px wide, even when a caller sets a smaller size', () => {
+    // `default` size has no minimum width of its own, so this pins the component's own class.
     render(
       <DestructiveIconButton
         onClick={vi.fn()}
         title="Remove signup"
-        size="sm"
+        size="default"
         className="size-8 p-0"
       />
     );

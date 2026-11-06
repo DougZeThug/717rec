@@ -51,7 +51,8 @@ describe('DivisionRow', () => {
     await user.click(screen.getByRole('button', { name: /edit/i }));
 
     for (const field of [screen.getByLabelText('Division name'), screen.getByRole('spinbutton')]) {
-      expect(field).not.toHaveClass('h-9', 'h-10');
+      expect(field).not.toHaveClass('h-9');
+      expect(field).not.toHaveClass('h-10');
       expect(field).toHaveClass('h-11');
     }
   });
