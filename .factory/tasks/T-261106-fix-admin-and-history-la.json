@@ -1,0 +1,64 @@
+{
+  "id": "T-261106-fix-admin-and-history-la",
+  "title": "Fix admin and History layout clips at narrow widths",
+  "kind": "polish",
+  "status": "intake",
+  "request": "Work on the still open tasks (admin defects at 320px, History edit toolbar clip at 640-669px, tablet score card wrap)",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "ce13c13977aa16a02a6dabf31a39a11322e4cd20",
+  "createdAt": "2026-11-06T16:44:06.223Z",
+  "criteria": [
+    {
+      "text": "Season form (/admin/seasons, Create New Season): Cancel and Create Season buttons are fully on screen at 320px wide; before: Cancel left edge at x=-19.6",
+      "done": false
+    },
+    {
+      "text": "Timeslots (/admin/timeslots): card content stays inside its card at 320px; before: grid column 279.8px in a 238px card",
+      "done": false
+    },
+    {
+      "text": "Batch Matches date button (/admin/batch-matches): the date and the (yyyy-mm-dd) hint are inside the button at 320px; before: text cut by 34px",
+      "done": false
+    },
+    {
+      "text": "Confirm dialogs (Activate and Archive season): title and the confirm button are reachable at 320x844 and 320x640; before: Activate dialog 949px tall in an 844px screen",
+      "done": false
+    },
+    {
+      "text": "Auto-Schedule tabs (Auto-Loaded Teams / Manual Assignment): labels do not overlap at 320px; before: overlap 11.1px",
+      "done": false
+    },
+    {
+      "text": "Pending Scores card footer (/admin/pending-matches): the Reject and Approve buttons stay inside the card at 320px; before: 6.9px past the border",
+      "done": false
+    },
+    {
+      "text": "Scores entry row (/admin/scores): the Mark as final row and its badges stay inside the match box at 320px; before: badges 8px past the box",
+      "done": false
+    },
+    {
+      "text": "Create Team form (/admin/teams): fields fit inside the card at 320px; before: grid column 269.6px in a 238px card",
+      "done": false
+    },
+    {
+      "text": "Update Logos card (/admin/teams): Add Logo icon and label stay inside the button at 320px; before: spill 8.7px",
+      "done": false
+    },
+    {
+      "text": "History edit toolbar (/history, Edit Divisions, with unsaved changes): Save Changes is fully visible from 640 to 700px wide; before: 29.9px past the toolbar at 640px",
+      "done": false
+    },
+    {
+      "text": "No change at 390px and 1280px for each touched screen (measured before and after), no new console errors, no sideways page scroll, existing tests pass",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-06T16:44:12.471Z"
+}
