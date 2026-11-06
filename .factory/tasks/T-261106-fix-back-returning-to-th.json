@@ -1,0 +1,49 @@
+{
+  "id": "T-261106-fix-back-returning-to-th",
+  "title": "Fix Back returning to the wrong scroll position",
+  "kind": "fix",
+  "status": "planned",
+  "request": "Doug: 'Yes scroll fix' (answering: fix the shared scroll-restore hook so Back from a team page returns to the same scroll position, as found while polishing the History page)",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "436768ab6828e3761969cc23f37ee23d6cd5fcb6",
+  "createdAt": "2026-11-06T04:40:18.496Z",
+  "criteria": [
+    {
+      "text": "History: Back after a team link restores the exact scroll position in 10 of 10 runs with the data cached and 10 of 10 after a reload of the team page (real browser, 390px, fake data; before: 3/10 and 2/10)",
+      "done": false
+    },
+    {
+      "text": "Same at 1280px, and /stats, /teams and /insights still restore after a team link (or are marked not tried if the fake data has no link)",
+      "done": false
+    },
+    {
+      "text": "A reader who scrolls while a slow restore is still waiting is not pulled back, and Back no longer glides from the top",
+      "done": false
+    },
+    {
+      "text": "New hook tests exist and fail on the old code (mutation proof); existing tests unchanged; six checks pass at the final commit",
+      "done": false
+    },
+    {
+      "text": "Independent code review approves the final commit",
+      "done": false
+    },
+    {
+      "text": "Docs that call History/other scroll restore best effort or untested are updated with the new measurements; totals and links still true",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [
+    {
+      "at": "2026-11-06T04:40:27.269Z",
+      "why": "Owner answered 'Yes scroll fix' to my question whether to fix the shared scroll-restore hook as its own task (and approved the History task, the remembered-state addition, the 27px Champions links and the hand-edited criteria)."
+    }
+  ],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-06T04:42:50.932Z"
+}
