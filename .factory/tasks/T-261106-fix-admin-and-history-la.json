@@ -50,7 +50,11 @@
       "done": false
     },
     {
-      "text": "At 390px and 1280px, and at every width above each fix's limit, each touched screen measures the same before and after. Named exceptions: the batch date copy (hidden under 440px; the button grows to 284px from 440px) and the History drag hint (hidden at 640-699px). No new console errors, no sideways page scroll, existing tests pass, and the 2 new tests fail on the old code",
+      "text": "At 390px and 1280px, and at every width above each fix's limit, each touched screen measures the same before and after. Named exceptions: the batch date copy (hidden under 440px; the button grows to 284px from 440px), the History drag hint (hidden at 640-699px), and the Scores match rows (one column at 768-839px instead of two). No new console errors, no sideways page scroll, existing tests pass, and the 3 new tests fail on the old code",
+      "done": false
+    },
+    {
+      "text": "Admin Scores (/admin/scores) at 768-839px wide: each of the four result buttons (2-0, 2-1, 1-2, 0-2) shows its text on one line; before: the text split into '2-' and '0' at 768-810px (buttons 29-35px wide, 62px tall)",
       "done": false
     }
   ],
@@ -70,8 +74,12 @@
     {
       "at": "2026-11-06T17:15:43.139Z",
       "text": "Criteria 1,3,5,6,7,8,9,10,11 were reworded BY HAND in this file (the CLI cannot reword). Reason: measurement during the build changed what each fix does (each wrap is limited to the narrow widths where the defect is, so 390px and wider stay identical; the batch date hint stuck out at every width, not only 320px; the History fix hides the drag hint 640-699px instead of re-flowing the buttons). Original wording is in the commit that opened the task (ade4f54)."
+    },
+    {
+      "at": "2026-11-06T17:24:12.038Z",
+      "text": "Criterion 11 reworded again by hand to add the Scores tablet exception (criterion 12 was added after the tablet audit confirmed the '2-0' wrap at 768-810px). Tablet audit also found same-family score-text wraps on /admin/live-corrections (768-940px), /admin/league-night-status (744-1016px), /matches/<id>/live panel and dialog (long names); these are NOT fixed in this task and are reported to the owner."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-06T16:52:55.024Z"
+  "updatedAt": "2026-11-06T17:22:25.486Z"
 }
