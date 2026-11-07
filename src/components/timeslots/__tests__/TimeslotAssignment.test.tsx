@@ -36,7 +36,6 @@ const makeTimeslot = (overrides: Partial<TeamTimeslot>): TeamTimeslot => ({
 type FormProps = Partial<React.ComponentProps<typeof TimeslotAssignment>>;
 
 const renderForm = (props?: FormProps) => {
-  const onAssign = vi.fn();
   const onBatchAssign = vi.fn();
   const onBatchAssignDoubleHeaders = vi.fn();
   const form = (overrides?: FormProps) => (
@@ -44,7 +43,6 @@ const renderForm = (props?: FormProps) => {
       selectedDate={new Date('2026-07-01T12:00:00.000Z')}
       teams={teams}
       existingTimeslots={[]}
-      onAssign={onAssign}
       onBatchAssign={onBatchAssign}
       onBatchAssignDoubleHeaders={onBatchAssignDoubleHeaders}
       {...props}
@@ -53,7 +51,6 @@ const renderForm = (props?: FormProps) => {
   );
   const { rerender } = render(form());
   return {
-    onAssign,
     onBatchAssign,
     onBatchAssignDoubleHeaders,
     // The same form with new props, keeping what is ticked: what a change of

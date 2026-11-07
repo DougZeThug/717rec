@@ -13,11 +13,9 @@ const toast = vi.fn();
 const mockUseTeamsQuery = vi.fn();
 const mockUseTimeslots = vi.fn();
 
-const addTimeslot = vi.fn();
 const deleteTimeslot = vi.fn();
 const batchAssignTimeslots = vi.fn();
 const batchAssignDoubleHeaders = vi.fn();
-const assignByeWeek = vi.fn();
 const batchAssignByeWeeks = vi.fn();
 const removeByeWeek = vi.fn();
 const moveTeamBooking = vi.fn();
@@ -33,18 +31,15 @@ vi.mock('@/hooks/useTimeslots', () => ({
 vi.mock('@/utils/logger', () => ({ errorLog: vi.fn() }));
 
 type AssignProps = {
-  onAssign: (teamId: string, timeslot: string) => void;
   onBatchAssign: (teamIds: string[], timeslot: string) => void;
   onBatchAssignDoubleHeaders: (teamIds: string[], slot1: string, slot2: string) => void;
   isSubmitting?: boolean;
 };
 
 vi.mock('@/components/timeslots/TimeslotAssignment', () => ({
-  default: ({ onAssign, onBatchAssign, onBatchAssignDoubleHeaders, isSubmitting }: AssignProps) => (
+  default: ({ onBatchAssign, onBatchAssignDoubleHeaders, isSubmitting }: AssignProps) => (
     <div>
       <span>submitting:{String(isSubmitting)}</span>
-      <button onClick={() => onAssign('team-1', '6:00 PM')}>assign-regular</button>
-      <button onClick={() => onAssign('team-1', 'BYE')}>assign-bye</button>
       <button onClick={() => onBatchAssign(['team-1', 'team-2'], '7:00 PM')}>batch-regular</button>
       <button onClick={() => onBatchAssign(['team-1', 'team-2'], 'BYE')}>batch-bye</button>
       <button onClick={() => onBatchAssign(['team-1'], '7:00 PM')}>batch-single</button>
@@ -103,11 +98,9 @@ describe('TimeslotsTab', () => {
     ],
     isLoading: false,
     isNightLoaded: true,
-    addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots,
     batchAssignDoubleHeaders,
-    assignByeWeek,
     batchAssignByeWeeks,
     removeByeWeek,
     moveTeamBooking,
@@ -194,36 +187,6 @@ describe('TimeslotsTab', () => {
     renderTab();
 
     expect(screen.getByText('submitting:true')).toBeInTheDocument();
-  });
-
-  it('assigns a regular timeslot via addTimeslot with a success toast', async () => {
-    const user = userEvent.setup();
-    renderTab();
-    await user.click(screen.getByText('assign-regular'));
-    await waitFor(() =>
-      expect(addTimeslot).toHaveBeenCalledWith(expect.any(Date), 'team-1', '6:00 PM')
-    );
-    expect(assignByeWeek).not.toHaveBeenCalled();
-    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Timeslot Assigned' }));
-  });
-
-  it('routes BYE assignments through assignByeWeek with its own toast', async () => {
-    const user = userEvent.setup();
-    renderTab();
-    await user.click(screen.getByText('assign-bye'));
-    await waitFor(() => expect(assignByeWeek).toHaveBeenCalledWith(expect.any(Date), 'team-1'));
-    expect(addTimeslot).not.toHaveBeenCalled();
-    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Bye Week Assigned' }));
-  });
-
-  it('shows an error toast when assignment fails', async () => {
-    addTimeslot.mockRejectedValueOnce(new Error('boom'));
-    const user = userEvent.setup();
-    renderTab();
-    await user.click(screen.getByText('assign-regular'));
-    await waitFor(() =>
-      expect(toast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }))
-    );
   });
 
   it('names the team in the toast when a block is booked for one team', async () => {
@@ -451,11 +414,9 @@ describe('TimeslotsTab, opened by an approved request', () => {
       timeslots,
       isLoading: false,
       isNightLoaded,
-      addTimeslot,
       deleteTimeslot,
       batchAssignTimeslots,
       batchAssignDoubleHeaders,
-      assignByeWeek,
       batchAssignByeWeeks,
       removeByeWeek,
       moveTeamBooking,
@@ -685,11 +646,9 @@ describe('TimeslotsTab, when the admin has looked at another night', () => {
       timeslots: blockRows('6:00 PM', '6:30 PM', OTHER_TEAM_ID),
       isLoading: false,
       isNightLoaded: true,
-      addTimeslot,
       deleteTimeslot,
       batchAssignTimeslots,
       batchAssignDoubleHeaders,
-      assignByeWeek,
       batchAssignByeWeeks,
       removeByeWeek,
       moveTeamBooking,

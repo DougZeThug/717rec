@@ -12,11 +12,6 @@ interface TimeslotAssignmentProps {
   selectedDate: Date;
   teams: Team[];
   existingTimeslots: TeamTimeslot[];
-  /**
-   * Not used: the form only books in batch (one or more ticked teams). It stays in the type so
-   * TimeslotsTab still compiles; remove it together with that handler.
-   */
-  onAssign: (teamId: string, timeslot: string) => void;
   onBatchAssign?: (teamIds: string[], timeslot: string) => void;
   onBatchAssignDoubleHeaders?: (teamIds: string[], slot1: string, slot2: string) => void;
   /** True while a booking is on its way, so Confirm cannot be pressed twice. */

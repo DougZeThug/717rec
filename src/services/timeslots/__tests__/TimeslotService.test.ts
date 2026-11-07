@@ -15,7 +15,6 @@ vi.mock('../TimeslotQueryService', () => ({
 vi.mock('../BackToBackTimeslotService', () => ({
   BackToBackTimeslotService: {
     addBackToBackTimeslot: vi.fn().mockResolvedValue([]),
-    addTimeslot: vi.fn().mockResolvedValue([]),
     deleteTimeslot: vi.fn().mockResolvedValue(null),
   },
 }));

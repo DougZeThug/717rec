@@ -6,11 +6,9 @@ export const useTimeslots = (date: Date) => {
     useTimeslotQuery(date);
   const {
     isSubmitting,
-    addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots,
     batchAssignDoubleHeaders,
-    assignByeWeek,
     batchAssignByeWeeks,
     removeByeWeek,
     moveTeamBooking,
@@ -35,11 +33,9 @@ export const useTimeslots = (date: Date) => {
     isNightLoaded: !isLoading && !isPlaceholderData && hasData,
     error,
     groupedTimeslots,
-    addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots,
     batchAssignDoubleHeaders,
-    assignByeWeek,
     batchAssignByeWeeks,
     removeByeWeek,
     moveTeamBooking,
