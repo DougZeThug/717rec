@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -7,6 +8,8 @@ import type { Team } from '@/types';
 vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/hooks/useUpdateTeam', () => ({ useUpdateTeam: () => ({ updateTeam: vi.fn() }) }));
 vi.mock('@/utils/imageUpload', () => ({ uploadTeamImage: vi.fn() }));
+
+import { uploadTeamImage } from '@/utils/imageUpload';
 
 import TeamLogoCard from '../TeamLogoCard';
 
@@ -29,5 +32,26 @@ describe('TeamLogoCard', () => {
     expect(logo).toHaveClass('size-full');
     expect(logo).not.toHaveClass('size-36');
     expect(logo?.parentElement).toHaveClass('size-20', 'overflow-hidden');
+  });
+
+  it('opens the file picker when the Add Logo button is pressed', async () => {
+    render(<TeamLogoCard team={team} onUpdate={vi.fn()} />);
+
+    const input = screen.getByLabelText('Upload team logo') as HTMLInputElement;
+    const openPicker = vi.spyOn(input, 'click').mockImplementation(() => undefined);
+    await userEvent.click(screen.getByRole('button', { name: /add logo/i }));
+
+    expect(openPicker).toHaveBeenCalledTimes(1);
+  });
+
+  it('does nothing when the file picker is closed without a file', () => {
+    const onUpdate = vi.fn();
+    render(<TeamLogoCard team={team} onUpdate={onUpdate} />);
+
+    fireEvent.change(screen.getByLabelText('Upload team logo'), { target: { files: [] } });
+
+    expect(uploadTeamImage).not.toHaveBeenCalled();
+    expect(onUpdate).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /add logo/i })).toBeEnabled();
   });
 });

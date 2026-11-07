@@ -164,6 +164,80 @@ describe('TimeslotAssignment', () => {
     expect(screen.getByText('Team Charlie')).toBeInTheDocument();
   });
 
+  describe('the form controls', () => {
+    const formOf = (button: HTMLElement) => button.closest('form') as HTMLFormElement;
+
+    it('clears every ticked team when Select All is pressed a second time', () => {
+      renderForm();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select All' }));
+      expect(screen.getByText('3 teams selected')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Deselect All' }));
+
+      expect(screen.queryByText(/teams? selected/)).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Select All' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Confirm Assignment (0 Teams)' })).toBeDisabled();
+    });
+
+    it('lets a double header time be pressed again to take it back', () => {
+      renderForm();
+      fireEvent.click(screen.getByRole('switch'));
+
+      fireEvent.click(screen.getByRole('button', { name: '7:00 PM' }));
+      expect(screen.getByText('1/2 selected')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: '7:00 PM' }));
+      expect(screen.getByText('0/2 selected')).toBeInTheDocument();
+    });
+
+    it('swaps out the oldest double header time when a third is pressed', () => {
+      const { onBatchAssignDoubleHeaders } = renderForm();
+      fireEvent.click(screen.getByRole('switch'));
+      fireEvent.click(screen.getByRole('button', { name: /Team Alpha/ }));
+
+      fireEvent.click(screen.getByRole('button', { name: '7:00 PM' }));
+      fireEvent.click(screen.getByRole('button', { name: '8:00 PM' }));
+      fireEvent.click(screen.getByRole('button', { name: '9:00 PM' }));
+
+      // Still two times: 7:00 PM was dropped, 8:00 PM and 9:00 PM remain.
+      expect(screen.getByText('2/2 selected')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm Double Header (1 Team)' }));
+      expect(onBatchAssignDoubleHeaders).toHaveBeenCalledTimes(1);
+      expect(onBatchAssignDoubleHeaders).toHaveBeenCalledWith(['t1'], '8:00 PM', '9:00 PM');
+      // The ticks are cleared after a booking so the next team starts fresh.
+      expect(screen.queryByText(/teams? selected/)).not.toBeInTheDocument();
+    });
+
+    // The button is disabled, but Enter in the form still reaches the submit handler.
+    it('does not book a double header while only one time is chosen', () => {
+      const { onBatchAssignDoubleHeaders, onBatchAssign } = renderForm();
+      fireEvent.click(screen.getByRole('switch'));
+      fireEvent.click(screen.getByRole('button', { name: /Team Alpha/ }));
+      fireEvent.click(screen.getByRole('button', { name: '7:00 PM' }));
+
+      const submit = screen.getByRole('button', { name: 'Confirm Double Header (1 Team)' });
+      expect(submit).toBeDisabled();
+      fireEvent.submit(formOf(submit));
+
+      expect(onBatchAssignDoubleHeaders).not.toHaveBeenCalled();
+      expect(onBatchAssign).not.toHaveBeenCalled();
+    });
+
+    it('does not book a team while no block is chosen', () => {
+      const { onBatchAssign, onBatchAssignDoubleHeaders } = renderForm();
+      fireEvent.click(screen.getByRole('button', { name: /Team Alpha/ }));
+
+      const submit = screen.getByRole('button', { name: 'Confirm Assignment (1 Team)' });
+      expect(submit).toBeDisabled();
+      fireEvent.submit(formOf(submit));
+
+      expect(onBatchAssign).not.toHaveBeenCalled();
+      expect(onBatchAssignDoubleHeaders).not.toHaveBeenCalled();
+      expect(screen.getByText('1 team selected')).toBeInTheDocument();
+    });
+  });
+
   // The grid hides a team once it has a booking on the date on screen. A tick
   // set before that, on another night or before another admin booked the team,
   // used to stay counted and be sent, so the team was booked twice.
