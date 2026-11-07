@@ -47,14 +47,12 @@ describe('ScoreSubmissionCard', () => {
 
   // jsdom does no layout, so this pins the classes. The "Submitted" date is 196px wide on one line,
   // 211px for the widest possible date ("May 30, 2026 at 10:00 AM"). Beside the buttons it wrapped to
-  // four lines at 360px, three at 390px and two up to 491px; with the widest date it still wrapped
-  // up to about 506px. Under 512px the buttons now drop to their own row.
-  it('puts the buttons on their own row under 512px wide, so the date stays on one line', () => {
+  // four lines at 360px, three at 390px and two up to 491px, and a width rule still left the date on
+  // two lines at 768px (the sidebar takes the room there). The row wraps instead of using a width.
+  it('puts the buttons on their own row whenever the date and buttons do not fit one row', () => {
     render(<ScoreSubmissionCard submission={submission} onApprove={vi.fn()} onReject={vi.fn()} />);
 
     const footer = screen.getByText(/^Submitted /).parentElement;
-    expect(footer).toHaveClass('max-[512px]:flex-wrap', 'max-[512px]:gap-2');
-    expect(footer).not.toHaveClass('max-[359px]:flex-wrap');
-    expect(footer).not.toHaveClass('max-[492px]:flex-wrap');
+    expect(footer).toHaveClass('flex', 'flex-wrap', 'justify-between', 'gap-2');
   });
 });

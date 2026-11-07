@@ -120,9 +120,10 @@ const ScoreSubmissionCard = ({ submission, onApprove, onReject }: ScoreSubmissio
         <SubmissionMessage message={submission.message} />
 
         {/* The date needs 196 to 211px on one line (the widest, "May 30, 2026 at 10:00 AM", is
-            211px). Under 512px wide it cannot share the row with the buttons without wrapping
-            onto two to four lines, so the buttons drop to their own row there. */}
-        <div className="flex items-center justify-between pt-4 border-t max-[512px]:flex-wrap max-[512px]:gap-2">
+            211px). When it cannot share the row with the buttons, the buttons drop to their own row
+            instead of the date wrapping onto two to four lines. No width rule: the room left for
+            the card changes with the sidebar (from 768px) and the screen, so the row decides. */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t">
           <span className="text-xs text-muted-foreground">
             Submitted {formatWithPattern(submission.created_at, "MMM d, yyyy 'at' h:mm a")}
           </span>
