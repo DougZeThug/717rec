@@ -96,10 +96,18 @@
       "log": ".factory/evidence/T-261107-remove-the-unused-onassi/factory-specs.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "c35569d6e93fb35f2760aa0dae09764dc70920e9",
+      "at": "2026-11-07T14:46:06.189Z",
+      "summary": "Independent reviewer (fresh, read-only) tried to break four claims and could not. (A1) The onAssign chain was reachable only through the unused prop: no live caller left in the repo (src, e2e, scripts, docs, supabase); kept code (ByeWeekService.assignByeWeek, TimeslotValidator.validateTimeslotAssignment, getBackToBackPairName, batch BYE path) is still used. (A2) The 30 assertions the integrity check counts as lost (TimeslotsTab.test.tsx 7, useTimeslotMutation.test.ts 21, useTimeslots.test.ts 2) all tested deleted code: 3 handler tests, 3 addTimeslot hook tests, 1 assignByeWeek hook test, mock entries; batch tests and batch error-toast tests remain; mock return shapes match the hooks. Reviewer says a waiver for exactly those 30 is justified (the owner decides; not recorded). (A3) shoot.mjs guard sets process.exitCode = 2 and skips the run, same message; VIEWPORTS and CORS above the guard is safe; an error inside shoot() still ends non-zero; no process.exit( call left. 117 factory specs and 174 timeslot tests pass, typecheck clean. (A4) No control file changed."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-07T14:44:15.895Z"
+  "updatedAt": "2026-11-07T14:46:06.190Z"
 }
