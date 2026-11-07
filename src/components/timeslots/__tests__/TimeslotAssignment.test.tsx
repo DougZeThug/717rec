@@ -209,7 +209,8 @@ describe('TimeslotAssignment', () => {
       expect(screen.queryByText(/teams? selected/)).not.toBeInTheDocument();
     });
 
-    // The button is disabled, but Enter in the form still reaches the submit handler.
+    // A guard the screen cannot reach: the button is disabled and the form has no text field, so
+    // the submit event is forced here to prove the handler books nothing on its own.
     it('does not book a double header while only one time is chosen', () => {
       const { onBatchAssignDoubleHeaders, onBatchAssign } = renderForm();
       fireEvent.click(screen.getByRole('switch'));
