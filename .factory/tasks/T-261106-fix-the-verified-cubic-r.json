@@ -2,7 +2,7 @@
   "id": "T-261106-fix-the-verified-cubic-r",
   "title": "Fix the verified cubic review findings on PR 1730",
   "kind": "fix",
-  "status": "intake",
+  "status": "ready",
   "request": "Watch the pr and autofix (cubic AI review of PR 1730: 45 findings, 29 inline; verify each, fix the real ones, answer the rest on their threads)",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -26,16 +26,17 @@
     },
     {
       "text": "Findings not fixed are answered on their threads with what was traced (team name link and breadcrumb padding, season badge colours, team link slug, DivisionPanel effect) and nothing else changes: six checks pass at the final head and an independent code review approves",
-      "done": false
+      "done": true,
+      "evidence": "The five findings left open each carry a reply on their GitHub thread saying what was traced and that the call is the owner's: DivisionPanel effect (React Doctor and cubic), TeamCardGrid link box size, team link slug collision, windowed History list row height, NAV-02 suspected-bug mark (checked on the PR: 6 unresolved threads, each with a reply; later React Doctor repeats of the same DivisionPanel warning carry no new reply). Six checks pass at c053fda (integrity, typecheck, lint, knip, build, unit). Independent code review: APPROVE at 08afd77, plus the docs-only wording commit c053fda. Not claimed: a GitHub summary comment failed twice with HTTP 500 and was not retried; DeepSource Test coverage still fails on 5 unreachable lines in TimeslotAssignment.tsx."
     }
   ],
   "checks": {
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
+      "sha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
       "dirty": false,
-      "at": "2026-11-07T00:37:36.150Z",
+      "at": "2026-11-07T00:52:01.386Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/integrity.log"
@@ -43,39 +44,39 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
+      "sha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
       "dirty": false,
-      "at": "2026-11-07T00:37:43.675Z",
-      "seconds": 7,
+      "at": "2026-11-07T00:52:10.296Z",
+      "seconds": 9,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
+      "sha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
       "dirty": false,
-      "at": "2026-11-07T00:38:50.491Z",
-      "seconds": 67,
+      "at": "2026-11-07T00:53:16.607Z",
+      "seconds": 66,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
+      "sha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
       "dirty": false,
-      "at": "2026-11-07T00:38:53.026Z",
-      "seconds": 2,
+      "at": "2026-11-07T00:53:19.292Z",
+      "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
+      "sha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
       "dirty": false,
-      "at": "2026-11-07T00:38:57.393Z",
+      "at": "2026-11-07T00:53:23.419Z",
       "seconds": 4,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/build.log"
@@ -83,18 +84,28 @@
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
+      "sha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
       "dirty": false,
-      "at": "2026-11-07T00:45:30.119Z",
-      "seconds": 393,
+      "at": "2026-11-07T00:59:53.544Z",
+      "seconds": 390,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/unit.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
+      "at": "2026-11-07T01:00:41.835Z",
+      "summary": "Independent reviewer (fresh, read-only) first said CHANGES at ea471ae: PENDING-20 text was false under 500px, the 512px footer limit left the date on two lines at 768px, a wrong test comment, a vague 'sample date', two needless negative assertions. All five fixed (833d6c4, 08afd77) and the reviewer then said APPROVE at 08afd77: footer sweep of 981 widths from 320 to 1300 in 12 sidebar, scrollbar and date combinations found 0 two-line dates and 0 buttons outside the card; the new tests fail when the matching code is broken; docs numbers checked against code. The last commit c053fda is docs only and makes the reviewer's two optional wording fixes (on a phone held upright; 359 up to about 490 pixels); the reviewer did not re-read that commit. Five unreachable TimeslotAssignment lines (130, 171-173, 210) are dead code, left for a follow-up Doug decides."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-07T00:45:30.119Z"
+  "updatedAt": "2026-11-07T01:00:41.940Z",
+  "readySha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
+  "readyAt": "2026-11-07T01:00:41.940Z"
 }
