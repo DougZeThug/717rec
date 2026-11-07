@@ -1,0 +1,94 @@
+{
+  "id": "T-261107-remove-the-unreachable-s",
+  "title": "Remove the unreachable single-team mode from the timeslot booking form",
+  "kind": "fix",
+  "status": "intake",
+  "request": "Owner pasted the DeepSource Test coverage report for PR 1730: it fails on src/components/timeslots/TimeslotAssignment.tsx lines 130, 171-173 and 210, which no test can reach because batchMode is always true. Fix it (owner standing rule: fix everything that comes up).",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
+  "createdAt": "2026-11-07T12:36:29.774Z",
+  "criteria": [
+    {
+      "text": "The unreachable code is removed from the timeslot booking form (the single-team drop-down branch, its submit branch, the single-time branch of the double header toggle, and the state only they used) and nothing else on the form changes: markup, Confirm text and Confirm enabled state are the same in 7 form states at 390px and at 1280px wide before and after, and the form's tests pass.",
+      "done": true,
+      "evidence": "Before and after snapshots of the real form (fake data, headless Chromium, dev server): 7 states at 390px and 7 at 1280px wide (empty, team ticked, block picked, double header on, one time, two times, Select All). All 14 are byte-identical in markup, Confirm text and Confirm disabled flag. The 72 tests in src/components/timeslots and src/components/admin/timeslots pass; typecheck and lint pass on the changed file. Diff: 37 added, 93 removed, one source file."
+    },
+    {
+      "text": "Line coverage of TimeslotAssignment.tsx is 100% in the unit tests, and the DeepSource Test coverage status on the pushed head no longer lists that file.",
+      "done": false
+    },
+    {
+      "text": "Six checks pass at the final head and an independent code review approves. The unused onAssign prop chain through TimeslotsTab and the hook is left as it is, and named as a follow-up.",
+      "done": false
+    }
+  ],
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "d463411855f18139ddc9a3673401493d999e3710",
+      "dirty": false,
+      "at": "2026-11-07T12:39:19.417Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261107-remove-the-unreachable-s/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "d463411855f18139ddc9a3673401493d999e3710",
+      "dirty": false,
+      "at": "2026-11-07T12:39:27.181Z",
+      "seconds": 8,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261107-remove-the-unreachable-s/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "d463411855f18139ddc9a3673401493d999e3710",
+      "dirty": false,
+      "at": "2026-11-07T12:40:37.129Z",
+      "seconds": 70,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261107-remove-the-unreachable-s/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "d463411855f18139ddc9a3673401493d999e3710",
+      "dirty": false,
+      "at": "2026-11-07T12:40:41.103Z",
+      "seconds": 4,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261107-remove-the-unreachable-s/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "d463411855f18139ddc9a3673401493d999e3710",
+      "dirty": false,
+      "at": "2026-11-07T12:40:45.748Z",
+      "seconds": 5,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261107-remove-the-unreachable-s/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "d463411855f18139ddc9a3673401493d999e3710",
+      "dirty": false,
+      "at": "2026-11-07T12:46:59.933Z",
+      "seconds": 374,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261107-remove-the-unreachable-s/unit.log"
+    }
+  },
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-07T12:46:59.934Z"
+}
