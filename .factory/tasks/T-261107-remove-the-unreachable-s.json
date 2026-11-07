@@ -20,7 +20,8 @@
     },
     {
       "text": "Six checks pass at the final head and an independent code review approves. The unused onAssign prop chain through TimeslotsTab and the hook is left as it is, and named as a follow-up.",
-      "done": false
+      "done": true,
+      "evidence": "Six checks pass at d463411 (integrity, typecheck, lint, knip, build, unit; none dirty). Independent code review: APPROVE at d463411 (60 random click sequences identical old vs new, 768-combination truth table matched, snapshots byte-identical). The onAssign chain is left as it is and recorded as a follow-up note on this task."
     }
   ],
   "checks": {
@@ -85,10 +86,23 @@
       "log": ".factory/evidence/T-261107-remove-the-unreachable-s/unit.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "d463411855f18139ddc9a3673401493d999e3710",
+      "at": "2026-11-07T12:53:26.347Z",
+      "summary": "Independent reviewer (fresh, read-only) tried to break five claims and could not. (1) batchMode was useState(true) with the setter never called, so the single-team drop-down, its submit branch and its label never ran. (2) handleTimeslotToggle is wired only to the double header buttons, so its single-time branch never ran. (3) A truth table of 768 combinations of the Confirm disabled rule and label matched old and new, and a differential run of 60 seeded random click sequences (team ticks, Select All, block pick, Double Header switch, time buttons, submit, re-renders with 4 booking sets) gave identical innerHTML and identical onBatchAssign and onBatchAssignDoubleHeaders calls at every step (38 batch and 9 double header bookings); a deliberate break of the rule made 14 of 60 fail, so the check can fail. (4) onAssign stays in the type so TimeslotsTab compiles; nothing else depends on the removed drop-down. (5) Before and after form snapshots are byte-identical across 14 distinct states. Tests (54) pass, eslint clean, line coverage of the file 100% (52/52). Follow-up named: remove the unused onAssign chain (TimeslotsTab handleTimeslotAssign, the onAssign prop, the hook addTimeslot) in a separate task."
+    }
+  ],
   "issues": {},
   "interventions": [],
-  "notes": [],
+  "notes": [
+    {
+      "at": "2026-11-07T12:53:26.376Z",
+      "text": "Follow-up, not done here: onAssign is now unused inside TimeslotAssignment. Remove the chain in a separate small task: TimeslotsTab handleTimeslotAssign (line ~221, passed at ~413), the onAssign prop type, the hook useTimeslotMutation addTimeslot (and its service and tests if nothing else uses them). Two older audit docs cite the old line numbers (bug-triage.md:1456, docs/audits/UX-AUDIT-2026-09.md:392); they are dated records and were not changed."
+    }
+  ],
   "waivers": [],
-  "updatedAt": "2026-11-07T12:46:59.934Z"
+  "updatedAt": "2026-11-07T12:53:26.406Z"
 }
