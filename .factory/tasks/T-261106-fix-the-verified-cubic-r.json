@@ -33,9 +33,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "ea471ae64162de8392bccde8bd5326d790f9787b",
+      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
       "dirty": false,
-      "at": "2026-11-07T00:13:00.370Z",
+      "at": "2026-11-07T00:37:36.150Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/integrity.log"
@@ -43,39 +43,39 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "ea471ae64162de8392bccde8bd5326d790f9787b",
+      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
       "dirty": false,
-      "at": "2026-11-07T00:13:08.083Z",
-      "seconds": 8,
+      "at": "2026-11-07T00:37:43.675Z",
+      "seconds": 7,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "ea471ae64162de8392bccde8bd5326d790f9787b",
+      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
       "dirty": false,
-      "at": "2026-11-07T00:14:17.297Z",
-      "seconds": 69,
+      "at": "2026-11-07T00:38:50.491Z",
+      "seconds": 67,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "ea471ae64162de8392bccde8bd5326d790f9787b",
+      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
       "dirty": false,
-      "at": "2026-11-07T00:14:20.153Z",
-      "seconds": 3,
+      "at": "2026-11-07T00:38:53.026Z",
+      "seconds": 2,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "ea471ae64162de8392bccde8bd5326d790f9787b",
+      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
       "dirty": false,
-      "at": "2026-11-07T00:14:24.436Z",
+      "at": "2026-11-07T00:38:57.393Z",
       "seconds": 4,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/build.log"
@@ -83,10 +83,10 @@
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "ea471ae64162de8392bccde8bd5326d790f9787b",
+      "sha": "08afd770001dab068f538f508b9ac3644799ab83",
       "dirty": false,
-      "at": "2026-11-07T00:20:47.005Z",
-      "seconds": 383,
+      "at": "2026-11-07T00:45:30.119Z",
+      "seconds": 393,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261106-fix-the-verified-cubic-r/unit.log"
     }
@@ -96,5 +96,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-07T00:20:47.005Z"
+  "updatedAt": "2026-11-07T00:45:30.119Z"
 }
