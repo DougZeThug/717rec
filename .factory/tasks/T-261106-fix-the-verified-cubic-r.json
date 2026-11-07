@@ -99,13 +99,20 @@
       "sha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
       "at": "2026-11-07T01:00:41.835Z",
       "summary": "Independent reviewer (fresh, read-only) first said CHANGES at ea471ae: PENDING-20 text was false under 500px, the 512px footer limit left the date on two lines at 768px, a wrong test comment, a vague 'sample date', two needless negative assertions. All five fixed (833d6c4, 08afd77) and the reviewer then said APPROVE at 08afd77: footer sweep of 981 widths from 320 to 1300 in 12 sidebar, scrollbar and date combinations found 0 two-line dates and 0 buttons outside the card; the new tests fail when the matching code is broken; docs numbers checked against code. The last commit c053fda is docs only and makes the reviewer's two optional wording fixes (on a phone held upright; 359 up to about 490 pixels); the reviewer did not re-read that commit. Five unreachable TimeslotAssignment lines (130, 171-173, 210) are dead code, left for a follow-up Doug decides."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
+      "at": "2026-11-07T01:08:24.060Z",
+      "summary": "Independent reviewer read c053fda itself and approves it (this replaces the earlier note that it had not read that commit). c053fda is docs only: only docs/product-description/scores/pending-scores.md changed outside .factory, and the word-level diff against 08afd77 is exactly three tokens (held upright; up to about 490 pixels) plus re-wrapped lines. The new sentences match the reviewer's measured widths: upright phones (480px or less) always get two rows, a phone held sideways (600 to 767px) keeps one row, the old width rule wrapped a typical date from 359 up to about 490. Table rows unchanged (24), link check 0 broken of 2758. Earlier approval at 08afd77 still stands for all code and tests (footer sweep of 981 widths, 0 bad cases). Five unreachable TimeslotAssignment lines (130, 171-173, 210) are dead code, left for a follow-up the owner decides."
     }
   ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-07T01:00:52.131Z",
+  "updatedAt": "2026-11-07T01:08:24.123Z",
   "readySha": "c053fda7a68448c1fee891ff87e5d2efadc84ab3",
-  "readyAt": "2026-11-07T01:00:52.131Z"
+  "readyAt": "2026-11-07T01:08:24.123Z"
 }
