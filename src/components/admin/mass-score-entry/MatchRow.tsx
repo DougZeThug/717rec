@@ -152,8 +152,9 @@ const MatchRow: React.FC<MatchRowProps> = ({
         onClearError={handleClearError}
       />
 
-      {/* Match Status & Completion Toggle combined */}
-      <div className="flex items-center justify-between pt-2">
+      {/* Match Status & Completion Toggle combined. Under 359px wide the toggle and the status
+          badges cannot share one row (the label was squeezed to 3 lines): wrap there only. */}
+      <div className="flex items-center justify-between pt-2 max-[359px]:flex-wrap max-[359px]:gap-2">
         <div className="flex items-center gap-2">
           <label
             htmlFor={`mark-complete-${match.id}`}
@@ -163,6 +164,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
           </label>
           <Switch
             id={`mark-complete-${match.id}`}
+            className="hit-area-44"
             checked={isMatchCompleted(match)}
             onCheckedChange={handleCompletedChange}
             disabled={isSubmitting}

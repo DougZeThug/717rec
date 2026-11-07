@@ -19,8 +19,8 @@ const DetailRow: React.FC<{
   label: string;
   children?: React.ReactNode;
 }> = ({ Icon, label, children }) => (
-  <div className="flex items-center gap-2">
-    <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+  <div className="flex min-w-0 items-center gap-2">
+    <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
     <span className="text-sm text-muted-foreground">{label}</span>
     {children}
   </div>
@@ -42,12 +42,12 @@ const SubmissionHeader: React.FC = () => (
 const SubmitterDetails: React.FC<{ submission: ScoreSubmission }> = ({ submission }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
     <DetailRow Icon={User} label="Submitter:">
-      <span className="font-medium">{submission.submitter_name}</span>
+      <span className="min-w-0 wrap-break-word font-medium">{submission.submitter_name}</span>
     </DetailRow>
 
     {submission.submitter_team && (
       <DetailRow Icon={Users} label="Team:">
-        <span className="font-medium">{submission.submitter_team}</span>
+        <span className="min-w-0 wrap-break-word font-medium">{submission.submitter_team}</span>
       </DetailRow>
     )}
   </div>
@@ -83,6 +83,27 @@ const SubmissionActions: React.FC<{ onApprove: () => void; onReject: () => void 
   </div>
 );
 
+/** Which match this report is about. */
+const MatchLine: React.FC<{
+  team1Name?: string;
+  team2Name?: string;
+  matchDate?: string | null;
+}> = ({ team1Name, team2Name, matchDate }) => (
+  <DetailRow Icon={Swords} label="Match:">
+    {/* One flex item: the date follows the names as plain text and never gets squeezed. */}
+    <span className="min-w-0 wrap-break-word">
+      <span className="font-medium">
+        {team1Name && team2Name ? `${team1Name} vs ${team2Name}` : 'Unknown match'}
+      </span>
+      {matchDate && (
+        <span className="ml-2 whitespace-nowrap text-xs text-muted-foreground">
+          ({formatWithPattern(matchDate, 'MMM d, yyyy')})
+        </span>
+      )}
+    </span>
+  </DetailRow>
+);
+
 const ScoreSubmissionCard = ({ submission, onApprove, onReject }: ScoreSubmissionCardProps) => {
   const team1Name = submission.match?.team1?.name;
   const team2Name = submission.match?.team2?.name;
@@ -92,23 +113,17 @@ const ScoreSubmissionCard = ({ submission, onApprove, onReject }: ScoreSubmissio
     <Card>
       <SubmissionHeader />
       <CardContent className="space-y-4">
-        {/* Which match this report is about */}
-        <DetailRow Icon={Swords} label="Match:">
-          <span className="font-medium">
-            {team1Name && team2Name ? `${team1Name} vs ${team2Name}` : 'Unknown match'}
-          </span>
-          {matchDate && (
-            <span className="text-xs text-muted-foreground">
-              ({formatWithPattern(matchDate, 'MMM d, yyyy')})
-            </span>
-          )}
-        </DetailRow>
+        <MatchLine team1Name={team1Name} team2Name={team2Name} matchDate={matchDate} />
 
         <SubmitterDetails submission={submission} />
 
         <SubmissionMessage message={submission.message} />
 
-        <div className="flex items-center justify-between pt-4 border-t">
+        {/* The date needs 196 to 211px on one line (the widest, "May 30, 2026 at 10:00 AM", is
+            211px). When it cannot share the row with the buttons, the buttons drop to their own row
+            instead of the date wrapping onto two to four lines. No width rule: the room left for
+            the card changes with the sidebar (from 768px) and the screen, so the row decides. */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t">
           <span className="text-xs text-muted-foreground">
             Submitted {formatWithPattern(submission.created_at, "MMM d, yyyy 'at' h:mm a")}
           </span>

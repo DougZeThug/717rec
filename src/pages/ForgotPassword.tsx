@@ -55,7 +55,11 @@ const ForgotPassword: React.FC = () => {
         title="Reset your password"
         description="We will email you a link to set a new one."
         footer={
-          <Link to="/auth" className="text-sm text-primary underline-offset-4 hover:underline">
+          <Link
+            to="/auth"
+            // 36px tall to tap (it was 20px); the negative margin keeps the layout where it was.
+            className="text-sm text-primary underline-offset-4 hover:underline py-2 -my-2"
+          >
             Back to login
           </Link>
         }

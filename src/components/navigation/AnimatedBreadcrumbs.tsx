@@ -84,7 +84,9 @@ const AnimatedBreadcrumbs: React.FC<AnimatedBreadcrumbsProps> = ({
                 to={item.href}
                 className={cn(
                   'flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors',
-                  'hover:underline underline-offset-4'
+                  'hover:underline underline-offset-4',
+                  // 32px tall to tap (it was 20px); the negative margin keeps the layout where it was.
+                  'py-1.5 -my-1.5'
                 )}
               >
                 {index === 0 && <Home className="size-3.5" />}

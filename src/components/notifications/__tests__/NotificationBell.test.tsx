@@ -128,6 +128,24 @@ describe('NotificationBell', () => {
     expect(screen.getByText('2 recent')).toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the classes. The panel was 648px tall on a 640px phone
+  // and could not be scrolled.
+  it('keeps the panel inside the screen height and scrolls it when it is taller', async () => {
+    const user = userEvent.setup();
+    setUnread({ unreadCount: 0 });
+
+    render(<NotificationBell />);
+    await user.click(screen.getByRole('button', { name: 'Notifications' }));
+
+    const panel = (await screen.findByRole('heading', { name: 'Notifications' })).closest(
+      '[role="dialog"]'
+    );
+    expect(panel).toHaveClass(
+      'max-h-(--radix-popover-content-available-height)',
+      'overflow-y-auto'
+    );
+  });
+
   it('hides the admin quick-post form for non-admins', async () => {
     const user = userEvent.setup();
     setUnread({ unreadCount: 3 });

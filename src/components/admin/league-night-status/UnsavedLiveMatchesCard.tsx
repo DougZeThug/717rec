@@ -43,7 +43,7 @@ const UnsavedLiveMatchesCard: React.FC = () => {
 
         {isError && !isLoading && (
           <div className="space-y-2">
-            <p className="text-sm text-red-500">Couldn’t check for unrecorded matches.</p>
+            <p className="text-sm text-destructive-text">Couldn’t check for unrecorded matches.</p>
             <Button size="sm" variant="outline" onClick={() => refetch()}>
               Retry
             </Button>
@@ -59,13 +59,13 @@ const UnsavedLiveMatchesCard: React.FC = () => {
 
         {showResult &&
           (count === 0 ? (
-            <div className="flex items-center gap-2 text-sm text-emerald-500">
+            <div className="flex items-center gap-2 text-sm text-success">
               <CheckCircle2 className="size-4" aria-hidden="true" />
               All clear — every match live scoring decided has a recorded result.
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-2 text-sm text-amber-500">
+              <div className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400">
                 <AlertTriangle className="size-4" aria-hidden="true" />
                 {count} match{count === 1 ? ' was' : 'es were'} played on live scoring and never
                 saved.
@@ -79,13 +79,16 @@ const UnsavedLiveMatchesCard: React.FC = () => {
                   <li key={m.id}>
                     <TransitionLink
                       to={`/matches/${m.id}/live`}
-                      className="rounded-sm underline-offset-2 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                      // The link is a flex box (TransitionLink), which drops the spaces between the
+                      // name, score and date and squeezed the score onto two lines. Wrap the parts
+                      // as units and give them back their gap.
+                      className="flex-wrap content-center gap-x-1 rounded-sm underline-offset-2 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={`Save the result for ${m.team1Name} versus ${m.team2Name}`}
                     >
                       <span className="font-medium">
                         {m.team1Name} v {m.team2Name}
                       </span>{' '}
-                      <span className="tabular-nums">
+                      <span className="whitespace-nowrap tabular-nums">
                         {m.team1GameWins}–{m.team2GameWins}
                       </span>{' '}
                       <span className="text-muted-foreground">· {formatMatchDate(m.date)}</span>

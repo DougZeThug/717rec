@@ -19,11 +19,9 @@ vi.mock('@/services/timeslots/TimeslotTransformer', () => ({
 
 const mutationFns = {
   isSubmitting: false,
-  addTimeslot: vi.fn(),
   deleteTimeslot: vi.fn(),
   batchAssignTimeslots: vi.fn(),
   batchAssignDoubleHeaders: vi.fn(),
-  assignByeWeek: vi.fn(),
   batchAssignByeWeeks: vi.fn(),
   removeByeWeek: vi.fn(),
   moveTeamBooking: vi.fn(),
@@ -101,11 +99,9 @@ describe('useTimeslots', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.timeslots).toEqual(sampleRows);
     expect(result.current.isNightLoaded).toBe(true);
-    expect(result.current.addTimeslot).toBe(mutationFns.addTimeslot);
     expect(result.current.deleteTimeslot).toBe(mutationFns.deleteTimeslot);
     expect(result.current.batchAssignTimeslots).toBe(mutationFns.batchAssignTimeslots);
     expect(result.current.batchAssignDoubleHeaders).toBe(mutationFns.batchAssignDoubleHeaders);
-    expect(result.current.assignByeWeek).toBe(mutationFns.assignByeWeek);
     expect(result.current.batchAssignByeWeeks).toBe(mutationFns.batchAssignByeWeeks);
     expect(result.current.removeByeWeek).toBe(mutationFns.removeByeWeek);
     expect(result.current.moveTeamBooking).toBe(mutationFns.moveTeamBooking);

@@ -180,7 +180,7 @@ What happens on the other side is in
 | The user's role | Admin only, all three, by the guard on `/admin`. See [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). | Losing admin leaves every button on screen; the writes then fail with each queue's generic message. |
 | The record's state | A membership is either waiting or gone from the list. A contact request is new or resolved, and a resolved one is dimmed and offers Reopen instead of Mark resolved. A team request that is not Pending shows no buttons at all. | A contact request resolved in another tab updates here **by itself** — it is the only queue with a live connection. |
 | The season's state | Memberships and contact requests are not season-scoped and survive a season changeover. Team requests carry a season but the list does not filter by it, so old seasons' requests stay in the list forever. | No effect. |
-| Viewport | All three are card lists that stack on a narrow screen. The team-request approve and deny buttons move under the header on a phone. | No effect. |
+| Viewport | All three are card lists that stack on a narrow screen. On a team request the card header wraps, so a long team name keeps readable lines and the "N pending" badge stays on the card. Approve and Reject sit side by side in one row and stay on screen. The status picker is 44 pixels high. A Member Approvals card is the width of the screen minus the page margins (it was 390 pixels wide on every phone, so its right side was cut off on a 320-pixel one): the person, the team and the date wrap onto more rows, and a long name with no spaces breaks. In the Contact Inbox a long email, name or team wraps inside its card, and the email is a link with a 44-pixel tap area. | No effect. |
 | Keys the form honours | Tab reaches every button. The membership reject dialog and the team-request dialog are proper dialogs; Escape closes them. | Escape closes a dialog without writing. It cannot stop the contact-request Delete, which has no dialog. |
 
 ## Cancel and interrupt
@@ -246,7 +246,10 @@ page is gone, and the address now opens the Notifications section. See
 [`send-notifications.md`](send-notifications.md).
 
 **On a phone.** All three stack. The team-request grid of dates and timeslots
-drops to two columns.
+drops to two columns. The Team Requests header and each request's header wrap
+rather than crush: a long team name no longer breaks into one word per line, the
+"N pending" badge no longer pushes the status picker off the card, and Approve
+and Reject stay together in one row on screen. A Member Approvals request card fits the screen too: its parts wrap onto more rows and a long name breaks. A long email in the Contact Inbox wraps inside its card.
 
 **Accessibility.** The two dialogs are proper dialogs and are announced. The
 contact-request buttons are ordinary buttons with visible text. Counts in badges
@@ -335,4 +338,5 @@ changes.
 Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
 UX audit items W7 (the two message forms became one) and L4 (an approval hands
 Timeslots the change to make). Those passages were written from the change and
-its tests, not from a fresh pass over the running app.
+its tests, not from a fresh pass over the running app. The phone layout of the
+Requests card above changed after that commit too (the admin phone polish). The Member Approvals and Contact Inbox phone layout (Viewport row and "On a phone") changed after it as well, in the phone-overflow fixes (commits `f5bb3df`, `afda9d1`, `a450501`, `e3a8bdd`) and the tap-size fixes (commit `93d48a3`). They were measured in a real browser against fake data at 320, 360 and 390 pixels, not on a real phone.

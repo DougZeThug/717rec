@@ -186,7 +186,7 @@ The consequences are worth stating plainly:
 a status of Optimized, Legacy or Missing, a percentage bar, a search box, a
 status filter and a sort. Choosing a file for a card uploads and saves it
 immediately, with no confirmation and no preview step, and raises "Logo Updated".
-There is no way to remove a logo from this tab.
+There is no way to remove a logo from this tab. The preview box on each card (80 pixels) shows the whole logo; before, the logo was drawn at 144 pixels and only its middle 80 showed, with 32 pixels cut off on every side.
 
 **Member Approvals** carries a red count badge on its tab when people are
 waiting. It is described in [`handle-requests.md`](handle-requests.md).
@@ -198,7 +198,7 @@ waiting. It is described in [`handle-requests.md`](handle-requests.md).
 | The user's role (visitor, player, admin) | Only an admin reaches the dashboard; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). Every admin sees every control. | Losing admin elsewhere leaves every control on screen and the writes start failing. |
 | The record's state | A hidden team appears in this list and nowhere else. A division in use has its delete refused, not hidden. A division displayed as Hidden has Edit and delete disabled. | A team hidden in another browser keeps its old division here until a re-fetch. |
 | The season's state (active, archived, playoffs on) | Teams and divisions are **not** season-scoped, so the screen looks the same in every season state. | Changing a division weight moves power scores in live seasons only. Archived seasons are frozen; see [`../foundations/seasons.md`](../foundations/seasons.md#what-frozen-means). |
-| Viewport | The three count cards stack. The team table becomes one card per team with a full-width division dropdown. The divisions table becomes cards. | No effect beyond re-flowing. |
+| Viewport | The three count cards stack. The four tabs wrap onto two or three rows, so every tab can be reached by touch. The team table becomes one card per team with a full-width division dropdown. The divisions table becomes cards. The Create Team form fits its card on a 320 pixel phone: its Cancel and Create Team buttons wrap onto two rows below 328 pixels wide. On an Update Logos card the "Add Logo" label wraps onto two lines below 355 pixels wide instead of being cut off. | No effect beyond re-flowing. |
 | Keys the form honours | Tab reaches the search box, the filter, then each row's dropdown and Edit button. | Enter in the team name field submits the form. Escape closes the team dialog, the confirmation, or an open dropdown. Escape does **not** leave a division row's inline editor. |
 
 ## Cancel and interrupt
@@ -248,9 +248,12 @@ sentence; division failures carry the server's reason.
 `/admin/divisions`. Nothing inside them does: the tab, search text, filter, and
 the team being edited are all invisible to the address bar.
 
-**On a phone.** The team table becomes cards, each with a full-width division
-dropdown, so the single most consequential control on the screen is also the
-easiest to hit by accident.
+**On a phone.** The four tabs — Manage Teams, Create Team, Update Logos, Member
+Approvals — wrap onto two or three rows instead of running off the screen, so
+Member Approvals can be touched. The team table becomes cards, each with a
+full-width division dropdown, so the single most consequential control on the
+screen is also the easiest to hit by accident. Both the division filter and each
+row's division dropdown are 44 pixels high.
 
 **Accessibility.** Every division dropdown is labelled "Set division for *team
 name*". Edit buttons are labelled with the team name. The team form's fields have
@@ -310,4 +313,7 @@ live season's power scores; archived seasons do not move.
 
 Verified against `717rec` commit `ea5c8f4`, except the division-editor and
 Cancel behaviour above, which was changed after that commit — see
-[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed).
+[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed) — and the
+wrapping tabs and 44-pixel selects above, changed after it too (the admin phone
+polish).
+The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. The Update Logos preview (commit `0942667`) and the Member Approvals phone layout (commits `afda9d1` to `e3a8bdd`) changed after that too, and the tap-size fixes made the tabs, the division dropdowns and the text fields 44 pixels (commits `96b6036` to `8626e6c`). They were measured in a real browser against fake data, not on a real phone or tablet.

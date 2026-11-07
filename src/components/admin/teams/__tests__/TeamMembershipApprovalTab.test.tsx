@@ -121,6 +121,55 @@ describe('TeamMembershipApprovalTab', () => {
     expect(screen.getByText('2 pending')).toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the classes. The person, team and date sat in one
+  // no-wrap row 390px wide, which stretched the card past every phone screen.
+  it('lets the person, team and date wrap onto more rows instead of widening the card', () => {
+    mockUsePendingMemberships.mockReturnValue({
+      ...defaultHookState,
+      pendingMemberships: [makeMembership()],
+    });
+
+    render(<TeamMembershipApprovalTab />);
+
+    const person = screen.getByText('User mem-1').closest('div.flex.flex-wrap');
+    const row = person?.parentElement;
+    expect(person).not.toBeNull();
+    // Only a gap between rows: a sideways gap would make a row that fits at 768px wrap.
+    expect(row).toHaveClass('flex-wrap', 'gap-y-2');
+    expect(screen.getByText('User mem-1')).toHaveClass('wrap-break-word');
+    expect(screen.getByText('Team mem-1')).toHaveClass('wrap-break-word');
+  });
+
+  // jsdom does no layout, so this pins the classes. A name with no spaces ("johnnythecorn...")
+  // widened its card past a 320px screen: the card list was a grid column sized by its widest
+  // content, and none of the flex parts above the name could shrink.
+  it('lets a long name with no spaces shrink instead of widening the card', () => {
+    // 30 and 37 characters with no break point, like the case that widened the card (29 and 37).
+    const longUser = 'johnnythecornholechampion_2026';
+    const longTeam = 'TheBagBanditsOfTheWholeLeagueAndMore1';
+    const membership = makeMembership();
+    membership.user.full_name = longUser;
+    membership.team.name = longTeam;
+    mockUsePendingMemberships.mockReturnValue({
+      ...defaultHookState,
+      pendingMemberships: [membership],
+    });
+
+    render(<TeamMembershipApprovalTab />);
+
+    const userName = screen.getByText(longUser);
+    const teamName = screen.getByText(longTeam);
+    const person = userName.closest('div.flex.flex-wrap');
+    expect(userName.closest('div.grid')).toHaveClass('grid-cols-1');
+    expect(person).toHaveClass('min-w-0');
+    expect(userName.parentElement?.parentElement).toHaveClass('min-w-0');
+    expect(userName).toHaveClass('wrap-break-word');
+    expect(teamName).toHaveClass('min-w-0', 'wrap-break-word');
+    expect(teamName.parentElement).toHaveClass('min-w-0');
+    // The letter avatar must keep its 32px round shape while the text shrinks beside it.
+    expect(screen.getByText('J').parentElement).toHaveClass('shrink-0');
+  });
+
   it('shows joined date on each card', () => {
     mockUsePendingMemberships.mockReturnValue({
       ...defaultHookState,

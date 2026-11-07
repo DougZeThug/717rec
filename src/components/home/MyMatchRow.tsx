@@ -298,7 +298,7 @@ export const MatchRow: React.FC<MatchRowProps> = ({
       {!isPrevious && canScore && (
         <Link
           to={`/matches/${match.id}/live`}
-          className="mb-2 flex min-h-[40px] items-center justify-center gap-1.5 rounded-lg bg-primary/10 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
+          className="mb-2 flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg bg-primary/10 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
           aria-label={`Score ${myTeam.name} vs ${opponent.name} live`}
         >
           <Radio className="size-4" aria-hidden />

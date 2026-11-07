@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
@@ -18,6 +18,9 @@ test('shoot refuses to run with an empty preview.blockedHosts', () => {
       const run = spawnSync('node', [shoot, '--out', join(repo, 'out')], { cwd: repo, encoding: 'utf8' });
       assert.equal(run.status, 2, run.stderr);
       assert.match(run.stderr, /blockedHosts/);
+      // Nothing below the guard ran: no report on stdout and no output folder (it is made as soon as the browser is up).
+      assert.equal(run.stdout, '');
+      assert.equal(existsSync(join(repo, 'out')), false);
     }
   } finally {
     rmSync(repo, { recursive: true, force: true });

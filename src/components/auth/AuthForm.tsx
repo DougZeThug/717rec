@@ -70,7 +70,8 @@ const AuthForm: React.FC<AuthFormProps> = ({
           {type === 'login' && (
             <Link
               to="/forgot-password"
-              className="text-sm text-primary underline-offset-4 hover:underline"
+              // 36px tall to tap (it was 20px); the negative margin keeps the layout where it was.
+              className="text-sm text-primary underline-offset-4 hover:underline py-2 -my-2"
             >
               Forgot password?
             </Link>

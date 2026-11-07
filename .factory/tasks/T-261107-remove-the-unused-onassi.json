@@ -1,0 +1,113 @@
+{
+  "id": "T-261107-remove-the-unused-onassi",
+  "title": "Remove the unused onAssign chain and the process.exit in shoot.mjs",
+  "kind": "fix",
+  "status": "intake",
+  "request": "Owner: 'Remove the unused onAssign chain now also fix this Detected the use of process.exit() JS-0263 ... factory/bin/shoot.mjs line 19' (DeepSource, Bug risk, Major). Two separate fixes, one commit each.",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "d463411855f18139ddc9a3673401493d999e3710",
+  "createdAt": "2026-11-07T14:27:40.633Z",
+  "criteria": [
+    {
+      "text": "The unused single-team booking chain is removed: the onAssign prop of TimeslotAssignment, the TimeslotsTab handler that fed it, the useTimeslots and useTimeslotMutation functions only that handler called (addTimeslot, assignByeWeek), and the service code only they used, with the tests of the removed code. Nothing else changes: the booking form markup, Confirm text and Confirm enabled state are identical before and after in 14 states, the batch and double header booking code and tests are untouched, and typecheck, lint, knip and the unit tests pass.",
+      "done": true,
+      "evidence": "Commit 796da88 removes the chain: TimeslotAssignment onAssign prop; TimeslotsTab handleTimeslotAssign and the onAssign wiring through TimeslotColumns; addTimeslot and assignByeWeek from useTimeslots and useTimeslotMutation; TimeslotService.addTimeslot and BackToBackTimeslotService.addTimeslot (deprecated alias and legacy method; two imports left unused went too). Kept because other code uses them: ByeWeekService.assignByeWeek, TimeslotValidator.validateTimeslotAssignment, batchAssignByeWeeks and every batch and double header path. No caller exists outside src (grep of the repo). Real booking form, fake data, headless Chromium, dev server: 14 states (7 at 390px, 7 at 1280px) are byte-identical to the snapshots from before the change (cmp), and the 7 states per width differ from each other, so the comparison is meaningful. Typecheck, lint with max-warnings 0, prettier and knip pass; 15 timeslot test files, 174 tests pass. Tests of the removed code went with it (3 handler tests, 3 addTimeslot hook tests, 1 assignByeWeek hook test, mock entries); the batch error-toast tests stay. Not changed: the unrelated onAssign prop of the auto-schedule ManualTeamAssignment."
+    },
+    {
+      "text": "The process.exit(2) in factory/bin/shoot.mjs (DeepSource JS-0263) is gone. With an empty preview.blockedHosts the tool still refuses to run: exit status 2, the same message naming blockedHosts, and nothing below the guard runs (no output folder, no browser). A run with a blocklist behaves as before. factory/spec/shoot.spec.mjs and the whole factory-specs check pass.",
+      "done": true,
+      "evidence": "Commit c35569d: the guard sets process.exitCode = 2 and skips the run (the run moved into a function; git diff -w is 9 added, 4 removed lines); a plain throw was rejected because Node ends an uncaught throw with exit 1 (tested). Empty blocklist, old vs new, run in a temp repo: exit 2, same stderr message naming blockedHosts, 0 bytes on stdout, no output folder. Real run against the dev server (/ and /standings) with the repo config, old vs new: reports equal apart from paths (4 screenshots, 0 console errors, 0 overflow, 10 blocked requests, exit 0 both). factory/spec/shoot.spec.mjs now also asserts empty stdout and no output folder; with the guard broken on purpose (code set, run still happens) it fails with exit 1 instead of 2, restored it passes. All 117 factory specs pass; eslint max-warnings 0 clean. No process.exit() call is left in factory/ or tools/. DeepSource itself is checked on the pushed head in criterion 3."
+    },
+    {
+      "text": "Six checks pass at the final head and an independent code review approves; DeepSource no longer reports JS-0263 and Test coverage stays green on the pushed head.",
+      "done": false
+    }
+  ],
+  "checks": {
+    "integrity": {
+      "result": "fail",
+      "exit": 1,
+      "sha": "c35569d6e93fb35f2760aa0dae09764dc70920e9",
+      "dirty": false,
+      "at": "2026-11-07T14:36:55.829Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261107-remove-the-unused-onassi/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "c35569d6e93fb35f2760aa0dae09764dc70920e9",
+      "dirty": false,
+      "at": "2026-11-07T14:37:03.709Z",
+      "seconds": 8,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261107-remove-the-unused-onassi/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "c35569d6e93fb35f2760aa0dae09764dc70920e9",
+      "dirty": false,
+      "at": "2026-11-07T14:38:08.991Z",
+      "seconds": 65,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261107-remove-the-unused-onassi/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "c35569d6e93fb35f2760aa0dae09764dc70920e9",
+      "dirty": false,
+      "at": "2026-11-07T14:38:11.712Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261107-remove-the-unused-onassi/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "c35569d6e93fb35f2760aa0dae09764dc70920e9",
+      "dirty": false,
+      "at": "2026-11-07T14:38:15.054Z",
+      "seconds": 3,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261107-remove-the-unused-onassi/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "c35569d6e93fb35f2760aa0dae09764dc70920e9",
+      "dirty": false,
+      "at": "2026-11-07T14:44:11.241Z",
+      "seconds": 356,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261107-remove-the-unused-onassi/unit.log"
+    },
+    "factory-specs": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "c35569d6e93fb35f2760aa0dae09764dc70920e9",
+      "dirty": false,
+      "at": "2026-11-07T14:44:15.895Z",
+      "seconds": 5,
+      "cmd": "node --test factory/spec/*.spec.mjs",
+      "log": ".factory/evidence/T-261107-remove-the-unused-onassi/factory-specs.log"
+    }
+  },
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "c35569d6e93fb35f2760aa0dae09764dc70920e9",
+      "at": "2026-11-07T14:46:06.189Z",
+      "summary": "Independent reviewer (fresh, read-only) tried to break four claims and could not. (A1) The onAssign chain was reachable only through the unused prop: no live caller left in the repo (src, e2e, scripts, docs, supabase); kept code (ByeWeekService.assignByeWeek, TimeslotValidator.validateTimeslotAssignment, getBackToBackPairName, batch BYE path) is still used. (A2) The 30 assertions the integrity check counts as lost (TimeslotsTab.test.tsx 7, useTimeslotMutation.test.ts 21, useTimeslots.test.ts 2) all tested deleted code: 3 handler tests, 3 addTimeslot hook tests, 1 assignByeWeek hook test, mock entries; batch tests and batch error-toast tests remain; mock return shapes match the hooks. Reviewer says a waiver for exactly those 30 is justified (the owner decides; not recorded). (A3) shoot.mjs guard sets process.exitCode = 2 and skips the run, same message; VIEWPORTS and CORS above the guard is safe; an error inside shoot() still ends non-zero; no process.exit( call left. 117 factory specs and 174 timeslot tests pass, typecheck clean. (A4) No control file changed."
+    }
+  ],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-07T14:46:06.190Z"
+}

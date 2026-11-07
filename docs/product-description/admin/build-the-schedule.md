@@ -186,7 +186,7 @@ naming the match. It can no longer reach the database.
 | The user's role (visitor, player, admin) | Only an admin reaches the dashboard; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). | Losing admin elsewhere leaves both tools on screen and the save fails. |
 | The record's state | Neither tool reads existing matches except to warn about rematches. Matches already on the schedule are invisible here. | No effect. A match created elsewhere while the tool is open is not noticed. |
 | The season's state (active, archived, playoffs on) | Every match is attached to the **active** season. With no active season, Match Creation fails on submit and Auto Schedule saves matches attached to no season at all. | Activating a different season mid-edit changes which season the next save writes to, silently. |
-| Viewport | Match Creation stacks its pairing rows. Auto Schedule keeps its settings panel above the tabs on a narrow screen; the editable match cards stack their two team pickers. | No effect beyond re-flowing. |
+| Viewport | Match Creation stacks its pairing rows. Auto Schedule keeps its settings panel above the tabs on a narrow screen; the editable match cards stack their two team pickers. The Match Creation date button is never wider than its card, and the small "(yyyy-mm-dd)" copy of the date inside it shows only from 440 pixels wide. The two Auto Schedule tab labels ("Auto-Loaded Teams", "Manual Assignment") wrap onto two lines below 345 pixels wide instead of running into each other. | No effect beyond re-flowing. |
 | Keys the form honours | Tab moves through the date button, then each pairing's controls in order, then the action buttons. | Enter opens the date picker when it is focused. Escape closes an open dropdown or the date popover and does nothing else. |
 
 ## Cancel and interrupt
@@ -248,7 +248,11 @@ settings, nor the proposed schedule is in the address bar, so a proposed
 schedule still cannot be shared for review.
 
 **On a phone.** Both tools work but are cramped. The editable match cards stack
-into a tall column, and the Teams tab's block view needs a lot of scrolling.
+into a tall column, and the Teams tab's block view needs a lot of scrolling. The
+three Match Rules switches — Avoid Rematches, Prioritize Match Quality and Dual
+Match Mode — each have a 44-pixel tap area around a switch that looks the same.
+The switches sit close together, so a tap in the gap between two of them goes
+to the lower one.
 
 **Accessibility.** Every picker has a label tied to its match. The generated
 schedule's quality badges carry text as well as colour. The team-selection grids
@@ -334,4 +338,7 @@ Verified against `717rec` commit `ea5c8f4`, except the timeslot behaviour above,
 which was changed after that commit — see B-03 in
 [`bug-triage.md`](../bug-triage.md#b-03-with-dual-match-mode-off-the-auto-schedulers-save-is-always-refused) —
 and the two navigation buttons, changed after it too; see
-[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed).
+[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed). The 44-pixel
+tap areas on the Match Rules switches changed after that commit as well (the
+admin phone polish).
+The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.

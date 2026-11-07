@@ -102,7 +102,6 @@ interface TimeslotColumnsProps {
   isLoadingTimeslots: boolean;
   isSubmitting: boolean;
   canDelete: boolean;
-  onAssign: TimeslotAssignmentProps['onAssign'];
   onBatchAssign: TimeslotAssignmentProps['onBatchAssign'];
   onBatchAssignDoubleHeaders: TimeslotAssignmentProps['onBatchAssignDoubleHeaders'];
   onDelete: TimeslotListProps['onDelete'];
@@ -119,18 +118,16 @@ const TimeslotColumns = ({
   isLoadingTimeslots,
   isSubmitting,
   canDelete,
-  onAssign,
   onBatchAssign,
   onBatchAssignDoubleHeaders,
   onDelete,
 }: TimeslotColumnsProps) => (
-  <div className="grid md:grid-cols-2 gap-8">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
     <NewTimeslotSection isLoading={isLoadingTeams} hasFailed={teamsFailed} onRetry={onRetryTeams}>
       <TimeslotAssignment
         selectedDate={selectedDate}
         teams={teams}
         existingTimeslots={timeslots}
-        onAssign={onAssign}
         onBatchAssign={onBatchAssign}
         onBatchAssignDoubleHeaders={onBatchAssignDoubleHeaders}
         isSubmitting={isSubmitting}
@@ -207,43 +204,14 @@ const TimeslotsTab = () => {
     timeslots,
     isLoading: isLoadingTimeslots,
     isSubmitting,
-    addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots,
     batchAssignDoubleHeaders,
-    assignByeWeek,
     batchAssignByeWeeks,
     removeByeWeek,
     moveTeamBooking,
     isNightLoaded,
   } = useTimeslots(selectedDate);
-
-  const handleTimeslotAssign = async (teamId: string, timeslot: string) => {
-    try {
-      if (timeslot === 'BYE') {
-        // Handle bye week assignment separately
-        await assignByeWeek(selectedDate, teamId);
-        toast({
-          title: 'Bye Week Assigned',
-          description: 'Team bye week has been successfully assigned.',
-        });
-      } else {
-        // Use existing timeslot service for regular timeslots
-        await addTimeslot(selectedDate, teamId, timeslot);
-        toast({
-          title: 'Timeslot Assigned',
-          description: 'Team timeslot has been successfully assigned.',
-        });
-      }
-    } catch (error) {
-      errorLog('Error assigning timeslot:', error);
-      toast({
-        title: 'Error',
-        description: getUIErrorMessage(error, 'Failed to assign timeslot'),
-        variant: 'destructive',
-      });
-    }
-  };
 
   const handleBatchTimeslotAssign = async (teamIds: string[], timeslot: string) => {
     try {
@@ -410,7 +378,6 @@ const TimeslotsTab = () => {
           isLoadingTimeslots={isLoadingTimeslots}
           isSubmitting={isSubmitting}
           canDelete={isNightLoaded}
-          onAssign={handleTimeslotAssign}
           onBatchAssign={handleBatchTimeslotAssign}
           onBatchAssignDoubleHeaders={handleBatchDoubleHeaderAssign}
           onDelete={handleTimeslotDelete}

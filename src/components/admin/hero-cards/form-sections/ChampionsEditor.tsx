@@ -127,7 +127,7 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({
               value={champions[div.display_division] || ''}
               onValueChange={(val) => updateChampion(div.display_division, val)}
             >
-              <SelectTrigger className="h-9">
+              <SelectTrigger>
                 <SelectValue placeholder="Select champion team…" />
               </SelectTrigger>
               <SelectContent>

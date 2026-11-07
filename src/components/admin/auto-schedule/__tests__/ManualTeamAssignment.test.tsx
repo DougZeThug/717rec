@@ -112,6 +112,18 @@ describe('ManualTeamAssignment', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the class. Each team row is a 16px checkbox with a 44px
+  // invisible tap area. The rows were 16px tall and 24px apart, so a tap on the lower part of one
+  // checkbox would have toggled the next team. At 44px tall the areas no longer overlap.
+  it('makes each team row 44px tall so the checkboxes tap areas do not overlap', async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    await chooseFirstBlock(user);
+
+    const row = screen.getByRole('checkbox', { name: 'Alpha' }).parentElement;
+    expect(row).toHaveClass('min-h-11');
+  });
+
   // `handleTeamToggle` removes an id it already holds. Only the adding half ran
   // in any test, so unchecking a team was never exercised.
   it('takes a team back off the list when it is unchecked again', async () => {

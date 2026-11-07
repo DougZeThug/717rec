@@ -194,6 +194,16 @@ them at rest is what separates them from the muted text they sit in; in the dark
 theme they also lighten, because the app's primary blue is the same value in
 both themes and sits at 3.84:1 on a near-black card.
 
+**Coloured figures in an opened history season were corrected.** The Win% and
+Game% figures and the champion's crown now read at 4.5:1 or better. The figures
+use four colours by value, green from 75 percent, blue from 60, orange from 40 and
+red below: darker shades in the light theme, lighter shades in the dark theme. The
+crown is dark amber in the light theme and yellow in the dark theme.
+The ratios were measured when the change was made. The SOS figure and the power
+score dial in the same cards keep colours shared with other pages and were not
+part of that change. See
+[`history/past-seasons.md`](../history/past-seasons.md#interactions-with-other-systems).
+
 Nothing in the product responds to a high-contrast or forced-colours setting.
 
 ## The interaction, event by event
@@ -214,12 +224,18 @@ stateDiagram-v2
     announced_only --> reading
 ```
 
-After a link the new page opens at the top, where focus has moved. After Back or
-Forward nothing resets the scroll. The browser may put the page back, and four
-pages (`/teams`, `/stats`, `/history`, `/insights`) also try to put it back
-themselves; in the 2026-11-05 test most pages still came back at the top (see
-[navigation](../foundations/navigation.md#arrive)). Either way, the part of the page on
-screen and the element focused can disagree.
+After a link the new page opens at the top, where focus has moved. On the way the
+position passes through two in-between values; it is not shown to be a glide.
+After Back or Forward nothing resets the scroll. The browser may put the
+page back, and four pages (`/teams`, `/stats`, `/history`, `/insights`) also put it
+back themselves. They jump to the saved spot, hold it for up to three seconds, and
+stop as soon as the reader scrolls with a wheel, a touch, a key press or a mouse
+press. Scrolling that sends none of those, such as find-in-page opened from the browser
+menu, a screen reader or voice control, may not be seen as the reader taking over,
+so the page can be pulled back against such scrolling while the restore runs (see the
+last paragraph of this document). How the restore works is in
+[navigation](../foundations/navigation.md#arrive). Either way, the part of the page
+on screen and the element focused can disagree.
 
 ## Cancel and interrupt
 
@@ -282,8 +298,12 @@ lost before it is finished.
 **URL state.** Nothing about accessibility is in the URL and no preference
 survives a link.
 
-**On a phone.** Touch targets are set to 44 pixels only on live scoring and the
-hamburger button. See [`on-a-phone.md`](on-a-phone.md).
+**On a phone.** Touch targets are set to 44 pixels on live scoring, on the
+hamburger button, on the history recap strip, on the history team-name links
+(about 27 pixels on the Champions panel, by design) and on nearly all of the
+admin console (select boxes, tabs, switches, checkboxes, close crosses and small
+buttons included).
+See [`on-a-phone.md`](on-a-phone.md#touch-and-reach).
 
 **Accessibility.** This document is the definition.
 
@@ -344,9 +364,9 @@ or sent anywhere.
 - Not confirmed by hand: whether heading *levels* run in order within a page.
   Several pages skip from h1 to h3; the scan deliberately leaves that rule out
   until they are fixed.
-- Not confirmed by hand: contrast ratios beyond the muted text and the in-text
-  links corrected above. The Lighthouse floor of 0.9 leaves room for contrast
-  failures on unscanned pages.
+- Not confirmed by hand: contrast ratios beyond the muted text, the in-text
+  links and the history standings colours corrected above. The Lighthouse floor of
+  0.9 leaves room for contrast failures on unscanned pages.
 - Not confirmed by hand: whether the reduced-motion behaviour is right in every
   case by eye. The snowfall and the page transitions were checked; the ~155 files
   that animate were not each looked at.
@@ -364,3 +384,5 @@ commit — see
 X-08 and Q12, and written from the change and its tests rather than a fresh pass
 over the running app.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+The restore of the scroll position on Back changed again on this branch (not yet live), as part of the same follow-up ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). The passage on route changes and focus describes it. It was measured by script only, in headless Chromium against fake data, on 2026-11-06; no person has run it by hand. In the same run the position after a link read 900, 111, 25, 0 frame by frame, and the same with reduced motion on; the cause was not isolated. Find-in-page opened from the browser menu (Ctrl or Cmd+F is expected to send a key press, which stops the restore), a screen reader and voice control were not tried; from the code, the page can be pulled back against them while the restore runs.
+The 44-pixel touch targets in the admin console changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip and the history standings colours (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too. The tap-size fixes (commits `96b6036` to `8626e6c`) widened the 44-pixel list to nearly all of the admin console; they were measured in a real browser against fake data, not on a real phone (the remove-signup, hero card remove and reaction picker buttons are pinned by tests only).

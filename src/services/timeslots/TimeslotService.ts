@@ -22,8 +22,6 @@ export const TimeslotService = {
   // ── Back-to-back ───────────────────────────────────────────────────────────
   addBackToBackTimeslot:
     BackToBackTimeslotService.addBackToBackTimeslot.bind(BackToBackTimeslotService),
-  /** @deprecated Use addBackToBackTimeslot instead */
-  addTimeslot: BackToBackTimeslotService.addTimeslot.bind(BackToBackTimeslotService),
   deleteTimeslot: BackToBackTimeslotService.deleteTimeslot.bind(BackToBackTimeslotService),
 
   // ── Double header ──────────────────────────────────────────────────────────

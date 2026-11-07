@@ -12,6 +12,8 @@ import { useVirtualization } from '@/hooks/useVirtualization';
 import { cn } from '@/lib/utils';
 import { getPowerScoreColor, getSosColor } from '@/utils/colors';
 
+import TeamNameLink from './TeamNameLink';
+
 interface SeasonData {
   team_id: string;
   season_id: string;
@@ -35,10 +37,10 @@ interface HistoricalStandingsTableProps {
 }
 
 const getWinPercentageColor = (percentage: number): string => {
-  if (percentage >= 75) return 'text-green-600 dark:text-green-500';
-  if (percentage >= 60) return 'text-blue-600 dark:text-blue-500';
-  if (percentage >= 40) return 'text-orange-500 dark:text-orange-400';
-  return 'text-red-600 dark:text-red-500';
+  if (percentage >= 75) return 'text-green-700 dark:text-green-500';
+  if (percentage >= 60) return 'text-blue-600 dark:text-blue-400';
+  if (percentage >= 40) return 'text-orange-700 dark:text-orange-400';
+  return 'text-red-600 dark:text-red-400';
 };
 
 // Small stat cell for mobile grid — matches RankingCard style
@@ -111,6 +113,22 @@ const MobileStatsArea: React.FC<{
   </div>
 );
 
+/**
+ * The playoff finish to write as "#N" on a phone card, or null when the crown or the medal
+ * already says it (or when the team has no finish). It is the same number as the Rank column
+ * on a wide screen. An admin edit can leave a champion with another rank, or rank 1 with no
+ * champion flag, so the rule follows the number: only a crown with rank 1, or a medal with
+ * rank 2, hides it.
+ */
+const getPhoneRankLabel = (team: SeasonData): number | null => {
+  const rank = team.playoff_rank;
+  // No finish, or a finish of 0: the wide screen's Rank column shows a dash for both.
+  if (!rank) return null;
+  if (team.champion && rank === 1) return null;
+  if (team.runner_up && rank === 2) return null;
+  return rank;
+};
+
 // Mobile row component — EntityCard + PowerScoreGauge layout (matching RankingCard)
 const MobileTeamRow: React.FC<{
   team: SeasonData;
@@ -121,6 +139,7 @@ const MobileTeamRow: React.FC<{
     team.match_wins + team.match_losses > 0
       ? (team.match_wins / (team.match_wins + team.match_losses)) * 100
       : 0;
+  const phoneRank = getPhoneRankLabel(team);
 
   return (
     <div style={style} className="pb-2">
@@ -135,22 +154,42 @@ const MobileTeamRow: React.FC<{
       >
         {/* Header row: badge + logo + name + record */}
         <div className="flex items-center gap-2">
-          {team.champion && <Crown className="size-4 text-yellow-500 shrink-0" />}
-          {team.runner_up && <Medal className="size-4 text-muted-foreground shrink-0" />}
+          {team.champion && (
+            <>
+              <Crown className="size-4 text-amber-700 dark:text-yellow-500 shrink-0" />
+              <span className="sr-only">Champion</span>
+            </>
+          )}
+          {team.runner_up && (
+            <>
+              <Medal className="size-4 text-muted-foreground shrink-0" />
+              <span className="sr-only">Runner-up</span>
+            </>
+          )}
+          {phoneRank !== null && (
+            <span
+              className={cn(
+                'text-xs font-semibold tabular-nums shrink-0',
+                isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
+              )}
+            >
+              <span className="sr-only">Playoff rank </span>#{phoneRank}
+            </span>
+          )}
           <TeamLogo
             imageUrl={team.team_image_url || team.team_logo_url}
             teamName={team.team_name}
             size="sm"
             className="shrink-0"
           />
-          <span
+          <TeamNameLink
+            name={team.team_name}
+            tapArea="large"
             className={cn(
-              'font-semibold text-sm truncate',
+              'font-semibold text-sm line-clamp-2 break-words',
               isWinterTheme ? 'text-white' : 'text-foreground'
             )}
-          >
-            {team.team_name}
-          </span>
+          />
           <span
             className={cn(
               'ml-auto font-bold text-sm tabular-nums shrink-0',
@@ -215,19 +254,32 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div className="py-2 px-2 flex-1 min-w-[120px]">
         <div className="flex items-center gap-2">
-          {team.champion && <Crown className="size-4 text-yellow-500 shrink-0" />}
-          {team.runner_up && <Medal className="size-4 text-muted-foreground shrink-0" />}
+          {team.champion && (
+            <>
+              <Crown className="size-4 text-amber-700 dark:text-yellow-500 shrink-0" />
+              <span className="sr-only">Champion</span>
+            </>
+          )}
+          {team.runner_up && (
+            <>
+              <Medal className="size-4 text-muted-foreground shrink-0" />
+              <span className="sr-only">Runner-up</span>
+            </>
+          )}
           <TeamLogo
             imageUrl={team.team_image_url || team.team_logo_url}
             teamName={team.team_name}
             size="sm"
             className="shrink-0"
           />
-          <span
-            className={cn('font-medium truncate', isWinterTheme ? 'text-white' : 'text-foreground')}
-          >
-            {team.team_name}
-          </span>
+          <TeamNameLink
+            name={team.team_name}
+            tapArea="large"
+            className={cn(
+              'block font-medium truncate',
+              isWinterTheme ? 'text-white' : 'text-foreground'
+            )}
+          />
         </div>
       </div>
       <div

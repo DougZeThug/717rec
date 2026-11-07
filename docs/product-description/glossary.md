@@ -306,12 +306,14 @@ more meetings: Rival, Nemesis, Tough Matchup, Favorite, or Dominated. It is
 derived from the win percentage each time it is shown, not stored.
 
 **Playoff rank.** A team's finishing position within its division for a season,
-stored on the season's standings and shown as the Rank column in history.
-Distinct from _seed_, which is a starting position in a bracket.
+stored on the season's standings and shown as the Rank column in history, and
+as a small "#N" on a history phone card. Distinct from _seed_, which is a
+starting position in a bracket.
 
 **Season recap.** The expandable part of a season's card in history, holding that
-season's final standings split by division. Closed until opened, and not
-linkable. Not the same thing as a _recap edition_.
+season's final standings split by division. Closed until opened (the browser
+tab keeps it open across Back and a reload), and not linkable. Not the same
+thing as a _recap edition_.
 
 **Recap edition.** One week's published recap, at its own permanent address
 (`/recap/<season>/week-<n>`). An edition is **frozen**: it stores the facts it

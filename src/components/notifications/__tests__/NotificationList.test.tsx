@@ -79,6 +79,23 @@ describe('NotificationList', () => {
     expect(screen.queryByText(/Loading notifications/)).not.toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the classes. A long title made the list 756px wide in a
+  // 270px box (text cut off), and with many notifications nothing below 400px could be scrolled to.
+  it('lets a long title wrap and the list scroll inside its 400px box', () => {
+    const { container } = render(
+      <NotificationList
+        notifications={[makeNotification('n1', 'A very long notification title')]}
+        lastSeenAt={LAST_SEEN}
+        isLoading={false}
+      />
+    );
+
+    const root = container.firstElementChild;
+    expect(root).toHaveClass('max-h-[400px]');
+    expect(root).toHaveClass('[&>[data-radix-scroll-area-viewport]]:max-h-[400px]');
+    expect(root).toHaveClass('[&>[data-radix-scroll-area-viewport]>div]:block!');
+  });
+
   it('wires each item through so an admin can delete by id', async () => {
     const user = userEvent.setup();
     mockUseAdminAccess.mockReturnValue({ isAdminAccessGranted: true });

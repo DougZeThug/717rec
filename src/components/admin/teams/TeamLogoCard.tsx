@@ -72,7 +72,8 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
       <CardContent className="p-4 flex flex-col items-center gap-3">
         {/* Logo Preview */}
         <div className="size-20 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-          <TeamLogo imageUrl={team.imageUrl} teamName={team.name} size="lg" />
+          {/* `fill`: the logo takes the 80px of this box. At `lg` it was 144px, so only the middle 80px showed. */}
+          <TeamLogo imageUrl={team.imageUrl} teamName={team.name} size="fill" />
         </div>
 
         {/* Team Name */}
@@ -98,7 +99,8 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
         <Button
           variant={status === 'optimized' ? 'outline' : 'default'}
           size="sm"
-          className="w-full"
+          // Under 355px wide the two-column cards are too narrow for "Add Logo" on one line.
+          className="w-full max-[355px]:whitespace-normal"
           onClick={handleUploadClick}
           disabled={isUploading}
         >

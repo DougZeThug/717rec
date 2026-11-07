@@ -164,10 +164,9 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Name"
-        className="h-10"
       />
       <Select value={display} onValueChange={(v) => setDisplay(v as DisplayDivision)}>
-        <SelectTrigger className="h-10">
+        <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -185,7 +184,7 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
         min="0"
         value={weight}
         onChange={(e) => setWeight(e.target.value)}
-        className="h-10 tabular-nums"
+        className="tabular-nums"
       />
     </>
   );
@@ -272,7 +271,7 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
       <tr className="border-b border-border">
         <td className="py-3 px-3 align-middle">
           {editing ? (
-            <Input value={name} onChange={(e) => setName(e.target.value)} className="h-9" />
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
           ) : (
             <span className="font-medium">{division.name}</span>
           )}
@@ -280,7 +279,7 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
         <td className="py-3 px-3 align-middle">
           {editing ? (
             <Select value={display} onValueChange={(v) => setDisplay(v as DisplayDivision)}>
-              <SelectTrigger className="h-9 w-40">
+              <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -304,7 +303,7 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
               min="0"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
-              className="h-9 w-28 tabular-nums"
+              className="w-28 tabular-nums"
             />
           ) : (
             <span className="tabular-nums">{division.division_weight}</span>

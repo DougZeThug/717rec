@@ -255,7 +255,9 @@ naming the section on screen, and the two quick-access buttons (Scores,
 Timeslots). Pressing Sections slides the full list up from the bottom as a
 drawer — the search box and the six collapsible groups — and choosing a section
 closes it. The section itself therefore starts near the top of the page rather
-than below a screenful of menu.
+than below a screenful of menu. In the drawer, the search box and each group
+heading are 44 pixels high. Once something is typed, a clear cross appears at the
+right of the search box, with a 44-pixel tap area around the small icon.
 
 The bar does not stick to the top of the screen while scrolling; the site header
 already does, and two would overlap.
@@ -321,4 +323,9 @@ long as the dashboard is open.
 - Assumption: the section order in the menu carries no meaning. It matches the
   order the sections were added rather than any workflow.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the phone drawer's search box,
+group headings and clear cross above, which were changed after that commit
+(commit `0588cc6`, the admin phone polish). The search box and the six group
+headings were 40 pixels high, and the clear cross had a 16-pixel tap area. Now
+the box and the headings are 44 pixels high, and the cross has a 44-pixel tap area
+around the same small icon.

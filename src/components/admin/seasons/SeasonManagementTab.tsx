@@ -81,7 +81,7 @@ interface SeasonActionBarProps {
 }
 
 const SeasonActionBar: React.FC<SeasonActionBarProps> = ({ activeSeason, onCreate }) => (
-  <div className="flex justify-between items-center">
+  <div className="flex flex-wrap items-center justify-between gap-3">
     <Button onClick={onCreate} className="flex items-center gap-2">
       <Plus className="size-4" />
       Create New Season

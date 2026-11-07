@@ -142,8 +142,13 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2">
-          <TabsTrigger value="auto">Auto-Loaded Teams</TabsTrigger>
-          <TabsTrigger value="manual">Manual Assignment</TabsTrigger>
+          {/* Under 345px wide the two labels run into each other: let them wrap there only. */}
+          <TabsTrigger value="auto" className="max-[345px]:whitespace-normal">
+            Auto-Loaded Teams
+          </TabsTrigger>
+          <TabsTrigger value="manual" className="max-[345px]:whitespace-normal">
+            Manual Assignment
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="auto" className="space-y-4 mt-4">

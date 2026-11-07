@@ -68,6 +68,27 @@ describe('TeamEditSection', () => {
     expect(screen.getByRole('button', { name: /edit team details/i })).toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the classes. On a 320px phone the 144px logo, the name and
+  // the 36-character team ID sat in one no-wrap row 30px wider than its card, with the ID squeezed
+  // into 5 lines.
+  it('lets the team name and ID drop under the logo, and the long team ID break', () => {
+    const longId = '3f2504e0-4f89-11d3-9a0c-0305e82c3301';
+    mockUseTeamMembership.mockReturnValue({
+      membership: { ...approved, team: { ...approved.team, id: longId } },
+      refreshMembership: mockRefresh,
+    });
+    renderSection();
+
+    const name = screen.getByRole('heading', { name: 'Corn Stars' });
+    const id = screen.getByText(/Team ID:/);
+    expect(longId).toHaveLength(36);
+    expect(id).toHaveTextContent(longId);
+    expect(name).toHaveClass('wrap-break-word');
+    expect(id).toHaveClass('break-all');
+    expect(name.parentElement).toHaveClass('min-w-0', 'flex-1', 'basis-32');
+    expect(name.parentElement?.parentElement).toHaveClass('flex-wrap');
+  });
+
   it('fills the form with the current name and blocks saving an empty name', async () => {
     const { user } = renderSection();
     await user.click(screen.getByRole('button', { name: /edit team details/i }));

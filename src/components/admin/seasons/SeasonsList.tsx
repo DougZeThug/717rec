@@ -22,13 +22,16 @@ interface SeasonsListProps {
 const getStatusBadge = (season: Season) => {
   if (season.is_active) {
     return (
-      <Badge variant="default" className="bg-green-500">
+      <Badge
+        variant="default"
+        className="shrink-0 whitespace-nowrap bg-success text-success-foreground"
+      >
         Active
       </Badge>
     );
   } else if (season.playoffs_active) {
     return (
-      <Badge variant="default" className="bg-yellow-500">
+      <Badge variant="default" className="shrink-0 whitespace-nowrap bg-yellow-500 text-gray-950">
         Playoffs In Progress
       </Badge>
     );
@@ -41,11 +44,11 @@ const getStatusBadge = (season: Season) => {
 
 const getStatusIcon = (season: Season) => {
   if (season.is_active) {
-    return <Calendar className="size-4 text-green-500" />;
+    return <Calendar className="size-4 shrink-0 text-green-500" />;
   } else if (season.is_archived) {
-    return <Archive className="size-4 text-muted-foreground" />;
+    return <Archive className="size-4 shrink-0 text-muted-foreground" />;
   } else {
-    return <Calendar className="size-4 text-blue-500" />;
+    return <Calendar className="size-4 shrink-0 text-blue-500" />;
   }
 };
 
@@ -93,7 +96,7 @@ const SeasonHeaderRow: React.FC<SeasonHeaderRowProps> = ({
   onFinalize,
   onEdit,
 }) => (
-  <div className="flex items-center justify-between">
+  <div className="flex flex-wrap items-center justify-between gap-3">
     <div className="flex items-center gap-3">
       {getStatusIcon(season)}
       <div>
@@ -104,7 +107,7 @@ const SeasonHeaderRow: React.FC<SeasonHeaderRowProps> = ({
         </p>
       </div>
     </div>
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       {getStatusBadge(season)}
       {!season.is_active && !season.is_archived && (
         <m.div whileTap={{ scale: 0.95 }}>

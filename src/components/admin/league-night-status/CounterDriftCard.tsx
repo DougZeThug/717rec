@@ -25,7 +25,7 @@ const DriftSummary: React.FC<{ rows: DriftRow[] }> = ({ rows }) => {
 
   if (count === 0) {
     return (
-      <div className="flex items-center gap-2 text-sm text-emerald-500">
+      <div className="flex items-center gap-2 text-sm text-success">
         <CheckCircle2 className="size-4" aria-hidden="true" />
         In sync — every team&apos;s stored W-L matches match history.
       </div>
@@ -34,15 +34,21 @@ const DriftSummary: React.FC<{ rows: DriftRow[] }> = ({ rows }) => {
 
   return (
     <>
-      <div className="flex items-center gap-2 text-sm text-amber-500">
+      <div className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400">
         <AlertTriangle className="size-4" aria-hidden="true" />
         {count} team{count === 1 ? '' : 's'} out of sync with match history.
       </div>
       <ul className="max-h-40 overflow-auto rounded-md border border-border bg-muted/30 p-2 text-xs">
         {rows.slice(0, 10).map((r) => (
           <li key={r.team_id} className="tabular-nums">
-            <span className="font-medium">{r.name}</span>: stored {r.counter_wins}-
-            {r.counter_losses} · derived {r.derived_wins}-{r.derived_losses}
+            <span className="font-medium">{r.name}</span>:{' '}
+            <span className="whitespace-nowrap">
+              stored {r.counter_wins}-{r.counter_losses}
+            </span>{' '}
+            ·{' '}
+            <span className="whitespace-nowrap">
+              derived {r.derived_wins}-{r.derived_losses}
+            </span>
           </li>
         ))}
         {rows.length > 10 && (
@@ -123,7 +129,7 @@ const CounterDriftCard: React.FC = () => {
 
         {driftQuery.isError && !driftQuery.isLoading && (
           <div className="space-y-2">
-            <p className="text-sm text-red-500">Couldn&apos;t check counter sync.</p>
+            <p className="text-sm text-destructive-text">Couldn&apos;t check counter sync.</p>
             <Button size="sm" variant="outline" onClick={() => driftQuery.refetch()}>
               Retry
             </Button>

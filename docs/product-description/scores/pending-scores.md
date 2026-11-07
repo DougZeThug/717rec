@@ -143,7 +143,7 @@ Any of these writes moves standings, records, badges, and power scores.
 | The user's role (visitor, player, admin) | A visitor and a player see the Pending Scores card and its Report buttons and nothing else. An admin sees the same card **plus** the review list at `/admin`. Being on a team in a listed match grants nothing extra — no team owns its own pending matches. | Admin granted or revoked elsewhere does not change what is on screen until the profile is re-fetched. |
 | The record's state | Decides which queue a thing is in. A match with no result is on the card; a report awaiting review is in the admin list; a completed match with no winner is in neither and is invisible. | A match given a result elsewhere leaves the card the next time the home page fetches. A submission decided in another tab stays on screen here until this list is re-fetched. |
 | The season's state (active, archived, playoffs on) | **No effect on any of the three.** None of these queues filters by season, which is unusual for this app — nearly everything else does. | No effect. |
-| Viewport | The card's rows stack on a narrow screen, putting the Report button under the team names. The review cards stack at any width. | No effect beyond re-flowing. |
+| Viewport | The card's rows stack on a narrow screen, putting the Report button under the team names. The review cards stack at any width. A review card's footer wraps when the "Submitted" date and the two buttons do not fit on one row: the date takes one row and Reject and Approve take the next, at the left, so the date stays on one line and both buttons stay inside the card. On a phone held upright that is always so. On a wider screen it happens only when the room is short, for example with a long date beside the open admin sidebar. A long name or team with no spaces breaks inside the card instead of widening it. | No effect beyond re-flowing. |
 | Keys the form honours | Tab reaches each Report button on the card, and Reject then Approve on each review card. Nothing is focused on arrival. | Enter or Space activates the focused button. There are no shortcuts, no select-all, and no bulk action. |
 
 ## Cancel and interrupt
@@ -200,7 +200,9 @@ holds the review queue does, `/admin/pending-matches`, like every admin section
 (see [`admin/the-admin-dashboard.md`](../admin/the-admin-dashboard.md#interactions-with-other-systems)).
 
 **On a phone.** The card's rows stack. The admin review cards keep their two
-buttons side by side at the bottom.
+buttons side by side at the bottom, under the "Submitted" date. On a review card the "Match:" line keeps its
+icon at full size, and the date follows the team names as plain text rather than
+wrapping onto lines of its own.
 
 **Accessibility.** Every button has visible text. A card vanishing from either
 queue is not announced. The Pending Scores card's count is in ordinary prose — "4
@@ -263,4 +265,17 @@ so numbers elsewhere move some time afterwards.
 - Assumption: the sixteen-hour delay exists so that a match is not asked about
   while it is still being played. Nothing in the code says why.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except two things on a review card
+that changed after that commit. First, the "Match:" line keeps its icon at full
+size and the date follows the team names on one line (commit `ea8b862`, the
+admin phone polish). Second, the card's footer wraps when the "Submitted" date
+and the two buttons do not fit on one row, so Reject and Approve stay inside the
+card and the date stays on one line (commit `e318f29` wrapped it only below 359
+pixels; the review of PR 1730 found the date still wrapped to two to four lines
+from 359 up to about 490 pixels, and the widest possible date, "May 30, 2026 at
+10:00 AM", is 211 pixels wide on one line. A width limit of 512 pixels still
+left that date on two lines at 768 pixels, where the open admin sidebar takes
+the room, so the footer now wraps whenever the row is short; this changed the
+Viewport row above). That second fix was measured with a desktop browser window
+at widths from 320 to 1280 pixels against fake data, with the widest date set as
+text, not on a real phone or tablet.

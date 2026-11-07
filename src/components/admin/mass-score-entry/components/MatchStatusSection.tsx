@@ -37,14 +37,14 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
         <m.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex items-center text-green-600 dark:text-green-400"
+          className="flex items-center text-success"
         >
           <Check className="size-3 mr-1" />
           <span className="text-sm">Final</span>
         </m.div>
       ) : null}
 
-      <MatchStatusIndicator isEdited={isEdited} isValid={isValid} isCompleted={isCompleted} />
+      <MatchStatusIndicator isEdited={isEdited} isValid={isValid} />
     </div>
   );
 };

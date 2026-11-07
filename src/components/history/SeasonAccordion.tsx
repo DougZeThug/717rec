@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
+import { readOpen, writeOpen } from '@/utils/historyOpenState';
 
 import SeasonAccordionExpandedContent from './SeasonAccordionExpandedContent';
 import SeasonAccordionHeader from './SeasonAccordionHeader';
@@ -14,7 +15,9 @@ import { useSeasonAccordionViewModel } from './useSeasonAccordionViewModel';
 import { useSeasonData } from './useSeasonData';
 
 const SeasonAccordion: React.FC<{ season: Season }> = ({ season }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Closed unless this tab left it open (Back from a team page, or a reload).
+  const openKey = `season:${season.id}`;
+  const [isExpanded, setIsExpanded] = useState(() => readOpen(openKey) ?? false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const {
@@ -63,9 +66,13 @@ const SeasonAccordion: React.FC<{ season: Season }> = ({ season }) => {
       />
       <button
         type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => {
+          const next = !isExpanded;
+          setIsExpanded(next);
+          writeOpen(openKey, next);
+        }}
         className={cn(
-          'w-full px-3 py-2 md:px-6 md:py-3 flex items-center justify-center gap-1.5',
+          'w-full min-h-11 md:min-h-0 px-3 py-2 md:px-6 md:py-3 flex items-center justify-center gap-1.5',
           'text-xs font-semibold uppercase tracking-wider transition-colors',
           'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset',
           isWinterTheme
@@ -79,7 +86,8 @@ const SeasonAccordion: React.FC<{ season: Season }> = ({ season }) => {
           className={cn('size-3.5 transition-transform duration-200', isExpanded && 'rotate-180')}
         />
       </button>
-      <AnimatePresence>
+      {/* initial={false}: a season left open appears at full height, with no grow-in. */}
+      <AnimatePresence initial={false}>
         {isExpanded && (
           <m.div
             initial={{ height: 0, opacity: 0 }}

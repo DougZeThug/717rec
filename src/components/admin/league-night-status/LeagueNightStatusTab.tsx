@@ -125,7 +125,7 @@ const RealtimeCard: React.FC<RealtimeCardProps> = ({ realtime }) => (
           : 'Waiting for first status…'}
       </p>
       {realtime.state === 'error' && (
-        <p className="text-xs text-red-500">
+        <p className="text-xs text-destructive-text">
           If a scorer is stuck, ask them to refresh once — that re-subscribes the channel.
         </p>
       )}
@@ -151,7 +151,7 @@ const SnapshotCard: React.FC<SnapshotCardProps> = ({ snapshot, isLoading, isMiss
     <CardContent className="space-y-2">
       {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
       {isMissing && (
-        <div className="flex items-center gap-2 text-sm text-red-500">
+        <div className="flex items-center gap-2 text-sm text-destructive-text">
           <AlertTriangle className="size-4" aria-hidden="true" />
           No snapshot has ever been captured.
         </div>
@@ -172,7 +172,7 @@ const SnapshotCard: React.FC<SnapshotCardProps> = ({ snapshot, isLoading, isMiss
           </p>
           <p className="text-xs text-muted-foreground">{formatEst(snapshot.created_at)} EST</p>
           {isStale && (
-            <p className="text-xs text-red-500">
+            <p className="text-xs text-destructive-text">
               Older than {SNAPSHOT_STALE_DAYS} days — verify pg_cron and CRON_WEBHOOK_SECRET.
             </p>
           )}

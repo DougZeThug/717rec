@@ -46,7 +46,10 @@ const SeasonActions: React.FC<SeasonActionsProps> = ({ season }) => {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Badge variant="default" className="bg-green-500">
+      <Badge
+        variant="default"
+        className="shrink-0 whitespace-nowrap bg-success text-success-foreground"
+      >
         Current Active Season
       </Badge>
 

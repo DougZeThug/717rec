@@ -256,14 +256,15 @@ const ContactInboxSection: React.FC = () => {
                     </time>
                   </div>
 
-                  <div className="mt-2 text-sm text-foreground">
+                  {/* A long unbroken name or email must wrap inside the card, like the message below. */}
+                  <div className="mt-2 wrap-break-word text-sm text-foreground">
                     <span className="font-semibold">{item.name}</span>
                     {item.team && <span className="text-muted-foreground"> · {item.team}</span>}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="wrap-break-word text-xs text-muted-foreground">
                     {item.contact ? (
                       href ? (
-                        <a className="hover:underline" href={href}>
+                        <a className="hit-area-44 hover:underline" href={href}>
                           {item.contact}
                         </a>
                       ) : (

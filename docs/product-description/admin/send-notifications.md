@@ -158,7 +158,7 @@ entry with a dot that is filled while it is unread.
 | The user's role | The page is admin-only. The bell is visible to every role; the quick-post form and the bins inside it appear only for an admin. | Losing admin mid-session leaves the form and the bins on screen until the profile is re-read; the writes then fail with "Save failed". |
 | The record's state | An expired notification is **hidden from everyone** by the table's one SELECT policy — the list and the bell read the same query, so it disappears from both. Migration `20260901190000` adds an admin-only read on top, so **once it is applied by hand** (`docs/OPERATIONS.md` §6) an admin keeps seeing the row, tagged EXPIRED, in the list and in the bell, and can still edit or delete it. A non-admin never sees it either way. | A notification deleted elsewhere while it is being edited clears the form and raises a red toast: "Notification deleted — The notification you were editing has been removed." |
 | The season's state | No effect. Notifications belong to no season and survive a changeover. | No effect. |
-| Viewport | The page is a single narrow column at every width. The bell popover is a fixed 360 pixels wide. | No effect. |
+| Viewport | The page is a single narrow column at every width. The bell popover is 360 pixels wide, or the screen width minus 16 pixels on a narrower phone. It is never taller than the room left on the screen and scrolls inside when it is (before, it was 648 pixels tall on a 640-pixel phone and ran off the bottom). Below 640 pixels wide a long title wraps (from 640 it is cut with an ellipsis), and a list of 20 or more notifications scrolls to its end. | No effect. |
 | Keys the form honours | Tab moves title, message, expiry, Post, Cancel. **Enter in the title posts the form**, because it is a real form and the button is its submit. Enter in the message adds a newline. | Escape closes the bell popover. It does nothing on the page. |
 
 ## Cancel and interrupt
@@ -213,7 +213,7 @@ also the address the old standalone page used, so an old bookmark opens the
 section. An individual notification still cannot be linked to.
 
 **On a phone.** The page is already one narrow column and needs no change. The
-bell popover is fixed at 360 pixels, which is wider than the narrowest phones.
+bell popover is 360 pixels wide, or the screen minus 16 pixels where that is narrower, so it fits the narrowest phones. It is never taller than the screen and scrolls inside.
 
 **Accessibility.** The bell's label states the unread count for a signed-in
 member, and is plain "Notifications" for everyone else. The unread dot is
@@ -296,4 +296,4 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
 - Assumption: nothing anywhere else in the product creates a notification. Every
   row in the list is one an admin typed; no automatic announcement was found.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the bell popover size and scrolling (Viewport row and "On a phone"), which changed after that commit (the phone-overflow fixes, commits `e2a9798` and `12994d8`). They were measured in a real browser against fake data at 320, 360 and 390 pixels, not on a real phone.

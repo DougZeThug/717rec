@@ -45,7 +45,7 @@ interface RequestBadgesProps {
 
 /** Team name plus the request type and status badges. */
 const RequestBadges: React.FC<RequestBadgesProps> = ({ request }) => (
-  <div className="flex items-center gap-2">
+  <div className="flex flex-wrap items-center gap-2">
     <span className="font-semibold">{request.teams?.name || 'Unknown Team'}</span>
     <Badge variant={request.request_type === 'EMERGENCY_CANCEL' ? 'destructive' : 'outline'}>
       {REQUEST_TYPE_LABELS[request.request_type]}
@@ -128,7 +128,7 @@ interface StatusFilterSelectProps {
 /** Status filter dropdown for the request list. */
 const StatusFilterSelect: React.FC<StatusFilterSelectProps> = ({ value, onChange }) => (
   <Select value={value} onValueChange={(next) => onChange(next as TeamRequestStatus | 'ALL')}>
-    <SelectTrigger className="w-[150px]">
+    <SelectTrigger className="min-h-[44px] w-[150px]">
       <SelectValue placeholder="Filter by status" />
     </SelectTrigger>
     <SelectContent>
@@ -207,12 +207,12 @@ const RequestsTab: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0 pb-4">
         <CardTitle className="flex items-center gap-2">
           <Inbox className="size-5" />
           Team Requests
           {pendingCount !== undefined && pendingCount > 0 && (
-            <Badge variant="destructive" className="ml-2">
+            <Badge variant="destructive" className="ml-2 shrink-0 whitespace-nowrap">
               {pendingCount} pending
             </Badge>
           )}
@@ -235,8 +235,8 @@ const RequestsTab: React.FC = () => {
                 )}
               >
                 {/* Header */}
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 grow basis-64 space-y-1">
                     <RequestBadges request={request} />
                     <p className="text-sm text-muted-foreground" suppressHydrationWarning>
                       Submitted {formatWithPattern(request.created_at, "MMM d, yyyy 'at' h:mm a")}
@@ -246,11 +246,11 @@ const RequestsTab: React.FC = () => {
 
                   {/* Actions for pending requests */}
                   {request.status === 'PENDING' && (
-                    <div className="flex flex-col sm:flex-row gap-2 mt-2 sm:mt-0">
+                    <div className="flex gap-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        className="text-success hover:text-success hover:bg-success/10"
                         onClick={() => openActionDialog(request.id, 'approve')}
                       >
                         <Check className="size-4 mr-1" />
@@ -259,7 +259,7 @@ const RequestsTab: React.FC = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="text-destructive-text hover:text-destructive-text hover:bg-destructive/10"
                         onClick={() => openActionDialog(request.id, 'reject')}
                       >
                         <X className="size-4 mr-1" />

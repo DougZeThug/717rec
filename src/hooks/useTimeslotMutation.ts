@@ -27,45 +27,6 @@ export const useTimeslotMutation = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Add a new timeslot assignment
-  const addTimeslot = async (
-    date: Date,
-    teamId: string,
-    timeslot: string
-  ): Promise<TeamTimeslot | null> => {
-    // Validate input data
-    const validation = TimeslotValidator.validateTimeslotAssignment(date, teamId, timeslot);
-    if (!validation.valid) {
-      toast({
-        title: 'Validation Error',
-        description: validation.error,
-        variant: 'destructive',
-      });
-      return null;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const data = await TimeslotService.addTimeslot(date, teamId, timeslot);
-
-      // Invalidate timeslot queries to refresh UI
-      const formattedDate = format(date, 'yyyy-MM-dd');
-      queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
-      queryClient.invalidateQueries({ queryKey: ['match-timeslots', formattedDate] });
-
-      return data[0] ?? null;
-    } catch (err) {
-      toast({
-        title: 'Error',
-        description: getUIErrorMessage(err, 'Failed to assign timeslot'),
-        variant: 'destructive',
-      });
-      throw err;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   // Delete a timeslot assignment
   const deleteTimeslot = async (id: string): Promise<boolean> => {
     setIsSubmitting(true);
@@ -180,26 +141,6 @@ export const useTimeslotMutation = () => {
       toast({
         title: 'Error',
         description: getUIErrorMessage(err, 'Failed to batch assign double header timeslots'),
-        variant: 'destructive',
-      });
-      throw err;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const assignByeWeek = async (date: Date, teamId: string): Promise<TeamTimeslot | null> => {
-    setIsSubmitting(true);
-    try {
-      const data = await ByeWeekService.assignByeWeek(date, teamId);
-      const formattedDate = format(date, 'yyyy-MM-dd');
-      queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
-      queryClient.invalidateQueries({ queryKey: ['match-timeslots', formattedDate] });
-      return data;
-    } catch (err) {
-      toast({
-        title: 'Error',
-        description: getUIErrorMessage(err, 'Failed to assign bye week'),
         variant: 'destructive',
       });
       throw err;
@@ -373,11 +314,9 @@ export const useTimeslotMutation = () => {
 
   return {
     isSubmitting,
-    addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots,
     batchAssignDoubleHeaders,
-    assignByeWeek,
     batchAssignByeWeeks,
     removeByeWeek,
     moveTeamBooking,

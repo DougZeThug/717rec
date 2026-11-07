@@ -114,9 +114,11 @@ counted by the submit button.
 ### While editing
 
 Each card offers exactly four results: **2–0, 2–1, 1–2, 0–2**. Above them, the
-two team names with arrows — "← *Team A*" and "*Team B* →" — abbreviated to ten
-characters and an ellipsis when longer. There is no free score entry, no way to
-record 3–0, and no way to record a tie.
+two team names with arrows — "← *Team A*" and "*Team B* →". The names share the
+row in equal halves and are shown in full. A name is cut with an ellipsis only
+when it does not fit its half, so a very long name on the right can lose the end
+of its label, arrow included. There is no free score entry, no way to record 3–0,
+and no way to record a tie.
 
 Pressing a second button replaces the first. Pressing the same button again
 re-selects it; it does not deselect. A row that is edited but not submittable
@@ -190,7 +192,7 @@ on other rows.
 | The user's role | Admin only. The whole dashboard is gated; see [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). A visitor or player never reaches this tool. | Losing admin mid-session leaves the tool on screen and every write begins failing with the generic per-row message. |
 | The record's state | A completed match shows its recorded result selected and its switch on. It is fully editable, and re-scoring it replaces the old result. A match with no date is not shown at all. | Another admin resulting the same match does not reach this screen. The next refresh shows the new value unless the row has been edited here, in which case the local edit wins. |
 | The season's state | No effect. The tool lists matches by date and bracket, not by season, so archived seasons' matches are reachable and editable. | No effect. |
-| Viewport | Cards are one column on a phone and two on a desktop. The four score buttons stay in one row of four at every width, 44 pixels tall. | No effect beyond re-flowing. |
+| Viewport | Cards are one column below 840 pixels wide and two from 840. From 768 the open admin sidebar takes 240 pixels (60 when it is collapsed), so two columns any earlier left each result button 29 to 35 pixels wide, and "2–0" split onto two lines at 768 to 810 pixels. The four score buttons stay in one row of four from 342 pixels wide and sit two by two below that (each 83 pixels wide at 320, where four in a row were 38.5), 44 pixels tall at every width. Below 359 pixels wide the "Mark as final" row wraps onto a second line, so its label and the status badges stay inside the card. | No effect beyond re-flowing. |
 | Keys the form honours | Tab reaches every score button, the switch, and the bin. Space or Enter presses the focused control. There is no keyboard shortcut for submit. | Escape closes the date picker, the bracket list, or the delete dialog. It never clears an edit. |
 
 ## Cancel and interrupt
@@ -255,12 +257,15 @@ notification is sent to anyone when a match is resulted.
 The filters cannot: neither the date nor the bracket is in the address.
 
 **On a phone.** The admin menu becomes a grouped list at the top. Cards go to
-one column. The four score buttons stay in a row of four and remain tappable.
+one column. The four score buttons stay in a row of four from 342 pixels wide and in two rows of two below that, so each is at least 44 pixels wide.
+Each time-slot header is 44 pixels high, and the "Mark as final" switch has a
+44-pixel tap area around a switch that looks the same.
 
 **Accessibility.** Each score button reports whether it is pressed. The switch
 has a real label. The delete dialog is a proper dialog. The red banner is an
-alert. The "Edited", "Complete", and "Invalid Score" tags are text, so they are
-readable, but nothing announces them when they change.
+alert. The "Edited", "Final", and "Invalid Score" tags are text, so they are
+readable, but nothing announces them when they change. A finished match shows
+"Final" once.
 
 **Side effects the user can notice.** A batch moves standings, both teams'
 records, per-team statistics, badges, and power scores. Badge processing runs
@@ -326,4 +331,7 @@ failure does not fail the score. Deleting a match reverses all of it.
   assert the write — so the four-button vocabulary and the partial-failure
   banner are read from the components rather than from a passing test.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the team names, the "Final"
+tag and the 44-pixel tap areas above, which were changed after that commit (the
+admin phone polish).
+The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. The two-by-two score buttons under 342 pixels came later still (commit `fd6f6e5`; the tap-size fixes run from `96b6036` to `8626e6c`) and changed the Viewport row and the phone paragraph. They were measured in a real browser against fake data, not on a real phone or tablet.

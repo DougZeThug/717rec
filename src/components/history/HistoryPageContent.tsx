@@ -1,6 +1,6 @@
 import { AlertTriangle, Calendar, History, Loader2 } from 'lucide-react';
-import React from 'react';
-import { useNavigate } from 'react-router';
+import React, { useState } from 'react';
+import { useNavigate, useNavigationType } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,11 +8,23 @@ import { EmptyState } from '@/components/ui/empty-state';
 import WinterSection from '@/components/winter/WinterSection';
 import { useHistoricalSeasons } from '@/hooks/useSeasons';
 import { getUIErrorMessage } from '@/utils/errorHandler';
+import { clearOpenState } from '@/utils/historyOpenState';
 
 import SeasonAccordion from './SeasonAccordion';
 
 const HistoryPageContent: React.FC = () => {
   const navigate = useNavigate();
+  const navigationType = useNavigationType();
+
+  // The page remembers which seasons and divisions are open, but only for Back, Forward and a
+  // reload (POP, the same rule as the scroll position). Any other arrival (a link, the top bar)
+  // opens fully collapsed, so forget first. The lazy initial value runs once, on mount, before
+  // the accordions below are drawn and read the memory.
+  useState(() => {
+    if (navigationType !== 'POP') clearOpenState();
+    return null;
+  });
+
   const { data: seasons = [], isLoading, isError, error, refetch } = useHistoricalSeasons();
 
   if (isLoading) {

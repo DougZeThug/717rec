@@ -163,8 +163,8 @@ in `?date=` and the match in the hash, which the schedule reads to scroll to the
 card.
 
 **On a phone.** Date and time move above the teams. Team names are truncated at
-about 80 pixels, so long names are cut. The **Score live** button is at least 40
-pixels tall.
+about 80 pixels, so long names are cut. The **Score live** button is at least 44
+pixels tall (it was 40).
 
 **Accessibility.** The **Score live** button carries a spoken name naming both
 teams. The row itself is an ordinary link whose name is read out of the logos,
@@ -227,3 +227,4 @@ Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
 card now reads the membership fetch, so its skeleton is shown on a first load).
 Those passages were written from the change and its tests, not from a fresh pass
 over the running app.
+The **Score live** button height (44 pixels, was 40) changed after that (commit `fd5d43a`). It is pinned by a test; it was not measured in a browser.

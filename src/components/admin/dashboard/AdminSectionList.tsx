@@ -103,14 +103,14 @@ const AdminSectionList: React.FC<AdminSectionListProps> = ({
           placeholder="Search admin sections..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 pr-9 h-10"
+          className="pl-9 pr-9 h-11"
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => setSearchQuery('')}
             aria-label="Clear search"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="hit-area-44 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
             <X className="size-4" />
           </button>
@@ -165,7 +165,7 @@ const AdminSectionList: React.FC<AdminSectionListProps> = ({
                     type="button"
                     onClick={() => toggleGroup(group.id)}
                     aria-expanded={isOpen}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 bg-muted/30 rounded-t-lg"
+                    className="w-full min-h-[44px] flex items-center gap-3 px-3 py-2.5 bg-muted/30 rounded-t-lg"
                   >
                     <GroupIcon className="size-4 shrink-0 text-muted-foreground" />
                     <span className="flex-1 text-left font-medium text-sm">{group.label}</span>

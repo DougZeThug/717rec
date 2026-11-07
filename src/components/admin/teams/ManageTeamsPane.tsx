@@ -55,7 +55,7 @@ const TeamManagementFilters = ({
       />
     </div>
     <Select value={selectedDivision} onValueChange={onSelectedDivisionChange}>
-      <SelectTrigger aria-label="Filter teams by division" className="w-full sm:w-48">
+      <SelectTrigger aria-label="Filter teams by division" className="min-h-[44px] w-full sm:w-48">
         <SelectValue placeholder="Filter by division" />
       </SelectTrigger>
       <SelectContent>

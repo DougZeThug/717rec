@@ -52,7 +52,11 @@ const CompleteMatchDescription: React.FC<CompleteMatchDescriptionProps> = ({
         {gameLines.map((line) => (
           <li key={line.gameNumber} className="flex justify-between">
             <span>
-              Game {line.gameNumber}: {team1Name} {line.team1Total}–{line.team2Total} {team2Name}
+              Game {line.gameNumber}: {team1Name}{' '}
+              <span className="whitespace-nowrap">
+                {line.team1Total}–{line.team2Total}
+              </span>{' '}
+              {team2Name}
             </span>
             <span className="font-medium">{line.winnerName ?? '—'}</span>
           </li>

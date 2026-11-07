@@ -78,6 +78,15 @@ describe('TeamCardGrid', () => {
       expect(heading.closest('a')).toHaveAttribute('href', '/teams/bag-fumblers');
     });
 
+    // jsdom does no layout, so this pins the classes. The link was 20px tall, under the 24px floor;
+    // the negative margin cancels the padding so the card does not grow.
+    it('gives the name link a 32px tap area without moving the card layout', () => {
+      renderCard();
+
+      const link = screen.getByRole('heading', { name: 'Bag Fumblers' }).closest('a');
+      expect(link).toHaveClass('py-1.5', '-my-1.5');
+    });
+
     it('shows the record and the power score to one decimal', () => {
       renderCard();
 

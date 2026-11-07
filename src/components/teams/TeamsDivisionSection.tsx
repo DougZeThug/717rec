@@ -82,6 +82,8 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
             'flex w-full justify-between items-center text-left',
             'bg-muted/50 rounded-lg',
             'px-3 py-2 sm:px-4 sm:py-3',
+            // 44px tall to tap (it was 40px).
+            'min-h-11',
             'hover:bg-accent transition-colors',
             'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring'
           )}

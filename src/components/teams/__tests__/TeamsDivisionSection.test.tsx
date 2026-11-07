@@ -67,6 +67,13 @@ describe('TeamsDivisionSection', () => {
     expect(screen.getByText('(2)')).toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the class. The header bar was 40px tall.
+  it('makes the header bar 44px tall to tap', () => {
+    renderSection();
+
+    expect(screen.getByRole('button', { name: /Competitive/ })).toHaveClass('min-h-11');
+  });
+
   it('exposes the header as a button that reports whether the division is open', () => {
     const { rerender } = renderSection();
 

@@ -34,9 +34,11 @@ tab bar never covers its last line.
 
 They tap Teams. The teams list arrives grouped by division rather than in one
 long list, because that is the default on a small screen and not on a large one.
-They open a team, read it, and press back. `/teams` is built to put them back
-where they were, but in a 2026-11-05 test in desktop Chromium it landed at the top
-(see [navigation](../foundations/navigation.md#open-questions-and-verification)).
+They open a team, read it, and press back. `/teams` puts them back where they were:
+in a 2026-11-06 test in headless Chromium at 390 pixels wide it did, within 1 pixel,
+in every run (see
+[navigation](../foundations/navigation.md#open-questions-and-verification)). Safari
+and iOS were not tested.
 
 They tap a control that fails. A red panel appears across the **top** of the
 screen, not the bottom.
@@ -125,12 +127,62 @@ step. Its six documents start at
 ## Touch and reach
 
 - The hamburger button is 44 by 44 pixels. Every control on the live scoring
-  screen is at least 44 pixels tall. Elsewhere, control size is whatever the
-  component library gives, which is smaller — but no row is now under **24
-  pixels**, the accessibility floor. The rows raised to it are the home page's
+  screen is at least 44 pixels tall. So are nearly all the controls in the admin
+  console, measured at 390 and 320 pixels wide: the Sections drawer's search box
+  and group headings, the clear-search cross, every select box (they were 40
+  pixels, and five of them set their own 24 to 40), every tab, the theme button in the top
+  bar, the calendar's month arrows, the close cross of a dialog, the small round
+  and remove buttons (the remove-signup, hero card remove and reaction picker
+  buttons are pinned by tests, not measured in a browser), the text fields that once set their own height, and the
+  block buttons in Timeslots and the Scores time-slot headers. A switch or a
+  checkbox looks the same as before and has an invisible 44-pixel tap area (the
+  Auto Schedule team checkbox is the one exception, in the next bullet). In a
+  list of options or a menu, each row is 44 pixels tall on a touch screen; a
+  mouse keeps the 36-pixel row. The four Scores result buttons (2–0, 2–1, 1–2,
+  0–2) sit in one row from 342 pixels wide and in two rows of two below that, so
+  each is at least 44 pixels wide on a 320-pixel phone (it was 38.5).
+  The Full Season Recap strip on each history card is 44 pixels high on a phone
+  too (41 from 768 pixels wide; it was 33 on a phone). So is the tap area of a
+  team name on a history phone card or table row, which is a link. On the
+  Champions panel it is about 27 pixels high, because the rows there are only 6
+  pixels apart.
+- A few controls are still under 44 pixels, on purpose: the day cells of a
+  calendar are 36 pixels wide and 44 tall (seven must fit a 320-pixel phone), the
+  two Auto Schedule switches that sit one above the other share the 36-pixel gap
+  between them, the Auto Schedule team checkbox has a tap area 30 pixels wide (its
+  scrolling list cuts the left side, and the team name beside it toggles the same
+  box), and the small clear cross inside a multi-select was left alone.
+  The select box, tab, switch, checkbox, close cross and small buttons are shared
+  pieces, so they have the same size on the public pages. The home page's "Score
+  live" button, the schedule card's live-score and recap buttons and the recap
+  dialog's "Open full recap" link are 44 pixels tall too (they were 40). On a
+  phone the Teams page's division header bars are 44 pixels tall (they were 40)
+  and the standings sort buttons (Power, Win %, SOS, Wins) are 44 (they were 36); so are the career rankings sort buttons, which are a copy of the same code.
+  The public pages were scanned control by control at 390 and 320 pixels, with
+  fake data, after the admin console. Left as they are: the standings badge
+  buttons (32 pixels, side by side), the "View … team details" rows in the
+  standings (36), and the "Sign in" and "Sign up" links inside the sentence under
+  the login form (39).
+- Other controls are whatever size the component library gives, which is
+  smaller — but no row is now under **24 pixels**, the accessibility floor. The rows raised to it are the home page's
   weekly-recap team links, the teams page's Sort/View/Style row, a team page's
   last-match and head-to-head rows, and the footer's two links, all of which
-  were 16 to 20 pixels.
+  were 16 to 20 pixels. The team name link on a team card, the breadcrumb links,
+  "Forgot password?" and "Back to login" were 20 pixels and are now 32 to 36 tall;
+  they use padding and an equal negative margin, so nothing around them moves. The
+  scan read about 26 pixels of tap height on the team name link, because the text
+  below it takes the rest; that is above the 24-pixel floor.
+- **Nothing in these places runs past the screen edge on a 320-pixel phone.** A
+  select box's list is never wider than the screen, so a long option name wraps
+  instead of being cut off. The bell's panel is never taller than the screen and
+  scrolls inside, a long notification title wraps and a long list scrolls to its
+  end. A Member Approvals request card is the screen width minus the page
+  margins, and a long name with no spaces breaks. A long email, name or team
+  in the contact inbox wraps inside its card. The team logo in Update Logos shows
+  whole (the box showed only the middle 80 of 144 pixels). The My Team edit row
+  drops its text under the logo when it would have less than 128 pixels, and the
+  long team ID breaks. These are measured in a real browser against fake data,
+  not on a real phone.
 - **No label is under 12 pixels** on the home page, the standings, the teams
   list or history. Labels there were 9 to 11 pixels, which is unreadable in a
   bar. The schedule's weekday strip and the playoff bracket's participant names
@@ -156,7 +208,7 @@ step. Its six documents start at
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | A phone keyboard has no Escape, so on a phone nothing can be cancelled by key; only by tapping a Cancel or Close control. **The hamburger menu has no close-by-tapping-away** — it closes on a route change or by pressing the button again. It does close on Escape, which reaches it from an attached keyboard but not from a touch keyboard. | Same. A dialog's Cancel button works; there is no key that reaches it. |
-| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top; switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). Back does not put the old page back where it was: `/teams` is built to, and landed at the top in the 2026-11-05 test. | Everything typed is lost with no warning, exactly as on a desktop. |
+| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top; switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). Back puts `/teams`, `/stats`, `/history` and `/insights` back where they were (except when a page's data arrives late: the restore stops watching after one quiet second, three at most; see [navigation](../foundations/navigation.md#open-questions-and-verification)), and every other page wherever the browser puts it. Measured 2026-11-06 for `/teams` at 390 pixels wide in headless Chromium with fake data: within 1 pixel in every run. The fix is on this branch and not yet live. Safari, iOS, and a real phone's back swipe were not tried. | Everything typed is lost with no warning, exactly as on a desktop. |
 | Browser back or forward | The gesture-based back swipe is the browser's, and the app cannot intercept it. It behaves as an in-app navigation. | Same. On a phone this is the most likely way work is lost, because the swipe is easy to trigger by accident. |
 | Reload, or the tab closed | Everything in memory is lost and every page refetches. A mobile browser closing a background tab to save memory looks identical to a reload when the user comes back. | A sent write still lands. An unsent one is gone. |
 | Network lost mid-request | Nothing to lose. Cached data stays on screen and looks current, which on a phone at a venue is the common case. | The request fails and is lost. **Nothing is queued.** This matters most during live scoring, which is the one thing done on a phone at a place with poor signal. |
@@ -205,9 +257,12 @@ season and bracket. A sort order, an open tab or an expanded panel is not shared
 
 **On a phone.** This document is the definition.
 
-**Accessibility.** Touch target sizes are set deliberately on live scoring and
-the hamburger, at 44 pixels, and to a 24-pixel floor on the rows listed under
-[Touch and reach](#touch-and-reach). See [`accessibility.md`](accessibility.md).
+**Accessibility.** Touch target sizes are set deliberately on live scoring, the
+hamburger, the history recap strip, the history team-name links and nearly all of
+the admin console, at 44 pixels,
+and to a 24-pixel floor on the rows listed under
+[Touch and reach](#touch-and-reach). See
+[`accessibility.md`](accessibility.md).
 
 **Side effects the user can notice.** Every pageview is recorded with a coarse
 device class — iOS, Android, other mobile, or desktop — so the league can see how
@@ -223,7 +278,9 @@ much of its traffic is phones. Nothing more precise is stored. See
   rather than documenting.**
 - **A link opens the new page at the top**, which matters most on a phone: a long
   schedule followed by a short page no longer leaves a blank screen ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation),
-  fixed). Back mostly does not restore the old position, though; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+  fixed). On the way the position passes through two in-between values; see [navigation](../foundations/navigation.md#arrive).
+  Back restores the old position on the four routes that save it, and passed every case measured on
+  this branch except the late-data stress run (not yet live; not every case failed before it); see [navigation](../foundations/navigation.md#open-questions-and-verification).
 - **A large phone in landscape is a desktop** as far as the app is concerned, so
   the bottom tab bar vanishes at an angle rather than at a device.
 - **The command palette's keyboard shortcut is unreachable on a phone**, which is
@@ -231,8 +288,10 @@ much of its traffic is phones. Nothing more precise is stored. See
   pixels.
 - **Only one dialog in the app becomes a drawer.** Every other dialog is a
   centred modal on a phone, including the live scoring confirmations.
-- **The teams page is built to remember its scroll position, and in the 2026-11-05
-  test it did not.**
+- **The teams page remembers its scroll position, and in the 2026-11-06 test it
+  came back to it every time** (headless Chromium, 390 pixels wide, fake data; the
+  fix is on this branch and not yet live). Safari, iOS and a real phone were not
+  tested.
 - **A backgrounded tab that the browser discards** returns as a cold load: the
   cache is gone, every page refetches, and any unsaved work is gone with it.
 - **Winter theme adds two hundred animated snowflakes** to the home page, which
@@ -259,10 +318,19 @@ much of its traffic is phones. Nothing more precise is stored. See
   The app shell and every table wrapper prevent it, but no page was measured.
 - Not confirmed by hand: how the app behaves when installed to a home screen and
   opened with no connection.
-- Not confirmed by hand: whether touch targets outside live scoring meet the
-  44-pixel guideline. Only live scoring, the hamburger, and the bracket admin
-  menu and its seeding drag handle set it explicitly; the rows listed above meet
-  the lower 24-pixel floor, not 44.
+- Not confirmed by hand: whether touch targets on the public pages meet the
+  44-pixel guideline everywhere. The admin console and the public pages were
+  scanned control by control (390 and 320 pixels wide, fake data). The scan did
+  not reach the message board feed (the fake data has no messages), the career
+  rankings panel (its sort buttons were fixed from the code and pinned by a test),
+  dialogs that need real data, live scoring while a game is under way, or three
+  states whose steps timed out (the team page badge pop-up, the "What is Power
+  Score?" pop-up and the "View All Teams" switch on the standings). Live scoring, the
+  hamburger, the bracket admin menu and its seeding drag handle, the history
+  recap strip, the history team-name links and the shared pieces named under
+  Touch and reach (select box, tab, switch, checkbox, close cross, small buttons)
+  set it explicitly; the rows listed above
+  meet the lower 24-pixel floor, not 44. Not tested on a real phone.
 - Assumption: nothing in the product reads device orientation directly. Only the
   width is watched.
 
@@ -273,3 +341,6 @@ commit — see
 [B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog)
 and [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone).
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
+The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the opening story, the interrupt table and the edge cases describe it.
+The 44-pixel controls in the admin console, listed under Touch and reach, changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too.
+The tap-size fixes (commits `96b6036` to `8626e6c`) changed the first two bullets under Touch and reach, and the phone-overflow fixes (commits `2af1fa1` to `e3a8bdd`) added the bullet that starts "Nothing in these places", after that commit. They were measured in a real browser against fake data, not on a real phone or tablet. The three 44-pixel buttons named there came later, in commit `fd5d43a`; they are pinned by tests and were not measured in a browser. The division header bars, the standings sort buttons and the 32 to 36-pixel links came in commit `6e15b27`; they were measured in a real browser against fake data at 320, 390, 768 and 1280 pixels. The career sort buttons came in commit `0524ba6` and are pinned by a test only.

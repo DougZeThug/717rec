@@ -24,7 +24,7 @@ const TeamChip: React.FC<{ slotKey: string; label: string }> = ({ slotKey, label
       {...attributes}
       {...listeners}
       className={cn(
-        'flex w-full items-center gap-1.5 rounded-md border bg-background px-2 py-1.5 text-left text-sm font-medium',
+        'flex min-h-11 w-full items-center gap-1.5 rounded-md border bg-background px-2 py-1.5 text-left text-sm font-medium',
         'cursor-grab touch-none hover:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-400',
         isDragging && 'opacity-40'
       )}

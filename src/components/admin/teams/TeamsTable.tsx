@@ -58,7 +58,10 @@ const TeamDivisionSelect = ({
     disabled={actions.isUpdatingTeam(team.id)}
   >
     {/* Full width in a card, fixed in a table cell. */}
-    <SelectTrigger aria-label={`Set division for ${team.name}`} className="w-full md:w-40">
+    <SelectTrigger
+      aria-label={`Set division for ${team.name}`}
+      className="min-h-[44px] w-full md:w-40"
+    >
       <SelectValue />
     </SelectTrigger>
     <SelectContent>

@@ -1018,8 +1018,47 @@ finding read a superseded migration.
   routes' own restoration mostly does not work. `/stats`, then a team page, then
   Back came back at 300 of 300px. Back landed at 0 after a top-bar link on all
   four routes, and after a team page on `/teams`. A probe on `/stats`, then Help,
-  showed the saved position overwritten with 0 as the page was left. Not fixed and
-  not decided; the checklist item is `NAV-02`.
+  showed the saved position overwritten with 0 as the page was left. Not fixed at
+  that point; the checklist item is `NAV-02`.
+  **Follow-up, 2026-11-06: the restore was changed on this branch and passed every case measured except the late-data stress run (see Limits).** The change is
+  `bf63233` in the shared scroll-restore hook. It is **not yet live**, and it was
+  measured only in headless Chromium against fake data. Safari, iOS and real phones
+  were not tested. Two faults were found in the hook; the second is measured on `/history` and only INFERRED for the `/teams` miss at 86px. A scroll event that fired while
+  a link click was leaving the page saved a clamped offset over the real one. That is
+  measured on `/history` after a team link (the saved offset was right in 6 of 10 runs
+  before the fix). It does not explain every failed Back: after the Schedule tab of the
+  phone's bottom tab bar the saved offset was already right before the fix (9 of 9
+  runs), `/teams` then landed at 86px (0 of 3), and `/stats` and `/insights` came back
+  (3 of 3 each). And the restore compared the page's height with the saved offset instead of reading back where the
+  browser had landed, so when the page had to load its data again it ended short. The
+  hook now ignores scroll events once the address has changed. It jumps to the saved
+  offset at once, reads back where it landed, and retries, up to 20 times (about fifteen seconds), until it is there. It keeps
+  watching for up to three seconds, and jumps back if late content moves the page. It
+  stops at once on a wheel turn, a touch, a key press or a mouse press, including a
+  press on a desktop scrollbar (a wheel turn and a mouse press were tried in a browser; a touch and a key press in unit tests only). Measured, within 1px, with the same scripts before and
+  after: `/history` at 390px, Back from a team page, with the data cached went from 6
+  of 10 to 10 of 10, and after the team page was reloaded from 2 of 10 to 10 of 10
+  (production build: from 7 of 10 and 5 of 10 to 10 of 10 and 10 of 10). With reduced
+  motion it went from 1 of 5 to 5 of 5 in both cases. The saved offset was right before
+  leaving in 6 of 10 runs before the fix and in every run after it. Full numbers, for
+  all four routes, are in
+  [`foundations/navigation.md`](foundations/navigation.md#open-questions-and-verification).
+  **Limits:** data that arrives after the watch window (one quiet second, three at most) is not caught (a stress run
+  with the real content at 6.8 seconds: 0 of 2 ended at the saved spot). Find-in-page
+  opened from the browser menu (Ctrl or Cmd+F is expected to send a key press, which stops the
+  restore; not tried), a screen reader and voice control may send no input event, so the restore
+  can pull the page back against them while it runs (read from the code, not tried). Forward in a
+  browser and a closed tab were not tried. The hook now has 44 unit tests; it had none.
+  The rows that carried a suspected-bug mark for this (`NAV-02`, `BROWSE-04`,
+  `BROWSE-37`, `TEAM-33`, `PHONE-22`) lost it, so the count of such rows went from 120
+  to 115. `HIST-12`, `STAND-09` and `INSIGHT-06` record the measurements.
+  **Observed, not understood, and separate: the move to the top after a link passes
+  through two in-between positions.** Measured 2026-11-06, frame by frame the scroll
+  position read 900, 111, 25, 0 (91 frames), and the same with reduced motion on. That
+  does not show a glide. The `ScrollToTop` component calls the plain `scrollTo(0, 0)`;
+  the browser clamping the position as the shorter page replaces the old one is the
+  INFERRED cause. No change was made. Its unit test and `e2e/navigation-scroll.spec.ts`
+  both assert that call, so any change has to update both. Not decided.
 - **Raised by:** [`foundations/navigation.md`](foundations/navigation.md#open-questions-and-verification),
   [`teams/browse-teams.md`](teams/browse-teams.md#open-questions-and-verification),
   [`cross-cutting/accessibility.md`](cross-cutting/accessibility.md#open-questions-and-verification).

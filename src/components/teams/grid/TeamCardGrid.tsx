@@ -36,7 +36,11 @@ const divisionBadgeVariant = (divisionName: string) => {
 };
 
 const TeamCardTitle: React.FC<{ team: Team; isMobile: boolean }> = ({ team, isMobile }) => (
-  <Link to={`/teams/${toTeamSlug(team.name)}`} className="hover:underline flex-1 min-w-0">
+  // py-1.5 with -my-1.5: the link is 32px tall to tap (it was 20px) and the card layout does not move.
+  <Link
+    to={`/teams/${toTeamSlug(team.name)}`}
+    className="hover:underline flex-1 min-w-0 py-1.5 -my-1.5"
+  >
     <h3
       className={cn(
         'font-bebas font-normal uppercase tracking-wide truncate text-foreground',

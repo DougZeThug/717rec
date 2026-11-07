@@ -148,7 +148,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ section: activeTab }) => {
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 h-8 text-sm"
+                  className="pl-8 text-sm"
                 />
               </div>
             </m.div>

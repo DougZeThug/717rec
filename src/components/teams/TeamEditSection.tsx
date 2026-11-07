@@ -100,16 +100,20 @@ const TeamEditSection: React.FC = () => {
 
         {!isEditing ? (
           <div className="space-y-4">
-            <div className="flex items-center gap-4">
+            {/* The 144px logo leaves little room for the name and the 36-character team ID on a
+                phone: the text drops under the logo until it can have 128px beside it. */}
+            <div className="flex flex-wrap items-center gap-4">
               <TeamLogo
                 imageUrl={membership.team.imageUrl || membership.team.logoUrl}
                 teamName={membership.team.name}
                 size="lg"
                 rounded
               />
-              <div>
-                <h3 className="text-lg font-semibold">{membership.team.name}</h3>
-                <p className="text-sm text-muted-foreground">Team ID: {membership.team.id}</p>
+              <div className="min-w-0 flex-1 basis-32">
+                <h3 className="wrap-break-word text-lg font-semibold">{membership.team.name}</h3>
+                <p className="break-all text-sm text-muted-foreground">
+                  Team ID: {membership.team.id}
+                </p>
               </div>
             </div>
 

@@ -80,7 +80,7 @@ const SeasonAccordionHeader: React.FC<SeasonAccordionHeaderProps> = ({
     )}
   >
     <div className="flex items-center justify-between gap-2">
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex flex-col gap-0.5 md:flex-row md:items-center md:gap-2 min-w-0">
         <h3
           className={cn(
             'text-lg md:text-xl font-bebas uppercase tracking-wide leading-tight md:leading-7',

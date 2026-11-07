@@ -265,7 +265,7 @@ window could never be opened — see
 | The user's role (visitor, player, admin) | Only an admin reaches the dashboard at all; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). Every admin sees every control. | Losing admin elsewhere leaves the buttons on screen. The server refuses the writes. |
 | The record's state | An archived season shows an Archived badge and an Edit button, and no Activate button. A season that is neither active nor archived also shows Activate. A playoffs-in-progress season shows both Activate and Finalize Playoffs. Only the active season shows the **Archive Season** button in the header; every other un-archived season shows an **Archive** button on its card. | A season archived in another browser keeps showing its old badge here for up to ten minutes. |
 | The season's state (active, archived, playoffs on) | With no active season, the top card reads "None" and the Archive Season button is absent rather than disabled. Every un-archived season still offers Activate, and its dialog shows no deactivation warning and no tick box, so the league can be restarted from here. | If the active season changes elsewhere, this screen does not notice until it re-fetches. |
-| Viewport | The three cards stack on a narrow screen. The form's two date fields stack. The list is one card per season either way. | No effect beyond re-flowing. |
+| Viewport | The three cards stack on a narrow screen. The form's two date fields stack. The list is one card per season either way. The buttons and badges wrap onto more rows instead of running off the screen. The form's Cancel and Create buttons wrap onto two rows below 372 pixels wide, so Cancel stays on the screen. A confirm dialog (Activate, Archive) that is taller than the screen scrolls inside itself, so its title and confirm button can be reached on a short screen. | No effect beyond re-flowing. |
 | Keys the form honours | Tab moves through Name, Start Date, End Date, Cancel, and the submit button. | Enter in a text field submits the form. Escape closes an open dialog, which cancels the archive or the finalise. |
 
 ## Cancel and interrupt
@@ -312,8 +312,12 @@ a season changing over produces no notification at all.
 the open form, the season being edited, and the dialog are all invisible to the
 address bar.
 
-**On a phone.** The cards and the form's date fields stack. The dialogs are
-capped at a small width and remain fully usable.
+**On a phone.** The cards and the form's date fields stack. The row of Create
+New Season and the active season's badge and buttons wraps, and so does each
+season card's row of badge and action buttons, so nothing runs past the right
+edge. A badge keeps its size, so the Playoffs In Progress badge no longer
+squashes into a circle. The dialogs are capped at a small width and remain fully
+usable.
 
 **Accessibility.** The form's fields have real labels and their errors are tied
 to them. The confirmation dialogs take focus and trap it. The status badges carry
@@ -367,4 +371,14 @@ them.
 - Assumption: `is_archived` is set only by the archive and finalise server
   operations. No other writer was found.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except three things that changed
+after that commit. First, the season buttons and badges now wrap: they used to
+run off the right edge of a 390 pixel screen, and the Playoffs In Progress badge
+used to squash into a circle (commit `8bd933e`, the admin phone polish). Second,
+the form's Cancel and Create buttons wrap below 372 pixels wide: at 320 pixels
+Cancel used to start off the left edge of the screen (commits `b603506` and
+`6efea84`). Third, a confirm dialog taller than the screen scrolls inside itself:
+at 320 pixels the Activate Season dialog used to push its title and confirm button
+off the screen (commit `1244167`). The last two changed the Viewport row above.
+They were measured with a desktop browser window at set widths against fake data,
+not on a real phone or tablet.

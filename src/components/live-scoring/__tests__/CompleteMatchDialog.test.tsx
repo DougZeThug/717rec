@@ -55,9 +55,21 @@ describe('CompleteMatchDialog', () => {
 
     expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
     expect(screen.getByText('Baggers wins 2–1')).toBeInTheDocument();
-    expect(screen.getByText(/Game 1: Baggers 21–18 Tossers/iu)).toBeInTheDocument();
-    expect(screen.getByText(/Game 2: Baggers 15–21 Tossers/iu)).toBeInTheDocument();
-    expect(screen.getByText(/Game 3: Baggers 22–20 Tossers/iu)).toBeInTheDocument();
+    // Each game score sits in its own no-break span, so read the whole line, not just its own text.
+    expect(screen.getByText(/^Game 1: Baggers/iu)).toHaveTextContent(
+      'Game 1: Baggers 21–18 Tossers'
+    );
+    expect(screen.getByText(/^Game 2: Baggers/iu)).toHaveTextContent(
+      'Game 2: Baggers 15–21 Tossers'
+    );
+    expect(screen.getByText(/^Game 3: Baggers/iu)).toHaveTextContent(
+      'Game 3: Baggers 22–20 Tossers'
+    );
+    // jsdom does no layout, so this pins the class that keeps "21–18" from splitting
+    // ("21–" then "18").
+    for (const score of ['21–18', '15–21', '22–20']) {
+      expect(screen.getByText(score)).toHaveClass('whitespace-nowrap');
+    }
 
     await userEvent.click(screen.getByRole('button', { name: 'Save result' }));
     expect(onConfirm).toHaveBeenCalledTimes(1);

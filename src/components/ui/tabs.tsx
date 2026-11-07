@@ -28,7 +28,8 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-input px-3 py-2 min-h-[42px] text-sm font-medium ring-offset-background',
+      // 44px tall to tap, like a Button. (An invisible area was not enough: tab rows that wrap touch each other.)
+      'inline-flex items-center justify-center whitespace-nowrap rounded-input px-3 py-2 min-h-[44px] text-sm font-medium ring-offset-background',
       // Pressed state for tactile feedback
       'active:scale-[0.98] active:bg-accent/30',
       // Fast transition for snappy response

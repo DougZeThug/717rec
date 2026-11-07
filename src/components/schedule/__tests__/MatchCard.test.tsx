@@ -24,8 +24,18 @@ vi.mock('@/components/matches', () => ({
 }));
 
 vi.mock('@/components/transitions/TransitionLink', () => ({
-  TransitionLink: ({ to, children }: { to: string; children: React.ReactNode }) => (
-    <a href={to}>{children}</a>
+  TransitionLink: ({
+    to,
+    children,
+    className,
+  }: {
+    to: string;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <a href={to} className={className}>
+      {children}
+    </a>
   ),
 }));
 
@@ -181,10 +191,12 @@ describe('MatchCard', () => {
 
     render(<MatchCard match={{ ...baseMatch, iscompleted: false }} />);
 
-    // The TransitionLink test stub only forwards to/children, so the
+    // The TransitionLink test stub only forwards to/children/className, so the
     // accessible name is the visible text.
     const link = screen.getByRole('link', { name: 'Live score this match' });
     expect(link).toHaveAttribute('href', '/matches/match-1/live');
+    // jsdom does no layout, so this pins the class. The button was 40px tall, under the 44px tap size.
+    expect(link).toHaveClass('min-h-[44px]');
   });
 
   it('hides the live scoring link from users who cannot score', () => {
@@ -247,6 +259,8 @@ describe('MatchCard', () => {
     const trigger = screen.getByRole('button', { name: /view match recap/i });
     expect(trigger).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /view match recap/i })).not.toBeInTheDocument();
+    // jsdom does no layout, so this pins the class. The button was 40px tall, under the 44px tap size.
+    expect(trigger).toHaveClass('min-h-[44px]');
   });
 
   // A link may name one match — Home's "my match" row does. UX audit SC-04.

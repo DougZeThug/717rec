@@ -54,6 +54,14 @@ describe('ForgotPassword', () => {
     mockResetPassword.mockResolvedValue();
   });
 
+  // jsdom does no layout, so this pins the classes. The link was 20px tall, under the 24px floor;
+  // the negative margin cancels the padding so the card does not grow.
+  it('gives the Back to login link a 36px tap area without moving the card', () => {
+    renderPage();
+
+    expect(screen.getByRole('link', { name: 'Back to login' })).toHaveClass('py-2', '-my-2');
+  });
+
   it('refuses an address that is not an email and sends nothing', async () => {
     const user = userEvent.setup();
     renderPage();

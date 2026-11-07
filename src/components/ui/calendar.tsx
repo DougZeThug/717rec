@@ -19,13 +19,15 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         month_caption: 'flex justify-center pt-1 relative items-center',
         caption_label: 'text-sm font-medium',
         nav: 'space-x-1 flex items-center',
+        // The arrows keep their look but are 44px wide to tap (they were 28px wide). The day cells
+        // stay 36px wide on purpose: seven of them must fit a 320px phone.
         button_previous: cn(
           buttonVariants({ variant: 'outline' }),
-          'size-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute left-1'
+          'size-7 min-w-[44px] bg-transparent p-0 opacity-50 hover:opacity-100 absolute left-1'
         ),
         button_next: cn(
           buttonVariants({ variant: 'outline' }),
-          'size-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-1'
+          'size-7 min-w-[44px] bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-1'
         ),
         month_grid: 'w-full border-collapse space-y-1',
         weekdays: 'flex',

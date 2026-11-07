@@ -226,7 +226,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
       className: 'w-14',
       cell: (card) => (
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger className="hit-area-44">
             <div
               className="size-8 rounded-md border shadow-xs"
               style={{ background: getColorPreview(card.background_color) }}
@@ -242,7 +242,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
       card: 'title',
       cell: (card) => (
         <Tooltip>
-          <TooltipTrigger className="text-left">
+          <TooltipTrigger className="hit-area-44 text-left">
             <div>
               <div className="font-medium">{card.title}</div>
               <div className="text-xs text-muted-foreground">{card.slug}</div>

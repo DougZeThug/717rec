@@ -84,7 +84,7 @@ const RecapBody: React.FC<{ matchId: string }> = ({ matchId }) => {
       {recap && <MatchRecapSummary recap={recap} />}
       <Link
         to={`/matches/${matchId}/live`}
-        className="flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-lg bg-muted text-sm font-medium text-foreground/80 transition-colors hover:bg-muted/70"
+        className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg bg-muted text-sm font-medium text-foreground/80 transition-colors hover:bg-muted/70"
       >
         Open full recap
         <ExternalLink className="size-3.5" aria-hidden />

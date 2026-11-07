@@ -241,7 +241,7 @@ separate content, and nothing in the admin dashboard edits it. See
 | The user's role (visitor, player, admin) | Only an admin reaches the dashboard; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). The traffic chart is additionally readable by admins only at the database, so a stale browser sees its "only admins" message rather than data. | Losing admin elsewhere leaves every control on screen and the writes fail. |
 | The record's state | A hidden hero card shows in this table and nowhere else. A disabled theme shows greyed. A card of type Champions or Event gains an extra editor in the form. | Changing a card's type mid-edit swaps that extra editor in or out, keeping what was typed elsewhere. |
 | The season's state (active, archived, playoffs on) | No effect on themes, hero cards, or help. A Champions card names teams and is unaffected by which season is active. | No effect. |
-| Viewport | The theme rows and the League Night cards stack. The hero card form's two columns become one, putting the live preview below the fields rather than beside them. | No effect beyond re-flowing. |
+| Viewport | The theme rows and the League Night cards stack. On a tablet the Unsaved live matches card keeps the game score on one line (its link wraps instead), and the counter drift card keeps each stored or derived win-loss record on one line. The hero card form's two columns become one, putting the live preview below the fields rather than beside them. | No effect beyond re-flowing. |
 | Keys the form honours | Tab reaches each switch and each button in order. | Enter in a single-line field submits the hero card form. Escape closes the delete confirmation and does nothing else. |
 
 ## Cancel and interrupt
@@ -358,4 +358,4 @@ immediately. Repairing counters rewrites the standings everybody reads.
   winter theme — are the whole list. The rows come from the database and could
   differ.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the League Night card scores in the Viewport row, which changed after that commit (the tablet score-text fix, commits `d96c454` to `0ca8b0f`). It was measured in a real browser against fake data, not on a real phone or tablet.

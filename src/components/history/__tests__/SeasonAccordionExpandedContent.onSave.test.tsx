@@ -77,6 +77,8 @@ const wrap = (ui: React.ReactNode) =>
 
 describe('SeasonAccordionExpandedContent onSave integration', () => {
   beforeEach(() => {
+    // The first click on "Full Season Recap" remembers the season as open (session storage).
+    sessionStorage.clear();
     fetchSeasonStatsForAccordion.mockReset();
     editModeProps.length = 0;
   });

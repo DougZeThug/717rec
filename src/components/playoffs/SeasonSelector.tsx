@@ -42,10 +42,10 @@ const SeasonSelector: React.FC<SeasonSelectorProps> = ({ selectedSeasonId, onSea
       <Select value={knownSelection} onValueChange={onSeasonChange}>
         {/* On a phone the picker is 44px tall (the usual tap size) and wide enough for
             "Season name (Current)": at the old fixed 220px the "(Current)" part was
-            cut off. From md up it keeps its old 220px by 40px size. */}
+            cut off. From md up with a mouse it keeps its old 220px by 40px size (a touch tablet keeps 44px). */}
         <SelectTrigger
           id={triggerId}
-          className="h-11 w-full max-w-[260px] bg-card border-border md:h-10 md:w-[220px] md:max-w-none"
+          className="h-11 w-full max-w-[260px] bg-card border-border md:pointer-fine:h-10 md:w-[220px] md:max-w-none"
         >
           <SelectValue placeholder="Select season" />
         </SelectTrigger>

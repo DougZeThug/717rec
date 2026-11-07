@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
+import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import EditModeContainer from '../editing/EditModeContainer';
@@ -97,7 +98,12 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 
 const createWrapper = (ui: React.ReactElement) => {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>);
+  // A team name is a link now, so the real standings table needs a router.
+  return render(
+    <QueryClientProvider client={qc}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </QueryClientProvider>
+  );
 };
 
 const season = {
@@ -131,6 +137,8 @@ const seasonData = [
 describe('history editing modules', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // The first click on "Full Season Recap" remembers the season as open (session storage).
+    sessionStorage.clear();
     mockUseSeasonData.mockReturnValue({
       data: seasonData,
       isLoading: false,
@@ -155,6 +163,11 @@ describe('history editing modules', () => {
     createWrapper(<SeasonAccordion season={season} />);
 
     fireEvent.click(screen.getByRole('button', { name: /full season recap/i }));
+    // The season must really be open, or the missing Edit button below proves nothing.
+    expect(screen.getByRole('button', { name: /full season recap/i })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
     expect(screen.queryByRole('button', { name: /edit divisions/i })).not.toBeInTheDocument();
   });
 

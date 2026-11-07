@@ -82,7 +82,11 @@ const NotificationBell: React.FC<Props> = ({ className }) => {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[min(360px,calc(100vw-1rem))] p-3">
+      <PopoverContent
+        align="end"
+        // Never taller than the screen has room for (it was 648px on a 640px phone); scrolls if it is.
+        className="max-h-(--radix-popover-content-available-height) w-[min(360px,calc(100vw-1rem))] overflow-y-auto p-3"
+      >
         <NotificationPanel
           notifications={notifications}
           lastSeenAt={lastSeenAt}

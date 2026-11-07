@@ -43,14 +43,20 @@ const RoundRow: React.FC<RoundRowProps> = ({
     <div className="flex-1 min-w-0">
       <div className="font-medium">Round {round.round_number}</div>
       <div className="text-muted-foreground text-xs">
-        {team1Name} {round.team1_score} – {round.team2_score} {team2Name}
+        {team1Name}{' '}
+        {/* The score is one unit: it must never split across two lines ("3 –" then "0"). */}
+        <span className="whitespace-nowrap">
+          {round.team1_score} – {round.team2_score}
+        </span>{' '}
+        {team2Name}
       </div>
     </div>
     {!readOnly && (
-      <div className="flex gap-1">
+      <div className="flex gap-2">
         <Button
           size="sm"
           variant="ghost"
+          className="min-w-[44px]"
           onClick={() => onEdit(round.id)}
           aria-label={`Edit round ${round.round_number}`}
         >
@@ -59,6 +65,7 @@ const RoundRow: React.FC<RoundRowProps> = ({
         <Button
           size="sm"
           variant="ghost"
+          className="min-w-[44px]"
           onClick={() => onDelete(round.id)}
           aria-label={`Delete round ${round.round_number}`}
         >
@@ -92,7 +99,11 @@ export const GameCorrectionCard: React.FC<GameCorrectionCardProps> = ({
     <Card>
       <CardHeader className="pb-2 flex-row items-center justify-between gap-2 space-y-0">
         <CardTitle className="text-base">
-          Game {row.game_number} · {team1Name} {totals.team1} – {totals.team2} {team2Name}
+          Game {row.game_number} · {team1Name}{' '}
+          <span className="whitespace-nowrap">
+            {totals.team1} – {totals.team2}
+          </span>{' '}
+          {team2Name}
           {winnerName && (
             <span className="ml-2 text-xs font-normal text-muted-foreground">
               Winner: {winnerName}
