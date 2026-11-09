@@ -2,6 +2,9 @@
 // Fail-closed for data safety: any request to a blocked host is answered locally
 // (GET/HEAD/OPTIONS -> empty local answer, every other method -> aborted). Nothing reaches production.
 // Usage: node factory/bin/shoot.mjs --out <dir> [--url <base>] [--routes /,/x] [--mock <module.mjs>]
+// A --mock module's default export answers blocked requests (return true when it handled one). It may also export
+// `init` and `initArg`: `init(initArg)` runs in each page before any app code, for example to seed a fake signed-in
+// session in localStorage. It runs in the browser, so it must not use anything else from the module.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -30,12 +33,15 @@ async function shoot() {
   // WebSocket cannot reach it either. The route handler below only supplies local stand-in answers.
   const dnsBlock = blocked.flatMap((host) => [`MAP ${host} ~NOTFOUND`, `MAP *.${host} ~NOTFOUND`]).join(', ');
   const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined, args: [`--host-resolver-rules=${dnsBlock}`] });
-  const mock = arg('mock') ? (await import(pathToFileURL(resolve(arg('mock'))).href)).default : null;
+  const mockModule = arg('mock') ? await import(pathToFileURL(resolve(arg('mock'))).href) : null;
+  const mock = mockModule?.default ?? null;
+  const init = typeof mockModule?.init === 'function' ? mockModule.init : null;
   mkdirSync(out, { recursive: true });
   const report = { base, shots: [], consoleErrors: [], blockedRequests: [], overflow: [] };
 
   for (const [vp, size] of Object.entries(VIEWPORTS)) {
     const ctx = await browser.newContext({ viewport: size, serviceWorkers: 'block' });
+    if (init) await ctx.addInitScript(init, mockModule.initArg);
     const page = await ctx.newPage();
     await page.route('**/*', async (route) => {
       const req = route.request();
