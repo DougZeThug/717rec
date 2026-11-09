@@ -2,7 +2,7 @@
   "id": "T-261109-phone-polish-wave-2-sche",
   "title": "Phone polish wave 2: schedule and live scoring",
   "kind": "polish",
-  "status": "repairing",
+  "status": "verifying",
   "request": "Doug: 'start wave 2' (2026-11-09), from the approved phone polish plan (docs/plans/PHONE-POLISH-2026-11.md, Wave 2 and the Wave 0 baseline findings): schedule and live scoring on a phone. Keep the design.",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -136,7 +136,8 @@
           "summary": "QA: integrity FAIL from an eslint-disable in useScrollToLinkedMatch.test.tsx:31 (hand-made LatePanel). Builder renders the real Tabs/TabsContent instead, no suppression, and shows the test still fails without the retry."
         }
       ],
-      "escalated": false
+      "escalated": false,
+      "resolved": "Commit 3a1037b: real Tabs/TabsContent, no suppression; fails without the retry (expected 1 call, got 0), passes with it (4/4)."
     },
     "review-b1-repick": {
       "attempts": 1,
@@ -146,7 +147,8 @@
           "summary": "Builder keys the carousel on the selected Date object (and tab), so re-picking the same night after a swipe brings the carousel back; refetch test passes the same Date object; new test: swipe, re-pick, back on that night."
         }
       ],
-      "escalated": false
+      "escalated": false,
+      "resolved": "Commit ab10318: carousel keyed on {tab, date object}; new re-pick test fails on the old key; browser at 390: swipe then tap the selected chip returns the carousel (Upcoming and Completed)."
     }
   },
   "interventions": [
@@ -166,5 +168,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-09T20:41:37.035Z"
+  "updatedAt": "2026-11-09T20:52:27.100Z"
 }
