@@ -42,7 +42,58 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "dirty": false,
+      "at": "2026-11-09T20:04:07.170Z",
+      "seconds": 8,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "dirty": false,
+      "at": "2026-11-09T20:05:15.714Z",
+      "seconds": 64,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "dirty": false,
+      "at": "2026-11-09T20:05:21.571Z",
+      "seconds": 2,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/knip.log"
+    },
+    "integrity": {
+      "result": "fail",
+      "exit": 1,
+      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "dirty": false,
+      "at": "2026-11-09T20:05:21.683Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/integrity.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "dirty": false,
+      "at": "2026-11-09T20:05:48.444Z",
+      "seconds": 3,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/build.log"
+    }
+  },
   "reviews": [
     {
       "mode": "plan",
@@ -65,5 +116,5 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-09T20:03:11.055Z"
+  "updatedAt": "2026-11-09T20:05:48.444Z"
 }
