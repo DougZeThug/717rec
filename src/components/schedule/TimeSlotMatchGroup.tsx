@@ -1,5 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 import React, { useMemo } from 'react';
+import { useLocation } from 'react-router';
 
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -26,7 +27,17 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   isFirstTimeSlot = false,
   liveScoredMatchIds,
 }) => {
-  const [isOpen, setIsOpen] = React.useState(isFirstTimeSlot);
+  // A link to one match (`/schedule?date=…#match-<id>`) must find its card, and
+  // a closed group renders no cards. So the group that holds the named match
+  // starts open too. The address is read for the first state only: the reader
+  // still opens and closes the group by hand after that.
+  const { hash } = useLocation();
+  const [isOpen, setIsOpen] = React.useState(
+    () =>
+      isFirstTimeSlot ||
+      (hash.startsWith('#match-') &&
+        matches.some((match) => match.id === hash.slice('#match-'.length)))
+  );
 
   // Extract all team pairs for batch H2H query
   const teamPairs = useMemo(

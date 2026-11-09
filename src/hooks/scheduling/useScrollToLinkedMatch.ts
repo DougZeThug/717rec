@@ -15,7 +15,9 @@ import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
  *
  * It looks again when the open tab changes. The page picks its tab after the
  * matches load, and the inactive tab's cards are not in the page, so the card
- * may only appear on that swap.
+ * may only appear on that swap. A tab panel that has just opened draws its
+ * cards one commit later (Radix Presence mounts them in a layout effect), so
+ * a card that is not there yet gets one more look on the next frame.
  */
 export const useScrollToLinkedMatch = (matchesLoading: boolean, activeTab: string): void => {
   const arrivalHash = useLocation().hash;
@@ -23,13 +25,20 @@ export const useScrollToLinkedMatch = (matchesLoading: boolean, activeTab: strin
   const hasScrolled = useRef(false);
 
   useEffect(() => {
-    if (hasScrolled.current || matchesLoading) return;
-    if (!arrivalHash.startsWith('#match-')) return;
+    if (hasScrolled.current || matchesLoading) return undefined;
+    if (!arrivalHash.startsWith('#match-')) return undefined;
 
-    const card = document.getElementById(`match-${arrivalHash.slice('#match-'.length)}`);
-    if (!card) return;
+    const scrollToCard = () => {
+      const card = document.getElementById(`match-${arrivalHash.slice('#match-'.length)}`);
+      if (!card) return false;
 
-    hasScrolled.current = true;
-    card.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
+      hasScrolled.current = true;
+      card.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
+      return true;
+    };
+
+    if (scrollToCard()) return undefined;
+    const frame = requestAnimationFrame(scrollToCard);
+    return () => cancelAnimationFrame(frame);
   }, [arrivalHash, matchesLoading, scrollBehavior, activeTab]);
 };
