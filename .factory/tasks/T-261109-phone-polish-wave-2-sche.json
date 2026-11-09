@@ -2,15 +2,52 @@
   "id": "T-261109-phone-polish-wave-2-sche",
   "title": "Phone polish wave 2: schedule and live scoring",
   "kind": "polish",
-  "status": "intake",
+  "status": "building",
   "request": "Doug: 'start wave 2' (2026-11-09), from the approved phone polish plan (docs/plans/PHONE-POLISH-2026-11.md, Wave 2 and the Wave 0 baseline findings): schedule and live scoring on a phone. Keep the design.",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
   "baseSha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
   "createdAt": "2026-11-09T18:23:11.570Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Linked match: /schedule?date=<night>#match-<id> opens the time group that holds the match (TimeSlotMatchGroup reads the hash for its first open state) and scrolls to the card, also on a phone when that night is not the first in the carousel (390 px, fake data: tonight's 7:30 match). A bare /schedule still opens only the first group. Unit test added; existing TimeSlotMatchGroup tests wrapped in a MemoryRouter.",
+      "done": false
+    },
+    {
+      "text": "Doug's B: on a phone, picking a night on the date strip shows that night in the Upcoming or Completed cards when it has matches, chosen in the same render (no after-draw effect); a data refetch after a swipe does not jump back; desktop unchanged. Unit tests for both tabs, the refetch case and desktop.",
+      "done": false
+    },
+    {
+      "text": "Doug's A: on the day of a not-yet-played match with both teams set, anyone who cannot score it (other teams, signed-out visitors) sees a full-width 'Watch live' link to /matches/<id>/live; a scorer sees only 'Live score this match'; no button on other days, for completed or postponed matches, or with a missing team; no Watch-live flash while scorer rights load. Watchers no longer see the two scorer-only lines ('your scores still save', 'Rounds send when the signal is back'). Unit tests; browser check with the browser clock on match day, signed out and as a scorer.",
+      "done": false
+    },
+    {
+      "text": "Live scoring layout at 320 and 390 px (member and signed-out): the two team names under the game score end inside the scoreboard card with an ellipsis; every round-list row stays inside the list with '+N' visible (text still reads 'Name +3'); the scorer's 'Round N saved' and offline lines sit below the score input block, so the grids no longer jump.",
+      "done": false
+    },
+    {
+      "text": "Labels and contrast: the comment menu shows without hover and is 44x44; these are 12 px or more: date strip weekdays, prediction numbers ('100%' fits) and High/Medium/Low, 'Won', rivalry tag, 'Games', thrower headings, timeslot double-header pill and division badge; light theme: prediction orange-700, 'Live updates' green-700, comment box border-input (3:1); selected score button blue/red-600 with white text at 4.5:1 or better, with dark and winter shots.",
+      "done": false
+    },
+    {
+      "text": "Docs in the same change: a-match-card.md, the-schedule-page.md, start-a-live-match.md (open questions answered), enter-a-round.md, errors-and-offline.md, saving-and-freshness.md, on-a-phone.md, the verification rows that change, the boxes in UI-UX-DESIGN-AUDIT-2026-10.md, and the plan file (Wave 2 ticked; calendar button and pager dots [-] with the reason; item 10 dropped).",
+      "done": false
+    },
+    {
+      "text": "Before/after shots and measurements at 320, 390 and 1280 px; no page scrolls sideways; no new console errors; e2e/a11y.spec.ts passes; required checks pass on the final head and an independent code review approves.",
+      "done": false
+    }
+  ],
   "checks": {},
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "APPROVE",
+      "sha": "203fa9ee5ae43e3e19969736289d4e1ed4ffcfe7",
+      "at": "2026-11-09T18:49:42.662Z",
+      "summary": "frontend-mobile-ux audit (12 items + 2 product questions) then skeptic GO WITH CHANGES, adopted: drop item 10 (game scores already shown 3 times on that page), leave item 12 (pager dots 44x24 pass WCAG 2.5.8); calendar button and LS-05 already fine; item 1 + B: carousel night chosen during render so the linked-match scroll finds the card; TimeSlotMatchGroup tests need a MemoryRouter; RoundLog '+N' keeps a real space (gap-1 + {' '}); item 5 updates four docs; item 11a also changes dark and winter (QA shots). Doug said yes to A (Watch live) and B (strip moves phone cards). Lead adds: hide the two scorer-only lines from watchers, and no Watch-live flicker while scorer rights load."
+    }
+  ],
   "issues": {},
   "interventions": [
     {
@@ -20,5 +57,5 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-09T18:40:34.354Z"
+  "updatedAt": "2026-11-09T18:49:43.025Z"
 }
