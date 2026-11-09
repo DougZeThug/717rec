@@ -104,7 +104,8 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 - [x] Contrast: prediction orange, "Live updates" green, comment box border, selected
       score button (blue/red-600, every theme).
 - [x] Blue text on a pale blue tint (12 places, 4.24-4.49:1 light, 3.29-3.61:1
-      dark): a text-only `text-primary-text` shade, 5.1:1 or better in every theme.
+      dark): a text-only `text-primary-text` shade, 4.9:1 or better in every theme
+      (worst case measured on any surface).
       Doug asked for it in this wave.
 - [-] Pager dots are 24 px wide and 44 px tall: that passes WCAG 2.5.8 (24 px
       minimum). Left alone.
@@ -112,9 +113,9 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
       scores are already shown three times on that page.
 - [-] LS-05 (a way back from every live-scoring state): every state already has a
       44-pixel back link. Left alone.
-- [ ] Found, not fixed: the round input's net preview ("*Team* +N") wraps to two
+- [-] Found, not fixed: the round input's net preview ("*Team* +N") wraps to two
       lines for a long team name, so the grids move 20 px when both scores are
-      tapped. Left for a later wave.
+      tapped. Moved to Wave 5 (Doug, 2026-11-09).
 
 ### Wave 3: admin tools used at the venue
 
@@ -130,6 +131,9 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 - [ ] Names cut short (leaderboard, My Next Match); Insights labels fixed at 110 px.
 - [ ] Percentile shown only in a tooltip.
 - [ ] Pop-ups never checked on a phone (Power Score help, opponent history).
+- [ ] Carried from Wave 2 (Doug, 2026-11-09): plain `text-primary` text in the dark
+      theme is about 3.8:1 (for example the schedule carousel's Previous/Next words
+      from 640 px). Use `text-primary-text` where primary is used as text.
 
 ### Wave 5: teams and message board
 
@@ -137,6 +141,16 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 - [ ] Three cards in one row (team totals, player stats).
 - [ ] Message board: 32 px send button, about 5 px page margin, tooltip-only info,
       filter bar shown to signed-out visitors.
+- Carried from Wave 2 (Doug, 2026-11-09):
+  - [ ] The live round input's net preview ("*Team* +N") wraps for a long team
+        name, so the score grids move 20 px when both scores are tapped.
+  - [ ] axe `aria-valid-attr-value` on the schedule's date-group trigger (its
+        `aria-controls` id has spaces).
+  - [ ] axe `scrollable-region-focusable` on the finished match's player table.
+  - [ ] A link to last week's unscored match opens Completed with no card
+        (`useScheduleTabs.ts:59` sends any past date to Completed).
+  - [ ] The phone carousel keeps a position, not a night, so a refetch that
+        removes an earlier night moves it forward one night (as before Wave 2).
 
 ### Wave 6: playoffs, history, weekly recap
 
