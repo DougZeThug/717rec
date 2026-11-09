@@ -133,7 +133,7 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
     <>
       <div
         className={cn(
-          'py-2 flex group',
+          'py-2 flex',
           animations.fadeIn,
           isDeleting && 'opacity-50 pointer-events-none'
         )}
@@ -141,9 +141,9 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
         {/* Comment content */}
         <CommentBody comment={comment} />
 
-        {/* Comment actions */}
+        {/* Comment actions. Always shown: a phone has no hover, so they were invisible there. */}
         {isAuthor && (
-          <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="ml-2">
             <CommentActionsMenu
               isDeleting={isDeleting}
               onDeleteClick={() => setShowDeleteConfirm(true)}

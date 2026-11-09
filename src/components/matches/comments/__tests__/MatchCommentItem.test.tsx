@@ -45,6 +45,15 @@ describe('MatchCommentItem', () => {
     expect(screen.getByText('Nice toss')).toBeInTheDocument();
   });
 
+  // A phone has no hover. The menu was see-through until hovered, so on a
+  // phone the author could not find it. jsdom draws nothing, so this pins the class.
+  it('shows the actions menu to the author without a hover', () => {
+    render(<MatchCommentItem comment={comment} onDelete={vi.fn()} />);
+
+    const menu = screen.getByRole('button', { name: 'Open menu' });
+    expect(menu.parentElement).not.toHaveClass('opacity-0');
+  });
+
   it('hides the actions menu from people who did not write the comment', () => {
     mockUseAuth.mockReturnValue({ user: { id: 'someone-else' } });
     render(<MatchCommentItem comment={comment} onDelete={vi.fn()} />);

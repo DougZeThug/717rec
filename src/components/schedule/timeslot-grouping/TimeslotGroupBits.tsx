@@ -57,7 +57,7 @@ const DoubleHeaderPill = ({
   if (!isDoubleHeader || !doubleHeaderInfo?.has(teamId)) return null;
   const slots = doubleHeaderInfo.get(teamId) ?? [];
   return (
-    <Badge variant="doubleHeader" className="text-2xs leading-tight px-1.5 py-0.5 mt-0.5">
+    <Badge variant="doubleHeader" className="text-xs leading-tight px-1.5 py-0.5 mt-0.5">
       {slots.length > 2 ? 'TH' : 'DH'} {slots.join('/')}
     </Badge>
   );
@@ -99,7 +99,7 @@ export const TimeslotMatchRowMobile = ({
       {teamTimeslot.teams?.divisionName && (
         <Badge
           className={cn(
-            'text-2xs font-medium px-2 py-0',
+            'text-xs font-medium px-2 py-0',
             getDivisionBadgeColor(teamTimeslot.teams.divisionName)
           )}
         >

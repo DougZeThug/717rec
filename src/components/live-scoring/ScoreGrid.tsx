@@ -21,8 +21,10 @@ interface ScoreGridProps {
 }
 
 const accentClasses = {
-  blue: 'border-blue-500 bg-blue-500 text-white',
-  red: 'border-red-500 bg-red-500 text-white',
+  // -600, not -500: white on -500 was 3.8:1, under the 4.5:1 text needs.
+  // There is no dark: twin, so this is the same in every theme.
+  blue: 'border-blue-600 bg-blue-600 text-white',
+  red: 'border-red-600 bg-red-600 text-white',
 };
 
 /**

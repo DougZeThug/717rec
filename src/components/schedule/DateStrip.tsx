@@ -109,7 +109,7 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
             >
               <span
                 className={cn(
-                  'text-2xs font-semibold uppercase tracking-wider',
+                  'text-xs font-semibold uppercase tracking-wider',
                   isSelected ? 'text-primary-foreground' : 'text-muted-foreground'
                 )}
               >
