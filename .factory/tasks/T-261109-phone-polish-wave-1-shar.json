@@ -39,6 +39,10 @@
     {
       "text": "Before/after shots and measurements at 320, 390 and 1280 px; no new console errors; no page scrolls sideways; required checks pass on the final head and an independent code review approves.",
       "done": false
+    },
+    {
+      "text": "Create New Playoff Bracket: no button inside a button. The seed badge in each team row (SeedStatusBadge, rendered with onEdit inside the team Button in TeamSelectionForm.tsx) is plain text, so a tap on it selects or deselects the team like the rest of the row and no longer also jumps to the Seeds tab; the now unused onEdit button branch is removed. Opening the dialog logs no console error at 390 and 1280 px; a unit test pins that the team list has no nested button and a tap on the badge toggles the team once.",
+      "done": false
     }
   ],
   "checks": {
@@ -131,8 +135,13 @@
       "escalated": false
     }
   },
-  "interventions": [],
+  "interventions": [
+    {
+      "at": "2026-11-09T18:05:39.494Z",
+      "why": "Doug asked mid-wave: also fix the opponent history wrap row (already in the repair pass) and the older console error on Create New Playoff Bracket ('<button> cannot be a descendant of <button>')."
+    }
+  ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-09T18:04:28.014Z"
+  "updatedAt": "2026-11-09T18:05:39.540Z"
 }
