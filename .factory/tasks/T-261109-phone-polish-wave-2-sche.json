@@ -36,6 +36,10 @@
     {
       "text": "Before/after shots and measurements at 320, 390 and 1280 px; no page scrolls sideways; no new console errors; e2e/a11y.spec.ts passes; required checks pass on the final head and an independent code review approves.",
       "done": false
+    },
+    {
+      "text": "Contrast pair text-primary on bg-primary/10 (12 places, 4.48:1): every place reaches 4.5:1 or better in the light, dark and winter themes, measured in a browser, with the smallest shared change that keeps the look (no global change to the brand --primary colour, so buttons and other primary fills do not change); a test pins it.",
+      "done": false
     }
   ],
   "checks": {},
@@ -53,9 +57,13 @@
     {
       "at": "2026-11-09T18:40:34.354Z",
       "why": "Doug decided two product questions from the Wave 2 audit (2026-11-09): A) on match night everyone (other teams, signed-out visitors) sees a full-width 'Watch live' button on each match card that opens the live page view-only; scorers keep 'Live score this match'. B) on a phone, picking a night on the date strip moves the Upcoming/Completed cards to that night when it has matches; desktop unchanged."
+    },
+    {
+      "at": "2026-11-09T19:31:42.143Z",
+      "why": "Doug asked mid-build (2026-11-09): also fix the 4.48:1 contrast pair the builder flagged (text-primary on bg-primary/10, 12 places)."
     }
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-09T18:49:43.025Z"
+  "updatedAt": "2026-11-09T19:31:42.176Z"
 }
