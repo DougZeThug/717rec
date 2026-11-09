@@ -7,7 +7,7 @@ const BACKED_UP = '2026-08-09T12:00:00Z';
 const seasonName = (id) => base.seasons.find((s) => s.id === id)?.name ?? null;
 export const RPC = {
   is_username_taken: () => false,
-  // Newest first: the live weights (40/45/15, see docs/agents/LEAGUE_CONTEXT.md) and the triple a revert restores.
+  // Newest first: the default weights (40/45/15; admins can change them, see docs/agents/LEAGUE_CONTEXT.md) and the triple a revert restores.
   get_power_score_weights: () => [
     { id: 2, win_weight: 40, sos_weight: 45, game_weight: 15, applied_at: '2026-08-20T12:00:00Z', note: 'Fake note: default weights' },
     { id: 1, win_weight: 40, sos_weight: 40, game_weight: 20, applied_at: '2026-01-01T00:00:00Z', note: null },

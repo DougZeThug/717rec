@@ -42,7 +42,7 @@ BRACKETS.forEach((b, k) => {
 });
 
 // ---- Weekly recap edition for last week, published ----
-// URL: /recap/fake-season-2026/<RECAP_WEEK>. Facts follow RecapFactsV1 (src/types/recapEdition.ts, schema version 2).
+// URL: /recap/fake-season-2026/week-<RECAP_WEEK>. Facts follow RecapFactsV1 (src/types/recapEdition.ts, schema version 2).
 export const SEASON_SLUG = 'fake-season-2026';
 const season = base.seasons.find((s) => s.id === SEASON);
 const team = (i) => teams[i];

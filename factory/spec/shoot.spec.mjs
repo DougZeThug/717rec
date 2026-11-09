@@ -38,7 +38,7 @@ test('hostBlocked matches host suffixes and treats a bad URL as blocked', () => 
 
 // Runs a real browser (Chromium through Playwright). Where the installed browser does not match the Playwright
 // version, set PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, which shoot.mjs reads.
-test('a mock init runs in the page before the app code, and nothing runs without one', async () => {
+test('a mock init runs in the page before the app code, and nothing runs without one', { timeout: 60_000 }, async () => {
   const repo = mkdtempSync(join(tmpdir(), 'shoot-init-'));
   // The page reports what it found in localStorage by calling a blocked host; the tool records that request's path.
   const page = "<!doctype html><link rel=icon href='data:,'><script>fetch('https://api.blocked.test/seen/' + (localStorage.getItem('fake-session') ?? 'none'))</script>";
@@ -50,7 +50,7 @@ test('a mock init runs in the page before the app code, and nothing runs without
   const url = `http://127.0.0.1:${server.address().port}`;
   // The server answers in this process, so the tool must run without blocking it (spawn, not spawnSync).
   const run = (args) => new Promise((done) => {
-    const child = spawn('node', [shoot, ...args], { cwd: repo, encoding: 'utf8' });
+    const child = spawn('node', [shoot, ...args], { cwd: repo });
     let stderr = '';
     child.stderr.on('data', (chunk) => (stderr += chunk));
     child.on('close', (status) => done({ status, stderr }));
