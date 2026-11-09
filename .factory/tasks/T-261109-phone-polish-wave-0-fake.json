@@ -102,10 +102,27 @@
       "log": ".factory/evidence/T-261109-phone-polish-wave-0-fake/unit.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "b2b3506f32e7a9eb4aa58d3e408523d36e0cc066",
+      "at": "2026-11-09T15:49:32.096Z",
+      "summary": "Independent factory-reviewer, two passes. Pass 1 on 177ed74: no path to a real host (guard unchanged, DNS block and page.route unchanged, writes to unknown tables/RPCs/storage/functions/auth return false so the tool aborts them, Supabase sockets faked in-page and never opened, all names fake); spec proves init runs before page code; src/ and standings-mock.mjs unchanged. Pass 2 on 496b9c9 (b2b3506: 60 s spec timeout, unused spawn option removed, two fixture comments corrected, project fixture sentence removed from factory/README.md): APPROVE, spec 3/3 pass. Follow-ups noted."
+    }
+  ],
   "issues": {},
   "interventions": [],
-  "notes": [],
+  "notes": [
+    {
+      "at": "2026-11-09T15:49:32.006Z",
+      "text": "Review follow-ups left on purpose (no current screen affected): (a) fake dates drift: season start fixed at 2026-01-05 while match dates follow the clock; recap URL breaks from about 2027-11-29 (2-digit week); standings-mock active season ends 2026-06-30. (b) postgrest.mjs: neq/not.eq keeps rows with a null cell, and a filter on a non-inner single-row join drops the parent; real PostgREST differs. (c) postgrest.mjs repeats standings-mock.mjs filter helpers with different rules; merge later. Revisit (a) and (b) if a wave screen looks wrong."
+    },
+    {
+      "at": "2026-11-09T15:49:32.056Z",
+      "text": "Ledger race seen: a review and a note recorded while a long F check (unit, 367 s) ran were lost, because that check saved its copy of the task file at the end. Both re-recorded after the checks finished. Rule for later waves: do not write to the ledger while a check runs."
+    }
+  ],
   "waivers": [],
-  "updatedAt": "2026-11-09T15:49:13.895Z"
+  "updatedAt": "2026-11-09T15:49:32.096Z"
 }
