@@ -168,6 +168,10 @@ export const ExampleService = {
 - Red text and icons use `text-destructive-text`, not `text-destructive`.
   `--destructive` is a fill colour and is too dark to read as text in the dark
   and winter themes. Keep `bg-destructive` and `border-destructive` for fills.
+- Primary-coloured text on a primary tint (`bg-primary/10`, `bg-primary/20`)
+  uses `text-primary-text`, not `text-primary`. `--primary` is a fill colour:
+  as text on its own tint it is under 4.5:1 (4.48:1 light, 3.61:1 dark). Keep
+  `bg-primary` and `text-primary-foreground` for fills.
 - Form-field borders (`border-input`) are 3:1 on purpose (WCAG 1.4.11). Do not
   lighten `--input` back to `--border`.
 - Keep `bg-gradient-to-*` (not `bg-linear-to-*`): hero card presets save these
@@ -302,4 +306,4 @@ export const ExampleService = {
 
 ---
 
-*Last updated: 2026-09-28*
+*Last updated: 2026-11-09*
