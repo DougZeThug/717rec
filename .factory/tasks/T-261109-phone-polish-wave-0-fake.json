@@ -2,7 +2,7 @@
   "id": "T-261109-phone-polish-wave-0-fake",
   "title": "Phone polish wave 0: fake league-night data and admin sign-in for screenshots",
   "kind": "build",
-  "status": "building",
+  "status": "verifying",
   "request": "Doug: 'plan a polish of the entire app especially the mobile experience' (approved plan, 2026-11-09). Wave 0 = setup only: shoot.mjs mock init hook for a fake admin session, a fake league-night data mock, baseline shots, and the in-repo plan file with the per-wave defect list. No app change.",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -16,22 +16,35 @@
     },
     {
       "text": "A fake league-night mock (.factory/fixtures/, fake names only) fills the phone screens the waves need: schedule tonight, a live match mid-game, finished matches with comments, message board posts, a bracket, a recap edition, history, pending scores, and a fake admin session for /admin sections. A shoot run over every route sends nothing to a live host: every Supabase request is answered locally.",
-      "done": false
+      "done": true,
+      "evidence": "Commit 1d389bd: three mocks (signed out, member, admin) plus helpers in .factory/fixtures/league-night/ (865 lines, fake names, all image URLs null). Builder's shoot.mjs runs: 19 signed-out, 15 member, 25 admin routes, each exit 0, consoleErrors [] and overflow []. A request-recorder pass showed only team_details_archive and playoff_matches fall through to the tool's local [] (on purpose). The init export seeds the fake session and fakes only Supabase-host WebSockets; the tool's DNS block still stops every Supabase host. Lead looked at the phone shots for the live match (game 2 at 12-12, 7 rounds) and Live Corrections (Nov 5 match, 3 games, 47 rounds): data present."
     },
     {
       "text": "Baseline shots of every route at 390 and 1280 px plus a 320 px overflow and tap scan, and docs/plans/PHONE-POLISH-2026-11.md holds the per-wave defect list from that baseline. No app source file changes in this wave.",
-      "done": false
+      "done": true,
+      "evidence": "Commit 39933e8: baseline at 320/390 px (touch on, phone-scan over 13 signed-out, 7 member, 26 admin routes plus 7 static pages) and shoot.mjs shots at 390/1280 (builder runs in .factory/evidence/T-261109-phone-polish-wave-0-fake/mock-check/). Result: 0 sideways overflow, 0 page errors, 0 open text fields under 16 px. New items written into docs/plans/PHONE-POLISH-2026-11.md per wave (live scoreboard and round-list names cut, message posts overflow their box, Scores group collapsed, League Night Status chart on phone, 11 px labels, 4 short links). git diff main -- src/ is empty: no app source changed."
     },
     {
       "text": "Required checks pass on the final head (typecheck, lint, unit, build, knip, integrity) plus factory-specs, and an independent code review approves.",
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "39933e8b5c696e4328ad85851f9374c55838130a",
+      "dirty": false,
+      "at": "2026-11-09T15:33:49.443Z",
+      "seconds": 8,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-0-fake/typecheck.log"
+    }
+  },
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-09T14:47:37.117Z"
+  "updatedAt": "2026-11-09T15:33:49.443Z"
 }
