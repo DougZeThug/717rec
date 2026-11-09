@@ -190,9 +190,15 @@ step. Its six documents start at
   rule in `src/styles/brackets-viewer-717rec-theme.css`).
 - **A centred dialog keeps a 16-pixel gap on each side** on a phone, has round
   corners, is never taller than the screen minus 32 pixels, and scrolls inside
-  when its content is taller. Before, a dialog touched both screen edges, and the
-  Live Corrections "Edit round" dialog ran 14 pixels off the top and the bottom of
-  a 640-pixel-tall phone with no way to reach its buttons. A dialog that sets its
+  when its content is taller. Before, a dialog touched both screen edges. The
+  Live Corrections "Edit round" dialog was 668 pixels tall on a 640-pixel-tall
+  phone, so its edge and padding ran 14 pixels off the top and the bottom; every
+  field and both buttons were still on screen. Now it fits inside the screen with
+  a 16-pixel gap, which costs a step on a short phone: on a phone 600 to 640
+  pixels tall, Save changes starts below the fold and needs a short scroll inside
+  the dialog (the content is 60 pixels taller than the box at 320 by 640 and 80
+  pixels taller at 390 by 600). On a phone 844 pixels tall it fits with no
+  scroll. A later change is planned for this dialog. A dialog that sets its
   own height limit (for example 80 or 90 per cent of the screen) keeps it. The
   command palette stays clipped and its list scrolls. Measured 2026-11-09 in
   headless Chromium with fake data, at 320, 390 and 1280 pixels, on 15 dialogs
@@ -205,10 +211,14 @@ step. Its six documents start at
 - **Text fields are 16 pixels on a phone**, so iPhone Safari does not zoom the
   page in when one gets focus (it zooms on anything smaller). That covers the
   team search box in pickers and multi-selects, the match comment box, the
-  message edit box, the admin hero card fields (week, winner names, extra data)
-  and the weekly blurb fields. From 768 pixels up they stay 14 pixels. Measured
-  in the same run; the weekly blurb box was not reached with the fake data and is
-  pinned by its class only.
+  message edit box, the admin hero card fields (week, winner names, extra data),
+  the weekly blurb fields and the seed number box when an admin seeds a new
+  playoff bracket by hand. From 768 pixels up they stay 14 pixels. Measured in
+  the same run: the multi-select search, the comment box, the message edit box
+  and the three hero card fields. The home page's team picker search, the weekly
+  blurb box and the bracket seed box were not reached with the fake data; they
+  were changed by class and not measured in a browser (the team picker uses the
+  same search box as the multi-select).
 - The phone's safe areas are honoured in the top bar, the bottom tab bar, the
   padding under every page and the toast list, which starts below the notch. A
   notch or a home indicator does not sit over them.
