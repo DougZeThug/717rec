@@ -2,7 +2,7 @@
   "id": "T-261109-phone-polish-wave-1-shar",
   "title": "Phone polish wave 1: shared parts (pop-ups, iPhone zoom, toasts, dvh)",
   "kind": "polish",
-  "status": "building",
+  "status": "verifying",
   "request": "Doug: 'start wave 1' (2026-11-09), from the approved phone polish plan (docs/plans/PHONE-POLISH-2026-11.md, Wave 1): pop-ups get a phone side margin, height limit and own scroll; the command search box and text fields with a text-sm override use 16 px on phones so iPhone Safari does not zoom; toasts clear the notch; remaining vh become dvh; w-96 chart loading boxes stop sideways scroll; fix the stale claims in on-a-phone.md. Keep the design.",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -52,5 +52,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-09T16:02:51.742Z"
+  "updatedAt": "2026-11-09T17:20:06.309Z"
 }
