@@ -85,10 +85,36 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 
 ### Wave 2: schedule and live scoring
 
-- [ ] Comment actions are invisible until hover.
-- [ ] Calendar button is 36 px.
-- [ ] Date strip weekday labels are 11 px.
-- [ ] First check of live scoring mid-game with data.
+- [x] Comment actions are invisible until hover: the menu is always shown, 44 by 44.
+- [-] Calendar button is 36 px: it is already 44 px (`size="icon"` sets a 44-pixel
+      minimum). Left alone.
+- [x] Date strip weekday labels are 11 px: now 12 px, with the other 11-pixel
+      labels on the schedule and live scoring (prediction numbers and confidence,
+      "Won", rivalry tag, timeslot pills, "Games", thrower headings). Nothing moved.
+- [x] First check of live scoring mid-game with data: long team names now end in
+      "…" in the scoreboard and the round history ("+N" always shows); the saved
+      and offline lines sit under the round input so the grids do not jump; every
+      control is 44 px or has a 44-pixel tap area.
+- [x] A link to one match (`#match-<id>`) opens its time group and scrolls to the
+      card, also on a phone.
+- [x] Doug's A: "Watch live" on match day for everyone who cannot score a match.
+      Watchers no longer see the two scorer-only lines.
+- [x] Doug's B: on a phone the Upcoming/Completed carousel moves to the night picked
+      on the date strip.
+- [x] Contrast: prediction orange, "Live updates" green, comment box border, selected
+      score button (blue/red-600, every theme).
+- [x] Blue text on a pale blue tint (12 places, 4.24-4.49:1 light, 3.29-3.61:1
+      dark): a text-only `text-primary-text` shade, 5.1:1 or better in every theme.
+      Doug asked for it in this wave.
+- [-] Pager dots are 24 px wide and 44 px tall: that passes WCAG 2.5.8 (24 px
+      minimum). Left alone.
+- [-] Move the Games card on the live page (audit item 10): dropped. The game
+      scores are already shown three times on that page.
+- [-] LS-05 (a way back from every live-scoring state): every state already has a
+      44-pixel back link. Left alone.
+- [ ] Found, not fixed: the round input's net preview ("*Team* +N") wraps to two
+      lines for a long team name, so the grids move 20 px when both scores are
+      tapped. Left for a later wave.
 
 ### Wave 3: admin tools used at the venue
 

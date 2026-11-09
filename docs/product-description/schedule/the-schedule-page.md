@@ -40,8 +40,9 @@ collapsible heading like "Thursday, June 12". Inside a date, matches are grouped
 again by start time — "7:00 PM", with a count badge — and inside that sit the
 match cards. On a wide screen the first date group is open, and so is any date
 group for today or for the selected night. Each open date group has its first time
-group open too. Every other group is closed. On a phone only one date shows at a time, and each
-date opens with its first time group showing.
+group open too. Every other group is closed, except the time group that holds a
+match named in the address (`#match-<id>`, see **URL state**). On a phone only one
+date shows at a time, and each date opens with its first time group showing.
 
 The Completed tab is the same, newest date first, and every card reads "Final".
 
@@ -118,9 +119,13 @@ Four controls change the view.
 
 **The date strip.** Pressing a date selects it. This does **not** filter the
 Upcoming or Completed lists. It changes the Timeslots tab, highlights that date's
-group heading, and re-runs the tab rule. A user who presses a date expecting to
-see only that date's matches sees the whole season's matches with one heading
-highlighted.
+group heading, and re-runs the tab rule. On a wide screen a user who presses a
+date expecting to see only that date's matches sees the whole season's matches
+with one heading highlighted. On a phone the Upcoming or Completed carousel moves
+to the picked night when that tab has matches on it (Doug, 2026-11-09); a night
+with none leaves the carousel where its own default puts it. The carousel never
+changes the selected date back: swiping to another night leaves the strip and
+the address as they were.
 
 **The calendar button.** It opens a month picker with no limits, so a date
 outside the fourteen-day strip can be chosen. When one is, the strip changes to hold it and the picked date is highlighted: a date within about six weeks stretches the strip, and a date further away moves the strip to run from three days before it to ten days after it. Picking a day closes the picker at once. Pressing the day that
@@ -176,7 +181,7 @@ that own their own commits.
 | The user's role (visitor, player, admin) | A visitor and a player see the same page. A player who may score one of the listed matches also sees "Live score this match" on that card. An admin additionally sees an Edit and a Delete button on every card. | Admin granted or revoked elsewhere does not reach this page until something re-fetches the profile. The buttons stay as they were. |
 | The record's state | Each match's own state decides which card it gets and which tab it appears in. Completed matches are only in Completed, everything else only in Upcoming — including a match whose result was never recorded, which counts as Upcoming rather than falling out of both tabs. | A match completed elsewhere does not move between tabs here until the schedule is re-fetched, which this page does not do on its own. |
 | The season's state (active, archived, playoffs on) | Only the active season's matches are ever listed. With no active season the page is empty rather than broken. Archived seasons are read at [`history/past-seasons.md`](../history/past-seasons.md). | A season activated elsewhere does not reach this page until a reload. |
-| Viewport | On a wide screen every date group is stacked down the page and time groups lay their cards out in up to three columns. On a narrow screen the date groups become a **swipeable carousel**: one date at a time, with Previous and Next, a row of dots, and a "Swipe to see more dates" hint. With more than nine dates the dots give way to text such as "3 of 19", so Previous and Next always stay on the screen. | Rotating a phone to landscape can cross the breakpoint and swap the stacked list for the carousel, losing which groups were open. |
+| Viewport | On a wide screen every date group is stacked down the page and time groups lay their cards out in up to three columns. On a narrow screen the date groups become a **swipeable carousel**: one date at a time, with Previous and Next, a row of dots, and a "Swipe to see more dates" hint. It opens on the selected night when that tab has matches on it. With more than nine dates the dots give way to text such as "3 of 19", so Previous and Next always stay on the screen. | Rotating a phone to landscape can cross the breakpoint and swap the stacked list for the carousel, losing which groups were open. |
 | Keys the form honours | Nothing is focused on arrival. Tab reaches the date strip, the search box, the calendar button, the tabs, and every group heading. | Left and Right arrows move between the three tabs. Escape closes the calendar popover, as does picking a day. Enter or Space opens and closes a group. There are no shortcuts and no type-ahead. |
 
 ## Cancel and interrupt
@@ -247,12 +252,26 @@ of moving off an empty guess to the last night played (see **Arrive**) is left
 alone, so a shared link always opens the night it names, even an empty one. An
 address whose date is not a real day is ignored and the guess applies as usual.
 
+A link may also name one match: `#match-<id>` at the end, as Home's "my match"
+row writes it. The time group that holds that match opens by itself, the phone
+carousel opens on the named night, and the page scrolls the card to the middle
+of the screen once the matches are in. The address is read only when the group is
+first drawn, so the reader can close it again. Before the 2026-11-09 phone polish
+only the first time group opened, so a match at a later start time had no card
+to scroll to and the page stayed at the top.
+
 The tab and the expanded groups are still not in the address. The tab does not
 need to be: it is chosen to suit the night, so a link to a past night opens on
 Completed by itself.
 
-**On a phone.** The date strip scrolls sideways. The date groups become a swipeable
-carousel that starts on today's group, or the next future one. Every date the
+**On a phone.** The date strip scrolls sideways. Its weekday labels are 12 pixels
+(they were 11). The date groups become a swipeable carousel. Upcoming starts on
+the selected night when it has upcoming matches, otherwise on today's group or
+the next future one. Completed starts on the selected night when it has results,
+otherwise on the newest night. The night is chosen while the page is drawn, not
+just after, so the cards of a linked match are already there when the page
+scrolls to them. It moves again only when the selected night or the tab changes:
+a refetch does not pull the reader back off a night they swiped to. Every date the
 carousel moves to opens with its first time group showing, so pressing Next never
 lands on a bare date heading. The tab bar sticks to the top of the screen as the
 list scrolls under it.
@@ -271,7 +290,9 @@ ordinary pageview.
 ## Edge cases
 
 - **Picking a date does not filter the matches.** This is the page's biggest
-  surprise. See [Open questions](#open-questions-and-verification).
+  surprise. On a phone the carousel now moves to the picked night, which takes
+  most of the sting out; on a wide screen nothing moves. See
+  [Open questions](#open-questions-and-verification).
 - **The list is grouped by date, not by week.** No week number or week heading
   appears anywhere on this page.
 - **A match whose team details are missing is silently dropped** from the list. It
@@ -296,8 +317,10 @@ ordinary pageview.
 
 - **The selected date filters the Timeslots tab but not the match lists.** The
   date strip, the calendar button, and the highlighted date heading all look like
-  a filter and none of them is. **May be worth treating as a bug rather than
-  documenting.**
+  a filter and none of them is. Partly answered by Doug on 2026-11-09: on a phone
+  the Upcoming and Completed carousel moves to the picked night when it has
+  matches. A wide screen still lists every night, with the picked one open and
+  highlighted. Whether the wide screen should go further is still open.
 - **The match list never re-fetches by itself.** It is marked as always stale and
   simultaneously told not to re-fetch when the page mounts or when the tab regains
   focus, so a schedule loaded once in a browser tab stays as it was until a
@@ -326,3 +349,7 @@ dates, a search with no hits getting its own message, and spaces at the start or
 end of a search being ignored). Those passages
 were written from the change and its tests, not from a fresh pass over the
 running app.
+The carousel following the picked night, the linked match's time group opening
+by itself and the scroll that finds it, and the 12-pixel weekday labels came in
+the Wave 2 phone polish (2026-11-09). They were measured in headless Chromium
+with fake data at 320, 390 and 1280 pixels and are pinned by tests.

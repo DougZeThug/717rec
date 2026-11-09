@@ -148,7 +148,7 @@ warns the user before they start typing that they will not be able to save.
 
 **Live scoring is the exception.** Save Round with no signal holds the round
 rather than failing it: the round appears in the log, a line under the
-scoreboard says how many are waiting, and they are sent by themselves when the
+round input says how many are waiting, and they are sent by themselves when the
 connection returns. The line says to keep the page open. The held round lives
 in memory, so closing the tab loses it — but the tapped scores are kept on the
 phone for twelve hours, so a reload hands them back and one press files them
@@ -267,3 +267,6 @@ Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
 UX audit items W5 and W6 (the offline banner, the page-download recovery screen,
 and the live-scoring round queue). Those passages were written from the change
 and its tests, not from a fresh pass over the running app.
+The offline line moved from under the scoreboard to under the round input in the
+Wave 2 phone polish (2026-11-09), so it no longer pushes the score grids down; it
+is shown to a scorer only. Measured in headless Chromium with fake data.

@@ -31,6 +31,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 
 - [x] 4. Default `Button` has no text colour (about 1.7:1 in light theme). (Step 1)
 - [x] 5. `text-destructive` is about 2:1 in dark and winter themes. (Step 1)
+- [x] 5a. `text-primary` on a `bg-primary/10` tint: 4.24-4.49:1 in light, 3.29-3.61:1 in dark (12 places). Found and fixed in the phone polish Wave 2 (2026-11-09): a text-only `--primary-text` token (`text-primary-text`), like `--destructive-text`. Now 5.1:1 or better in every theme; fills keep `--primary`.
 - [x] 6. Status colours fail contrast in light theme. Fixed in Step 10 for text that carries meaning (win %, W/L, rank, trend, status, character counter): `-700` with a `dark:` twin. White-on-amber/orange fills now use dark text or deeper colours. Decorative icons beside a text label (about 90) are left as they are.
 - [x] 7. `--input` equals `--border`: 1.2:1 in light, 1.3:1 in dark. Needs 3:1. (Step 1)
 - [x] 8. Plain `border` resolves to gray-200 in every theme. (Step 1)
@@ -56,11 +57,12 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [ ] Button, Input and Select heights differ. (Step 11)
 - [ ] 50 raw `<button>` elements skip the `Button` component. (Steps 3, 11)
 - [x] Inconsistent type: Help, Contact and My Team now use `PageHeader`; the weekly recap heading uses `typeScale.h1`. Bebas Neue has one weight, so `font-semibold`/`font-bold` next to it (typeScale h1-h3, Standings table head, division heading) is removed to stop the faked bold. Mono bold is left: IBM Plex Mono ships 600, which `font-bold` resolves to.
-- [x] 39 uses of `text-[8..11px]` carry real information. New `text-2xs` (11px) replaces all of them; stat labels, prediction text and status badges that carry information use `text-xs` (12px). The 60%-opacity prediction footnote now reads at full muted strength.
+- [x] 39 uses of `text-[8..11px]` carry real information. New `text-2xs` (11px) replaces all of them; stat labels, prediction text and status badges that carry information use `text-xs` (12px). The 60%-opacity prediction footnote now reads at full muted strength. The phone polish Wave 2 (2026-11-09) raised the schedule and live scoring ones to `text-xs` too: date strip weekdays, prediction numbers and confidence, "Won", the rivalry tag, the timeslot double-header pill and division badge, "Games" and the thrower headings.
 - [ ] Duplicate components: pills, spinners, `TeamLogo`, cards. (Step 11)
 - [x] Dead or broken CSS removed in Step 10: `.compatibility-score-*`, `.auto-schedule-container`, `truncate-tab`, `--font-oswald`, `--color-cornhole-wood/green`, the stale Snowtop TODO. The Oswald font file stays (recap graphics use it). Sidebar tokens stay (shadcn defaults, harmless).
 - [x] Touch targets under 44px. (Step 3) Small controls use the new `hit-area-44` utility, which grows the tap area without changing the look. Also found: the team-page section bar was `fixed` inside the page, so it scrolled away; it now uses `ViewportPortal`.
 - [x] Toast close button is hover-only. (Step 3)
+- [x] Match comment menu (…) is hover-only, so a phone never shows it. Found and fixed in the phone polish Wave 2 (2026-11-09): always shown, 44 by 44.
 - [x] Raw error text reaches users. Fixed in Step 7 for the public pages (Standings, History, season accordion, bracket boundary) and the admin toasts that call database services. The bracket dialogs keep their messages on purpose: the bracket library throws plain, readable errors an admin needs.
 - [x] No retry on History errors. Fixed in Step 7. (Stats retry already refetched teams and matches.)
 - [x] Most query failures are silent. Fixed in Step 7 for Home (announcements, Team of the Week, Weekly recap) with the new `SectionError`. Other queries are still quiet.

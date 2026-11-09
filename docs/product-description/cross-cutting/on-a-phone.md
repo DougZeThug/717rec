@@ -154,8 +154,10 @@ step. Its six documents start at
   box), and the small clear cross inside a multi-select was left alone.
   The select box, tab, switch, checkbox, close cross and small buttons are shared
   pieces, so they have the same size on the public pages. The home page's "Score
-  live" button, the schedule card's live-score and recap buttons and the recap
-  dialog's "Open full recap" link are 44 pixels tall too (they were 40). On a
+  live" button, the schedule card's live-score, "Watch live" and recap buttons and
+  the recap dialog's "Open full recap" link are 44 pixels tall too (they were 40).
+  The menu (…) beside a player's own match comment is 44 by 44 pixels and always
+  shown; it used to appear only on hover, so a phone never showed it. On a
   phone the Teams page's division header bars are 44 pixels tall (they were 40)
   and the standings sort buttons (Power, Win %, SOS, Wins) are 44 (they were 36); so are the career rankings sort buttons, which are a copy of the same code.
   The public pages were scanned control by control at 390 and 320 pixels, with
@@ -181,11 +183,19 @@ step. Its six documents start at
   in the contact inbox wraps inside its card. The team logo in Update Logos shows
   whole (the box showed only the middle 80 of 144 pixels). The My Team edit row
   drops its text under the logo when it would have less than 128 pixels, and the
-  long team ID breaks. These are measured in a real browser against fake data,
+  long team ID breaks. On live scoring a long team name ends in "…" inside the
+  scoreboard and the round history, and each round's "+N" stays on screen; before
+  2026-11-09 the names under the game totals ran past both screen edges and long
+  rows ran past the list. These are measured in a real browser against fake data,
   not on a real phone.
 - **No label is under 12 pixels** on the home page, the standings, the teams
   list or history. Labels there were 9 to 11 pixels, which is unreadable in a
-  bar. The schedule's weekday strip is still smaller; it is tracked separately.
+  bar. The schedule and live scoring followed on 2026-11-09: the date strip's
+  weekdays, a match card's prediction numbers, High/Medium/Low, "Won", the
+  rivalry tag, the timeslot double-header pill and division badge, and live
+  scoring's "Games" and thrower headings are 12 pixels (they were 11). Each sits
+  in a 16-pixel line, as before, so nothing around them moved; a date chip is
+  still 64 pixels tall and "100%" fits its box.
   The playoff bracket's participant names are 15 pixels on a phone (the phone
   rule in `src/styles/brackets-viewer-717rec-theme.css`).
 - **A centred dialog keeps a 16-pixel gap on each side** on a phone, has round
@@ -360,7 +370,7 @@ much of its traffic is phones. Nothing more precise is stored. See
   scanned control by control (390 and 320 pixels wide, fake data). The scan did
   not reach the message board feed (the fake data has no messages), the career
   rankings panel (its sort buttons were fixed from the code and pinned by a test),
-  dialogs that need real data, live scoring while a game is under way, or three
+  dialogs that need real data, or three
   states whose steps timed out (the team page badge pop-up, the "What is Power
   Score?" pop-up and the "View All Teams" switch on the standings). Live scoring, the
   hamburger, the bracket admin menu and its seeding drag handle, the history
@@ -389,3 +399,9 @@ device. The five bottom drawers, the 15-pixel bracket names, the held live
 scoring rounds, the session-expired message, the unsaved-work warnings and the
 sign-in bar's position were read from the code on that date; the sign-in bar was
 also measured.
+The 12-pixel schedule and live scoring labels, the always-shown comment menu, the
+"Watch live" button and the live scoring long-name layout came in the Wave 2
+phone polish (2026-11-09). They were measured in headless Chromium with fake
+data at 320, 390 and 1280 pixels, including live scoring mid-game, not on a real
+phone. The double-header pill, the division badge and the rivalry tag were not in
+the fake data; they changed by class only.

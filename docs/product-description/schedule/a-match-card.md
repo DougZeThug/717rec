@@ -35,7 +35,9 @@ fills as the date approaches, and a win-probability bar splitting the card
 between the two teams.
 
 A player on either team, and any admin, also sees a full-width **"Live score this
-match"** button.
+match"** button. On the day of the match everyone else — players of other teams
+and signed-out visitors — sees a full-width **"Watch live"** button in the same
+place. It opens the same live page, view only.
 
 A completed match replaces all of that. A "Final" badge sits at the top. The score
 pill shows **games won**, not points, and the winner's number and name are green.
@@ -61,6 +63,7 @@ stateDiagram-v2
         late reads as Final.
     end note
     upcoming --> live_scoring : press Live score this match
+    upcoming --> live_view : press Watch live (match day)
     completed --> recap : press View match recap
     recap --> completed : close the dialog
     completed --> commenting : expand the comments
@@ -107,6 +110,15 @@ approved membership of one of the two teams. That first half is one question,
 the same one, so the button and the screen behind it cannot disagree. It navigates to `/matches/:matchId/live`. What happens
 there is [`live-scoring/start-a-live-match.md`](../live-scoring/start-a-live-match.md).
 
+**Watch live** appears in the same place for everyone who cannot score the match,
+signed out or not, when all of this is true: the match is still open for a score,
+its date is today, and both teams are set. "Today" is the viewer's own calendar
+day, the same one the date strip marks. Nothing is drawn while the app is still
+working out whether the viewer may score, so a scorer never sees "Watch live"
+flash before "Live score this match". It navigates to the same
+`/matches/:matchId/live`, which opens view only. Doug decided this on 2026-11-09:
+on match night anyone can follow a match as it is scored.
+
 **View match recap** appears only on a completed match that has live-scoring data
 recorded. It opens a dialog headed "Match Recap" that fetches the whole match on
 opening, shows "*Winner* won" with the game-wins score, a per-player summary, and
@@ -138,7 +150,7 @@ deletion to the admin dialogs.
 
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
-| The user's role (visitor, player, admin) | A visitor sees the card and no controls except the recap and the comment list. A player sees the live-scoring button on their own team's upcoming matches, and can comment and react. An admin sees the live-scoring button on every open match plus Edit and Delete. | Admin or membership granted or revoked elsewhere does not reach the card until the profile or the membership is re-fetched. The controls stay as they were and a write started from a stale control fails at the database. |
+| The user's role (visitor, player, admin) | A visitor sees the card and no controls except the recap, the comment list and, on match day, "Watch live". A player sees the live-scoring button on their own team's upcoming matches and "Watch live" on the other matches of the day, and can comment and react. An admin sees the live-scoring button on every open match plus Edit and Delete, and never "Watch live". | Admin or membership granted or revoked elsewhere does not reach the card until the profile or the membership is re-fetched. The controls stay as they were and a write started from a stale control fails at the database. |
 | The record's state | Decides nearly everything: which badges appear, whether the score pill shows points or games won, whether there is a countdown and a prediction or a recap and comments. | The card does not update when the match changes elsewhere. It re-draws only when the whole schedule is re-fetched. |
 | The season's state (active, archived, playoffs on) | No effect on the card. It draws whatever match it is given. | No effect. |
 | Viewport | On a wide screen cards sit up to three across inside a time group. On a narrow screen they are one column, full width, and the whole date group is inside the schedule's carousel. | No effect beyond re-flowing. |
@@ -198,17 +210,21 @@ reaction gets a plain one. Nothing about a card sends a notification to anyone.
 
 **URL state.** Each card carries `#match-<id>`, so a link can name one match:
 `/schedule?date=2026-09-03#match-<id>` opens that night and scrolls to that card.
-Home's "my match" row is built that way. The card holds no other state, and its
-live scoring address still only exists for matches opened there.
+Home's "my match" row is built that way. The time group that holds the named
+match opens by itself, as well as the first one; before the 2026-11-09 phone
+polish it stayed closed, so a match after the first start time had no card to
+scroll to. On a phone the carousel opens on the named night. The card holds no
+other state, and its live scoring address still only exists for matches opened
+there.
 
-**On a phone.** Cards are full width and one per row. The live-scoring and recap
-buttons are 44 pixels tall and full width, so they are the easiest things on the
+**On a phone.** Cards are full width and one per row. The live-scoring, "Watch
+live" and recap buttons are 44 pixels tall and full width, so they are the easiest things on the
 card to press. The recap dialog scrolls inside itself and is capped at 85 percent
 of the screen height.
 
 **Accessibility.** Both team names are links with visible text. Every icon-only
-control has a label — "Edit match", "Delete match", "Live score *A* vs *B*", "View
-match recap for *A* vs *B*", and each reaction as its emoji followed by "reaction"
+control has a label — "Edit match", "Delete match", "Live score *A* vs *B*", "Watch
+*A* vs *B* live", "View match recap for *A* vs *B*", and each reaction as its emoji followed by "reaction"
 and its count. Icons are hidden from screen readers. The reaction row is a
 labelled group. The winning team's name carries a **"Won"** tag as well as the
 emerald colour, so the result does not rest on colour alone.
@@ -248,6 +264,14 @@ reverses the statistics that match produced.
   [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips).
 - **Comments and reactions exist only on completed matches**, so there is no way
   to talk about a match before it is played.
+- **"Watch live" shows all day**, from the morning of the match, not only once
+  the first round is scored. Before a scorer starts a game the live page says it
+  is waiting for a scorekeeper.
+- **"Watch live" goes by the viewer's own clock.** A viewer whose device is set to
+  another day, or another time zone near midnight, sees it on that day instead.
+- **A match finished elsewhere keeps "Watch live"** until the schedule is
+  re-fetched, as it keeps "Live score this match". The live page then shows the
+  finished match.
 
 ## Open questions and verification
 
@@ -272,5 +296,16 @@ reverses the statistics that match produced.
   group is expanded for the first time.
 - Assumption: hiding the live-scoring button on a postponed match is deliberate,
   and a postponed match that is played anyway must be scored by an admin.
+- Resolved: **the live buttons' blue text was 4.48:1 on its pale tint in the
+  light theme**, just under the 4.5:1 that text needs (axe, 2026-11-09, fake
+  data). Both buttons now use the text-only shade described in
+  [`cross-cutting/accessibility.md`](../cross-cutting/accessibility.md): 5.4:1 in
+  light, 7.1:1 in dark, 5.5:1 in winter.
 
 Verified against `717rec` commit `ea5c8f4`, except the button height under "On a phone" (44 pixels, was 40), which changed after that commit (`fd5d43a`). It is pinned by a test; it was not measured in a browser.
+"Watch live", the linked match's time group opening by itself, the 12-pixel
+labels (prediction numbers, High/Medium/Low, "Won", the rivalry tag) and the
+darker light-theme prediction orange came in the Wave 2 phone polish
+(2026-11-09). They were measured in headless Chromium with fake data at 320, 390
+and 1280 pixels, with the browser clock set to a match day, and are pinned by
+tests. The rivalry tag was not in the fake data; it changed by class only.

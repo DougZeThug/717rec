@@ -29,7 +29,8 @@ for the result to be saved. A match already saved shows a read-only review.
 
 Someone who is not allowed to score sees exactly the same screen with the
 controls missing. They can watch the score change as it is entered, and do
-nothing else.
+nothing else. On the day of a match the schedule offers them a **"Watch live"**
+button that leads here (see [`schedule/a-match-card.md`](../schedule/a-match-card.md)).
 
 ## The interaction, event by event
 
@@ -58,7 +59,8 @@ Two subscriptions open. One watches games and rounds for this match and pushes
 changes in as they happen. Its state is shown in the header, so a scorer can see
 whether the screen is live: **"Live updates: on"**, **"Live updates:
 connecting"** before the first answer, or **"Live updates: off · your scores
-still save"** while the channel is down and retrying. The note sits under the
+still save"** while the channel is down and retrying. A spectator reads only
+"Live updates: off": they have no scores to save. The note sits under the
 score, not above it, because it is a footnote about the channel and not about
 the match. Saving a round is an ordinary request and does not use this channel,
 so the words never claim otherwise.
@@ -111,7 +113,11 @@ The rule, in full:
 
 Everyone else is a spectator. Spectators see the scoreboard, the round history,
 and the header. They do not see the score grids, the thrower bar, the undo
-button, the setup panel, the confirm-game banner, or the save-result dialog.
+button, the setup panel, the confirm-game banner, or the save-result dialog. Nor
+do they see the two lines meant for a scorer: "your scores still save" in the
+header, and the offline line "Rounds send when the signal is back" (see
+[`enter-a-round.md`](enter-a-round.md)). Before the 2026-11-09 phone polish a
+spectator saw both.
 
 > **Technical note:** the browser applies this rule to decide what to draw, and
 > the database applies the same rule independently to decide what to accept. They
@@ -229,10 +235,13 @@ match round by round changes nothing anywhere else in the app.
   applied.
 - Not confirmed by hand: how a phone locking and unlocking mid-match behaves —
   whether the subscription survives, and how long the refetch takes.
-- Not confirmed by hand: whether the schedule links to this screen for every
-  match, or only for some.
-- Assumption: spectators being able to watch is deliberate. Nothing in the code
-  says so, but the permission rule is explicitly about scoring rather than
-  viewing.
+- Answered: **the schedule links to this screen for every open match on its
+  day.** A scorer gets "Live score this match" on any day; everyone else gets
+  "Watch live", on the match's day only. Doug decided this on 2026-11-09.
+- Answered: **spectators being able to watch is deliberate.** Doug, 2026-11-09:
+  on match night anyone, signed in or not, can follow a match as it is scored.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`. The "Watch live" link and the two
+scorer-only lines hidden from spectators came in the Wave 2 phone polish
+(2026-11-09); they were measured in headless Chromium with fake data and are
+pinned by tests.
