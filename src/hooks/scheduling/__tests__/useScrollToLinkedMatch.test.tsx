@@ -1,7 +1,9 @@
 import { act, fireEvent, render } from '@testing-library/react';
-import { type ReactNode, useLayoutEffect, useState } from 'react';
+import { useState } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 
 import { useScrollToLinkedMatch } from '../useScrollToLinkedMatch';
 
@@ -23,18 +25,10 @@ function ScheduleHarness({ cardId }: { cardId: string }) {
   );
 }
 
-// Stands in for a Radix tab panel: once its tab opens it draws its children
-// one commit later, from a layout effect, as Radix Presence does.
-function LatePanel({ open, children }: { open: boolean; children: ReactNode }) {
-  const [mounted, setMounted] = useState(open);
-  useLayoutEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- mirrors Radix Presence on purpose
-    setMounted(open);
-  }, [open]);
-  return mounted ? children : null;
-}
-
-function LatePanelHarness({ cardId }: { cardId: string }) {
+// The real tab panel. Radix Presence mounts a newly opened panel's children
+// from a layout effect, one commit after the tab value changes, so the card is
+// not on the page yet when the tab swap is committed.
+function RadixTabsHarness({ cardId }: { cardId: string }) {
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('timeslots');
 
@@ -44,9 +38,12 @@ function LatePanelHarness({ cardId }: { cardId: string }) {
     <div>
       <button onClick={() => setMatchesLoading(false)}>finish loading matches</button>
       <button onClick={() => setActiveTab('upcoming')}>swap to upcoming tab</button>
-      <LatePanel open={activeTab === 'upcoming'}>
-        <div id={cardId} />
-      </LatePanel>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsContent value="timeslots">timeslots</TabsContent>
+        <TabsContent value="upcoming">
+          <div id={cardId} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -87,7 +84,7 @@ describe('useScrollToLinkedMatch', () => {
       .mockImplementation(() => undefined);
     const { getByText } = render(
       <MemoryRouter initialEntries={['/schedule?date=2026-09-03#match-A']}>
-        <LatePanelHarness cardId="match-A" />
+        <RadixTabsHarness cardId="match-A" />
       </MemoryRouter>
     );
 
