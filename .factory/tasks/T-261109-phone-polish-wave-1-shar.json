@@ -2,18 +2,55 @@
   "id": "T-261109-phone-polish-wave-1-shar",
   "title": "Phone polish wave 1: shared parts (pop-ups, iPhone zoom, toasts, dvh)",
   "kind": "polish",
-  "status": "intake",
+  "status": "building",
   "request": "Doug: 'start wave 1' (2026-11-09), from the approved phone polish plan (docs/plans/PHONE-POLISH-2026-11.md, Wave 1): pop-ups get a phone side margin, height limit and own scroll; the command search box and text fields with a text-sm override use 16 px on phones so iPhone Safari does not zoom; toasts clear the notch; remaining vh become dvh; w-96 chart loading boxes stop sideways scroll; fix the stale claims in on-a-phone.md. Keep the design.",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
   "baseSha": "b2b3506f32e7a9eb4aa58d3e408523d36e0cc066",
   "createdAt": "2026-11-09T15:52:06.737Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Pop-ups (ui/dialog.tsx): at 320 and 390 px a centred pop-up keeps a 16 px gap each side, has rounded corners, is no taller than the screen minus 2rem and scrolls inside itself; at 1280 px the measured box is unchanged. A caller's own max-h still wins and CommandDialog keeps overflow-hidden (unit tests). Every pop-up the fake data can open at 320 px has no sideways scroll inside it (scrollWidth <= clientWidth), or that caller is fixed.",
+      "done": false
+    },
+    {
+      "text": "Confirm pop-ups (ui/alert-dialog.tsx): the same 16 px side gap and rounded corners on phones; desktop unchanged.",
+      "done": false
+    },
+    {
+      "text": "No iPhone zoom: the command search box (ui/command.tsx) and the seven fields with a text-sm/text-xs override (match comment, message edit, two event winner fields, team blurb, hero card metadata, bracket seed box) compute to 16 px at 390 px and keep their small size from 768 px; the search box text is not cut.",
+      "done": false
+    },
+    {
+      "text": "Toasts (ui/toast.tsx): on phones the toast area's top padding includes the top safe area (--sat); from 640 px up it is unchanged.",
+      "done": false
+    },
+    {
+      "text": "dvh with vh fallback in ErrorBoundary, StatsErrorState, MatchRecapDialog and RearrangeBracketDialog; the two w-96 chart loading bars become w-full max-w-96 and no longer poke past their card at 320 px.",
+      "done": false
+    },
+    {
+      "text": "Docs in the same change: on-a-phone.md (six stale claims fixed, new pop-up, zoom and toast behaviour), correct-a-round.md and correct-a-live-match.md (pop-ups no longer full width), src/docs/MODAL_PATTERNS.md, and the Wave 1 boxes in docs/plans/PHONE-POLISH-2026-11.md.",
+      "done": false
+    },
+    {
+      "text": "Before/after shots and measurements at 320, 390 and 1280 px; no new console errors; no page scrolls sideways; required checks pass on the final head and an independent code review approves.",
+      "done": false
+    }
+  ],
   "checks": {},
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "APPROVE",
+      "sha": "b2b3506f32e7a9eb4aa58d3e408523d36e0cc066",
+      "at": "2026-11-09T16:02:51.387Z",
+      "summary": "Skeptic: GO WITH CHANGES, all adopted: (1) QA opens every reachable pop-up at 320 px and checks no sideways scroll inside it; (2) add correct-a-round.md:130 and correct-a-live-match.md:266 to the docs; (3) toast: keep only the top safe-area padding, drop the bottom change; (4) w-96 reason corrected (bar pokes past the card edge, the page does not scroll); (5) tests pin the tailwind-merge behaviour (caller max-h wins, CommandDialog keeps overflow-hidden). No question for Doug."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-09T15:52:06.737Z"
+  "updatedAt": "2026-11-09T16:02:51.742Z"
 }
