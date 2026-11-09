@@ -2,7 +2,7 @@
   "id": "T-261109-phone-polish-wave-2-sche",
   "title": "Phone polish wave 2: schedule and live scoring",
   "kind": "polish",
-  "status": "verifying",
+  "status": "repairing",
   "request": "Doug: 'start wave 2' (2026-11-09), from the approved phone polish plan (docs/plans/PHONE-POLISH-2026-11.md, Wave 2 and the Wave 0 baseline findings): schedule and live scoring on a phone. Keep the design.",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -118,9 +118,37 @@
       "sha": "203fa9ee5ae43e3e19969736289d4e1ed4ffcfe7",
       "at": "2026-11-09T18:49:42.662Z",
       "summary": "frontend-mobile-ux audit (12 items + 2 product questions) then skeptic GO WITH CHANGES, adopted: drop item 10 (game scores already shown 3 times on that page), leave item 12 (pager dots 44x24 pass WCAG 2.5.8); calendar button and LS-05 already fine; item 1 + B: carousel night chosen during render so the linked-match scroll finds the card; TimeSlotMatchGroup tests need a MemoryRouter; RoundLog '+N' keeps a real space (gap-1 + {' '}); item 5 updates four docs; item 11a also changes dark and winter (QA shots). Doug said yes to A (Watch live) and B (strip moves phone cards). Lead adds: hide the two scorer-only lines from watchers, and no Watch-live flicker while scorer rights load."
+    },
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "at": "2026-11-09T20:41:36.913Z",
+      "summary": "Independent factory-reviewer on c814eaa: all parts correct except B1 (blocking): re-picking the already selected night after a swipe does not bring the phone carousel back, because ScheduleContent keys on the day text, not the Date object. Suggestions adopted: the-schedule-page.md Watch live row; state that the Undo row moves about 44 px for about 3 s after a save; the light contrast claim must match measurements. S1 (carousel keeps a position, not a night) left as before, noted."
     }
   ],
-  "issues": {},
+  "issues": {
+    "integrity-suppression": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-09T20:41:36.949Z",
+          "summary": "QA: integrity FAIL from an eslint-disable in useScrollToLinkedMatch.test.tsx:31 (hand-made LatePanel). Builder renders the real Tabs/TabsContent instead, no suppression, and shows the test still fails without the retry."
+        }
+      ],
+      "escalated": false
+    },
+    "review-b1-repick": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-09T20:41:36.989Z",
+          "summary": "Builder keys the carousel on the selected Date object (and tab), so re-picking the same night after a swipe brings the carousel back; refetch test passes the same Date object; new test: swipe, re-pick, back on that night."
+        }
+      ],
+      "escalated": false
+    }
+  },
   "interventions": [
     {
       "at": "2026-11-09T18:40:34.354Z",
@@ -131,7 +159,12 @@
       "why": "Doug asked mid-build (2026-11-09): also fix the 4.48:1 contrast pair the builder flagged (text-primary on bg-primary/10, 12 places)."
     }
   ],
-  "notes": [],
+  "notes": [
+    {
+      "at": "2026-11-09T20:41:37.035Z",
+      "text": "QA minor findings: (1) linked card lands about 200 px below centre because cards above grow after the scroll: doc wording fixed in the repair, no second scroll; (2) at 320 px the '{n} pts' span wraps beside a long name and the grids drop 16 px on the first tap: fixed in the repair (shrink-0 whitespace-nowrap); (3) a link to last week's unscored match lands on Completed with no card (useScheduleTabs.ts:59, older behaviour): carried to a later wave. Postponed/canceled cards: unit tests only (matches has no status column in the schedule select)."
+    }
+  ],
   "waivers": [],
-  "updatedAt": "2026-11-09T20:40:43.739Z"
+  "updatedAt": "2026-11-09T20:41:37.035Z"
 }
