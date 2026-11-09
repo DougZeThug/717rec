@@ -79,7 +79,7 @@ const AdvancedSettingsFields: React.FC<FormSectionProps> = ({
         onChange={(e) => onChange('metadata', e.target.value)}
         placeholder="{}"
         rows={4}
-        className="font-mono text-xs"
+        className="font-mono"
         aria-invalid={metadataError ? true : undefined}
         aria-describedby={metadataError ? 'metadata-error' : undefined}
       />

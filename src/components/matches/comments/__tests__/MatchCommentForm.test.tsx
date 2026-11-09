@@ -25,6 +25,15 @@ describe('MatchCommentForm', () => {
     expect(screen.queryByRole('textbox', { name: 'Add a comment' })).not.toBeInTheDocument();
   });
 
+  it('uses 16px text on a phone so iPhone Safari does not zoom into the box', () => {
+    render(<MatchCommentForm onSubmit={vi.fn()} />);
+    const box = screen.getByRole('textbox', { name: 'Add a comment' });
+
+    // 14px from 768px up, as before.
+    expect(box).toHaveClass('text-base', 'md:text-sm');
+    expect(box).not.toHaveClass('text-sm');
+  });
+
   it('keeps Send disabled until the comment has text', async () => {
     render(<MatchCommentForm onSubmit={vi.fn()} />);
     const send = screen.getByRole('button', { name: 'Send comment' });

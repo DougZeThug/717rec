@@ -71,7 +71,7 @@ const MessageEditForm: React.FC<MessageEditFormProps> = ({
           aria-label="Edit message"
           className={cn(
             'w-full min-h-[80px] p-2 border rounded-md bg-[color:Field] focus:outline-hidden focus:ring-1',
-            'focus:ring-primary/40 resize-none text-sm'
+            'focus:ring-primary/40 resize-none text-base md:text-sm'
           )}
           placeholder="Edit message..."
           disabled={isProcessing || isSaving}

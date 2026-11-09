@@ -113,7 +113,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
             onClick={(e) => e.stopPropagation()}
             placeholder="#"
             className={cn(
-              'w-16 h-9 text-center text-sm font-semibold rounded-md border-2',
+              'w-16 h-9 text-center text-base md:text-sm font-semibold rounded-md border-2',
               'bg-background transition-all duration-150',
               'focus:outline-hidden focus:ring-2 focus:ring-primary/50 focus:border-primary',
               'hover:border-primary/50',
