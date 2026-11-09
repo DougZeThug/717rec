@@ -2,7 +2,7 @@
   "id": "T-261109-phone-polish-wave-1-shar",
   "title": "Phone polish wave 1: shared parts (pop-ups, iPhone zoom, toasts, dvh)",
   "kind": "polish",
-  "status": "verifying",
+  "status": "repairing",
   "request": "Doug: 'start wave 1' (2026-11-09), from the approved phone polish plan (docs/plans/PHONE-POLISH-2026-11.md, Wave 1): pop-ups get a phone side margin, height limit and own scroll; the command search box and text fields with a text-sm override use 16 px on phones so iPhone Safari does not zoom; toasts clear the notch; remaining vh become dvh; w-96 chart loading boxes stop sideways scroll; fix the stale claims in on-a-phone.md. Keep the design.",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -15,7 +15,8 @@
     },
     {
       "text": "Confirm pop-ups (ui/alert-dialog.tsx): the same 16 px side gap and rounded corners on phones; desktop unchanged.",
-      "done": false
+      "done": true,
+      "evidence": "QA (independent, fake data, headless Chromium, touch on below 768): Leave team (member /my-team) and Live Corrections Delete round confirmations: L16 R16, radius 12px at 320x640 and 390x844; at 1280x800 box 512x206 and 512x246 identical to main and the screenshots are pixel-identical to main. Evidence: /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa1/out/head/popups.json vs /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa1/out/main/popups.json."
     },
     {
       "text": "No iPhone zoom: the command search box (ui/command.tsx) and the seven fields with a text-sm/text-xs override (match comment, message edit, two event winner fields, team blurb, hero card metadata, bracket seed box) compute to 16 px at 390 px and keep their small size from 768 px; the search box text is not cut.",
@@ -23,7 +24,8 @@
     },
     {
       "text": "Toasts (ui/toast.tsx): on phones the toast area's top padding includes the top safe area (--sat); from 640 px up it is unchanged.",
-      "done": false
+      "done": true,
+      "evidence": "QA: with --sat forced to 47px, the toast list padding-top is 63px at 390 and 639 (toast top at 63px), 16px at 640 and 1280 (bottom-right, 16px from the bottom), real toast 'Round updated'. Unit test toast.test.tsx passes. Evidence: /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa1/out/head/misc.json."
     },
     {
       "text": "dvh with vh fallback in ErrorBoundary, StatsErrorState, MatchRecapDialog and RearrangeBracketDialog; the two w-96 chart loading bars become w-full max-w-96 and no longer poke past their card at 320 px.",
@@ -31,7 +33,8 @@
     },
     {
       "text": "Docs in the same change: on-a-phone.md (six stale claims fixed, new pop-up, zoom and toast behaviour), correct-a-round.md and correct-a-live-match.md (pop-ups no longer full width), src/docs/MODAL_PATTERNS.md, and the Wave 1 boxes in docs/plans/PHONE-POLISH-2026-11.md.",
-      "done": false
+      "done": true,
+      "evidence": "QA read git diff main..HEAD: on-a-phone.md (toast row, five drawers, 15px bracket names, unsaved-work guards, live scoring offline hold, session-expired text, sign-in bar, new pop-up/zoom/toast bullets), correct-a-round.md:130, correct-a-live-match.md:266, src/docs/MODAL_PATTERNS.md, plan Wave 1 boxes ticked. Spot-checked against code (errorHandler.ts:122, LoginPrompt.tsx:15, brackets-viewer theme css:350, 5 ResponsiveDialog/Drawer callers) and re-measured the 'Edit round ran 14px off top and bottom at 640' claim on main (T-14 B-14)."
     },
     {
       "text": "Before/after shots and measurements at 320, 390 and 1280 px; no new console errors; no page scrolls sideways; required checks pass on the final head and an independent code review approves.",
@@ -107,11 +110,29 @@
       "sha": "b2b3506f32e7a9eb4aa58d3e408523d36e0cc066",
       "at": "2026-11-09T16:02:51.387Z",
       "summary": "Skeptic: GO WITH CHANGES, all adopted: (1) QA opens every reachable pop-up at 320 px and checks no sideways scroll inside it; (2) add correct-a-round.md:130 and correct-a-live-match.md:266 to the docs; (3) toast: keep only the top safe-area padding, drop the bottom change; (4) w-96 reason corrected (bar pokes past the card edge, the page does not scroll); (5) tests pin the tailwind-merge behaviour (caller max-h wins, CommandDialog keeps overflow-hidden). No question for Doug."
+    },
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "at": "2026-11-09T18:04:27.970Z",
+      "summary": "Independent factory-reviewer on db2072e: code correct (tailwind-merge simulated for every caller; 1280 boxes unchanged; tests pin behaviour; scope clean). Changes asked: (1) on-a-phone.md:193-195 and commit 501bc0e overstate the edit-round problem: before, Cancel and Save were on screen and only the padding was cut; after, Save needs a scroll inside on 600-640 px tall phones; (2) finish-a-game.md:125 still says the End Game dialog fills a phone screen; (3) OpponentHistoryModal.tsx:46 space-x-2 with flex-wrap indents the wrapped line, use gap-x-2. Suggested: stale verification rows PHONE-11/20/23/25, LIVEFIX-29, GAMEEND-22; list the bracket seed box in on-a-phone.md."
     }
   ],
-  "issues": {},
+  "issues": {
+    "review-docs-and-wrap": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-09T18:04:28.013Z",
+          "summary": "Builder fixes the two doc claims, the finish-a-game doc, the six stale verification rows and the seed-box mention, and changes OpponentHistoryModal's row to gap-x-2 with each icon kept beside its text (QA's suggestion)."
+        }
+      ],
+      "escalated": false
+    }
+  },
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-09T17:28:43.957Z"
+  "updatedAt": "2026-11-09T18:04:28.014Z"
 }
