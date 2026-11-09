@@ -2,7 +2,7 @@
   "id": "T-261109-phone-polish-wave-2-sche",
   "title": "Phone polish wave 2: schedule and live scoring",
   "kind": "polish",
-  "status": "verifying",
+  "status": "ready",
   "request": "Doug: 'start wave 2' (2026-11-09), from the approved phone polish plan (docs/plans/PHONE-POLISH-2026-11.md, Wave 2 and the Wave 0 baseline findings): schedule and live scoring on a phone. Keep the design.",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -180,5 +180,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-09T21:01:08.324Z"
+  "updatedAt": "2026-11-09T21:01:08.466Z",
+  "readySha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
+  "readyAt": "2026-11-09T21:01:08.466Z"
 }
