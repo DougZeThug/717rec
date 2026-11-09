@@ -2,7 +2,7 @@
   "id": "T-261109-phone-polish-wave-0-fake",
   "title": "Phone polish wave 0: fake league-night data and admin sign-in for screenshots",
   "kind": "build",
-  "status": "verifying",
+  "status": "ready",
   "request": "Doug: 'plan a polish of the entire app especially the mobile experience' (approved plan, 2026-11-09). Wave 0 = setup only: shoot.mjs mock init hook for a fake admin session, a fake league-night data mock, baseline shots, and the in-repo plan file with the per-wave defect list. No app change.",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -124,5 +124,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-09T15:49:32.096Z"
+  "updatedAt": "2026-11-09T15:49:32.255Z",
+  "readySha": "b2b3506f32e7a9eb4aa58d3e408523d36e0cc066",
+  "readyAt": "2026-11-09T15:49:32.255Z"
 }
