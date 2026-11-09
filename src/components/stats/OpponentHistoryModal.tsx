@@ -41,16 +41,20 @@ const SummaryStatCard: React.FC<SummaryStatCardProps> = ({ value, valueClassName
 );
 
 const MatchDateAndLocation: React.FC<{ match: HistoryMatch }> = ({ match }) => (
-  // flex-wrap: on a 320px phone the place drops under the date instead of
-  // pushing the pop-up wider than the screen.
-  <div className="text-sm text-muted-foreground flex flex-wrap items-center space-x-2">
-    <Calendar className="size-3" />
-    <span>{formatWithPattern(match.date, 'MMM d, yyyy')}</span>
+  // flex-wrap: on a narrow phone the place drops under the date instead of
+  // pushing the pop-up wider than the screen. Each icon is paired with its text
+  // so it moves with it, and gap-x (not space-x) leaves a wrapped line unindented.
+  // The 8px spacing is the same as before, so a wide screen looks unchanged.
+  <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-x-2">
+    <span className="inline-flex items-center gap-2">
+      <Calendar className="size-3" />
+      <span>{formatWithPattern(match.date, 'MMM d, yyyy')}</span>
+    </span>
     {match.location && (
-      <>
+      <span className="inline-flex items-center gap-2">
         <MapPin className="size-3" />
         <span>{match.location}</span>
-      </>
+      </span>
     )}
   </div>
 );
