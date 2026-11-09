@@ -45,10 +45,12 @@ export const ScoreGrid: React.FC<ScoreGridProps> = ({
 
   return (
     <div>
-      <div className="mb-1.5 flex items-center justify-between">
+      <div className="mb-1.5 flex items-center justify-between gap-2">
         <span className="truncate text-xs font-semibold">{teamName}</span>
         {selectedScore !== null && (
-          <span className="text-xs tabular-nums text-muted-foreground">
+          // shrink-0 and nowrap: beside a long team name at 320 px this wrapped
+          // to two lines, so the grids dropped 16 px on the first tap.
+          <span className="shrink-0 whitespace-nowrap text-xs tabular-nums text-muted-foreground">
             {selectedScore} pts
             {isAmbiguousScore(selectedScore) && selectedBagsIn !== undefined
               ? ` · ${selectedBagsIn} in`
