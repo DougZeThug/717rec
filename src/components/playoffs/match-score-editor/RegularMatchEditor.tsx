@@ -113,7 +113,9 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-2">
+      {/* Wraps on a narrow phone, so the row never scrolls sideways; ml-auto
+          keeps Cancel and Save on the right when they move to their own line. */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex gap-1">
           {onEditTeams && (
             <Button
@@ -141,7 +143,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
           )}
         </div>
 
-        <div className="flex gap-2">
+        <div className="ml-auto flex gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>
             Cancel
           </Button>

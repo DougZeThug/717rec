@@ -41,7 +41,9 @@ const SummaryStatCard: React.FC<SummaryStatCardProps> = ({ value, valueClassName
 );
 
 const MatchDateAndLocation: React.FC<{ match: HistoryMatch }> = ({ match }) => (
-  <div className="text-sm text-muted-foreground flex items-center space-x-2">
+  // flex-wrap: on a 320px phone the place drops under the date instead of
+  // pushing the pop-up wider than the screen.
+  <div className="text-sm text-muted-foreground flex flex-wrap items-center space-x-2">
     <Calendar className="size-3" />
     <span>{formatWithPattern(match.date, 'MMM d, yyyy')}</span>
     {match.location && (

@@ -212,6 +212,32 @@ The migration is mostly a 1:1 replacement of component names.
 
 ## Mobile Considerations
 
+### A plain Dialog or AlertDialog on a phone
+
+`DialogContent` and `AlertDialogContent` stay centred boxes on a phone. Both:
+
+- keep a 16px gap each side (`w-[calc(100%-2rem)]`; `max-w-lg` still sets the
+  desktop width) and have round corners at every size;
+- are never taller than the screen minus 32px and scroll inside when the content
+  is taller (`max-h-[calc(100dvh-2rem)] overflow-y-auto`).
+
+To set your own height limit, pass a plain `max-h-[...]` class, for example
+`max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh]`. tailwind-merge then drops
+the shared cap. The shared cap is `dvh` only, with no `vh` fallback, on purpose:
+a `supports-[...]` class is a different group to tailwind-merge, so a fallback
+pair in the shared class would stay next to yours.
+
+The 16px gap leaves 240px for content on a 320px phone (`p-6` takes 48px). A row
+that cannot wrap (buttons side by side, an icon-date-place line) scrolls the
+pop-up sideways there. Give such a row `flex-wrap`, or stack it below `sm`.
+
+A text field inside a pop-up must be at least 16px on a phone
+(`text-base md:text-sm`), or iPhone Safari zooms in when it gets focus. `Input`,
+`Textarea` and `CommandInput` already do this; do not override them with
+`text-sm` or `text-xs`.
+
+### ResponsiveDialog on a phone
+
 ResponsiveDialog uses a Drawer on mobile which:
 - Takes up to 90% of viewport height
 - Scrolls content within 80% viewport height
