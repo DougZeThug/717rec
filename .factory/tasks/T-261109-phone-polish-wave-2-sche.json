@@ -12,8 +12,13 @@
   "checks": {},
   "reviews": [],
   "issues": {},
-  "interventions": [],
+  "interventions": [
+    {
+      "at": "2026-11-09T18:40:34.354Z",
+      "why": "Doug decided two product questions from the Wave 2 audit (2026-11-09): A) on match night everyone (other teams, signed-out visitors) sees a full-width 'Watch live' button on each match card that opens the live page view-only; scorers keep 'Live score this match'. B) on a phone, picking a night on the date strip moves the Upcoming/Completed cards to that night when it has matches; desktop unchanged."
+    }
+  ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-09T18:23:11.570Z"
+  "updatedAt": "2026-11-09T18:40:34.354Z"
 }

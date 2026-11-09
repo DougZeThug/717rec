@@ -19,6 +19,10 @@ standings). This pass fixes what is left. It does not redo that work.
   `src/docs/MODAL_PATTERNS.md` already asks for this.
 - **Parked decisions stay as they are:** no sticky top bar, no search on phones, the
   message board keeps its inner scroll box, winter step 9b and time zones untouched.
+- **Wave 2 (asked after the audit):** on match night everyone sees a full-width
+  **"Watch live"** button on each match card (view only; scorers keep "Live score this
+  match"). On a phone, **picking a night on the date strip moves the Upcoming/Completed
+  cards to that night** when it has matches; desktop does not change.
 
 ## Rules for every wave
 
