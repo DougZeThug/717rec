@@ -373,7 +373,6 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
             hasConflict={hasConflict}
             isPending={isPending}
             size="sm"
-            onEdit={() => setActiveTab('seeds')}
           />
         </div>
 

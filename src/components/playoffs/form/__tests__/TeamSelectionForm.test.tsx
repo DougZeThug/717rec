@@ -118,6 +118,31 @@ describe('TeamSelectionForm', () => {
     }
   });
 
+  it('puts no button inside a team button, so the seed badge is part of the team button', async () => {
+    const mockToggle = vi.fn();
+    const formState = createMockFormState({ handleTeamToggle: mockToggle });
+
+    const { container } = renderWithRouter(
+      <TeamSelectionForm {...defaultProps} formState={formState} />
+    );
+
+    // A button inside a button is invalid HTML; React logged it on every open.
+    expect(container.querySelectorAll('button button')).toHaveLength(0);
+    const teamButton = screen.getByText('Team Alpha').closest('button');
+    expect(teamButton).toContainElement(screen.getByText('#1'));
+
+    // A tap on the badge used to run two handlers: switch to the seeds tab, and
+    // (bubbling) toggle the team. Now it is just a tap on the team.
+    await userEvent.click(screen.getByText('#1'));
+
+    expect(mockToggle).toHaveBeenCalledTimes(1);
+    expect(mockToggle).toHaveBeenCalledWith('team-1');
+    expect(screen.getByRole('tab', { name: /manage seeds/i })).toHaveAttribute(
+      'aria-selected',
+      'false'
+    );
+  });
+
   it('shows clear all button when has selection', () => {
     renderWithRouter(<TeamSelectionForm {...defaultProps} />);
 

@@ -2,14 +2,12 @@ import { AlertCircle, Clock, Settings, Trophy } from 'lucide-react';
 import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 interface SeedStatusBadgeProps {
   seed: number;
   isManual?: boolean;
   hasConflict?: boolean;
   isPending?: boolean;
-  onEdit?: () => void;
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -18,7 +16,6 @@ export const SeedStatusBadge: React.FC<SeedStatusBadgeProps> = ({
   isManual = false,
   hasConflict = false,
   isPending = false,
-  onEdit,
   size = 'md',
 }) => {
   const variant: 'destructive' | 'outline' | 'default' | 'secondary' = hasConflict
@@ -40,7 +37,10 @@ export const SeedStatusBadge: React.FC<SeedStatusBadgeProps> = ({
     <Trophy className={iconClassName} />
   );
 
-  const badge = (
+  // Plain content, never a button: the badge sits inside the team's own button
+  // in TeamSelectionForm, and a button inside a button is invalid HTML (and a
+  // tap on it used to run both). The Manage Seeds tab is the way to edit seeds.
+  return (
     <Badge
       variant={variant}
       className={`
@@ -60,19 +60,4 @@ export const SeedStatusBadge: React.FC<SeedStatusBadgeProps> = ({
       {size !== 'sm' && isPending && <span className="text-xs opacity-75">Pending</span>}
     </Badge>
   );
-
-  if (onEdit) {
-    return (
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onEdit}
-        className="h-auto p-0 hover:bg-transparent"
-      >
-        {badge}
-      </Button>
-    );
-  }
-
-  return badge;
 };
