@@ -122,7 +122,10 @@ re-fetched, and the other scorer's screen receives the round over the realtime
 connection. A green **"Round 4 saved"** confirmation appears under the round
 input, above Undo, and clears itself after about three seconds. It sat above the
 grids until the 2026-11-09 phone polish; coming and going there, it moved every
-score button 44 pixels while the scorer was tapping. It is a plain statement
+score button 44 pixels while the scorer was tapping. Now the grids stay put, and
+what moves is the row below: Undo and the sound switch drop about 44 pixels while
+the line shows, for about three seconds after each save, and come back up when it
+clears. It is a plain statement
 that the round reached the league, and it does not depend on the realtime
 channel — it shows the same whether live updates are on or off.
 

@@ -31,7 +31,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 
 - [x] 4. Default `Button` has no text colour (about 1.7:1 in light theme). (Step 1)
 - [x] 5. `text-destructive` is about 2:1 in dark and winter themes. (Step 1)
-- [x] 5a. `text-primary` on a `bg-primary/10` tint: 4.24-4.49:1 in light, 3.29-3.61:1 in dark (12 places). Found and fixed in the phone polish Wave 2 (2026-11-09): a text-only `--primary-text` token (`text-primary-text`), like `--destructive-text`. Now 5.1:1 or better in every theme; fills keep `--primary`.
+- [x] 5a. `text-primary` on a `bg-primary/10` tint: 4.24-4.49:1 in light, 3.29-3.61:1 in dark (12 places). Found and fixed in the phone polish Wave 2 (2026-11-09): a text-only `--primary-text` token (`text-primary-text`), like `--destructive-text`. Now 4.9:1 or better in light (5.1-5.4:1 on white; 4.9:1 at worst, on a light-grey surface), 6.7:1 or better in dark and 5.5:1 or better in winter; fills keep `--primary`.
 - [x] 6. Status colours fail contrast in light theme. Fixed in Step 10 for text that carries meaning (win %, W/L, rank, trend, status, character counter): `-700` with a `dark:` twin. White-on-amber/orange fills now use dark text or deeper colours. Decorative icons beside a text label (about 90) are left as they are.
 - [x] 7. `--input` equals `--border`: 1.2:1 in light, 1.3:1 in dark. Needs 3:1. (Step 1)
 - [x] 8. Plain `border` resolves to gray-200 in every theme. (Step 1)

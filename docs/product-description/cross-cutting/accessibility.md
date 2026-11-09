@@ -202,9 +202,10 @@ help step numbers, the blind draw "signed up" count, the playoff seed badges, th
 history edit rank badges, the playoff score editor's game badges and the shared
 toggle's active pill. As text the fill colour measured 4.24 to 4.49:1 there in the
 light theme and 3.29 to 3.61:1 in the dark theme, under 4.5:1. They now use a
-text-only shade (`text-primary-text`): a slightly deeper blue in light (5.1:1 or
-better), the lighter blue the dark links already use in dark (6.7:1 or better),
-and the winter theme's own icy blue, which already passed (5.5:1 or better). Buttons
+text-only shade (`text-primary-text`): a slightly deeper blue in light (5.1 to
+5.4:1 on white; 4.9:1 at worst, on a light-grey surface), the lighter blue the
+dark links already use in dark (6.7:1 or better), and the winter theme's own icy
+blue, which already passed (5.5:1 or better). Buttons
 and other blue fills keep the brand blue. Measured 2026-11-09 in headless
 Chromium with fake data; three of the twelve were not on screen with that data
 and were measured by placing their markup on a real page.

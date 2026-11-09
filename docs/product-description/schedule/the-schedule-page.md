@@ -178,7 +178,7 @@ that own their own commits.
 
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
-| The user's role (visitor, player, admin) | A visitor and a player see the same page. A player who may score one of the listed matches also sees "Live score this match" on that card. An admin additionally sees an Edit and a Delete button on every card. | Admin granted or revoked elsewhere does not reach this page until something re-fetches the profile. The buttons stay as they were. |
+| The user's role (visitor, player, admin) | A visitor and a player see the same page. A player who may score one of the listed matches also sees "Live score this match" on that card. On the day of a match, everyone who may not score it — a visitor, or a player of another team — sees "Watch live" on that card instead. An admin sees "Live score this match" on every open match and never "Watch live", and additionally sees an Edit and a Delete button on every card. | Admin granted or revoked elsewhere does not reach this page until something re-fetches the profile. The buttons stay as they were. |
 | The record's state | Each match's own state decides which card it gets and which tab it appears in. Completed matches are only in Completed, everything else only in Upcoming — including a match whose result was never recorded, which counts as Upcoming rather than falling out of both tabs. | A match completed elsewhere does not move between tabs here until the schedule is re-fetched, which this page does not do on its own. |
 | The season's state (active, archived, playoffs on) | Only the active season's matches are ever listed. With no active season the page is empty rather than broken. Archived seasons are read at [`history/past-seasons.md`](../history/past-seasons.md). | A season activated elsewhere does not reach this page until a reload. |
 | Viewport | On a wide screen every date group is stacked down the page and time groups lay their cards out in up to three columns. On a narrow screen the date groups become a **swipeable carousel**: one date at a time, with Previous and Next, a row of dots, and a "Swipe to see more dates" hint. It opens on the selected night when that tab has matches on it. With more than nine dates the dots give way to text such as "3 of 19", so Previous and Next always stay on the screen. | Rotating a phone to landscape can cross the breakpoint and swap the stacked list for the carousel, losing which groups were open. |
@@ -254,8 +254,10 @@ address whose date is not a real day is ignored and the guess applies as usual.
 
 A link may also name one match: `#match-<id>` at the end, as Home's "my match"
 row writes it. The time group that holds that match opens by itself, the phone
-carousel opens on the named night, and the page scrolls the card to the middle
-of the screen once the matches are in. The address is read only when the group is
+carousel opens on the named night, and the page scrolls the card into view once
+the matches are in. It does not stay centred: cards above it grow as their
+head-to-head lines load after the scroll, and with fake data at 390 pixels the
+card settled about 200 pixels below the middle of the screen. The address is read only when the group is
 first drawn, so the reader can close it again. Before the 2026-11-09 phone polish
 only the first time group opened, so a match at a later start time had no card
 to scroll to and the page stayed at the top.
