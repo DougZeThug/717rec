@@ -38,7 +38,68 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "dirty": false,
+      "at": "2026-11-09T17:21:04.963Z",
+      "seconds": 8,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "dirty": false,
+      "at": "2026-11-09T17:22:06.451Z",
+      "seconds": 61,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "dirty": false,
+      "at": "2026-11-09T17:22:09.215Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/knip.log"
+    },
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "dirty": false,
+      "at": "2026-11-09T17:22:09.330Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/integrity.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "dirty": false,
+      "at": "2026-11-09T17:22:16.008Z",
+      "seconds": 4,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "dirty": false,
+      "at": "2026-11-09T17:28:43.956Z",
+      "seconds": 379,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/unit.log"
+    }
+  },
   "reviews": [
     {
       "mode": "plan",
@@ -52,5 +113,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-09T17:20:06.309Z"
+  "updatedAt": "2026-11-09T17:28:43.957Z"
 }
