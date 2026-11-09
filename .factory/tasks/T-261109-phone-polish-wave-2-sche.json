@@ -11,27 +11,33 @@
   "criteria": [
     {
       "text": "Linked match: /schedule?date=<night>#match-<id> opens the time group that holds the match (TimeSlotMatchGroup reads the hash for its first open state) and scrolls to the card, also on a phone when that night is not the first in the carousel (390 px, fake data: tonight's 7:30 match). A bare /schedule still opens only the first group. Unit test added; existing TimeSlotMatchGroup tests wrapped in a MemoryRouter.",
-      "done": false
+      "done": true,
+      "evidence": "QA browser (member, fake data, 320/390/1280, real clock and clock 2026-11-12 18:45): /schedule?date=2026-11-12#match-ID(1004) opens 6:30 + 7:30 groups only, phone carousel on Thu Nov 12 (2nd night after Nov 5), card on screen (390: top 497/bottom 783 of 844; 320: top 395 of 640, lower part below the fold). Bare /schedule: only 6:30 open. Unit: TimeSlotMatchGroup hash tests + MemoryRouter wrap pass (unit 857 files/7871 tests). Note: card lands ~200 px below centre because cards above grow after the one-time scroll. /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/p1*.png"
     },
     {
       "text": "Doug's B: on a phone, picking a night on the date strip shows that night in the Upcoming or Completed cards when it has matches, chosen in the same render (no after-draw effect); a data refetch after a swipe does not jump back; desktop unchanged. Unit tests for both tabs, the refetch case and desktop.",
-      "done": false
+      "done": true,
+      "evidence": "QA browser 390+320 phone: Completed: pick Sun May 3 on strip -> carousel 'Sunday, May 3 [2 of 11]'; no-match night -> newest (Nov 5). Upcoming: tab switch on picked Nov 5 -> Nov 5; Next -> Nov 12; Refresh button refetch (1 matches request) and offline->online refetch keep Nov 12; Prev -> Nov 5, Refresh keeps it. Desktop 1280: no carousel, every night listed; pixel diff vs main shows only label size/time-stamp changes. Unit tests (both tabs, same-render, refetch, desktop) pass. Real swipe gesture not driven (synthetic drag did not move it on any try). /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/p2*.png"
     },
     {
       "text": "Doug's A: on the day of a not-yet-played match with both teams set, anyone who cannot score it (other teams, signed-out visitors) sees a full-width 'Watch live' link to /matches/<id>/live; a scorer sees only 'Live score this match'; no button on other days, for completed or postponed matches, or with a missing team; no Watch-live flash while scorer rights load. Watchers no longer see the two scorer-only lines ('your scores still save', 'Rounds send when the signal is back'). Unit tests; browser check with the browser clock on match day, signed out and as a scorer.",
-      "done": false
+      "done": true,
+      "evidence": "QA browser, clock 2026-11-12 18:45, 320/390/1280: signed out -> 'Watch live' on all 8 tonight cards, 44 px high, full card width, href /matches/<id>/live; member (Bravo) -> 'Live score this match' on 1000 and 1004, 'Watch live' on the other 6; admin -> Live score on all, no Watch live; Nov 9 clock -> 0 Watch live; completed and other-night cards -> none; missing team -> card dropped; MutationObserver saw no Watch live on the scorer's 1000/1004 at any time. Live 1000 signed out with realtime off and offline: no 'your scores still save', no 'Rounds send when the signal is back' (scorer still sees both). Postponed/canceled: unit tests only (matches has no status column, schedule select omits it). /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/p3*.png"
     },
     {
       "text": "Live scoring layout at 320 and 390 px (member and signed-out): the two team names under the game score end inside the scoreboard card with an ellipsis; every round-list row stays inside the list with '+N' visible (text still reads 'Name +3'); the scorer's 'Round N saved' and offline lines sit below the score input block, so the grids no longer jump.",
-      "done": false
+      "done": true,
+      "evidence": "QA browser live ID(1000) member + signed out and ID(1010), 320 and 390: both scoreboard names inside the card with text-overflow ellipsis; 0 round rows outside the list, 0 hidden '+N', label reads 'Fake Team Charlie +3'; 'Round 8 saved' and offline line come after the grids in DOM and on screen; grid tops 659 before save, 659 while 'Round 8 saved' shows, 659 after it clears. Taps still move grids (older code): +20 px net preview wrap (documented), and +16 px at 320 from the 'N pts' wrap in ScoreGrid (not documented). Before/after vs main: /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/crop-live1000*.png"
     },
     {
       "text": "Labels and contrast: the comment menu shows without hover and is 44x44; these are 12 px or more: date strip weekdays, prediction numbers ('100%' fits) and High/Medium/Low, 'Won', rivalry tag, 'Games', thrower headings, timeslot double-header pill and division badge; light theme: prediction orange-700, 'Live updates' green-700, comment box border-input (3:1); selected score button blue/red-600 with white text at 4.5:1 or better, with dark and winter shots.",
-      "done": false
+      "done": true,
+      "evidence": "QA browser: comment menu on own comment (member, Nov 5, Alpha v Bravo, 3 Comments) 44x44, opacity 1 without hover (320/390/1280). 12 px: weekdays, prediction numbers, High/Medium, Won, Games, thrower headings, DH pill, rivalry tag 'Nemesis' (in-memory H2H fake). '100%' fits (35.5 in 36 px). Division badge not in fake data (class text-xs only). Light: orange-700 5.22, Live updates green-700 4.95, comment border 3.52 vs page; selected score blue-600 5.25 / red-600 4.77 in light, dark and winter (shots /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/p5-live-*.png)."
     },
     {
       "text": "Docs in the same change: a-match-card.md, the-schedule-page.md, start-a-live-match.md (open questions answered), enter-a-round.md, errors-and-offline.md, saving-and-freshness.md, on-a-phone.md, the verification rows that change, the boxes in UI-UX-DESIGN-AUDIT-2026-10.md, and the plan file (Wave 2 ticked; calendar button and pager dots [-] with the reason; item 10 dropped).",
-      "done": false
+      "done": true,
+      "evidence": "QA read the docs diff 65fa862..c814eaa: a-match-card.md, the-schedule-page.md, start-a-live-match.md (both open questions answered), enter-a-round.md, errors-and-offline.md, saving-and-freshness.md, on-a-phone.md, accessibility.md, verification rows (cross-cutting, live-scoring ROUND-36, schedule-and-scores), UI-UX audit boxes, plan file (Wave 2 ticked, calendar and pager dots [-] with reason, item 10 dropped). Measured numbers match the docs. Small gaps: the-schedule-page.md says the card is scrolled to the middle (it lands ~200 px low); the 320 px 'N pts' 16 px jump is not in the found-not-fixed note."
     },
     {
       "text": "Before/after shots and measurements at 320, 390 and 1280 px; no page scrolls sideways; no new console errors; e2e/a11y.spec.ts passes; required checks pass on the final head and an independent code review approves.",
@@ -39,7 +45,8 @@
     },
     {
       "text": "Contrast pair text-primary on bg-primary/10 (12 places, 4.48:1): every place reaches 4.5:1 or better in the light, dark and winter themes, measured in a browser, with the smallest shared change that keeps the look (no global change to the brand --primary colour, so buttons and other primary fills do not change); a test pins it.",
-      "done": false
+      "done": true,
+      "evidence": "QA browser, 390 px, light/dark/winter: schedule Live score 5.40/7.08/5.53, Watch live 5.40/7.08/5.53, home Score live 5.07/7.35/7.66, admin phone Sections active 5.40/7.35/7.66 (main: 4.49/4.21/4.49 light, 3.61 dark home/admin). Token on bg-background/bg-card/bg-muted with /10 and dark /20 tint: min 4.90 (all themes). --primary and the selected date chip fill identical to main in all 3 themes. primaryTextToken.test.ts passes. /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/p7-*.png"
     }
   ],
   "checks": {
@@ -126,5 +133,5 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-09T20:12:14.346Z"
+  "updatedAt": "2026-11-09T20:40:43.739Z"
 }
