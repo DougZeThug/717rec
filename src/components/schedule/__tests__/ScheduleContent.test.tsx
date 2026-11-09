@@ -360,15 +360,40 @@ describe('ScheduleContent', () => {
       await user.click(screen.getByRole('button', { name: 'Swipe to next night' }));
       expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 22 2026');
 
-      // A refetch: the same night (a new Date object) and a new list of new rows.
+      // A refetch, as the page does it: the same selected Date object (the URL
+      // state keeps it for the same day) and a new list of new rows.
       rerender(
         <ScheduleContent
           {...props}
-          selectedDate={night('2026-07-15')}
+          selectedDate={props.selectedDate}
           filteredMatches={upcoming.map((m) => ({ ...m }))}
         />
       );
       expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 22 2026');
+    });
+
+    // A tap on a strip chip stores a new Date, even for the night already
+    // picked. Keyed on the day alone, the carousel stayed on the night swiped to
+    // while the chip for tonight stayed highlighted.
+    it('comes back to the picked night when it is picked again after a swipe', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const props: React.ComponentProps<typeof ScheduleContent> = {
+        activeTab: 'upcoming',
+        setActiveTab: vi.fn(),
+        filteredMatches: upcoming,
+        teams: [],
+        selectedDate: night('2026-07-15'),
+        groupedTimeslots: {},
+        timeslotsLoading: false,
+      };
+      const { rerender } = render(<ScheduleContent {...props} />);
+
+      await user.click(screen.getByRole('button', { name: 'Swipe to next night' }));
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 22 2026');
+
+      // The same night, picked again: a new Date object for the same day.
+      rerender(<ScheduleContent {...props} selectedDate={night('2026-07-15')} />);
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 15 2026');
     });
 
     it('leaves the desktop list alone: every night, no carousel', () => {

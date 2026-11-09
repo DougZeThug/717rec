@@ -204,15 +204,23 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   // Completed is newest first, so its default is the first group.
   const completedDefaultIndex = selectedGroupIndex === -1 ? 0 : selectedGroupIndex;
 
-  // Move the phone carousel when the picked night or the tab changes, and only
+  // Move the phone carousel when a night is picked or the tab changes, and only
   // then: a refetch builds a new list but must not pull the reader back off a
-  // night they swiped to. This runs during render, not in an effect after the
-  // draw, so the night's cards are already on the page when the linked-match
-  // scroll (useScrollToLinkedMatch) looks for its card.
-  const carouselTarget = `${activeTab}|${format(selectedDate, 'yyyy-MM-dd')}`;
-  const [carouselShownFor, setCarouselShownFor] = useState<string | null>(null);
-  if (carouselShownFor !== carouselTarget) {
-    setCarouselShownFor(carouselTarget);
+  // night they swiped to. It is keyed on the Date object, not the day: a refetch
+  // keeps the same object (useScheduleUrlState), while a tap on a strip chip
+  // makes a new one, so tapping the night already picked after a swipe brings
+  // the carousel back to it. This runs during render, not in an effect after
+  // the draw, so the night's cards are already on the page when the
+  // linked-match scroll (useScrollToLinkedMatch) looks for its card.
+  const [carouselShownFor, setCarouselShownFor] = useState<{ tab: string; date: Date } | null>(
+    null
+  );
+  if (
+    !carouselShownFor ||
+    carouselShownFor.tab !== activeTab ||
+    carouselShownFor.date !== selectedDate
+  ) {
+    setCarouselShownFor({ tab: activeTab, date: selectedDate });
     if (activeTab === 'upcoming') setUpcomingIndex(upcomingDefaultIndex);
     if (activeTab === 'completed') setCompletedIndex(completedDefaultIndex);
   }
