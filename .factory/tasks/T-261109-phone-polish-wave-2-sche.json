@@ -41,7 +41,8 @@
     },
     {
       "text": "Before/after shots and measurements at 320, 390 and 1280 px; no page scrolls sideways; no new console errors; e2e/a11y.spec.ts passes; required checks pass on the final head and an independent code review approves.",
-      "done": false
+      "done": true,
+      "evidence": "QA (independent): browser criteria 1-6 and 8 verified at 320/390/1280, a11y spec 32/32, shoot 0 console errors and 0 overflow, page heights equal to main. After the repair (3a1037b, ab10318, ab8442b, 18f1255) on head 6ff8b01: typecheck, lint, knip, integrity (now PASS: suppression removed), build and unit (857 files, 7872 tests) PASS through F check. Independent code review: CHANGES on c814eaa (B1), APPROVE on 6ff8b01."
     },
     {
       "text": "Contrast pair text-primary on bg-primary/10 (12 places, 4.48:1): every place reaches 4.5:1 or better in the light, dark and winter themes, measured in a browser, with the smallest shared change that keeps the look (no global change to the brand --primary colour, so buttons and other primary fills do not change); a test pins it.",
@@ -53,39 +54,39 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
       "dirty": false,
-      "at": "2026-11-09T20:04:07.170Z",
-      "seconds": 8,
+      "at": "2026-11-09T20:52:49.493Z",
+      "seconds": 9,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
       "dirty": false,
-      "at": "2026-11-09T20:05:15.714Z",
-      "seconds": 64,
+      "at": "2026-11-09T20:54:08.231Z",
+      "seconds": 79,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
       "dirty": false,
-      "at": "2026-11-09T20:05:21.571Z",
-      "seconds": 2,
+      "at": "2026-11-09T20:54:11.314Z",
+      "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/knip.log"
     },
     "integrity": {
-      "result": "fail",
-      "exit": 1,
-      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "result": "pass",
+      "exit": 0,
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
       "dirty": false,
-      "at": "2026-11-09T20:05:21.683Z",
+      "at": "2026-11-09T20:54:11.484Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/integrity.log"
@@ -93,20 +94,20 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
       "dirty": false,
-      "at": "2026-11-09T20:05:48.444Z",
-      "seconds": 3,
+      "at": "2026-11-09T20:54:15.147Z",
+      "seconds": 4,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
       "dirty": false,
-      "at": "2026-11-09T20:12:14.346Z",
-      "seconds": 379,
+      "at": "2026-11-09T21:00:47.056Z",
+      "seconds": 392,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/unit.log"
     }
@@ -125,6 +126,13 @@
       "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
       "at": "2026-11-09T20:41:36.913Z",
       "summary": "Independent factory-reviewer on c814eaa: all parts correct except B1 (blocking): re-picking the already selected night after a swipe does not bring the phone carousel back, because ScheduleContent keys on the day text, not the Date object. Suggestions adopted: the-schedule-page.md Watch live row; state that the Undo row moves about 44 px for about 3 s after a save; the light contrast claim must match measurements. S1 (carousel keeps a position, not a night) left as before, noted."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
+      "at": "2026-11-09T21:01:08.243Z",
+      "summary": "Independent factory-reviewer re-review on 6ff8b01: B1 fixed correctly (carousel keyed on {tab, Date object}; nothing else makes a new Date for the same day; no loop; new tests can fail); real-Tabs test sound (Radix Presence draws one step late, confirmed in its source), no suppression left; ScoreGrid change harmless at 1280; docs and the CLAUDE.md rule accurate. Ran schedule, scheduling and live-scoring tests: 42 files, 371 pass."
     }
   ],
   "issues": {
@@ -165,8 +173,12 @@
     {
       "at": "2026-11-09T20:41:37.035Z",
       "text": "QA minor findings: (1) linked card lands about 200 px below centre because cards above grow after the scroll: doc wording fixed in the repair, no second scroll; (2) at 320 px the '{n} pts' span wraps beside a long name and the grids drop 16 px on the first tap: fixed in the repair (shrink-0 whitespace-nowrap); (3) a link to last week's unscored match lands on Completed with no card (useScheduleTabs.ts:59, older behaviour): carried to a later wave. Postponed/canceled cards: unit tests only (matches has no status column in the schedule select)."
+    },
+    {
+      "at": "2026-11-09T21:01:08.288Z",
+      "text": "Reviewer suggestion carried to the start of Wave 3 (a docs-only commit now would make every check stale): the-schedule-page.md:275 should say the carousel also moves when the reader taps the night that is already selected, and SCHED-43 (verification/schedule-and-scores.md:62) should get a re-tap step."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-09T20:52:27.100Z"
+  "updatedAt": "2026-11-09T21:01:08.324Z"
 }
