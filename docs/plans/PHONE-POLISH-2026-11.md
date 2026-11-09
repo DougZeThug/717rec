@@ -61,13 +61,23 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 
 ### Wave 1: shared parts (every screen)
 
-- [ ] `ui/dialog.tsx`: phone side margin, height limit, own scroll.
-- [ ] `ui/command.tsx` and nine text fields with a `text-sm` override: 16 px on phones
-      so iPhone Safari does not zoom.
-- [ ] `ui/toast.tsx`: clear the notch; `dvh` not `vh`.
-- [ ] Remaining `vh` to `dvh` (six places).
-- [ ] `w-96` chart loading boxes cause sideways scroll while loading.
-- [ ] `on-a-phone.md`: six claims that are out of date.
+- [x] `ui/dialog.tsx`: phone side margin, height limit, own scroll. `ui/alert-dialog.tsx`
+      got the same 16 px margin. Two callers fixed so they do not scroll sideways at
+      320 px: the playoff score editor's button row and the opponent history date row
+      now wrap. Update Bracket Seeding already scrolled sideways on a phone before
+      this wave; it stays on the Wave 6 list.
+- [x] `ui/command.tsx` and seven text fields with a `text-sm` or `text-xs` override:
+      16 px on phones so iPhone Safari does not zoom; 14 px from 768 px up as before.
+      `AdminSidebar.tsx` search left (desktop only).
+- [x] `ui/toast.tsx`: clear the notch (top safe-area padding on phones).
+      `max-h-screen` left as it is.
+- [x] Remaining `vh` to `dvh`: four changed (`ErrorBoundary`, `StatsErrorState`,
+      `MatchRecapDialog`, `RearrangeBracketDialog`). `main.tsx` (the "configuration
+      missing" screen of a broken build) and `MobileMenu.tsx` (an animation end value;
+      its list already has the `dvh` pair) left on purpose.
+- [x] `w-96` chart loading bars poke past their card on a phone while loading (the
+      page itself does not scroll sideways): now `w-full max-w-96`.
+- [x] `on-a-phone.md`: six claims that are out of date.
 
 ### Wave 2: schedule and live scoring
 

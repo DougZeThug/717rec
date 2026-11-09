@@ -55,10 +55,10 @@ calls itself mobile. Above it, desktop. The stylesheet has more breakpoints —
 | A fixed tab bar at the bottom of the screen, four tabs: Standings, Schedule, Teams, Playoffs | No bottom bar, and nothing replaces it — the top bar is the only navigation |
 | No search | A search icon in the top bar, and **Cmd/Ctrl+K** opens a command palette that jumps to nine pages or any of the first ten teams |
 | Pages get five extra lines of bottom padding, plus the phone's own safe area, so the tab bar clears the content | Ordinary page padding |
-| Toasts fill the width at the top of the screen | Toasts are at most 420 pixels wide, bottom right |
+| Toasts fill the width at the top of the screen, below the notch | Toasts are at most 420 pixels wide, bottom right |
 | The teams list defaults to grouped by division | The teams list defaults to one list |
 | Several stats and standings tables render as stacked cards | The same data as a table |
-| One dialog — playoff team divisions — opens as a bottom drawer | It opens as a centred dialog |
+| Five dialogs open as a bottom drawer: score submission on the home page, the match form on the schedule, approving a score submission in admin Scores, playoff team divisions and the live scoring player picker. Every other dialog is a centred box with a 16-pixel gap each side | The same five open as centred dialogs |
 
 The top bar is the one exception, and it changes later:
 
@@ -185,10 +185,33 @@ step. Its six documents start at
   not on a real phone.
 - **No label is under 12 pixels** on the home page, the standings, the teams
   list or history. Labels there were 9 to 11 pixels, which is unreadable in a
-  bar. The schedule's weekday strip and the playoff bracket's participant names
-  are still smaller; they are tracked separately.
-- The phone's safe areas are honoured in the top bar, the bottom tab bar and the
-  padding under every page. A notch or a home indicator does not sit over them.
+  bar. The schedule's weekday strip is still smaller; it is tracked separately.
+  The playoff bracket's participant names are 15 pixels on a phone (the phone
+  rule in `src/styles/brackets-viewer-717rec-theme.css`).
+- **A centred dialog keeps a 16-pixel gap on each side** on a phone, has round
+  corners, is never taller than the screen minus 32 pixels, and scrolls inside
+  when its content is taller. Before, a dialog touched both screen edges, and the
+  Live Corrections "Edit round" dialog ran 14 pixels off the top and the bottom of
+  a 640-pixel-tall phone with no way to reach its buttons. A dialog that sets its
+  own height limit (for example 80 or 90 per cent of the screen) keeps it. The
+  command palette stays clipped and its list scrolls. Measured 2026-11-09 in
+  headless Chromium with fake data, at 320, 390 and 1280 pixels, on 15 dialogs
+  (team badge, GPA leaderboard, opponent history, match recap, leave team,
+  create division, approve request, edit team, Live Corrections edit round,
+  change winner and delete round, playoff score editor, edit bracket, update
+  seeding, command palette): every box at 1280 pixels kept its size. One dialog
+  still scrolls sideways inside itself on a phone, as it did before: Update
+  Bracket Seeding. It is tracked separately.
+- **Text fields are 16 pixels on a phone**, so iPhone Safari does not zoom the
+  page in when one gets focus (it zooms on anything smaller). That covers the
+  team search box in pickers and multi-selects, the match comment box, the
+  message edit box, the admin hero card fields (week, winner names, extra data)
+  and the weekly blurb fields. From 768 pixels up they stay 14 pixels. Measured
+  in the same run; the weekly blurb box was not reached with the fake data and is
+  pinned by its class only.
+- The phone's safe areas are honoured in the top bar, the bottom tab bar, the
+  padding under every page and the toast list, which starts below the notch. A
+  notch or a home indicator does not sit over them.
   The playoffs page has no bottom bar of its own.
 - The bottom tab bar reaches four of the app's twenty-four routes. The hamburger reaches
   the other main pages — the message board, history, help, contact, and Admin for
@@ -208,12 +231,12 @@ step. Its six documents start at
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | A phone keyboard has no Escape, so on a phone nothing can be cancelled by key; only by tapping a Cancel or Close control. **The hamburger menu has no close-by-tapping-away** — it closes on a route change or by pressing the button again. It does close on Escape, which reaches it from an attached keyboard but not from a touch keyboard. | Same. A dialog's Cancel button works; there is no key that reaches it. |
-| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top; switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). Back puts `/teams`, `/stats`, `/history` and `/insights` back where they were (except when a page's data arrives late: the restore stops watching after one quiet second, three at most; see [navigation](../foundations/navigation.md#open-questions-and-verification)), and every other page wherever the browser puts it. Measured 2026-11-06 for `/teams` at 390 pixels wide in headless Chromium with fake data: within 1 pixel in every run. The fix is on this branch and not yet live. Safari, iOS, and a real phone's back swipe were not tried. | Everything typed is lost with no warning, exactly as on a desktop. |
-| Browser back or forward | The gesture-based back swipe is the browser's, and the app cannot intercept it. It behaves as an in-app navigation. | Same. On a phone this is the most likely way work is lost, because the swipe is easy to trigger by accident. |
+| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top; switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). Back puts `/teams`, `/stats`, `/history` and `/insights` back where they were (except when a page's data arrives late: the restore stops watching after one quiet second, three at most; see [navigation](../foundations/navigation.md#open-questions-and-verification)), and every other page wherever the browser puts it. Measured 2026-11-06 for `/teams` at 390 pixels wide in headless Chromium with fake data: within 1 pixel in every run. The fix is on this branch and not yet live. Safari, iOS, and a real phone's back swipe were not tried. | On the six admin screens that guard unsaved work (listed under Unsaved changes below) the app asks first. Everywhere else everything typed is lost with no warning, exactly as on a desktop. |
+| Browser back or forward | The gesture-based back swipe is the browser's, and the app cannot intercept it. It behaves as an in-app navigation. | The six guarded admin screens ask first, because a back swipe is a Back. Everywhere else the same as above. On a phone this is the most likely way work is lost, because the swipe is easy to trigger by accident. |
 | Reload, or the tab closed | Everything in memory is lost and every page refetches. A mobile browser closing a background tab to save memory looks identical to a reload when the user comes back. | A sent write still lands. An unsent one is gone. |
-| Network lost mid-request | Nothing to lose. Cached data stays on screen and looks current, which on a phone at a venue is the common case. | The request fails and is lost. **Nothing is queued.** This matters most during live scoring, which is the one thing done on a phone at a place with poor signal. |
+| Network lost mid-request | Nothing to lose. Cached data stays on screen and looks current, which on a phone at a venue is the common case. | The request fails and is lost, except on live scoring. **Live scoring holds a round saved with no signal** and sends it by itself when the signal returns; the screen says so ("Offline — 1 round waiting to sync. Keep this page open."). Held rounds live in memory, so a reload or a closed tab loses them, and the browser asks before either. Nothing else is queued. |
 | The request fails or times out | A read retries once, then falls back to the page's own state. | One red toast across the top of the screen, covering the top bar while it is there. |
-| The session expires | Public pages keep working. | Writes fail. A phone left in a pocket for hours is the most likely place for a session to lapse, and nothing says so. |
+| The session expires | Public pages keep working. | Writes fail. Where the screen shows the reason, it now says "Your session has expired. Please sign in again." (`src/utils/errorHandler.ts`). A phone left in a pocket for hours is the most likely place for a session to lapse. |
 | The same record changed in another tab, or by another user | The screens that hold a realtime channel find out; standings, records, and the schedule do not. Two phones at the same live match stay in step, which is the design. | Same. Two phones editing anything without a channel overwrite each other silently. |
 | Browser autofill or a password manager writes into the form | Mobile keyboards and password managers fill fields the same way as on a desktop, including the contact form's hidden bot trap. | Same. |
 | The window loses focus | Switching apps suspends the tab. Coming back refetches anything past its fresh window, so numbers change as the app is re-opened — far more visible on a phone than on a desktop, because backgrounding is constant. | The request continues while the app is in the background if the browser allows it, and its toast is waiting when the user returns. |
@@ -232,8 +255,14 @@ is the user menu, which on a phone sits beside the hamburger. See
 **Validation and error display.** Field errors appear under fields as they do on
 a desktop. Long forms stack rather than sitting side by side.
 
-**Unsaved changes.** Unprotected, and more exposed: a back swipe, an incoming
-call, or the browser reclaiming a background tab all discard typed work with no
+**Unsaved changes.** Six admin screens ask before their unsaved work is lost:
+Auto Schedule, mass score entry, the hero card form, the Live Corrections
+edit-round dialog, the blind draw sign-up message and the weekly content pack.
+They ask on a link, tab or menu tap, on Back or Forward (a back swipe included),
+and on a reload or a closed tab (the browser's own warning). Live scoring asks
+before a reload or a closed tab while rounds are held or still sending.
+Everything else is unprotected, and a phone exposes it more: an incoming call or
+the browser reclaiming a background tab still discards typed work with no
 warning.
 
 **Optimistic updates and rollback.** No difference.
@@ -242,12 +271,13 @@ warning.
 backgrounding an app closes them. Each reconnection refetches, so a short drop is
 invisible; only live scoring shows the connection's state while it is down.
 
-**Offline.** No difference in behaviour, and much more likely to happen. See
-[`errors-and-offline.md`](errors-and-offline.md).
+**Offline.** Live scoring holds rounds until the signal is back (see the
+interrupt table). Everything else behaves the same as on a desktop, and going
+offline is much more likely. See [`errors-and-offline.md`](errors-and-offline.md).
 
 **Toasts and notifications.** On a narrow screen a toast is full width at the top
-of the screen. It covers the top bar and the page heading while it is there, not
-the submit button at the bottom.
+of the screen, below the notch. It covers the top bar and the page heading while
+it is there, not the submit button at the bottom.
 
 **URL state.** A phone adds nothing to the URL. Sharing a page from a phone shares
 what the page keeps in the address (see
@@ -271,11 +301,10 @@ much of its traffic is phones. Nothing more precise is stored. See
 
 ## Edge cases
 
-- **The message board's "Sign in to post messages" bar sits at the very bottom of
-  the screen, underneath the fixed tab bar**, because it positions itself against
-  a spacing value that is never defined anywhere in the app. A signed-out visitor
-  on a phone probably cannot see or tap it. **May be worth treating as a bug
-  rather than documenting.**
+- **The message board's "Sign in to post messages" bar sits just above the
+  bottom tab bar** on a phone (`src/components/message-board/LoginPrompt.tsx`
+  places it at the tab bar's height). Measured 2026-11-09 at 390 pixels with
+  fake data: the bar's bottom edge meets the tab bar's top edge.
 - **A link opens the new page at the top**, which matters most on a phone: a long
   schedule followed by a short page no longer leaves a blank screen ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation),
   fixed). On the way the position passes through two in-between values; see [navigation](../foundations/navigation.md#arrive).
@@ -286,8 +315,9 @@ much of its traffic is phones. Nothing more precise is stored. See
 - **The command palette's keyboard shortcut is unreachable on a phone**, which is
   harmless, but so is the Search button — there is no search anywhere below 768
   pixels.
-- **Only one dialog in the app becomes a drawer.** Every other dialog is a
-  centred modal on a phone, including the live scoring confirmations.
+- **Five dialogs become bottom drawers** on a phone (listed in the table
+  above). Every other dialog is a centred box with a 16-pixel gap each side,
+  including the live scoring confirmations.
 - **The teams page remembers its scroll position, and in the 2026-11-06 test it
   came back to it every time** (headless Chromium, 390 pixels wide, fake data; the
   fix is on this branch and not yet live). Safari, iOS and a real phone were not
@@ -301,9 +331,6 @@ much of its traffic is phones. Nothing more precise is stored. See
 
 ## Open questions and verification
 
-- **The sign-in bar on the message board is very likely hidden behind the bottom
-  tab bar on a phone.** Read from the positioning value and the absence of the
-  variable it depends on; not seen on a device.
 - **Toasts appear at the top on a narrow screen, not the bottom.**
   [`foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md)
   says a toast could cover a submit button at the bottom of a small screen. It
@@ -344,3 +371,11 @@ The scroll behaviour changed after that commit: a link now opens the new page at
 The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the opening story, the interrupt table and the edge cases describe it.
 The 44-pixel controls in the admin console, listed under Touch and reach, changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too.
 The tap-size fixes (commits `96b6036` to `8626e6c`) changed the first two bullets under Touch and reach, and the phone-overflow fixes (commits `2af1fa1` to `e3a8bdd`) added the bullet that starts "Nothing in these places", after that commit. They were measured in a real browser against fake data, not on a real phone or tablet. The three 44-pixel buttons named there came later, in commit `fd5d43a`; they are pinned by tests and were not measured in a browser. The division header bars, the standings sort buttons and the 32 to 36-pixel links came in commit `6e15b27`; they were measured in a real browser against fake data at 320, 390, 768 and 1280 pixels. The career sort buttons came in commit `0524ba6` and are pinned by a test only.
+The centred dialog gap, height limit and inside scroll, the 16-pixel text fields
+and the toast list below the notch came in the Wave 1 phone polish (2026-11-09).
+They were measured in headless Chromium against fake data at 320, 390 and 1280
+pixels, not on a real phone; iPhone Safari's zoom on focus was not tried on a
+device. The five bottom drawers, the 15-pixel bracket names, the held live
+scoring rounds, the session-expired message, the unsaved-work warnings and the
+sign-in bar's position were read from the code on that date; the sign-in bar was
+also measured.
