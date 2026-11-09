@@ -345,6 +345,23 @@ describe('in-game state', () => {
     expect(await screen.findByRole('status')).toHaveTextContent('Round 2 saved');
   });
 
+  // A line that came and went above the grids moved every score button while
+  // the scorer was tapping. It now sits below the score input.
+  it('shows the saved line below the score input, so the grids do not move', async () => {
+    renderView(inGameBundle());
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '9'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    const saved = await screen.findByRole('status');
+    const position = screen
+      .getByRole('button', { name: /save round/i })
+      .compareDocumentPosition(saved);
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   // UX audit LS-03. A round filed with no signal is held by the query cache and
   // sent when the connection returns. That leaves the save "pending" for as long
   // as the signal is gone, which used to be indistinguishable from "saving".
@@ -380,6 +397,16 @@ describe('in-game state', () => {
       await waitFor(() => expect(mockSubmitRound.mutate).toHaveBeenCalled());
       expect(screen.getByTestId('round-sync-status')).toHaveTextContent(/offline/i);
       expect(screen.queryByText(/round 2 saved/i)).not.toBeInTheDocument();
+    });
+
+    it('puts the offline line below the score input', () => {
+      onlineManager.setOnline(false);
+      renderView(inGameBundle());
+
+      const position = screen
+        .getByRole('button', { name: /save round/i })
+        .compareDocumentPosition(screen.getByTestId('round-sync-status'));
+      expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it('leaves the panel usable while a round is parked', () => {
