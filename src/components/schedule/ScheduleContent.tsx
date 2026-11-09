@@ -9,7 +9,7 @@ import {
   Trophy,
   X,
 } from 'lucide-react';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { EmptyState } from '@/components/ui/empty-state';
@@ -128,7 +128,6 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   const navigate = useNavigate();
   const [upcomingIndex, setUpcomingIndex] = useState(0);
   const [completedIndex, setCompletedIndex] = useState(0);
-  const upcomingInteractedRef = useRef(false);
 
   // Ids of completed matches that were actually live-scored (have games rows).
   // Used to hide the "View match recap" CTA for traditionally-scored matches.
@@ -183,10 +182,15 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
     });
   }, [filteredMatches, activeTab]);
 
-  // Smart default for the mobile upcoming carousel: land on today's group
-  // (or the next future one), not stale past unscored matches.
+  // The night picked on the date strip, when this tab has matches that night.
+  // On a phone the carousel opens on it (Doug, 2026-11-09). -1 when it has none.
+  const selectedGroupIndex = groupedMatches.findIndex((g) => isSameDay(g.date, selectedDate));
+
+  // Smart default for the mobile upcoming carousel: the picked night, else
+  // today's group (or the next future one), not stale past unscored matches.
   const upcomingDefaultIndex = useMemo(() => {
     if (activeTab !== 'upcoming' || groupedMatches.length === 0) return 0;
+    if (selectedGroupIndex !== -1) return selectedGroupIndex;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const idx = groupedMatches.findIndex((g) => {
@@ -195,18 +199,23 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
       return groupDate.getTime() >= today.getTime();
     });
     return idx === -1 ? groupedMatches.length - 1 : idx;
-  }, [activeTab, groupedMatches]);
+  }, [activeTab, groupedMatches, selectedGroupIndex]);
 
-  useEffect(() => {
-    upcomingInteractedRef.current = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
-    setUpcomingIndex(upcomingDefaultIndex);
-  }, [upcomingDefaultIndex]);
+  // Completed is newest first, so its default is the first group.
+  const completedDefaultIndex = selectedGroupIndex === -1 ? 0 : selectedGroupIndex;
 
-  const handleUpcomingIndexChange = (i: number) => {
-    upcomingInteractedRef.current = true;
-    setUpcomingIndex(i);
-  };
+  // Move the phone carousel when the picked night or the tab changes, and only
+  // then: a refetch builds a new list but must not pull the reader back off a
+  // night they swiped to. This runs during render, not in an effect after the
+  // draw, so the night's cards are already on the page when the linked-match
+  // scroll (useScrollToLinkedMatch) looks for its card.
+  const carouselTarget = `${activeTab}|${format(selectedDate, 'yyyy-MM-dd')}`;
+  const [carouselShownFor, setCarouselShownFor] = useState<string | null>(null);
+  if (carouselShownFor !== carouselTarget) {
+    setCarouselShownFor(carouselTarget);
+    if (activeTab === 'upcoming') setUpcomingIndex(upcomingDefaultIndex);
+    if (activeTab === 'completed') setCompletedIndex(completedDefaultIndex);
+  }
 
   // For empty state
   const isEmptyState = groupedMatches.length === 0;
@@ -336,7 +345,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           onEditMatch={onEditMatch}
           onDeleteMatch={onDeleteMatch}
           activeIndex={activeTab === 'upcoming' ? upcomingIndex : completedIndex}
-          onIndexChange={activeTab === 'upcoming' ? handleUpcomingIndexChange : setCompletedIndex}
+          onIndexChange={activeTab === 'upcoming' ? setUpcomingIndex : setCompletedIndex}
           liveScoredMatchIds={liveScoredIds}
         />
       );
