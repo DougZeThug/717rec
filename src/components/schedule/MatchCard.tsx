@@ -81,7 +81,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const winners = winnerSides(match, isCompleted);
   const isAnimating = useScoreAnimation(match.team1Score, match.team2Score);
 
-  const { canScore } = useCanScoreMatch({
+  const { canScore, isLoading: isScoringAccessLoading } = useCanScoreMatch({
     team1_id: match.team1Id ?? null,
     team2_id: match.team2Id ?? null,
     iscompleted: match.iscompleted,
@@ -138,6 +138,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             match={match}
             isCompleted={isCompleted}
             canScore={canScore}
+            isScoringAccessLoading={isScoringAccessLoading}
             team1Name={team1Name}
             team2Name={team2Name}
             liveScoredMatchIds={liveScoredMatchIds}

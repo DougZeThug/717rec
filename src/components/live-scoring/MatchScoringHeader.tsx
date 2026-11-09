@@ -85,7 +85,8 @@ export const MatchScoringHeader: React.FC<MatchScoringHeaderProps> = ({
         >
           <Radio className={cn('size-3.5', isLive && 'animate-pulse')} aria-hidden />
           {realtimeLabel(realtimeStatus)}
-          {!isLive && <span>· your scores still save</span>}
+          {/* Only a scorer saves scores. A watcher was told this too. */}
+          {!isLive && canScore && <span>· your scores still save</span>}
         </span>
       </div>
     </div>

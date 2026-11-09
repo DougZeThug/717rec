@@ -44,6 +44,15 @@ describe('MatchScoringHeader', () => {
     }
   );
 
+  // Only a scorer saves scores, so a watcher is not told theirs still save.
+  it('tells a watcher only that updates are off', () => {
+    renderHeader('CHANNEL_ERROR', false);
+
+    const pill = screen.getByTestId('realtime-status');
+    expect(pill).toHaveTextContent('Live updates: off');
+    expect(pill).not.toHaveTextContent('still save');
+  });
+
   it('puts the channel note below the score, not above it', () => {
     renderHeader('SUBSCRIBED');
 

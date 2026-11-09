@@ -409,6 +409,16 @@ describe('in-game state', () => {
       expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
+    // A watcher has no rounds to send, so "Rounds send when the signal is
+    // back" is not for them.
+    it('says nothing about sending rounds to a watcher', () => {
+      onlineManager.setOnline(false);
+      renderView(inGameBundle(), { canScore: false });
+
+      expect(screen.queryByTestId('round-sync-status')).not.toBeInTheDocument();
+      expect(screen.queryByText(/signal is back/i)).not.toBeInTheDocument();
+    });
+
     it('leaves the panel usable while a round is parked', () => {
       onlineManager.setOnline(false);
       // What a held save looks like: pending, but going nowhere.
