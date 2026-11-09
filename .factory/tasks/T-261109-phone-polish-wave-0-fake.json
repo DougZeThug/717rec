@@ -33,10 +33,10 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "39933e8b5c696e4328ad85851f9374c55838130a",
+      "sha": "b2b3506f32e7a9eb4aa58d3e408523d36e0cc066",
       "dirty": false,
-      "at": "2026-11-09T15:33:49.443Z",
-      "seconds": 8,
+      "at": "2026-11-09T15:41:41.573Z",
+      "seconds": 7,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261109-phone-polish-wave-0-fake/typecheck.log"
     },
@@ -94,7 +94,12 @@
   "reviews": [],
   "issues": {},
   "interventions": [],
-  "notes": [],
+  "notes": [
+    {
+      "at": "2026-11-09T15:41:45.697Z",
+      "text": "Review follow-ups left on purpose (no current screen affected): (a) fake dates drift: season start fixed at 2026-01-05 while match dates follow the clock; recap URL breaks from about 2027-11-29 (2-digit week); standings-mock active season ends 2026-06-30. (b) postgrest.mjs: neq/not.eq keeps rows with a null cell, and a filter on a non-inner single-row join drops the parent; real PostgREST differs. (c) postgrest.mjs repeats standings-mock.mjs filter helpers with different rules; merge later. Revisit (a) and (b) if a wave screen looks wrong."
+    }
+  ],
   "waivers": [],
-  "updatedAt": "2026-11-09T15:35:05.685Z"
+  "updatedAt": "2026-11-09T15:41:45.697Z"
 }
