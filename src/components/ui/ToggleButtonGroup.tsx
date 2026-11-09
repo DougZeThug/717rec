@@ -75,7 +75,7 @@ export function ToggleButtonGroup<T extends string>({
               'flex-1 min-h-11 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors',
               'flex items-center justify-center gap-1.5',
               isActive
-                ? option.activeClassName || 'bg-primary/10 text-primary dark:bg-primary/20'
+                ? option.activeClassName || 'bg-primary/10 text-primary-text dark:bg-primary/20'
                 : 'bg-muted/50 text-muted-foreground hover:bg-muted'
             )}
           >

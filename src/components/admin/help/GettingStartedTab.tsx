@@ -121,7 +121,7 @@ const WorkflowCard: React.FC = () => (
         {workflowSteps.map((item, index) => (
           <li key={item.step} className="flex items-start gap-4">
             <div className="shrink-0 size-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-sm font-semibold text-primary">{item.step}</span>
+              <span className="text-sm font-semibold text-primary-text">{item.step}</span>
             </div>
             <div className="flex-1 min-w-0">
               {item.href ? (

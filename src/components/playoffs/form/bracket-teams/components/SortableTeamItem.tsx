@@ -71,7 +71,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
       <div
         className={cn(
           'flex items-center justify-center min-w-8 h-7 rounded-md text-sm font-bold',
-          'bg-primary/10 text-primary'
+          'bg-primary/10 text-primary-text'
         )}
       >
         #{seed}

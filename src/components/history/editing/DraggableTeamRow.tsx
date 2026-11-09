@@ -71,7 +71,7 @@ const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }) => {
             ? 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400'
             : team.runner_up
               ? 'bg-gray-500/20 text-muted-foreground'
-              : 'bg-primary/10 text-primary'
+              : 'bg-primary/10 text-primary-text'
         )}
       >
         {team.champion ? (

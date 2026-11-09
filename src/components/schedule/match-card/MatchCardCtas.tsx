@@ -39,7 +39,7 @@ export const MatchCardCtas: React.FC<MatchCardCtasProps> = ({
       <div className="mt-1.5">
         <TransitionLink
           to={`/matches/${match.id}/live`}
-          className={`${ctaClasses} bg-primary/10 text-primary hover:bg-primary/20`}
+          className={`${ctaClasses} bg-primary/10 text-primary-text hover:bg-primary/20`}
           aria-label={`Live score ${team1Name} vs ${team2Name}`}
         >
           <Radio className="size-4" aria-hidden />

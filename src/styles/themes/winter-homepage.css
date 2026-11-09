@@ -45,6 +45,9 @@
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
   --destructive-text: 0 84% 68%; /* 6.3:1 on the winter page */
+  /* The icy primary already reads on its tint (7.6:1); without this the light
+     theme's deep blue would apply here. */
+  --primary-text: 199 89% 62%;
 
   /* Success: the same bright green as the dark theme. Without these the winter page used the
      light theme's dark green, which is only 3.1:1 as text on the winter card. */
