@@ -41,7 +41,8 @@
     },
     {
       "text": "Before/after shots and measurements at 320, 390 and 1280 px; no new console errors; no page scrolls sideways; required checks pass on the final head and an independent code review approves.",
-      "done": false
+      "done": true,
+      "evidence": "Before/after at 320, 390 and 1280 by the builder and independently by QA (QA compared against main: page shots differ only in clock text and fade timing). shoot.mjs with the member mock on 5 routes: 0 console errors, 0 overflow. On code head 65fa862: typecheck, lint, knip, integrity, build and unit (855 files, 7844 tests) PASS through F check. Independent code review: CHANGES on db2072e, then APPROVE on 61e2e5e after the repair."
     },
     {
       "text": "Create New Playoff Bracket: no button inside a button. The seed badge in each team row (SeedStatusBadge, rendered with onEdit inside the team Button in TeamSelectionForm.tsx) is plain text, so a tap on it selects or deselects the team like the rest of the row and no longer also jumps to the Seeds tab; the now unused onEdit button branch is removed. Opening the dialog logs no console error at 390 and 1280 px; a unit test pins that the team list has no nested button and a tap on the badge toggles the team once.",
@@ -53,29 +54,29 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
       "dirty": false,
-      "at": "2026-11-09T17:21:04.963Z",
-      "seconds": 8,
+      "at": "2026-11-09T18:13:11.481Z",
+      "seconds": 7,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
       "dirty": false,
-      "at": "2026-11-09T17:22:06.451Z",
-      "seconds": 61,
+      "at": "2026-11-09T18:14:22.293Z",
+      "seconds": 71,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
       "dirty": false,
-      "at": "2026-11-09T17:22:09.215Z",
+      "at": "2026-11-09T18:14:25.793Z",
       "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/knip.log"
@@ -83,9 +84,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
       "dirty": false,
-      "at": "2026-11-09T17:22:09.330Z",
+      "at": "2026-11-09T18:14:25.945Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/integrity.log"
@@ -93,20 +94,20 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
       "dirty": false,
-      "at": "2026-11-09T17:22:16.008Z",
-      "seconds": 4,
+      "at": "2026-11-09T18:14:31.307Z",
+      "seconds": 5,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
       "dirty": false,
-      "at": "2026-11-09T17:28:43.956Z",
-      "seconds": 379,
+      "at": "2026-11-09T18:21:02.455Z",
+      "seconds": 391,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/unit.log"
     }
@@ -125,6 +126,13 @@
       "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
       "at": "2026-11-09T18:04:27.970Z",
       "summary": "Independent factory-reviewer on db2072e: code correct (tailwind-merge simulated for every caller; 1280 boxes unchanged; tests pin behaviour; scope clean). Changes asked: (1) on-a-phone.md:193-195 and commit 501bc0e overstate the edit-round problem: before, Cancel and Save were on screen and only the padding was cut; after, Save needs a scroll inside on 600-640 px tall phones; (2) finish-a-game.md:125 still says the End Game dialog fills a phone screen; (3) OpponentHistoryModal.tsx:46 space-x-2 with flex-wrap indents the wrapped line, use gap-x-2. Suggested: stale verification rows PHONE-11/20/23/25, LIVEFIX-29, GAMEEND-22; list the bracket seed box in on-a-phone.md."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
+      "at": "2026-11-09T18:21:16.427Z",
+      "summary": "Independent factory-reviewer re-review on 61e2e5e (code head 65fa862): its three asks met (opponent history gap-x-2 with icon/text pairs, edit-round doc claim matches the measurements with the trade-off stated, finish-a-game.md); the nested-button fix is correct and minimal (one user, setActiveTab still used by the Tabs, badge text read as part of the team button, no control lost); the new test would fail on the old code; verification row edits claim nothing unmeasured. Ran src/components/playoffs/form (114 pass) and src/components/stats (287 pass)."
     }
   ],
   "issues": {
@@ -153,5 +161,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-09T18:12:51.094Z"
+  "updatedAt": "2026-11-09T18:21:16.471Z"
 }
