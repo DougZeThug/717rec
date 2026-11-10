@@ -107,6 +107,23 @@ describe('RoundScoreInput', () => {
     expect(screen.getByTestId('net-preview')).toHaveTextContent('Baggers +3');
   });
 
+  // A long name wrapped the preview onto two lines and pushed the score grids
+  // down 20 px. The name now truncates and "+N" never shrinks.
+  it('keeps the preview on one line: the name truncates, +N stays whole', async () => {
+    renderInput();
+
+    await tapScore('Baggers', 8);
+    await tapScore('Tossers', 5);
+
+    const preview = screen.getByTestId('net-preview');
+    expect(preview).toHaveClass('flex', 'min-w-0');
+    expect(
+      screen.getByText('Baggers', { selector: '[data-testid="net-preview"] span' })
+    ).toHaveClass('truncate');
+    expect(screen.getByText('+3')).toHaveClass('shrink-0');
+    expect(screen.getByText(/^Round \d+$/)).toHaveClass('shrink-0');
+  });
+
   it('previews a wash for tied scores', async () => {
     renderInput();
 

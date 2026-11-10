@@ -163,12 +163,17 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
       ? cancellationNet({ team1: team1.score, team2: team2.score })
       : null;
 
+  // One line, always: a long team name ends in "..." and "+N" stays whole, so
+  // the score grids below do not move when the preview appears.
   const netPreview =
-    net === null
-      ? null
-      : net.winner === null
-        ? 'Wash — no points'
-        : `${net.winner === 1 ? team1Name : team2Name} +${net.net}`;
+    net === null ? null : net.winner === null ? (
+      'Wash — no points'
+    ) : (
+      <>
+        <span className="truncate">{net.winner === 1 ? team1Name : team2Name}</span>{' '}
+        <span className="shrink-0">+{net.net}</span>
+      </>
+    );
 
   const handleSubmit = async () => {
     if (!ready || team1.score === null || team2.score === null) return;
@@ -202,10 +207,13 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
 
   return (
     <div className="rounded-lg border bg-card p-3">
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-sm font-semibold">Round {roundNumber}</span>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <span className="shrink-0 text-sm font-semibold">Round {roundNumber}</span>
         {netPreview && (
-          <span className="text-xs font-medium text-muted-foreground" data-testid="net-preview">
+          <span
+            className="flex min-w-0 gap-1 text-xs font-medium text-muted-foreground"
+            data-testid="net-preview"
+          >
             {netPreview}
           </span>
         )}
