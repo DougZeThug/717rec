@@ -23,6 +23,11 @@ standings). This pass fixes what is left. It does not redo that work.
   **"Watch live"** button on each match card (view only; scorers keep "Live score this
   match"). On a phone, **picking a night on the date strip moves the Upcoming/Completed
   cards to that night** when it has matches; desktop does not change.
+- **Wave 5 (2026-11-10):** a shared link to one match (`#match-<id>`) **opens the tab
+  that holds that match** (Upcoming while it has no score), so last week's unscored
+  match shows; links with no match id keep the date rule. On the message board,
+  **signed-out visitors see one sign-in prompt and no search, refresh or filter
+  controls** (they cannot read posts); signed-in members see everything as before.
 
 ## Rules for every wave
 

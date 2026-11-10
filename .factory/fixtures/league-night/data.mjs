@@ -255,6 +255,8 @@ const messages = [
   post(1505, OTHERS[2].id, 'Does anyone know if the fake lanes have lights on court four now? Asking for a fake friend.', 'Question', 40),
   post(1506, OTHERS[4].id, 'Lost a fake blue bag near court two. Let me know if you find it.', 'Other', 52),
   post(1507, OTHERS[5].id, 'Congrats to the fake champions from last season!', 'General', 70),
+  // A long unbroken word and a link, as people paste them: a phone must wrap it, not cut it.
+  post(1508, OTHERS[0].id, 'Fake sign-up sheet: https://example.com/fake-league/signups/thursday-night-doubles-sheet-2026 and SOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO excited!', 'General', 80),
 ];
 const messageReactions = [['👍', 1500, MEMBER.id], ['👍', 1500, OTHERS[0].id], ['👍', 1500, OTHERS[1].id], ['❤️', 1500, OTHERS[2].id], ['😂', 1500, OTHERS[3].id], ['🔥', 1502, OTHERS[0].id]]
   .map(([emoji, message, user], k) => ({ id: ID(1550 + k), message_id: ID(message), user_id: user, emoji, created_at: ago(HOUR) }));

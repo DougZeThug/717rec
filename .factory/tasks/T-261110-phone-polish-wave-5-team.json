@@ -1,0 +1,19 @@
+{
+  "id": "T-261110-phone-polish-wave-5-team",
+  "title": "Phone polish wave 5: team pages and message board",
+  "kind": "polish",
+  "status": "intake",
+  "request": "start wave 5",
+  "trivial": false,
+  "branch": "claude/intelligent-knuth-8pjz9p",
+  "baseSha": "e12aac4e4ab08507e8d3c666f719e633a8c7c439",
+  "createdAt": "2026-11-10T18:09:12.215Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-10T18:09:12.215Z"
+}
