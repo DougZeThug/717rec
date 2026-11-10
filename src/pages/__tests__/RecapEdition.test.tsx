@@ -122,6 +122,38 @@ describe('RecapEdition', () => {
     expect(screen.getByText('88.2')).toBeInTheDocument();
   });
 
+  // Phone polish wave 6: the same rules in the division tables, and a Home
+  // link tall enough to tap (24px).
+  it('keeps the division W–L record on one line and the team column readable', () => {
+    renderAt('/recap/fall-2026/week-6');
+
+    expect(screen.getByRole('columnheader', { name: 'W–L' })).toHaveClass('whitespace-nowrap');
+    expect(screen.getByRole('cell', { name: '7–1' })).toHaveClass('whitespace-nowrap');
+    expect(screen.getByRole('cell', { name: 'Corn Stars' })).toHaveClass(
+      'min-w-28',
+      '[overflow-wrap:anywhere]'
+    );
+  });
+
+  it('puts each division table in a sideways scroll box a keyboard can reach', () => {
+    renderAt('/recap/fall-2026/week-6');
+
+    const region = screen.getByRole('region', { name: 'Competitive standings table' });
+    expect(region).toHaveClass('overflow-x-auto', 'focus-visible:ring-2');
+    expect(region).toHaveAttribute('tabindex', '0');
+    expect(region).toContainElement(screen.getByRole('table'));
+  });
+
+  it('gives the Home link a 24px tap height', () => {
+    renderAt('/recap/fall-2026/week-6');
+
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveClass(
+      'inline-flex',
+      'min-h-6',
+      'items-center'
+    );
+  });
+
   it('shows only the original date when nothing was corrected', () => {
     renderAt('/recap/fall-2026/week-6');
 

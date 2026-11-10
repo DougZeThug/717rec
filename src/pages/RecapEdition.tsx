@@ -94,9 +94,10 @@ const RecapEdition: React.FC = () => {
         }}
       />
 
+      {/* min-h-6: a text link needs at least a 24px tap target. */}
       <Link
         to="/"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
+        className="inline-flex min-h-6 items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
       >
         <ArrowLeft className="size-4" />
         Home

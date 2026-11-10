@@ -108,4 +108,29 @@ describe('PowerRankingsTable', () => {
     expect(rows[0]).toContain('First');
     expect(rows[1]).toContain('Second');
   });
+
+  // Phone polish wave 6: at 320px the W–L record wrapped to "6–" over "2", and
+  // squeezing the table to fit left the team column a few letters wide. Now
+  // W–L stays on one line, the team column keeps a readable width and the
+  // table scrolls sideways in a box a keyboard can reach.
+  it('keeps the W–L record on one line and the team column readable', () => {
+    render(<PowerRankingsTable teams={[team({ teamName: 'Supercalifragilistic' })]} />);
+
+    expect(screen.getByRole('columnheader', { name: 'W–L' })).toHaveClass('whitespace-nowrap');
+    expect(screen.getByRole('cell', { name: '6–2' })).toHaveClass('whitespace-nowrap');
+    const name = screen.getByText('Supercalifragilistic');
+    expect(name.closest('td')).toHaveClass('min-w-28');
+    expect(name.closest('td')).not.toHaveClass('[overflow-wrap:anywhere]');
+    // Only the name may break inside a word; the blurb and division never do.
+    expect(name).toHaveClass('[overflow-wrap:anywhere]');
+  });
+
+  it('puts the table in a sideways scroll box a keyboard can reach', () => {
+    render(<PowerRankingsTable teams={[team()]} />);
+
+    const region = screen.getByRole('region', { name: 'Power rankings table' });
+    expect(region).toHaveClass('overflow-x-auto', 'focus-visible:ring-2');
+    expect(region).toHaveAttribute('tabindex', '0');
+    expect(region).toContainElement(screen.getByRole('table'));
+  });
 });
