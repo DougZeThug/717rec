@@ -2,7 +2,7 @@
   "id": "T-261110-phone-polish-wave-4-home",
   "title": "Phone polish wave 4: home, standings, insights, compare",
   "kind": "polish",
-  "status": "repairing",
+  "status": "ready",
   "request": "start wave 4",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -11,35 +11,43 @@
   "criteria": [
     {
       "text": "Standings view toggle row (RankingsMobileView.tsx:142) wraps at 320 px so 'Detailed' is whole (scrollWidth <= clientWidth); still one row at 390 px.",
-      "done": false
+      "done": true,
+      "evidence": "Commit 3d41c33. QA: at 320 the row wraps, scrollWidth 286 = clientWidth 286, 'Detailed' whole (x 96-163); at 390 one row; Detailed tap sets data-state=on. /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa4/out/cmp-stats-320.png. RankingsMobileView.test pins flex-wrap."
     },
     {
       "text": "Power Score help popover (PowerScoreInfoPopover.tsx) is capped to the available height and scrolls inside at 320x640 (same classes as NotificationBell.tsx:88); axe clean with it open.",
-      "done": false
+      "done": true,
+      "evidence": "Commits 0bbe37f, 96386a5. QA at 320x640: popover 252-640 px, max-h 388, scrolls to the last line (bottom 623); focus on open, PageDown scrolls. axe scrollable-region-focusable fixed by tabIndex 0 (builder axe probe /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa4/axe.mjs clean in 11 runs; older /stats findings logged to Wave 5). PowerScoreInfoPopover.test pins classes, tabindex and focus."
     },
     {
       "text": "Home hero no longer pads the notch twice (HeroSection.tsx: inline safe-area style removed, pt-4); no change in a normal browser tab (inset 0).",
-      "done": false
+      "done": true,
+      "evidence": "Commit a2f3695. QA: no inline style, padding-top 16 px, hero top 88 at 320 and 390 as before; Navbar.tsx:83 safe-area-top pads the notch (read in code; no real iPhone). HeroSection.test pins it."
     },
     {
       "text": "Names: leaderboard title sits above the 3 cards below 640 px so the cards are wider (LeagueLeaderboardCarousel.tsx; 'Leaderboard' text kept); Your next matches names w-full max-w-28 (MyMatchRow.tsx) with no overlap at 320 incl. a finished match; Division Matchups row wraps (DivisionMatchupsCard.tsx); compare header names line-clamp-2 with min-w-0 (TeamComparisonView.tsx:36-37).",
-      "done": false
+      "done": true,
+      "evidence": "Commits 749808a, bfafdcc, 046bf6b, 62b288f. QA: leaderboard title above cards below 640, cards 81/104 px (were ~47), badges not clipped, old layout at 640/700; next-match names clear of vs/score/arrow at 320 incl. a finished match (/tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa4/out/home-prev-320.png); compare 101 vs 106 names two lines inside their halves at 320; insights matchup row wraps, nothing cut."
     },
     {
       "text": "Text: 11 px labels to 12 px where nothing moves (EventDetails, ChampionsHeroCard, PastWinnersDisplay, LeagueParityCard, DivisionStrengthChart, PercentileBadge; WinLossBarChart only if its labels do not overlap at 320 with 10 teams). AllTeamsCareerPowerScoreChart and PowerScoreChart stay; the doc names every label still under 12 px. Short links 'Read the full recap' and 'See full schedule' at least 24 px tall.",
-      "done": false
+      "done": true,
+      "evidence": "Commits 2405ce1, 4edbc8f, 21aff46. QA phone-scan of /, /stats, /insights, /compare (signed out) and / (member) at 320 and 390: 0 overflow, 0 small controls, 0 small links, 0 text under 12 px; both links 24 px; win-loss labels 12 px, no overlap at 320 (/tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa4/out/wl-320-zoom.png). Career and Power Score charts left at 11 px and named in on-a-phone.md."
     },
     {
       "text": "Contrast: plain text-primary used as text becomes text-primary-text (ComparisonStatRow, HeadToHeadSection, MyMatchesSection, CareerRankingsDesktopView (+ its test), OpponentHistoryModal, SwipeableDateGroups Previous/Next); percentile pills reach 4.5:1 in light on /compare and the team page for all five tiers (darker light colours, dark: colours kept); sr-only ' of N teams' text in a nested span inside the pill (no visible change).",
-      "done": false
+      "done": true,
+      "evidence": "Commits 49df934, 4edbc8f, 21aff46. QA dark at 390/1280: compare winners and head-to-head 7.83, See full schedule 7.83, schedule Previous 7.83. Rank pills, lowest per theme over 5 tiers on /compare and team pages: light 4.8, dark 5.78, winter 5.04. sr-only ' of 10 teams in Win %' present; visible '2nd' unchanged."
     },
     {
       "text": "Docs in the same change: on-a-phone.md (home label sentence true, exceptions named), the standings, home, insights and compare feature docs, UI-UX audit boxes, verification rows, the Wave 4 checklist in docs/plans/PHONE-POLISH-2026-11.md ([-] compare rows, Insights 110 px labels, opponent history pop-up; percentile done for screen readers only, with why).",
-      "done": false
+      "done": true,
+      "evidence": "Commits 6281481, e12aac4: on-a-phone.md, the-home-page.md, your-next-match.md, standings-and-rankings.md, insights.md, compare-teams.md, team-details.md, the-schedule-page.md, both audits (ST-03 done), STAND-43..45, COMPARE-45/46, HOME-70, NEXT-40, README 1,976, plan Wave 4 checklist. QA and reviewer checked against code."
     },
     {
       "text": "Before/after shots at 320, 390 and 1280 px of /, /stats, /insights, /compare (signed out and member home); no page scrolls sideways; no new console errors; required checks (typecheck, lint, unit, build, knip, integrity) pass on the final commit.",
-      "done": false
+      "done": true,
+      "evidence": "Before/after: .factory/evidence/T-261110-phone-polish-wave-4-home/before and /after (out, member) at 390 and 1280 plus QA 320 shots in /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa4: no console errors, no sideways scroll, desktop only intended changes. F check at e12aac4: typecheck, lint, unit (438 s), build, knip, integrity PASS. e2e a11y, smoke, navigation-scroll: 36 passed (QA, backend blocked)."
     }
   ],
   "checks": {
@@ -56,19 +64,19 @@
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "6281481f60fb9f1aa6259a12b3cd8c7804e0f55b",
+      "sha": "e12aac4e4ab08507e8d3c666f719e633a8c7c439",
       "dirty": false,
-      "at": "2026-11-10T16:32:21.767Z",
-      "seconds": 73,
+      "at": "2026-11-10T17:03:02.375Z",
+      "seconds": 83,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261110-phone-polish-wave-4-home/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "6281481f60fb9f1aa6259a12b3cd8c7804e0f55b",
+      "sha": "e12aac4e4ab08507e8d3c666f719e633a8c7c439",
       "dirty": false,
-      "at": "2026-11-10T16:32:28.639Z",
+      "at": "2026-11-10T17:03:05.509Z",
       "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261110-phone-polish-wave-4-home/knip.log"
@@ -76,9 +84,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "6281481f60fb9f1aa6259a12b3cd8c7804e0f55b",
+      "sha": "e12aac4e4ab08507e8d3c666f719e633a8c7c439",
       "dirty": false,
-      "at": "2026-11-10T16:32:28.774Z",
+      "at": "2026-11-10T17:03:05.664Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261110-phone-polish-wave-4-home/integrity.log"
@@ -86,25 +94,33 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "6281481f60fb9f1aa6259a12b3cd8c7804e0f55b",
+      "sha": "e12aac4e4ab08507e8d3c666f719e633a8c7c439",
       "dirty": false,
-      "at": "2026-11-10T16:32:37.744Z",
-      "seconds": 4,
+      "at": "2026-11-10T17:03:09.133Z",
+      "seconds": 3,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261110-phone-polish-wave-4-home/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "6281481f60fb9f1aa6259a12b3cd8c7804e0f55b",
+      "sha": "e12aac4e4ab08507e8d3c666f719e633a8c7c439",
       "dirty": false,
-      "at": "2026-11-10T16:39:30.793Z",
-      "seconds": 410,
+      "at": "2026-11-10T17:10:26.981Z",
+      "seconds": 438,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261110-phone-polish-wave-4-home/unit.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "e12aac4e4ab08507e8d3c666f719e633a8c7c439",
+      "at": "2026-11-10T17:10:48.158Z",
+      "summary": "Review of 1b6f1a1..6281481 APPROVE (no scoring/ranking/percentile logic changed; dark/winter pills unchanged; desktop same from 640 px; tests pin each change, none weakened; docs match). Re-review of 6281481..e12aac4 APPROVE: tabIndex 0 on the Radix PopoverContent wins over FocusScope's -1, focus on open/Escape/return unchanged, ring matches dialog.tsx:49, test real, docs accurate."
+    }
+  ],
   "issues": {
     "axe-help-scroll": {
       "attempts": 1,
@@ -114,7 +130,8 @@
           "summary": "QA: axe scrollable-region-focusable (serious) at 320x640 with the Power Score help open: the new overflow-y-auto box has no focusable child. Fix: tabIndex={0} on the PopoverContent (PowerScoreInfoPopover.tsx:44) with a test; rerun axe."
         }
       ],
-      "escalated": false
+      "escalated": false,
+      "resolved": "Commit 96386a5: tabIndex 0 + focus ring on the help popover; axe clean in 11 runs (builder); reviewer APPROVE; all checks PASS at e12aac4."
     }
   },
   "interventions": [],
@@ -125,5 +142,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-10T17:01:39.163Z"
+  "updatedAt": "2026-11-10T17:10:48.633Z",
+  "readySha": "e12aac4e4ab08507e8d3c666f719e633a8c7c439",
+  "readyAt": "2026-11-10T17:10:48.633Z"
 }
