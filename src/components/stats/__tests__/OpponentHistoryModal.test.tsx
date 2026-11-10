@@ -53,10 +53,22 @@ describe('OpponentHistoryModal', () => {
     vi.clearAllMocks();
   });
 
-  it('renders nothing until the history summary has loaded', () => {
+  // Changed on purpose (Wave 5): the pop-up used to show nothing at all while
+  // it loaded, so a tap seemed to do nothing. It now opens with its loading view.
+  it('opens with its title and a loading view while the history loads', () => {
     mockUseOpponentHistory.mockReturnValue({ data: undefined, isLoading: true });
+    renderModal();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Head-to-Head vs Rivals')).toBeInTheDocument();
+    expect(screen.getByText('Loading matches...')).toBeInTheDocument();
+    expect(screen.queryByText('Matches')).not.toBeInTheDocument();
+  });
+
+  it('renders nothing when loading is done and there is no history', () => {
+    mockUseOpponentHistory.mockReturnValue({ data: undefined, isLoading: false });
     const { container } = renderModal();
     expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('gives the dialog a description for screen readers', () => {

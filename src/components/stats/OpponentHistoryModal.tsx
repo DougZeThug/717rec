@@ -96,6 +96,85 @@ const MatchHistoryCard: React.FC<{ match: HistoryMatch; result: string }> = ({ m
   </Card>
 );
 
+/** Summary tiles and the match list, once the history has loaded. */
+const OpponentHistoryBody: React.FC<{ history: OpponentHistory; teamId: string }> = ({
+  history,
+  teamId,
+}) => {
+  const { summary, matches } = history;
+
+  return (
+    <>
+      {/* Summary Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <SummaryStatCard
+          valueClassName="text-2xl font-bold text-primary-text"
+          value={summary.matches_played}
+          label="Matches"
+        />
+        <SummaryStatCard
+          valueClassName="text-2xl font-bold text-emerald-600"
+          value={summary.wins}
+          label="Wins"
+        />
+        <SummaryStatCard
+          valueClassName="text-2xl font-bold text-rose-600"
+          value={summary.losses}
+          label="Losses"
+        />
+        <SummaryStatCard
+          valueClassName="text-2xl font-bold text-primary-text"
+          value={<>{Number(summary.win_pct).toFixed(1)}%</>}
+          label="Win Rate"
+        />
+      </div>
+
+      {/* Game Stats */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <SummaryStatCard
+          valueClassName="text-xl font-bold text-emerald-600"
+          value={
+            <>
+              {summary.game_wins} - {summary.game_losses}
+            </>
+          }
+          label="Game Record"
+        />
+        <SummaryStatCard
+          valueClassName="text-xl font-bold text-primary-text"
+          value={
+            <>
+              {summary.game_wins + summary.game_losses > 0
+                ? ((summary.game_wins / (summary.game_wins + summary.game_losses)) * 100).toFixed(1)
+                : '0.0'}
+              %
+            </>
+          }
+          label="Game Win Rate"
+        />
+      </div>
+
+      {/* Recent Matches */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Recent Matches</h3>
+        {matches.length === 0 ? (
+          <div className="text-center py-4 text-muted-foreground">No matches found</div>
+        ) : (
+          <div className="space-y-3">
+            {matches.map((match) => {
+              // Compare ids, never names: two teams may share a name, and a
+              // name comparison then reads every result as a loss. Correct
+              // whichever side of the fixture the viewing team is on.
+              const result = match.winner_id == null ? 'T' : match.winner_id === teamId ? 'W' : 'L';
+              return <MatchHistoryCard key={match.id} match={match} result={result} />;
+            })}
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
 export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
   isOpen,
   onClose,
@@ -105,9 +184,9 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
 }) => {
   const { data: history, isLoading } = useOpponentHistory(teamId, opponentId);
 
-  if (!history?.summary) return null;
-
-  const { summary, matches } = history;
+  // While the history loads the dialog shows its title and a loading view,
+  // so a tap gets an answer at once. Nothing to show after loading: no dialog.
+  if (!isLoading && !history?.summary) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -119,77 +198,11 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <SummaryStatCard
-            valueClassName="text-2xl font-bold text-primary-text"
-            value={summary.matches_played}
-            label="Matches"
-          />
-          <SummaryStatCard
-            valueClassName="text-2xl font-bold text-emerald-600"
-            value={summary.wins}
-            label="Wins"
-          />
-          <SummaryStatCard
-            valueClassName="text-2xl font-bold text-rose-600"
-            value={summary.losses}
-            label="Losses"
-          />
-          <SummaryStatCard
-            valueClassName="text-2xl font-bold text-primary-text"
-            value={<>{Number(summary.win_pct).toFixed(1)}%</>}
-            label="Win Rate"
-          />
-        </div>
-
-        {/* Game Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <SummaryStatCard
-            valueClassName="text-xl font-bold text-emerald-600"
-            value={
-              <>
-                {summary.game_wins} - {summary.game_losses}
-              </>
-            }
-            label="Game Record"
-          />
-          <SummaryStatCard
-            valueClassName="text-xl font-bold text-primary-text"
-            value={
-              <>
-                {summary.game_wins + summary.game_losses > 0
-                  ? ((summary.game_wins / (summary.game_wins + summary.game_losses)) * 100).toFixed(
-                      1
-                    )
-                  : '0.0'}
-                %
-              </>
-            }
-            label="Game Win Rate"
-          />
-        </div>
-
-        {/* Recent Matches */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Recent Matches</h3>
-          {isLoading ? (
-            <LoadingState variant="section" message="Loading matches..." />
-          ) : matches.length === 0 ? (
-            <div className="text-center py-4 text-muted-foreground">No matches found</div>
-          ) : (
-            <div className="space-y-3">
-              {matches.map((match) => {
-                // Compare ids, never names: two teams may share a name, and a
-                // name comparison then reads every result as a loss. Correct
-                // whichever side of the fixture the viewing team is on.
-                const result =
-                  match.winner_id == null ? 'T' : match.winner_id === teamId ? 'W' : 'L';
-                return <MatchHistoryCard key={match.id} match={match} result={result} />;
-              })}
-            </div>
-          )}
-        </div>
+        {history?.summary ? (
+          <OpponentHistoryBody history={history} teamId={teamId} />
+        ) : (
+          <LoadingState variant="section" message="Loading matches..." />
+        )}
       </DialogContent>
     </Dialog>
   );
