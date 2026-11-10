@@ -97,7 +97,9 @@ export const GameCorrectionCard: React.FC<GameCorrectionCardProps> = ({
 
   return (
     <Card>
-      <CardHeader className="pb-2 flex-row items-center justify-between gap-2 space-y-0">
+      {/* flex-wrap: on a phone "Change winner" drops under the title. Squeezed beside it, the
+          button shrank to 54-64px and its words spilled over the title and past the card. */}
+      <CardHeader className="pb-2 flex-row flex-wrap items-center justify-between gap-2 space-y-0">
         <CardTitle className="text-base">
           Game {row.game_number} · {team1Name}{' '}
           <span className="whitespace-nowrap">
