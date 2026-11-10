@@ -2,18 +2,51 @@
   "id": "T-261110-phone-polish-wave-6-play",
   "title": "Phone polish wave 6: playoffs, history, weekly recap",
   "kind": "polish",
-  "status": "intake",
+  "status": "building",
   "request": "start wave 6",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
   "baseSha": "4edd99c75eb708ba6844d5d7e895f8905a297861",
   "createdAt": "2026-11-10T19:59:48.492Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Update Bracket Seeding pop-up fits at 320 and 390 px (no sideways scroll; min-w-0 on the drag section or grid-cols-1 on its content), stays centred; Create Bracket checked at 320 in manual seed mode and fixed the same way if it overflows (stays centred: Doug's exception).",
+      "done": false
+    },
+    {
+      "text": "Doug: the playoff score pop-up (BracketsManagerMatchEditor + Regular/Bye editors) stays centred and asks before a tap outside, Escape or Cancel throws typed scores away (useUnsavedChangesGuard, isDirty includes isOpen); Save never asks; reopening a match after Cancel shows the stored scores (draft cleared on close). Tests for each; scoring and the tie block unchanged.",
+      "done": false
+    },
+    {
+      "text": "Delete Bracket pop-up logs no console error (AlertDialogDescription asChild + div, no <p> in <p>).",
+      "done": false
+    },
+    {
+      "text": "Recap: W-L header and cells stay on one line (whitespace-nowrap) with no sideways scroll at 320 even with a long team-name word; recap Home link at least 24 px tall.",
+      "done": false
+    },
+    {
+      "text": "History: the page title lines up with the content (16 px from the edge on a phone); 390, 1280 and 1440 px shots show only that change.",
+      "done": false
+    },
+    {
+      "text": "PO-04: the raw bracket id heading no longer flashes after the bracket draws (hideUuidNodes right after rendering); the mock uses the id as the stage name so a shot shows it. Division tabs: wrap only if a shot shows a long name spilling, else [-].",
+      "done": false
+    },
+    {
+      "text": "Docs in the same change: on-a-phone.md, the playoffs/bracket admin docs, history and recap docs, MODAL_PATTERNS.md (named exceptions: playoff score pop-up and Create Bracket stay centred), UI-UX audit boxes (PO-04), verification rows, the Wave 6 checklist with [-] items (Edit Bracket/Move team/Edit teams stay centred: 1-2 field pickers; touch drag works; PO-05 not measurable) and the logged later items.",
+      "done": false
+    },
+    {
+      "text": "Before/after shots at 320, 390 and 1280 px of /playoffs, the bracket (signed out and admin), /history and the recap; no page scrolls sideways; no new console errors; required checks (typecheck, lint, unit, build, knip, integrity) pass on the final commit.",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-10T19:59:48.492Z"
+  "updatedAt": "2026-11-10T20:16:09.081Z"
 }

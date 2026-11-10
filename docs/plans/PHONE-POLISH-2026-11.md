@@ -28,6 +28,11 @@ standings). This pass fixes what is left. It does not redo that work.
   match shows; links with no match id keep the date rule. On the message board,
   **signed-out visitors see one sign-in prompt and no search, refresh or filter
   controls** (they cannot read posts); signed-in members see everything as before.
+- **Wave 6 (2026-11-10):** the playoff score pop-up **stays centred** (two score boxes,
+  not a long form) but **asks before a tap outside, Escape or Cancel throws typed
+  scores away**. **Create Bracket stays a centred pop-up** (named exception to the
+  bottom-sheet rule: a swipe would fight the drag-to-seed list). "Reopen + Clear
+  Downstream" gets a confirmation step **in a later wave** (Wave 8).
 
 ## Rules for every wave
 
@@ -237,6 +242,9 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 
 ### Wave 8: admin setup and content, then close-out
 
+- [ ] Doug (2026-11-10): "Reopen + Clear Downstream" on the playoff score pop-up
+      (`ByeMatchEditor.tsx:96-102`) clears later matches with one tap; add a
+      confirmation step.
 - [ ] Fixed-width selects and date buttons.
 - [ ] Blind draw sign-ups table clips instead of scrolling.
 - [ ] Carried from Wave 3: the Timeslots table (`TimeslotList.tsx`) needs about 300 px
