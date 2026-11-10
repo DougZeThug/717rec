@@ -88,6 +88,16 @@
       "seconds": 3,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261110-phone-polish-wave-7-acco/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "ac3f0505643b6b3e880dff004eee7df93790257c",
+      "dirty": false,
+      "at": "2026-11-10T22:02:39.931Z",
+      "seconds": 377,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-7-acco/unit.log"
     }
   },
   "reviews": [],
@@ -95,5 +105,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-10T21:56:20.717Z"
+  "updatedAt": "2026-11-10T22:02:39.931Z"
 }
