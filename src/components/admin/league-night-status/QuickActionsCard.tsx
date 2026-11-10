@@ -102,7 +102,7 @@ const DeveloperDisclosure: React.FC = () => {
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          className="flex w-full items-center gap-2 rounded-md bg-muted/50 px-3 py-2 text-sm font-medium hover:bg-muted"
+          className="flex min-h-11 w-full items-center gap-2 rounded-md bg-muted/50 px-3 py-2 text-sm font-medium hover:bg-muted"
         >
           <FileText className="size-4" aria-hidden="true" />
           <span className="flex-1 text-left">Developer</span>
