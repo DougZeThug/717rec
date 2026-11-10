@@ -233,6 +233,17 @@ that includes the movement — "Division rank 3, overall rank 7, moved up 2
 positions". Rows are deliberately not focusable, because they contain links.
 Trend arrows animate on every render.
 
+A team link is spoken by its visible name, then the record (changed
+2026-11-10). It used to be "View *Team* team details", which did not start with
+the name a voice-control user reads on screen. The logo inside the link is
+hidden from screen readers, so the name is read once. The same holds for the
+career rankings cards.
+
+In the light theme every Power Score band colour reaches 4.5:1 or more on the
+card (changed 2026-11-10). Gold, green, orange and amber text use a darker shade
+in light; the dark theme is unchanged. The green "moved up" arrow and number use
+a darker green in light too.
+
 **Side effects the user can notice.** None. Opening the standings changes
 nothing, records nothing, and writes no snapshot.
 
@@ -283,3 +294,6 @@ The leaderboard title, the wrapping switch row, the scrolling Power Score help
 and the 12-pixel win-loss chart labels came in the Wave 4 phone polish
 (2026-11-10). They were measured in headless Chromium with fake data at 320 and
 390 pixels and are pinned by tests.
+The team links' spoken names and the light-theme band colours came in the Wave 5
+phone polish (2026-11-10). axe found no name or contrast problem on `/stats` in
+headless Chromium with fake data at 390 pixels, and tests pin both.

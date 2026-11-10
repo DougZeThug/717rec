@@ -192,7 +192,11 @@ and no rating, the career table gives it a real number.
 
 The colour is meaningful everywhere it is shown: eight bands from gold at 85 and
 above, through green, blue, orange, amber, pink and purple, to red below 20. A
-missing score is neutral grey.
+missing score is neutral grey. In the light theme each band's text reaches
+4.5:1 or more (changed 2026-11-10: gold, green, orange and amber use a darker
+shade; measured 4.93, 4.95, 5.22 and 5.03). The band floors did not change, and
+the dark theme did not change. In light, the gold (85 and up) and amber (40 to
+49) shades both look brown; that is a known follow-up.
 
 ## Modifiers
 

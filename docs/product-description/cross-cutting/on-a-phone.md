@@ -163,8 +163,7 @@ step. Its six documents start at
   and the standings sort buttons (Power, Win %, SOS, Wins) are 44 (they were 36); so are the career rankings sort buttons, which are a copy of the same code.
   The public pages were scanned control by control at 390 and 320 pixels, with
   fake data, after the admin console. Left as they are: the standings badge
-  buttons (32 pixels, side by side), the "View … team details" rows in the
-  standings (36), and the "Sign in" and "Sign up" links inside the sentence under
+  buttons (32 pixels, side by side), the team links in the standings (36), and the "Sign in" and "Sign up" links inside the sentence under
   the login form (39).
 - Other controls are whatever size the component library gives, which is
   smaller — but no row is now under **24 pixels**, the accessibility floor. The rows raised to it are the home page's
@@ -227,6 +226,30 @@ step. Its six documents start at
   notch height: the top bar above it already does. That last one is from the
   code; the headless browser has no notch, so it was not seen on a real iPhone.
   Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
+- **Team pages, the message board and the schedule fit a 320-pixel phone**
+  (changed 2026-11-10).
+  - Team page: Records by Division shows one card per row below 640 pixels and
+    three side by side from 640 up. Before, three cards in one row were cut at
+    320 pixels. The Core tab's tile says "Win %" and the Game tab's says
+    "Game Win %"; "Win Percentage" was cut off in its half-width tile.
+  - Message board: the page has a 16-pixel side margin (it was 1 pixel). A long
+    link or a long word in a post wraps inside the post box. Before, the posts
+    grew wider than the box. A long username or team name ends in "…", and the
+    post time always shows whole. The same holds in match comments, which used
+    to run past the match card. On a 320-pixel phone, a member's own post also
+    shows the "…" menu, so both names share about 50 pixels. There the
+    username shows as "fa…".
+  - Live scoring: the round preview ("*Team* +N") stays on one line. A long
+    team name ends in "…" and "+N" stays whole, so the score grids do not move
+    when the second score is tapped.
+  - Schedule: the phone carousel keeps the night it shows when the matches are
+    fetched again. If a refetch adds or removes an earlier night, the carousel
+    stays on its night. If that night is gone (a filter removed it), the
+    carousel shows the nearest night by date. A swipe changes the kept night.
+    Picking a night on the date strip still moves the carousel to it. A shared
+    link to one match (`#match-<id>`) opens the tab that holds that match. See
+    [the schedule page](../schedule/the-schedule-page.md).
+  Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
 - **A centred dialog keeps a 16-pixel gap on each side** on a phone, has round
   corners, is never taller than the screen minus 32 pixels, and scrolls inside
   when its content is taller. Before, a dialog touched both screen edges. The
@@ -281,6 +304,10 @@ step. Its six documents start at
 - The message board puts its list in a fixed-height scrolling box sized from the
   viewport, so the page has a scroller inside a scroller. On a phone the outer
   page barely moves and the inner list does the scrolling.
+- **A signed-out visitor sees one sign-in card on the message board** (Doug,
+  2026-11-10). There is no search, refresh, filter or bottom bar for them,
+  because they cannot read posts. A signed-in member sees all of them as before.
+  See [read the board](../message-board/read-the-board.md).
 
 ## Cancel and interrupt
 
@@ -357,10 +384,10 @@ much of its traffic is phones. Nothing more precise is stored. See
 
 ## Edge cases
 
-- **The message board's "Sign in to post messages" bar sits just above the
-  bottom tab bar** on a phone (`src/components/message-board/LoginPrompt.tsx`
-  places it at the tab bar's height). Measured 2026-11-09 at 390 pixels with
-  fake data: the bar's bottom edge meets the tab bar's top edge.
+- **The message board has no bottom bar for a signed-out visitor** (changed
+  2026-11-10). Before, a "Sign in to post messages" bar sat just above the
+  bottom tab bar. It is gone. The feed card "Sign in to read the board" is the
+  one sign-in prompt.
 - **A link opens the new page at the top**, which matters most on a phone: a long
   schedule followed by a short page no longer leaves a blank screen ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation),
   fixed). On the way the position passes through two in-between values; see [navigation](../foundations/navigation.md#arrive).
@@ -404,7 +431,8 @@ much of its traffic is phones. Nothing more precise is stored. See
 - Not confirmed by hand: whether touch targets on the public pages meet the
   44-pixel guideline everywhere. The admin console and the public pages were
   scanned control by control (390 and 320 pixels wide, fake data). The scan did
-  not reach the message board feed (the fake data has no messages), the career
+  not reach the message board feed (the fake data had no messages then; the
+  Wave 5 phone polish measured it, see below), the career
   rankings panel (its sort buttons were fixed from the code and pinned by a test),
   dialogs that need real data, or three
   states whose steps timed out (the team page badge pop-up, the "What is Power
@@ -447,3 +475,9 @@ open with no tap, the "Change winner" wrap, the 12-pixel admin labels and the
 were measured in headless Chromium with fake data at 320, 390 and 1280 pixels,
 not on a real phone. The swipe on the Edit round drawer was a scripted touch
 drag.
+The team page layout, the message board margin, wrap and name truncation, the
+signed-out board, the one-line round preview, the carousel that keeps its night
+and the linked match that opens its tab came in the Wave 5 phone polish
+(2026-11-10). They were measured in headless Chromium with fake data at 320,
+390 and 1280 pixels, not on a real phone. The carousel refetch cases are pinned
+by tests only.

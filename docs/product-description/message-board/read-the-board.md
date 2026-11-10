@@ -19,12 +19,15 @@ reader doing anything.
 
 A signed-in player opens `/message-board`. A sticky bar at the top holds the
 title, a search box, a refresh button, and a filter button. Below it, a card
-holds the messages.
+holds the messages. A signed-out visitor sees only the title and one sign-in
+card (see [Arrive](#arrive)).
 
 Each message shows who wrote it, their team as a small coloured badge, and how
 long ago it was posted — "3 weeks ago", with the full date and time on hover and
 as the spoken label. Under that is the text, exactly as it was typed, with its
-line breaks kept.
+line breaks kept. A long link or a long word breaks onto the next line inside
+the message. A long username or team name ends in "…", and the time always
+shows whole (changed 2026-11-10).
 If anyone has reacted, a row of emoji chips sits at the bottom of the message with
 a count on each.
 
@@ -69,13 +72,17 @@ request succeeds and comes back with nothing. Rather than report that as an empt
 board, the page shows a sign-in state — "Sign in to read the board", "The message
 board is for league members. Sign in to see what people are saying.", and a
 **Sign In** button that goes to the sign-in page and returns here afterwards.
-Under it is a fixed bar reading "Sign in to post messages" with a second Sign In
-button.
+That card is the one sign-in prompt (Doug, 2026-11-10). The visitor gets no
+search box, refresh button, filter button or bottom bar, because they cannot
+read posts. Before 2026-11-10 they got all of those, plus a fixed bar reading
+"Sign in to post messages" with a second Sign In button.
 
 > *Technical note:* the app cannot tell an empty board from a hidden one by
 > looking at the answer — both are an empty list with no error. It distinguishes
 > them by whether anybody is signed in, and waits for the session to be restored
-> before deciding, so a reload does not flash the prompt at a member.
+> before deciding, so a reload does not flash the prompt at a member. The search,
+> refresh and filter controls use the same test, so they do not blink out for a
+> member while the session is restored.
 
 A signed-in reader with a genuinely empty board still gets the old invitation:
 "No Messages Yet" and "Be the first to start a conversation!".
@@ -124,10 +131,10 @@ Filters combine: a category, a team, and a search term all apply at once. Each o
 that is set appears as a chip inside the filter panel with an X to remove it, and
 a **Clear filters** button removes all three and closes the panel.
 
-The **refresh** button re-fetches the first page. For a signed-in reader it
-reports "Messages refreshed — Latest messages have been loaded". For a signed-out
-visitor, for whom nothing was loaded at all, it says "Sign in to read messages —
-The message board is for league members." instead.
+The **refresh** button re-fetches the first page and reports "Messages refreshed
+— Latest messages have been loaded". Only a signed-in reader has the button. A
+signed-out visitor used to get "Sign in to read messages" here; that toast is
+gone with the button (2026-11-10).
 
 The URL never changes. `/message-board` is `/message-board` with every filter set,
 so a filtered board cannot be linked to or bookmarked.
@@ -237,8 +244,9 @@ against the message and is visible to everyone; nobody is notified of it.
   [`bug-triage.md`](../bug-triage.md) B-16.
 - **Fixed: the refresh button used to report success when it loaded nothing.** It
   reports on the request completing, not on anything arriving, so a signed-out
-  visitor pressing it was told "Latest messages have been loaded". It now says
-  "Sign in to read messages" to a visitor.
+  visitor pressing it was told "Latest messages have been loaded". It then said
+  "Sign in to read messages" to a visitor. Since 2026-11-10 a visitor has no
+  refresh button at all.
 - **Three of the five category filters can never match anything.** The filter
   offers General, Question, Announcement, Event, and Other, but the composer can
   only produce General, and Announcement for an admin. Choosing Question, Event, or
@@ -294,4 +302,7 @@ against the message and is visible to everyone; nobody is notified of it.
   says so. The route still has no guard, so a visitor can open the page and see
   what it is — only the messages are withheld.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`. The signed-out view, the wrap of
+long links and words and the name truncation changed on 2026-11-10 (Wave 5
+phone polish). They were measured in headless Chromium with fake data at 320,
+390 and 1280 pixels.

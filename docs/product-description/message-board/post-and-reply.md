@@ -54,8 +54,10 @@ stateDiagram-v2
 
 ### Arrive
 
-The composer exists only for a signed-in account. A visitor gets a bar reading
-"Sign in to post messages" in the same place instead.
+The composer exists only for a signed-in account. A visitor gets nothing in its
+place (changed 2026-11-10; before, a bar read "Sign in to post messages"). Their
+one sign-in prompt is the feed card "Sign in to read the board". See
+[read the board](read-the-board.md#arrive).
 
 The box starts empty and **is not focused**, so someone who opens the board and
 starts typing types nothing. The counter reads "500 left". The send button is

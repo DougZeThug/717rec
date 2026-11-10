@@ -79,9 +79,12 @@ Three rows in that table are worth more than a cell.
 
 **Reading the message board.** The board's own page renders for a visitor, but
 the messages themselves do not arrive: reading them requires a session. The board
-therefore shows "Sign in to read the board" with a Sign In button, and a separate
-bar at the bottom of the screen says "Sign in to post messages". This is the one
-place where a refused read is named as such rather than drawn as an empty state.
+therefore shows "Sign in to read the board" with a Sign In button. That card is
+the visitor's one sign-in prompt (Doug, 2026-11-10): they get no search,
+refresh, filter or bottom bar. Before 2026-11-10 they got those controls and a
+separate bar at the bottom of the screen that said "Sign in to post messages".
+This is the one place where a refused read is named as such rather than drawn
+as an empty state.
 
 > Until B-16 was fixed it showed "No Messages Yet — Be the first to start a
 > conversation!" to anybody signed out, which was not true and did not mention
@@ -308,8 +311,9 @@ no record the user can see, and produces no notification to the league.
   "You do not have admin privileges".
 - **Fixed: the message board is invisible to visitors, and used to say so
   wrongly.** The empty state claimed there were no messages. It now asks the
-  visitor to sign in, and the refresh button no longer reports that messages were
-  loaded. See [`bug-triage.md`](../bug-triage.md) B-16.
+  visitor to sign in. Since 2026-11-10 the visitor has no refresh button, so no
+  refresh toast can claim that messages were loaded. See
+  [`bug-triage.md`](../bug-triage.md) B-16.
 - **Two membership rows used to break the member abilities entirely.** Read from
   the membership query's use of a single-row read, and confirmed against
   `@supabase/postgrest-js` 2.112.4, which returns `PGRST116` for a multi-row

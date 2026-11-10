@@ -179,29 +179,48 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 
 ### Wave 5: teams and message board
 
-- [ ] Team page section pills and badge buttons have overlapping tap areas.
-- [ ] Three cards in one row (team totals, player stats).
-- [ ] Message board: 32 px send button, about 5 px page margin, tooltip-only info,
-      filter bar shown to signed-out visitors.
+- [x] Team page: Records by Division showed three cards in one row and cut them at
+      320 px. One card per row below 640 px now.
+- [x] Team page: "Win Percentage" was cut in its half-width tile at 320 px. The
+      tiles read "Win %" and "Game Win %".
+- [x] Message board: posts grew wider than their box (Radix ScrollArea's
+      `display: table` wrapper). Forced to block in `MessageFeed.tsx` only; a long
+      URL and a long word wrap.
+- [x] Message board: the page margin was 1 px. It is 16 px (`px-4`).
+- [x] Names: a long username or team name pushed the post time out. Both end in
+      "…" and the time stays whole, on the board and in match comments (which ran
+      past the match card).
+- [x] Signed-out board (Doug, 2026-11-10): one sign-in card; no search, refresh,
+      filter or bottom bar. `LoginPrompt.tsx` and the signed-out refresh toast are
+      gone. The mock gives signed-out visitors no posts, as the database does.
+- [-] Player stat line on the team page: fits at 320 px. Left alone.
+- [-] Team tap overlaps: none real. The probe only found the fixed tab bar over
+      page content.
+- [-] Send button: it is 44 x 44 px. Left alone.
+- [-] Tooltip-only info (power score on a post's team name): a visible line would add
+      noise to every post, and the team page shows the power score.
 - Carried from Wave 2 (Doug, 2026-11-09):
-  - [ ] The live round input's net preview ("*Team* +N") wraps for a long team
-        name, so the score grids move 20 px when both scores are tapped.
-  - [ ] axe `aria-valid-attr-value` on the schedule's date-group trigger (its
-        `aria-controls` id has spaces).
-  - [ ] axe `scrollable-region-focusable` on the finished match's player table.
-  - [ ] A link to last week's unscored match opens Completed with no card
-        (`useScheduleTabs.ts:59` sends any past date to Completed).
-  - [ ] The phone carousel keeps a position, not a night, so a refetch that
-        removes an earlier night moves it forward one night (as before Wave 2).
+  - [x] The live round preview ("*Team* +N") stays on one line: the name ends in
+        "…", "+N" stays whole, and the grids do not move on the second tap.
+  - [x] axe `aria-valid-attr-value` on the date-group trigger: the hand-made id is
+        gone; Radix sets a valid one.
+  - [x] axe `scrollable-region-focusable`: the finished match's player table is a
+        focusable region named "Player stats".
+  - [x] A link to one match (Doug, 2026-11-10) opens the tab that holds it, on the
+        first pick only: last week's unscored match opens Upcoming with its card.
+  - [x] The phone carousel keeps a night per tab, not a position. A refetch keeps
+        it; a night that is gone gives the nearest one.
 - Logged in Wave 4 (skeptic, 2026-11-10):
-  - [ ] `OpponentHistoryModal.tsx:108` never shows its loading view.
-  - [ ] `OpponentHistoryModal.tsx:130,135,149`: emerald-600 and rose-600 text may be
-        under 4.5:1 in dark. Not measured.
+  - [x] The opponent history pop-up shows its title and a loading view while it
+        loads.
+  - [-] Its emerald and rose big numbers: large text, so 3:1 is the bar, and they
+        pass. Left alone.
 - Found in Wave 4 QA, older than Wave 4 (axe on `/stats` with fake data):
-  - [ ] `color-contrast`, 7 times: the "Elite Performance" tier span
-        (`span[title="Elite Performance"]`).
-  - [ ] `label-content-name-mismatch`, 10 times: the standings team links
-        (`.group.min-h-11`); their spoken name does not start with the visible text.
+  - [x] `color-contrast`: Power Score band text in light is `-700` for gold, green,
+        orange and amber (4.9:1 or better). Dark and the band floors are unchanged.
+        The phone head-to-head win text is emerald-700 too.
+  - [x] `label-content-name-mismatch`: the standings and career team links lost
+        "View … team details"; the logo inside is hidden, so the name is read once.
 
 ### Wave 6: playoffs, history, weekly recap
 
@@ -230,6 +249,14 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 - [ ] Team Management tabs wrap unevenly.
 - [ ] Edit team, create division and request pop-ups become bottom sheets.
 - [ ] Auto Schedule switches: a tap in the gap hits the lower one.
+- [ ] Logged in Wave 5: the SOS and win% colour helpers still use light shades
+      under 4.5:1 (`src/utils/__tests__/colors.test.ts:11-23`).
+- [ ] Logged in Wave 5: in light, Elite (yellow-700) and Below Average (amber-700)
+      both look brown. Pick a clearer pair without changing the band floors.
+- [ ] Logged in Wave 5: a member's own post header at 320 px leaves about 50 px for
+      both names, so the username shows as "fa…".
+- [ ] Logged in Wave 5 (older): the "bags in the hole?" prompt moves the second
+      score grid down 92 px when the first score is tapped.
 - [ ] Doug's own-phone check of the P1 phone cases in
       `docs/product-description/verification/`.
 - [ ] Delete this file.

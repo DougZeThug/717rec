@@ -95,7 +95,8 @@ saved.
 As soon as both sides have a number, a preview appears at the top right of the
 panel: either "*Team name* +N" or "**Wash — no points**" when the two are equal.
 This is the only place the cancellation rule is shown, and it updates on every
-tap.
+tap. The preview stays on one line: a long team name ends in "…" and "+N" stays
+whole (changed 2026-11-10).
 
 The thrower bar can be overridden. Tapping a different name changes who is
 recorded for the coming round. **The override applies to that round only** — once
@@ -276,9 +277,13 @@ feed per-player statistics only once the result is saved.
 - **The round number can advance under the scorer** if the other scorer saves
   first. Any scores already tapped are dropped, because they belong to the round
   that was just recorded, and a toast names the round now being entered.
-- **The net preview wraps to a second line for a long team name**, so the grids
-  move down 20 pixels when both scores are tapped and back up when the round is
-  saved. Seen with fake data at 390 pixels; left for a later change.
+- Fixed 2026-11-10: **the net preview wrapped to a second line for a long team
+  name**, so the grids moved down 20 pixels when both scores were tapped. It now
+  stays on one line, and the grids do not move on the second tap (measured with
+  fake data at 320 pixels).
+- **The "how many bags in the hole?" prompt moves the second grid down** about
+  92 pixels when the first score is tapped (measured at 320 pixels). This is
+  older than the 2026-11-10 change and was left for a later wave.
 - **A round that wins the game keeps the panel on screen until the save
   settles.** The win banner and the disabled grids overlap for the length of the
   request, so a failure that rolls the round back does not take the tapped
@@ -324,3 +329,5 @@ The position of the saved and offline lines, the hidden offline line for
 spectators, the long-name layout and the score button colours came in the Wave 2
 phone polish (2026-11-09). They were measured in headless Chromium with fake data
 at 320, 390 and 1280 pixels and are pinned by tests.
+The one-line net preview came in the Wave 5 phone polish (2026-11-10), measured
+the same way at 320 pixels and pinned by a test.

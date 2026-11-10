@@ -361,6 +361,7 @@ Format per finding: **ID · title — priority** · where/who · what happens (r
 ### 3.10 Message board `/message-board`
 
 - **MB-01 · Signed-out users see two sign-in CTAs plus unusable search/refresh/filter controls — Low.** (`anon/message-board--m390--fold.jpg`). *Recommend:* hide the controls and the sticky bar for signed-out users; one CTA. *Effort:* S.
+  - **Done (phone polish Wave 5, 2026-11-10; Doug's decision).** A signed-out visitor sees the title and one card, "Sign in to read the board", with a Sign In button. The search, refresh, filter and the bottom sign-in bar are gone for them (`src/pages/MessageBoard.tsx`, decided by `authInitialized && !user`, so a member's controls do not blink out on reload). `LoginPrompt.tsx` is deleted, and so is the signed-out refresh toast. Members see the board as before.
 - **MB-02 · Composer and category/character counter** — evaluated in J8 (see §6). Code: `MessageInputForm.tsx:102` disables submit while pending (good).
 
 ### 3.11 Account: `/auth`, `/setup-profile`, `/my-team`, `/oauth/consent`

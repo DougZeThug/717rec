@@ -33,7 +33,8 @@ button, and below those a row of chips: **All** and one per division, plus
 
 Under those are the three tabs. The page picks one for them: a past date opens
 **Completed**, a date from today onward opens **Upcoming** if the season has any
-upcoming matches, and otherwise **Timeslots**.
+upcoming matches, and otherwise **Timeslots**. A link to one match comes first
+(Doug, 2026-11-10): it opens the tab that holds that match (see **URL state**).
 
 The Upcoming tab lists matches grouped by date, oldest first. Each date is a
 collapsible heading like "Thursday, June 12". Inside a date, matches are grouped
@@ -262,9 +263,21 @@ first drawn, so the reader can close it again. Before the 2026-11-09 phone polis
 only the first time group opened, so a match at a later start time had no card
 to scroll to and the page stayed at the top.
 
+**A link to one match opens the tab that holds it** (Doug, 2026-11-10). The
+page checks the match id before the date rule, on its first tab pick only:
+
+- A match with no score yet is under **Upcoming**. Last week's unscored match
+  opens Upcoming with its card, not an empty Completed tab.
+- A scored match is under **Completed**. Tonight's finished match opens
+  Completed, although the date rule says Upcoming on a league night.
+- No match id, or an id the page does not know, keeps the date rule.
+
+The match id stays in the address, but a later date change uses the date rule
+again. Before 2026-11-10 a link to last week's unscored match opened Completed
+with no card.
+
 The tab and the expanded groups are still not in the address. The tab does not
-need to be: it is chosen to suit the night, so a link to a past night opens on
-Completed by itself.
+need to be: it is chosen to suit the night and the linked match.
 
 **On a phone.** The date strip scrolls sideways. Its weekday labels are 12 pixels
 (they were 11). The date groups become a swipeable carousel. Upcoming starts on
@@ -272,8 +285,12 @@ the selected night when it has upcoming matches, otherwise on today's group or
 the next future one. Completed starts on the selected night when it has results,
 otherwise on the newest night. The night is chosen while the page is drawn, not
 just after, so the cards of a linked match are already there when the page
-scrolls to them. It moves again only when a night is picked or the tab changes:
-a refetch does not pull the reader back off a night they swiped to. Pressing the
+scrolls to them. It moves again only when a night is picked or the tab changes.
+Each tab keeps the night it shows, not a position in the list (changed
+2026-11-10). A refetch that adds or removes an earlier night leaves the
+carousel on its night; before, it moved one night along. If the night is gone,
+for example because a filter removed it, the carousel shows the nearest night by
+date. A swipe changes the kept night. Pressing the
 night that is already picked counts as picking it, so after a swipe it brings the
 carousel back to that night. Every date the
 carousel moves to opens with its first time group showing, so pressing Next never
@@ -281,7 +298,9 @@ lands on a bare date heading. The tab bar sticks to the top of the screen as the
 list scrolls under it.
 
 **Accessibility.** Every group heading is a real button and reports whether it is
-expanded. The date strip's buttons are reachable by Tab but announce only a
+expanded. Its link to the group it opens uses an id the component library
+makes; before 2026-11-10 the page made that id from the date, with spaces, and
+the link was not valid. The date strip's buttons are reachable by Tab but announce only a
 weekday and a number, not the full date or whether that date has matches. The
 carousel's dots carry full dates. With more than nine dates they are replaced by
 a text counter such as "3 of 19", which is announced when it changes. The tab bar keeps a 44-pixel touch height.
@@ -335,8 +354,9 @@ ordinary pageview.
   schedule area and it contradicts "nothing polls" in
   [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
   The foundation is the document that needs correcting, not this one.
-- Not confirmed by hand: how the carousel behaves when a search removes the group
-  it was showing.
+- How the carousel behaves when a search or filter removes the night it was
+  showing: it moves to the nearest night by date (2026-11-10). Pinned by a test;
+  not tried by hand.
 - Not confirmed by hand: whether the tab bar's sticky backdrop reads correctly
   over a long list on a phone.
 - Not confirmed by hand: what the page shows in the seconds between the matches
@@ -359,3 +379,8 @@ the Wave 2 phone polish (2026-11-09). They were measured in headless Chromium
 with fake data at 320, 390 and 1280 pixels and are pinned by tests.
 The carousel's Previous and Next use the blue text colour since the Wave 4 phone
 polish (2026-11-10): 7.8:1 in the dark theme, where the fill blue was 3.9:1.
+The linked match's tab, the carousel that keeps its night and the date group's
+valid link id came in the Wave 5 phone polish (2026-11-10). The linked match
+was measured in headless Chromium with fake data at 320, 390 and 1280 pixels
+(an unscored match from last week opened Upcoming and showed its card). The
+refetch cases are pinned by tests only.
