@@ -118,7 +118,16 @@ const MessageFeed: React.FC<MessageFeedProps> = React.memo(
     return (
       <Card className={cn('mb-4 border shadow-sm', gradients.card.subtle)}>
         <CardContent className="p-0">
-          <ScrollArea className={cn('h-[calc(100dvh-250px)]', 'lg:h-[calc(100dvh-280px)]')}>
+          {/* Radix puts an inline display:table on the viewport's content div,
+              so a long word or URL made the posts wider than the box. Force it
+              back to block here; scroll-area.tsx stays shared and unchanged. */}
+          <ScrollArea
+            className={cn(
+              'h-[calc(100dvh-250px)]',
+              'lg:h-[calc(100dvh-280px)]',
+              '[&_[data-radix-scroll-area-viewport]>div]:block!'
+            )}
+          >
             <div className="space-y-2 p-3">
               {messages.map((message) => (
                 <MessageItem
