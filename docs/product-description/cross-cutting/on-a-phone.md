@@ -347,8 +347,8 @@ much of its traffic is phones. Nothing more precise is stored. See
 - **The command palette's keyboard shortcut is unreachable on a phone**, which is
   harmless, but so is the Search button — there is no search anywhere below 768
   pixels.
-- **Five dialogs become bottom drawers** on a phone (listed in the table
-  above). Every other dialog is a centred box with a 16-pixel gap each side,
+- **Six dialogs become bottom drawers** on a phone (listed in the table
+  above; the sixth, Edit round in Live Corrections, since 2026-11-10). Every other dialog is a centred box with a 16-pixel gap each side,
   including the live scoring confirmations.
 - **The teams page remembers its scroll position, and in the 2026-11-06 test it
   came back to it every time** (headless Chromium, 390 pixels wide, fake data; the
