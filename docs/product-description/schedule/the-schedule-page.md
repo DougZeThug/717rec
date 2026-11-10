@@ -357,3 +357,5 @@ The carousel following the picked night, the linked match's time group opening
 by itself and the scroll that finds it, and the 12-pixel weekday labels came in
 the Wave 2 phone polish (2026-11-09). They were measured in headless Chromium
 with fake data at 320, 390 and 1280 pixels and are pinned by tests.
+The carousel's Previous and Next use the blue text colour since the Wave 4 phone
+polish (2026-11-10): 7.8:1 in the dark theme, where the fill blue was 3.9:1.

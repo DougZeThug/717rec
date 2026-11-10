@@ -146,14 +146,31 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 
 ### Wave 4: home, standings, insights, compare
 
-- [ ] Hero pads the notch twice.
-- [ ] Compare rows are cramped; the view toggle row does not wrap at 320 px.
-- [ ] Names cut short (leaderboard, My Next Match); Insights labels fixed at 110 px.
-- [ ] Percentile shown only in a tooltip.
-- [ ] Pop-ups never checked on a phone (Power Score help, opponent history).
-- [ ] Carried from Wave 2 (Doug, 2026-11-09): plain `text-primary` text in the dark
-      theme is about 3.8:1 (for example the schedule carousel's Previous/Next words
-      from 640 px). Use `text-primary-text` where primary is used as text.
+- [x] Hero: the phone card added the notch height again under the top bar, which
+      already adds it. It now has 16 px of top padding. (From the code; the headless
+      browser has no notch.)
+- [x] Standings: the Compact/Detailed switch was cut off at 320 px. The row now wraps.
+- [x] Names: the leaderboard title sits above the three cards on a phone, so names
+      show and the rank circles are whole; next-match names take up to 112 px (were
+      80); compare header names take two lines inside their half; a Division Matchups
+      row puts its record under the names instead of cutting them.
+- [x] Power Score help ran off a 320 x 640 screen. It now scrolls inside.
+- [x] Labels under 12 px on these screens are 12 px: event tiles, champion division,
+      past winners' week, parity bar ends, Division Strength scale, rank pills and the
+      win-loss chart (at most 5 teams on a phone, so the slanted names still clear).
+- [x] Short links: "Read the full recap" and "See full schedule" are 24 px tall.
+- [x] Contrast: plain `text-primary` text on these screens (compare, career rankings,
+      opponent history, "Your Next Matches", "See full schedule") and the schedule's
+      Previous/Next is `text-primary-text`: 7.0:1 or better in dark (was 3.4-3.9:1).
+      Rank pills in light are 4.8:1 or better (were 2.6-4.1:1).
+- [x] Rank pills: a screen reader hears "of N teams in X". A sighted phone user still
+      sees it only in the tooltip: a visible caption would be new UI.
+- [-] Compare rows cramped: no visible defect at 320 px.
+- [-] Insights division labels at 110 px: Recharts wraps them. Left alone.
+- [-] Opponent history pop-up: fits at 320 px. Left alone.
+- [-] Career Power Score chart labels and its first season label: left at 11 px.
+      Check real season names first. The standings Power Score chart is also still
+      11 px.
 
 ### Wave 5: teams and message board
 
@@ -171,6 +188,10 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
         (`useScheduleTabs.ts:59` sends any past date to Completed).
   - [ ] The phone carousel keeps a position, not a night, so a refetch that
         removes an earlier night moves it forward one night (as before Wave 2).
+- Logged in Wave 4 (skeptic, 2026-11-10):
+  - [ ] `OpponentHistoryModal.tsx:108` never shows its loading view.
+  - [ ] `OpponentHistoryModal.tsx:130,135,149`: emerald-600 and rose-600 text may be
+        under 4.5:1 in dark. Not measured.
 
 ### Wave 6: playoffs, history, weekly recap
 

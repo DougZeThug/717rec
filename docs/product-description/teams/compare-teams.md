@@ -151,8 +151,9 @@ a comparison can be linked to. Selections replace rather than push, so the
 history does not fill up. Nothing is written to the address until the incoming
 link has been read, so a shared link survives both the first load and a reload.
 
-**On a phone.** The dropdowns stack. Each comparison row keeps three columns, so
-a long record beside a percentile badge can be cramped. The page does not
+**On a phone.** The dropdowns stack. Each team name in the header shows on up to
+two lines in its half of the row and ends in "…" past that. Each comparison row
+keeps three columns, so a long record beside a percentile badge can be cramped. The page does not
 reserve space at the bottom for the fixed bottom bar the way the pages built on
 the shared layout do; see [Open questions](#open-questions-and-verification).
 
@@ -161,7 +162,9 @@ operable from the keyboard. Neither has a visible label — the placeholder "Sel
 Team 1" is the only text, and it is gone once a team is chosen — so each carries
 a spoken name, "Team 1" and "Team 2", that survives a selection. The swap button
 is icon-only and is named "Swap teams". Which side is ahead is shown by colour
-alone, with nothing else marking it.
+alone, with nothing else marking it. A percentile badge shows only the rank
+("2nd"); a sighted reader sees "of 10 teams in Win %" only in its hover tooltip,
+but a screen reader hears it as part of the badge.
 
 **Side effects the user can notice.** Only pageviews. Nothing is written.
 
@@ -252,3 +255,7 @@ alone, with nothing else marking it.
 Verified against `717rec` commit `ea5c8f4`. The two team ids in the address, and
 that they survive a reload, were checked in a real browser against fake data on
 2026-11-05.
+The two-line names, the darker light-theme badge colours (4.8:1 or better), the
+blue text colour of the leading side and the spoken "of N teams" came in the
+Wave 4 phone polish (2026-11-10). They were measured in headless Chromium with
+fake data at 320, 390 and 1280 pixels, in light, dark and winter.

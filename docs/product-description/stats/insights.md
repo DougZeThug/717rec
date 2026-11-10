@@ -190,7 +190,8 @@ URL.
 **On a phone.** The layout stacks and the Insights button that leads here moves
 into the standings' top bar. The Division Strength chart keeps a fixed height of
 240 pixels and its division labels keep 110 pixels of width, so long division
-names are squeezed on a narrow screen. See
+names are squeezed on a narrow screen. A Division Matchups row puts its record
+under the two division names when they do not fit side by side. See
 [`cross-cutting/on-a-phone.md`](../cross-cutting/on-a-phone.md).
 
 **Accessibility.** The Top Performer cards are real buttons and work from the
@@ -256,5 +257,8 @@ here directly is not.
   the app links to `/insights`.
 
 Verified against `717rec` commit `ea5c8f4`.
+The Division Matchups wrap and the 12-pixel chart scale and parity labels came in
+the Wave 4 phone polish (2026-11-10), measured in headless Chromium with fake
+data at 320, 390 and 1280 pixels.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 The restore of the scroll position on Back changed again on this branch (not yet live), as part of the same follow-up ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured by script only, on 2026-11-06 (fake data, headless Chromium, dev server), and no person has run it by hand. The page came back at the saved offset in 1 of 1 run after a footer link and in 3 of 3 runs after the Schedule tab of the phone's bottom tab bar. The code before the change also gave 3 of 3 for the Schedule tab, so the 2026-11-05 top-bar result (a top-bar link, then Back, landed at the top) did not repeat, and this test does not show the change on this page; what differed is not known, because the real top bar was not tried. Back from a team page was not tried, because the fake data has no link to one on this page. Safari, iOS and real phones were not tested.

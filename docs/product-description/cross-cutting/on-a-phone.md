@@ -189,10 +189,10 @@ step. Its six documents start at
   2026-11-09 the names under the game totals ran past both screen edges and long
   rows ran past the list. These are measured in a real browser against fake data,
   not on a real phone.
-- **No label is under 12 pixels** on the home page, the standings, the teams
-  list or history. Labels there were 9 to 11 pixels, which is unreadable in a
-  bar. The schedule and live scoring followed on 2026-11-09: the date strip's
-  weekdays, a match card's prediction numbers, High/Medium/Low, "Won", the
+- **No label is under 12 pixels** on the home page, the teams list or history,
+  nor on the standings outside its Power Score charts (see below). Labels there
+  were 9 to 11 pixels, which is unreadable in a bar. The schedule and live
+  scoring followed on 2026-11-09: the date strip's weekdays, a match card's prediction numbers, High/Medium/Low, "Won", the
   rivalry tag, the timeslot double-header pill and division badge, and live
   scoring's "Games" and thrower headings are 12 pixels (they were 11). Each sits
   in a 16-pixel line, as before, so nothing around them moved; a date chip is
@@ -203,6 +203,30 @@ step. Its six documents start at
   and the chart no longer cuts its left labels off.
   The playoff bracket's participant names are 15 pixels on a phone (the phone
   rule in `src/styles/brackets-viewer-717rec-theme.css`).
+  Home, standings, Insights and compare followed on 2026-11-10: the event tile
+  labels (Check-in, Start, Buy-in, Payouts), the champion card's division, the
+  past winners' "Week N", the parity bar's "Lopsided" and "Competitive", the
+  Division Strength scale, the rank pills ("2nd") and the win-loss chart's names
+  and scale are 12 pixels (they were 10 or 11). Still under 12 pixels on these
+  screens: the Power Score chart's team names, scale and bar values on the
+  standings (11), and the career Power Score chart's season names (11), whose
+  slanted labels were left until real season names are checked.
+- **Home, standings, Insights and compare fit a 320-pixel phone** (2026-11-10).
+  The standings' Compact/Detailed switch drops under the Division/All switch
+  when the two do not fit; before, "Detailed" was cut off. The Power Score help
+  (the "i" beside Current Standings) is never taller than the room under its
+  button and scrolls inside. The League Leaderboard title is one line above the
+  three cards below 640 pixels, so the cards get the full width and their rank
+  circles are whole. A next-match team name takes up to 112 pixels (it was cut
+  at 80) and still ends in "…"; on a 320-pixel phone it shrinks, so the arrow
+  stays in the card. Compare shows each team name on up to two lines in its half
+  of the row, and a long word breaks instead of running over the other name. A
+  Division Matchups row puts its record under the two division names when they
+  do not fit side by side. "Read the full recap" and "See full schedule" are 24
+  pixels tall (they were 20 and 16). The phone hero card no longer adds the
+  notch height: the top bar above it already does. That last one is from the
+  code; the headless browser has no notch, so it was not seen on a real iPhone.
+  Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
 - **A centred dialog keeps a 16-pixel gap on each side** on a phone, has round
   corners, is never taller than the screen minus 32 pixels, and scrolls inside
   when its content is taller. Before, a dialog touched both screen edges. The

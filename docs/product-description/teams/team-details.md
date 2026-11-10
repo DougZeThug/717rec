@@ -186,8 +186,11 @@ is scrolled is still not in the address.
 
 **On a phone.** A single Back button replaces the breadcrumbs. The section bar
 scrolls sideways rather than wrapping. Badges are tapped for a dialog rather than
-hovered for a tooltip. The page does not reserve space at the bottom for the
-fixed bottom bar the way the pages built on the shared layout do; see
+hovered for a tooltip. The rank pills on the Career tiles ("2nd") are 12 pixels
+and fit their tile at 320 pixels; "of N teams" is in a hover tooltip for a
+sighted reader and is read out by a screen reader. The page does not reserve
+space at the bottom for the fixed bottom bar the way the pages built on the
+shared layout do; see
 [Open questions](#open-questions-and-verification).
 
 **Accessibility.** Each section is a landmark with a heading tied to it, and the
