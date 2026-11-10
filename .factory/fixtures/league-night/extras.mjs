@@ -148,6 +148,13 @@ const components = (rows) => rows.map((r) => {
     weighted_win_pct: Number((w / Math.max(1, w + l)).toFixed(3)), sos: r.sos, weighted_game_win_pct: Number((gw / Math.max(1, gw + gl)).toFixed(3)) };
 });
 
+// Team page "Records by Division" (TeamTotals): the opponents' division in one old season, so Fake Team Bravo's
+// archived games against Alpha, Charlie and Delta count as one record per tier. Opponent rows only: Bravo's own
+// division history stays empty. The tier is read from the name (calculateDivisionRecords.ts categorizeDivision).
+const OLD_SEASON = ID(2);
+const teamDetailsArchive = [[TEAM.ALPHA, 'Fake Competitive'], [TEAM.CHARLIE, 'Fake Intermediate'], [TEAM.DELTA, 'Fake Recreational']]
+  .map(([t, divisionname]) => ({ team_id: tid(t), season_id: OLD_SEASON, divisionname, division_id: null }));
+
 export const EXTRA_TABLES = {
   v_power_score_components_current: components(teams),
   v_power_score_components: components(base.team_season_stats),
@@ -165,4 +172,5 @@ export const EXTRA_TABLES = {
   challonge_fallback_brackets: [],
   v_daily_traffic: traffic,
   v_counter_drift: [],
+  team_details_archive: teamDetailsArchive,
 };

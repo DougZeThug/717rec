@@ -18,7 +18,7 @@
 //   Realtime         init() answers the WebSocket locally, so channels join and live pages read "Live updates: on".
 // Served empty on purpose: v_counter_drift ("in sync"), support_tickets, challonge_fallback_brackets.
 // Not served (the tool answers []): playoff_matches (rows there flip the home recap into playoff mode),
-// team_details_archive (career division history stays empty, as in the standings mock), and any other table.
+// and any other table. team_details_archive has three opponent rows only (Bravo's team page "Records by Division").
 // Writes to the tables above get a fake success and are not stored. Writes elsewhere are aborted by the tool.
 // Data lives in league-night/data.mjs and league-night/extras.mjs, RPC answers in league-night/rpc.mjs.
 import { createMock, init, initArgFor } from './league-night/handler.mjs';

@@ -60,6 +60,21 @@ describe('TeamTotals division win percentage colour', () => {
   });
 });
 
+// Three division cards in one row were cut at 320 px. One column on a phone,
+// three from 640 px up (sm).
+describe('TeamTotals records by division layout', () => {
+  it('stacks the division cards in one column below 640 px', () => {
+    mockUseTeamTotals.mockReturnValue(
+      totalsWith({ wins: 7, losses: 3 }, { wins: 5, losses: 5 }, { wins: 4, losses: 6 })
+    );
+    render(<TeamTotals teamId="team-1" standalone />);
+
+    const grid = screen.getByText('Competitive').closest('.grid');
+    expect(grid).toHaveClass('grid-cols-1', 'sm:grid-cols-3');
+    expect(grid).not.toHaveClass('grid-cols-3');
+  });
+});
+
 describe('TeamTotals loading and empty states', () => {
   beforeEach(() => {
     vi.clearAllMocks();
