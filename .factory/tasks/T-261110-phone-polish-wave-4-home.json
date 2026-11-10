@@ -2,7 +2,7 @@
   "id": "T-261110-phone-polish-wave-4-home",
   "title": "Phone polish wave 4: home, standings, insights, compare",
   "kind": "polish",
-  "status": "building",
+  "status": "repairing",
   "request": "start wave 4",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -92,10 +92,31 @@
       "seconds": 4,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261110-phone-polish-wave-4-home/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "6281481f60fb9f1aa6259a12b3cd8c7804e0f55b",
+      "dirty": false,
+      "at": "2026-11-10T16:39:30.793Z",
+      "seconds": 410,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-4-home/unit.log"
     }
   },
   "reviews": [],
-  "issues": {},
+  "issues": {
+    "axe-help-scroll": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-10T16:57:27.208Z",
+          "summary": "QA: axe scrollable-region-focusable (serious) at 320x640 with the Power Score help open: the new overflow-y-auto box has no focusable child. Fix: tabIndex={0} on the PopoverContent (PowerScoreInfoPopover.tsx:44) with a test; rerun axe."
+        }
+      ],
+      "escalated": false
+    }
+  },
   "interventions": [],
   "notes": [
     {
@@ -104,5 +125,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-10T16:32:37.744Z"
+  "updatedAt": "2026-11-10T16:57:27.209Z"
 }
