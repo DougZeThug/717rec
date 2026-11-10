@@ -54,7 +54,9 @@ export default function Contact() {
     <PageLayout>
       {SEO}
       <PageTransition>
-        <div className="container max-w-2xl py-12">
+        {/* 20px from a phone's edge like the other pages (container gave 36px); sm:px-8 keeps
+            the desktop card 608px wide. */}
+        <div className="container max-w-2xl py-12 px-4 sm:px-8">
           {isSuccess ? (
             <MessageSentCard onSendAnother={() => setIsSuccess(false)} />
           ) : (
