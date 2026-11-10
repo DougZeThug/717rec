@@ -6,7 +6,13 @@ interface UseScheduleTabsOptions {
   selectedDate: Date;
   matchesLoading: boolean;
   timeslotsLoading: boolean;
-  upcomingMatches: unknown[] | undefined;
+  upcomingMatches: { id: string }[] | undefined;
+  completedMatches?: { id: string }[] | undefined;
+  /**
+   * The match a shared link names (`#match-<id>`). On the first tab pick only,
+   * the page opens the tab that holds it, before the date rule.
+   */
+  linkedMatchId?: string;
 }
 
 interface UseScheduleTabsResult {
@@ -20,17 +26,23 @@ interface UseScheduleTabsResult {
  * - Persists the selected tab across navigation via sessionStorage.
  * - Automatically picks a sensible default tab whenever the selected date
  *   changes, once match and timeslot data have finished loading.
+ * - A link to one match opens the tab that holds it, so last week's unscored
+ *   match shows under Upcoming. This is the first pick only: the hash stays in
+ *   the address, and a later date change must follow the date rule.
  */
 export const useScheduleTabs = ({
   selectedDate,
   matchesLoading,
   timeslotsLoading,
   upcomingMatches,
+  completedMatches,
+  linkedMatchId,
 }: UseScheduleTabsOptions): UseScheduleTabsResult => {
   const [activeTab, setActiveTab] = useState<string>(
     () => sessionStorage.getItem(SCHEDULE_TAB_KEY) || 'timeslots'
   );
   const hasInitializedTab = useRef(false);
+  const hasUsedLink = useRef(false);
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
@@ -49,6 +61,22 @@ export const useScheduleTabs = ({
 
     hasInitializedTab.current = true;
 
+    // A link to one match → the tab that holds it (first pick only).
+    if (!hasUsedLink.current) {
+      hasUsedLink.current = true;
+      if (linkedMatchId) {
+        if (upcomingMatches?.some((match) => match.id === linkedMatchId)) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- opens the linked match's tab once data loads (intentional)
+          handleTabChange('upcoming');
+          return;
+        }
+        if (completedMatches?.some((match) => match.id === linkedMatchId)) {
+          handleTabChange('completed');
+          return;
+        }
+      }
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -57,7 +85,6 @@ export const useScheduleTabs = ({
 
     // Past dates → show completed matches
     if (selected < today) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- navigates tab when selected date changes (intentional)
       handleTabChange('completed');
       return;
     }
@@ -69,7 +96,14 @@ export const useScheduleTabs = ({
     }
 
     handleTabChange('timeslots');
-  }, [selectedDate, matchesLoading, timeslotsLoading, upcomingMatches]);
+  }, [
+    selectedDate,
+    matchesLoading,
+    timeslotsLoading,
+    upcomingMatches,
+    completedMatches,
+    linkedMatchId,
+  ]);
 
   return { activeTab, handleTabChange };
 };

@@ -1,5 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router';
 
 import PageLayout from '@/components/layout/PageLayout';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
@@ -282,11 +283,17 @@ const Schedule = () => {
 
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
 
+  // A shared link to one match (`#match-<id>`) opens the tab that holds it.
+  const { hash } = useLocation();
+  const linkedMatchId = hash.startsWith('#match-') ? hash.slice('#match-'.length) : undefined;
+
   const { activeTab, handleTabChange } = useScheduleTabs({
     selectedDate,
     matchesLoading,
     timeslotsLoading,
     upcomingMatches,
+    completedMatches,
+    linkedMatchId,
   });
 
   // After useScheduleTabs: the card may only appear once the tab has settled.

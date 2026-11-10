@@ -428,6 +428,23 @@ describe('Schedule page', () => {
     expect(handleTabChange).toHaveBeenCalledWith('completed');
   });
 
+  // Doug, 2026-11-10: a link to one match opens the tab that holds it.
+  it('hands the tab picker the match id from a #match- link', () => {
+    renderPage('/schedule?date=2026-11-05#match-abc-123');
+
+    expect(mockUseScheduleTabs).toHaveBeenLastCalledWith(
+      expect.objectContaining({ linkedMatchId: 'abc-123' })
+    );
+  });
+
+  it('hands the tab picker no match id when the link names none', () => {
+    renderPage('/schedule?date=2026-11-05#top');
+
+    expect(mockUseScheduleTabs).toHaveBeenLastCalledWith(
+      expect.objectContaining({ linkedMatchId: undefined })
+    );
+  });
+
   // The page publishes its upcoming matches as schema.org SportsEvent data for
   // search engines. Nothing on screen shows it, so only a test that reads the
   // script tag covers the builder — and with an empty match list its per-match
