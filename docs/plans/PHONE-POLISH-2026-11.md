@@ -119,24 +119,24 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 
 ### Wave 3: admin tools used at the venue
 
-- [ ] Scores: the night's group opened collapsed on first load (a bug: the first
+- [x] Scores: the night's group opened collapsed on first load (a bug: the first
       night is meant to be open). It and its first time group now open with no tap.
-- [ ] Live Corrections: the "Change winner" button was squeezed and its words ran
+- [x] Live Corrections: the "Change winner" button was squeezed and its words ran
       over the game title. The button now drops under the title when there is no room.
-- [ ] Live Corrections: Edit round becomes a bottom sheet on a phone. A swipe does
+- [x] Live Corrections: Edit round becomes a bottom sheet on a phone. A swipe does
       not close it while a change is typed; Cancel still asks first.
 - [-] Change game winner stays a centred pop-up: one picker, not a long form, and it
       fits at 320 px.
-- [ ] Space above the work: the admin sections that had a second side margin line up
+- [x] Space above the work: the admin sections that had a second side margin line up
       with the Sections bar, with less space above the title. The repeated filter
       tags on Scores ("Date: …", "Bracket: …") are gone. The page title, the Sections
       bar and Quick Access stay.
-- [ ] Score filter hint: the visible line stays; the tooltip nobody could open on a
+- [x] Score filter hint: the visible line stays; the tooltip nobody could open on a
       phone is gone.
-- [ ] League Night Status: the chart's side labels were cut to one digit; now whole,
+- [x] League Night Status: the chart's side labels were cut to one digit; now whole,
       at 12 px. The "Developer" button is 44 px. (The chart line does draw; an early
       screenshot caught its start-up animation.)
-- [ ] Scores: the team names over the score buttons are 12 px (were 11).
+- [x] Scores: the team names over the score buttons are 12 px (were 11).
 - [-] Timeslots date button (`w-[240px]`): fits at 320 px. Left alone.
 - [-] Live Corrections filters (`min-w-[200px]`): they stack full width. Left alone.
 - [-] Hide the "Admin Dashboard" title on a phone: dropped. It is the only sign of

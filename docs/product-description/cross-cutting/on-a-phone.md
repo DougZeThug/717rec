@@ -58,7 +58,7 @@ calls itself mobile. Above it, desktop. The stylesheet has more breakpoints —
 | Toasts fill the width at the top of the screen, below the notch | Toasts are at most 420 pixels wide, bottom right |
 | The teams list defaults to grouped by division | The teams list defaults to one list |
 | Several stats and standings tables render as stacked cards | The same data as a table |
-| Five dialogs open as a bottom drawer: score submission on the home page, the match form on the schedule, approving a score submission in admin Scores, playoff team divisions and the live scoring player picker. Every other dialog is a centred box with a 16-pixel gap each side | The same five open as centred dialogs |
+| Six dialogs open as a bottom drawer: score submission on the home page, the match form on the schedule, approving a score submission in admin Scores, playoff team divisions, the live scoring player picker and Edit round in Live Corrections. Every other dialog is a centred box with a 16-pixel gap each side | The same six open as centred dialogs |
 
 The top bar is the one exception, and it changes later:
 
@@ -134,7 +134,8 @@ step. Its six documents start at
   bar, the calendar's month arrows, the close cross of a dialog, the small round
   and remove buttons (the remove-signup, hero card remove and reaction picker
   buttons are pinned by tests, not measured in a browser), the text fields that once set their own height, and the
-  block buttons in Timeslots and the Scores time-slot headers. A switch or a
+  block buttons in Timeslots, the Scores time-slot headers and the League Night
+  Status "Developer" button (it was 36 pixels until 2026-11-10). A switch or a
   checkbox looks the same as before and has an invisible 44-pixel tap area (the
   Auto Schedule team checkbox is the one exception, in the next bullet). In a
   list of options or a menu, each row is 44 pixels tall on a touch screen; a
@@ -196,26 +197,27 @@ step. Its six documents start at
   scoring's "Games" and thrower headings are 12 pixels (they were 11). Each sits
   in a 16-pixel line, as before, so nothing around them moved; a date chip is
   still 64 pixels tall and "100%" fits its box.
+  The admin console followed on 2026-11-10: the team names over the Scores
+  result buttons are 12 pixels (they were 11), in the same 16-pixel line. The
+  League Night Status traffic chart's axis labels are 12 pixels (they were 10),
+  and the chart no longer cuts its left labels off.
   The playoff bracket's participant names are 15 pixels on a phone (the phone
   rule in `src/styles/brackets-viewer-717rec-theme.css`).
 - **A centred dialog keeps a 16-pixel gap on each side** on a phone, has round
   corners, is never taller than the screen minus 32 pixels, and scrolls inside
   when its content is taller. Before, a dialog touched both screen edges. The
-  Live Corrections "Edit round" dialog was 668 pixels tall on a 640-pixel-tall
-  phone, so its edge and padding ran 14 pixels off the top and the bottom; every
-  field and both buttons were still on screen. Now it fits inside the screen with
-  a 16-pixel gap, which costs a step on a short phone: on a phone 600 to 640
-  pixels tall, Save changes starts below the fold and needs a short scroll inside
-  the dialog (the content is 60 pixels taller than the box at 320 by 640 and 80
-  pixels taller at 390 by 600). On a phone 844 pixels tall it fits with no
-  scroll. A later change is planned for this dialog. A dialog that sets its
+  Live Corrections "Edit round" dialog was the tallest: 668 pixels on a
+  640-pixel-tall phone. Since 2026-11-10 it is a bottom drawer on a phone
+  instead (see the table above). The drawer is never taller than 90 per cent of
+  the screen, and its content scrolls inside it. A dialog that sets its
   own height limit (for example 80 or 90 per cent of the screen) keeps it. The
   command palette stays clipped and its list scrolls. Measured 2026-11-09 in
   headless Chromium with fake data, at 320, 390 and 1280 pixels, on 15 dialogs
   (team badge, GPA leaderboard, opponent history, match recap, leave team,
   create division, approve request, edit team, Live Corrections edit round,
   change winner and delete round, playoff score editor, edit bracket, update
-  seeding, command palette): every box at 1280 pixels kept its size. One dialog
+  seeding, command palette): every box at 1280 pixels kept its size. (Edit round
+  became a bottom drawer on a phone after this run.) One dialog
   still scrolls sideways inside itself on a phone, as it did before: Update
   Bracket Seeding. It is tracked separately.
 - **Text fields are 16 pixels on a phone**, so iPhone Safari does not zoom the
@@ -229,6 +231,16 @@ step. Its six documents start at
   blurb box and the bracket seed box were not reached with the fake data; they
   were changed by class and not measured in a browser (the team picker uses the
   same search box as the multi-select).
+- **The admin console lines up and opens ready on a phone** (2026-11-10). The
+  seven admin sections that share one frame (Mass Score Entry, Match Creation,
+  Season Management, Divisions, Weekly Content Pack, Power Score Migration
+  Review and Power Score Sandbox) have no second side margin below 768 pixels.
+  Their left edge lines up with the Sections bar, 16 pixels from the screen
+  edge; before, they sat 16 pixels further in. From 768 pixels up they keep
+  their padding. Scores opens tonight's date group and its first time group
+  with no tap. In Live Corrections, the "Change winner" button drops under the
+  game title when the row is too narrow. Before, it was squeezed to 54 to 64
+  pixels and its words ran over the title and past the card.
 - The phone's safe areas are honoured in the top bar, the bottom tab bar, the
   padding under every page and the toast list, which starts below the notch. A
   notch or a home indicator does not sit over them.
@@ -405,3 +417,9 @@ phone polish (2026-11-09). They were measured in headless Chromium with fake
 data at 320, 390 and 1280 pixels, including live scoring mid-game, not on a real
 phone. The double-header pill, the division badge and the rivalry tag were not in
 the fake data; they changed by class only.
+The Edit round bottom drawer, the admin section margin, the Scores groups that
+open with no tap, the "Change winner" wrap, the 12-pixel admin labels and the
+44-pixel Developer button came in the Wave 3 phone polish (2026-11-10). They
+were measured in headless Chromium with fake data at 320, 390 and 1280 pixels,
+not on a real phone. The swipe on the Edit round drawer was a scripted touch
+drag.

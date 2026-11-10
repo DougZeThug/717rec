@@ -157,7 +157,7 @@ it used to be a page of its own. `/timeslots` was one too, and redirects to
 | The user's role (visitor, player, admin) | Only an admin reaches this page at all. A visitor is sent to `/auth`; a signed-in non-admin gets one "Access Denied" toast and lands on the home page. | Losing admin in another tab does not close the dashboard. The menu stays, the sections stay, and the writes start failing. |
 | The record's state | No effect. The shell holds no record. | No effect. |
 | The season's state (active, archived, playoffs on) | No effect on the shell. Individual sections show different things with no active season; each says so. | No effect on the shell. |
-| Viewport | Below the mobile breakpoint the left menu is replaced by a bar holding a **Sections** button and two quick-access buttons; the six groups and the search box live in a drawer behind it. Above the breakpoint, the sidebar. | Crossing the breakpoint by resizing swaps the whole navigation. The open section is kept, because it is in the address rather than in either menu. |
+| Viewport | Below the mobile breakpoint the left menu is replaced by a bar holding a **Sections** button and two quick-access buttons; the six groups and the search box live in a drawer behind it. Above the breakpoint, the sidebar. Below the breakpoint the seven sections that share one frame (Mass Score Entry, Match Creation, Season Management, Divisions, Weekly Content Pack, Power Score Migration Review and Power Score Sandbox) add no side margin of their own, so their left edge lines up with the Sections bar. Before 2026-11-10 they sat 16 pixels further in. | Crossing the breakpoint by resizing swaps the whole navigation. The open section is kept, because it is in the address rather than in either menu. |
 | Keys the form honours | Tab reaches the collapse toggle, the search box, then every visible menu entry in order. No shortcut opens a section. | Typing in the search box filters as each character lands. Escape does nothing; the box has no clear button on a wide screen. |
 
 ## Cancel and interrupt
@@ -329,3 +329,6 @@ group headings and clear cross above, which were changed after that commit
 headings were 40 pixels high, and the clear cross had a 16-pixel tap area. Now
 the box and the headings are 44 pixels high, and the cross has a 44-pixel tap area
 around the same small icon.
+The section margin in the Viewport row changed in the Wave 3 phone polish
+(2026-11-10). It was measured in headless Chromium with fake data on all seven
+sections at 320 and 390 pixels, not on a real phone.

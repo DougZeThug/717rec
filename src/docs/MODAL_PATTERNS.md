@@ -244,6 +244,16 @@ ResponsiveDialog uses a Drawer on mobile which:
 - Has built-in padding (px-4 pb-4)
 - Supports swipe-to-dismiss
 
+Do not count on a confirm in `onOpenChange` to stop a swipe from throwing typed
+input away. Turn the swipe off instead: a sheet that holds typed input passes
+`dismissible={!isDirty && !isSubmitting}`. A swipe then closes it only while
+nothing is typed and nothing is saving. With `dismissible` false, vaul also
+ignores Escape and a tap outside, so only your own buttons close the sheet.
+Keep the unsaved-changes guard in `onOpenChange` too: Cancel calls it, and on
+desktop Escape and a click outside call it. Examples: `EditRoundDialog` (Live Corrections) and
+`ScoreSubmissionModal` (it passes `dismissible={!isSubmitting}`, because it
+resets its form on close).
+
 Ensure your modal content:
 - Uses proper spacing (space-y-4 for vertical rhythm)
 - Has reasonable max-heights for scrollable lists
