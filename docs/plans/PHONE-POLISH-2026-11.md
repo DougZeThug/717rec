@@ -192,6 +192,11 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
   - [ ] `OpponentHistoryModal.tsx:108` never shows its loading view.
   - [ ] `OpponentHistoryModal.tsx:130,135,149`: emerald-600 and rose-600 text may be
         under 4.5:1 in dark. Not measured.
+- Found in Wave 4 QA, older than Wave 4 (axe on `/stats` with fake data):
+  - [ ] `color-contrast`, 7 times: the "Elite Performance" tier span
+        (`span[title="Elite Performance"]`).
+  - [ ] `label-content-name-mismatch`, 10 times: the standings team links
+        (`.group.min-h-11`); their spoken name does not start with the visible text.
 
 ### Wave 6: playoffs, history, weekly recap
 
