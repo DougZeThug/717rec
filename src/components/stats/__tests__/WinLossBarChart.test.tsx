@@ -127,4 +127,21 @@ describe('WinLossBarChart', () => {
       expect(screen.queryByText(/…/u)).not.toBeInTheDocument();
     });
   });
+
+  // The names were 10px on a phone and 11px on a desktop, and the scale 11px:
+  // all under the 12px floor for text a reader needs. A phone shows 5 teams, so
+  // at 320px the slanted 12px names still do not touch.
+  describe('text size', () => {
+    it.each([true, false])('draws the names and the scale at 12px (phone: %s)', (isMobile) => {
+      const { container } = render(<WinLossBarChart data={rows} isMobile={isMobile} />);
+
+      const names = container.querySelectorAll('text[transform="rotate(-24)"]');
+      const scale = container.querySelectorAll(
+        '.recharts-yAxis-tick-labels .recharts-cartesian-axis-tick-value'
+      );
+      expect(names).toHaveLength(2);
+      expect(scale.length).toBeGreaterThan(0);
+      for (const tick of [...names, ...scale]) expect(tick).toHaveAttribute('font-size', '12');
+    });
+  });
 });

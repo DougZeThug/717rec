@@ -59,4 +59,13 @@ describe('PastWinnersDisplay', () => {
 
     expect(screen.getByText('TBD')).toHaveClass('text-cyan-300/50');
   });
+
+  // The week label was 11px, under the 12px floor for text a reader needs.
+  it('draws the week label at 12px', () => {
+    renderDisplay(false);
+
+    const week = screen.getByText('Week 3');
+    expect(week).toHaveClass('text-xs');
+    expect(week).not.toHaveClass('text-2xs');
+  });
 });

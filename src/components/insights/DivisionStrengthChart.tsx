@@ -55,7 +55,7 @@ const DivisionBars: React.FC<{
   <ResponsiveContainer width="100%" height={240}>
     <BarChart data={divisions} layout="vertical" margin={{ left: 10, right: 20 }}>
       <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} horizontal={false} />
-      <XAxis type="number" domain={[0, 100]} tick={{ fill: colors.mutedTextColor, fontSize: 11 }} />
+      <XAxis type="number" domain={[0, 100]} tick={{ fill: colors.mutedTextColor, fontSize: 12 }} />
       <YAxis
         dataKey="division"
         type="category"

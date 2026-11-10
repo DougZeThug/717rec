@@ -52,7 +52,7 @@ const PastWinnersDisplay: React.FC<PastWinnersDisplayProps> = ({
           >
             <div
               className={cn(
-                'text-2xs font-bebas uppercase tracking-wide text-center mb-1',
+                'text-xs font-bebas uppercase tracking-wide text-center mb-1',
                 shouldApplyWinter ? 'text-cyan-200/70' : 'text-white/70'
               )}
             >

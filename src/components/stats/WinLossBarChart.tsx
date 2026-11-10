@@ -30,9 +30,8 @@ const CustomXAxisTick: React.FC<{
   y?: number;
   payload?: { value: unknown };
   isDark?: boolean;
-  isMobile?: boolean;
   maxLabelLength?: number;
-}> = ({ x, y, payload, isDark, isMobile, maxLabelLength = 10 }) => {
+}> = ({ x, y, payload, isDark, maxLabelLength = 10 }) => {
   if (!payload || typeof payload.value === 'undefined') return null;
   const label = typeof payload.value === 'string' ? payload.value : String(payload.value);
   const truncated = truncateLabel(label, maxLabelLength);
@@ -46,7 +45,9 @@ const CustomXAxisTick: React.FC<{
         dy={14}
         textAnchor="end"
         fill={isDark ? '#e5e7eb' : '#334155'}
-        fontSize={isMobile ? 10 : 11}
+        // 12px on every screen: at 10px (phone) and 11px it was under the floor for
+        // text a reader needs. The phone shows 5 teams, so the slanted names still clear.
+        fontSize={12}
         fontFamily="'Inter', sans-serif"
         transform="rotate(-24)"
         style={{
@@ -119,13 +120,7 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
             height={isMobile ? 30 : 34}
             tickLine={false}
             axisLine={{ stroke: chartGridColor }}
-            tick={
-              <CustomXAxisTick
-                isDark={isDark}
-                isMobile={isMobile}
-                maxLabelLength={maxLabelLength}
-              />
-            }
+            tick={<CustomXAxisTick isDark={isDark} maxLabelLength={maxLabelLength} />}
             padding={{ left: 6, right: 6 }}
           />
           <YAxis
@@ -134,7 +129,7 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
             stroke="#64748b"
             tick={{
               fill: isDark ? '#e5e7eb' : '#334155',
-              fontSize: 11,
+              fontSize: 12,
               fontFamily: "'Inter', sans-serif",
             }}
           />
