@@ -26,8 +26,10 @@ const BADGE_STYLES = [
   'bg-amber-700 text-amber-100',
 ];
 
+// Below 640px the title is one line above the cards, so the three cards get the
+// full width; from 640px it is a column on their left, as before.
 const LeaderboardTitle: React.FC<{ teamCount: number }> = ({ teamCount }) => (
-  <div className="flex flex-col shrink-0 pt-1">
+  <div className="flex flex-wrap items-baseline gap-x-1 shrink-0 sm:flex-col sm:items-stretch sm:pt-1">
     <span className="text-sm font-semibold text-foreground leading-tight">League</span>
     <span className="text-sm font-semibold text-foreground leading-tight">Leaderboard</span>
     <span className="text-xs text-muted-foreground mt-0.5">{teamCount} teams</span>
@@ -44,12 +46,14 @@ const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ r
   return (
     <Card className={cn('mb-3 border shadow-xs', isWinterTheme ? 'winter-card-surface' : '')}>
       <CardContent className="p-3">
-        <div className="flex items-start gap-3">
+        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3">
           {/* Left: Title */}
           <LeaderboardTitle teamCount={rankings.length} />
 
-          {/* Right: Top 3 cards */}
-          <div className="flex gap-2 flex-1 overflow-x-auto">
+          {/* Right: Top 3 cards. Below 640px the padding makes room for the rank
+              badges, which sit 6px above and 2px left of their card: the
+              scrolling strip cut them off. From 640px it is as before. */}
+          <div className="flex gap-2 flex-1 overflow-x-auto pt-1.5 pl-0.5 sm:pt-0 sm:pl-0">
             {top3.map((team, idx) => (
               <Link
                 key={team.teamId}
