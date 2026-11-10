@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -25,5 +25,21 @@ describe('PowerScoreInfoPopover', () => {
       'max-h-(--radix-popover-content-available-height)',
       'overflow-y-auto'
     );
+  });
+
+  // axe scrollable-region-focusable: the box scrolls but holds nothing focusable,
+  // so it must be in the Tab order itself for a keyboard to scroll it.
+  it('can take keyboard focus, and has it when it opens', async () => {
+    const user = userEvent.setup();
+    render(<PowerScoreInfoPopover />);
+
+    await user.click(screen.getByRole('button', { name: 'What is Power Score?' }));
+
+    const panel = (await screen.findByRole('heading', { name: 'How teams are rated' })).closest(
+      '[role="dialog"]'
+    );
+    expect(panel).toHaveAttribute('tabindex', '0');
+    expect(panel).toHaveClass('focus-visible:ring-2', 'focus-visible:ring-ring');
+    await waitFor(() => expect(panel).toHaveFocus());
   });
 });

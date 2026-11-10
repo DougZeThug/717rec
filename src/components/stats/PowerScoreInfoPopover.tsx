@@ -41,7 +41,10 @@ export const PowerScoreInfoPopover: React.FC = () => (
     <PopoverContent
       align="start"
       // Never taller than the screen has room for (it ran off a 320x640 phone); scrolls if it is.
-      className="max-h-(--radix-popover-content-available-height) w-80 max-w-[calc(100vw-2rem)] space-y-3 overflow-y-auto text-sm font-inter"
+      // tabIndex 0: nothing inside can take focus, so the box itself must, or a keyboard
+      // cannot scroll it (axe scrollable-region-focusable). Opening still focuses the box.
+      tabIndex={0}
+      className="max-h-(--radix-popover-content-available-height) w-80 max-w-[calc(100vw-2rem)] space-y-3 overflow-y-auto text-sm font-inter focus-visible:ring-2 focus-visible:ring-ring"
     >
       <h3 className="font-bebas text-base uppercase tracking-wide">How teams are rated</h3>
       <PowerScoreExplainer />
