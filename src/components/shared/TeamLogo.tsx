@@ -18,6 +18,8 @@ export interface TeamLogoProps {
   /**
    * Hide the logo from screen readers. Use it inside a link or row that already
    * shows the team name as text, so the name is read once, not twice.
+   * Do not combine with `clickable`: the logo would then be the link's only
+   * content, and a hidden link has no name.
    */
   decorative?: boolean;
 }
