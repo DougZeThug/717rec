@@ -42,39 +42,39 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "ac3f0505643b6b3e880dff004eee7df93790257c",
+      "sha": "d6ae02dc09006f7df247f8573c35e3fb14026857",
       "dirty": false,
-      "at": "2026-11-10T21:54:59.989Z",
-      "seconds": 7,
+      "at": "2026-11-10T22:18:43.421Z",
+      "seconds": 8,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261110-phone-polish-wave-7-acco/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "ac3f0505643b6b3e880dff004eee7df93790257c",
+      "sha": "d6ae02dc09006f7df247f8573c35e3fb14026857",
       "dirty": false,
-      "at": "2026-11-10T21:56:01.896Z",
-      "seconds": 57,
+      "at": "2026-11-10T22:19:43.882Z",
+      "seconds": 60,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261110-phone-polish-wave-7-acco/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "ac3f0505643b6b3e880dff004eee7df93790257c",
+      "sha": "d6ae02dc09006f7df247f8573c35e3fb14026857",
       "dirty": false,
-      "at": "2026-11-10T21:56:09.496Z",
-      "seconds": 3,
+      "at": "2026-11-10T22:19:46.332Z",
+      "seconds": 2,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261110-phone-polish-wave-7-acco/knip.log"
     },
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "ac3f0505643b6b3e880dff004eee7df93790257c",
+      "sha": "d6ae02dc09006f7df247f8573c35e3fb14026857",
       "dirty": false,
-      "at": "2026-11-10T21:56:14.252Z",
+      "at": "2026-11-10T22:19:46.447Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261110-phone-polish-wave-7-acco/integrity.log"
@@ -82,9 +82,9 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "ac3f0505643b6b3e880dff004eee7df93790257c",
+      "sha": "d6ae02dc09006f7df247f8573c35e3fb14026857",
       "dirty": false,
-      "at": "2026-11-10T21:56:20.716Z",
+      "at": "2026-11-10T22:19:49.490Z",
       "seconds": 3,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261110-phone-polish-wave-7-acco/build.log"
@@ -124,5 +124,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-10T22:15:40.001Z"
+  "updatedAt": "2026-11-10T22:19:49.490Z"
 }
