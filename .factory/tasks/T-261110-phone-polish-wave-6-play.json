@@ -1,0 +1,19 @@
+{
+  "id": "T-261110-phone-polish-wave-6-play",
+  "title": "Phone polish wave 6: playoffs, history, weekly recap",
+  "kind": "polish",
+  "status": "intake",
+  "request": "start wave 6",
+  "trivial": false,
+  "branch": "claude/intelligent-knuth-8pjz9p",
+  "baseSha": "4edd99c75eb708ba6844d5d7e895f8905a297861",
+  "createdAt": "2026-11-10T19:59:48.492Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-10T19:59:48.492Z"
+}
