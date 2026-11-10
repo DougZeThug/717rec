@@ -46,9 +46,9 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "6281481f60fb9f1aa6259a12b3cd8c7804e0f55b",
+      "sha": "e12aac4e4ab08507e8d3c666f719e633a8c7c439",
       "dirty": false,
-      "at": "2026-11-10T16:31:04.630Z",
+      "at": "2026-11-10T17:01:39.163Z",
       "seconds": 8,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261110-phone-polish-wave-4-home/typecheck.log"
@@ -125,5 +125,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-10T16:57:27.209Z"
+  "updatedAt": "2026-11-10T17:01:39.163Z"
 }
