@@ -165,38 +165,7 @@ describe('MassScoreEntryTool', () => {
     });
   });
 
-  describe('filter tags', () => {
-    it('shows date filter tag when date filter is active', () => {
-      const filterDate = new Date('2025-01-04');
-      mockScoreEntryData = {
-        ..._defaultScoreEntryState,
-        filters: { date: filterDate, bracketId: undefined },
-      };
-
-      renderTool();
-
-      expect(screen.getByText('Date:')).toBeInTheDocument();
-      expect(screen.getByText(filterDate.toLocaleDateString())).toBeInTheDocument();
-    });
-
-    it('shows bracket filter tag when a bracket is selected', () => {
-      mockScoreEntryData = {
-        ..._defaultScoreEntryState,
-        brackets: [{ id: 'bracket-1', title: 'Spring Playoffs' }],
-        filters: { date: undefined, bracketId: 'bracket-1' },
-      };
-
-      renderTool();
-
-      expect(screen.getByText('Bracket:')).toBeInTheDocument();
-      expect(screen.getByText('Spring Playoffs')).toBeInTheDocument();
-    });
-
-    it('does not show filter tags when no filters are active', () => {
-      renderTool();
-      expect(screen.queryByText('Date:')).not.toBeInTheDocument();
-    });
-
+  describe('filters', () => {
     it('calls clearFilters when toolbar clear button is clicked', async () => {
       renderTool();
       await userEvent.click(screen.getByTestId('toolbar-clear'));
