@@ -44,6 +44,9 @@ describe('StatBreakdown', () => {
     expect(screen.getByText('4')).toBeInTheDocument();
     expect(screen.getByText('66.7%')).toBeInTheDocument();
     expect(screen.getByText('3/12')).toBeInTheDocument();
+    // "Win Percentage" was cut off in its half-width tile at 320 px.
+    expect(screen.getByText('Win %')).toBeInTheDocument();
+    expect(screen.queryByText('Win Percentage')).not.toBeInTheDocument();
   });
 
   it('leaves the ranking tile out when the team has no rank', () => {
@@ -68,6 +71,7 @@ describe('StatBreakdown', () => {
     await user.click(screen.getByRole('tab', { name: 'Game' }));
 
     expect(screen.getByText('Game Record')).toBeInTheDocument();
+    expect(screen.getByText('Game Win %')).toBeInTheDocument();
     expect(screen.getByText('21')).toBeInTheDocument();
     expect(screen.getByText('10')).toBeInTheDocument();
     expect(screen.getByText('Close Match Losses')).toBeInTheDocument();

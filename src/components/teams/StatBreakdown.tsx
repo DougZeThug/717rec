@@ -175,7 +175,7 @@ const CoreStatsTab: React.FC<{ stats: StatBreakdownStats }> = ({ stats }) => {
 
         {/* Win Percentage */}
         <StatBlock
-          label="Win Percentage"
+          label="Win %"
           value={`${winPercentage}%`}
           gradient="bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/70 dark:via-none"
           icon={<Target size={18} className="text-purple-500" />}
@@ -213,7 +213,7 @@ const GameStatsTab: React.FC<{ stats: StatBreakdownStats }> = ({ stats }) => {
 
         {/* Game Win Percentage */}
         <StatBlock
-          label="Game Win Percentage"
+          label="Game Win %"
           value={`${gameWinPercentage}%`}
           gradient="bg-gradient-to-br from-white to-teal-50/30 dark:from-gray-800/90 dark:to-gray-900/70"
           icon={<Target size={18} className="text-teal-500" />}
