@@ -2,7 +2,7 @@
   "id": "T-261110-phone-polish-wave-7-acco",
   "title": "Phone polish wave 7: account, help and info pages",
   "kind": "polish",
-  "status": "building",
+  "status": "repairing",
   "request": "start wave 7",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -100,10 +100,29 @@
       "log": ".factory/evidence/T-261110-phone-polish-wave-7-acco/unit.log"
     }
   },
-  "reviews": [],
-  "issues": {},
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "ac3f0505643b6b3e880dff004eee7df93790257c",
+      "at": "2026-11-10T22:15:39.961Z",
+      "summary": "Approved badge (TeamMembershipSection.tsx:49) keeps text-primary-foreground; in the winter theme that is dark navy, about 3.6-3.8:1 on green-700 (was a pass on green-600). Fix: bg-green-700 text-white, test asserts text-white; reword docs to '3.1:1 in light and dark; white on green-700 now'."
+    }
+  ],
+  "issues": {
+    "review-winter-badge": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-10T22:15:40.000Z",
+          "summary": "Builder: Approved badge text-white + test; doc wording in UI-UX audit and my-team.md; log for Wave 8 the header bell label-content-name-mismatch and the README '115 suspected bug P1' count (115 rows, 113 P1)."
+        }
+      ],
+      "escalated": false
+    }
+  },
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-10T22:02:39.931Z"
+  "updatedAt": "2026-11-10T22:15:40.001Z"
 }
