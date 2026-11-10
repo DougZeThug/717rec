@@ -50,10 +50,10 @@ const H2HCardDetails: React.FC<H2HCardDetailsProps> = ({ record, badge }) => (
     <div className="flex items-center gap-2 mt-0.5">
       <div className="flex items-center gap-1 text-xs">
         <Trophy className="size-3 text-emerald-500" />
-        <span className="text-emerald-600 font-medium">{record.wins}W</span>
+        <span className="text-emerald-700 dark:text-emerald-400 font-medium">{record.wins}W</span>
         <span className="text-muted-foreground">-</span>
         <X className="size-3 text-rose-500" />
-        <span className="text-rose-600 font-medium">{record.losses}L</span>
+        <span className="text-rose-600 dark:text-rose-400 font-medium">{record.losses}L</span>
       </div>
       <Badge
         variant={record.win_pct >= 50 ? 'default' : 'secondary'}
