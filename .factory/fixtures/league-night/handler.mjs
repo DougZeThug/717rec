@@ -72,6 +72,9 @@ export function init(arg) {
 export const initArgFor = (person) => (person ? { key: AUTH_STORAGE_KEY, session: session(makeUser(person)) } : {});
 
 const TABLES = { ...LEAGUE_NIGHT, ...EXTRA_TABLES };
+// Tables whose only SELECT policy is granted TO authenticated: a signed-out read gets zero rows and no error, as in
+// the database (messages: migration 20251010171351).
+const MEMBERS_ONLY = new Set(['messages']);
 const tables = { ...TABLES, rowsOf(name) { const v = TABLES[name]; return typeof v === 'function' ? v() : (v ?? []); } };
 
 export const createMock = (person) => {
@@ -105,7 +108,9 @@ export const createMock = (person) => {
     if (!(table in TABLES)) return standingsMock(route);
     if (!['GET', 'HEAD'].includes(req.method())) return fakeWrite(route, req);
 
-    const { rows, total, offset } = read(tables, table, url.searchParams);
+    const { rows, total, offset } = !user && MEMBERS_ONLY.has(table)
+      ? { rows: [], total: 0, offset: 0 }
+      : read(tables, table, url.searchParams);
     const headers = (req.headers().prefer ?? '').includes('count=')
       ? { 'content-range': `${rows.length ? `${offset}-${offset + rows.length - 1}` : '*'}/${total}` } : {};
     if (req.method() === 'HEAD') { await route.fulfill({ status: 200, headers: { ...CORS, ...headers }, body: '' }); return true; }

@@ -8,7 +8,8 @@
 //                    LAST: 6 results, 2 matches still unscored, match comments (one long) and reactions.
 //   /matches/<id>/live  ID(1000) Bravo v Charlie: game 1 done 21-17, game 2 at 12-12 after 7 rounds (member scores it).
 //                    ID(1010) Alpha beat Bravo 2-1 last week, fully live-scored (match recap view).
-//   /message-board   8 posts (one long, one edited, one with 5 reactions), admin notification.
+//   /message-board   8 posts (one long, one edited, one with 5 reactions), admin notification. Signed out: no posts,
+//                    as in the database (messages SELECT is TO authenticated only).
 //   /playoffs        two brackets-manager brackets (?bracket=ID(2000) / ID(2001)): semis played, final ready.
 //   /recap/fake-season-2026/week-<N>  published edition for LAST's season week (N = 44 on 2026-11-09).
 //   / and /my-team   My Next Match, Team of the Week, recap edition card, Pending Scores (v_pending_matches).

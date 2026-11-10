@@ -3,7 +3,6 @@ import React, { useCallback, useState } from 'react';
 
 import PageHeader from '@/components/layout/PageHeader';
 import PageLayout from '@/components/layout/PageLayout';
-import LoginPrompt from '@/components/message-board/LoginPrompt';
 import MessageFeed from '@/components/message-board/MessageFeed';
 import MessageFilterBar from '@/components/message-board/MessageFilterBar';
 import MessageInput from '@/components/message-board/MessageInput';
@@ -16,13 +15,17 @@ import { cn } from '@/lib/utils';
 import { animations, gradients } from '@/styles/design-system';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
-/** The sticky title and filter bar at the top of the board. */
+/**
+ * The sticky title and filter bar at the top of the board. A signed-out visitor
+ * gets the title only: they cannot read posts, so search, filter and refresh
+ * would do nothing for them.
+ */
 const MessageBoardHeader: React.FC<
   Pick<
     React.ComponentProps<typeof MessageFilterBar>,
     'filterOptions' | 'onFilterChange' | 'onRefresh' | 'isRefreshing'
-  >
-> = ({ filterOptions, onFilterChange, onRefresh, isRefreshing }) => (
+  > & { showFilters: boolean }
+> = ({ filterOptions, onFilterChange, onRefresh, isRefreshing, showFilters }) => (
   <div
     className={cn(
       'sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-3 pt-1',
@@ -42,14 +45,16 @@ const MessageBoardHeader: React.FC<
     />
 
     {/* Filter Bar with Refresh button */}
-    <div className={cn(animations.fadeInSlideDown)}>
-      <MessageFilterBar
-        filterOptions={filterOptions}
-        onFilterChange={onFilterChange}
-        onRefresh={onRefresh}
-        isRefreshing={isRefreshing}
-      />
-    </div>
+    {showFilters && (
+      <div className={cn(animations.fadeInSlideDown)}>
+        <MessageFilterBar
+          filterOptions={filterOptions}
+          onFilterChange={onFilterChange}
+          onRefresh={onRefresh}
+          isRefreshing={isRefreshing}
+        />
+      </div>
+    )}
   </div>
 );
 
@@ -78,21 +83,16 @@ const MessageBoard: React.FC = () => {
   } = useMessageBoard();
   const { user, authInitialized } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // Wait for auth to settle, or a reload flashes the sign-in prompt at a
+  // signed-in reader (and hides their filter bar) before the session is restored.
+  const isSignedOut = authInitialized && !user;
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
       await refreshMessages();
-      // The read succeeds for a signed-out visitor and returns nothing, so
-      // "latest messages have been loaded" would be false. Say what is true.
-      toast(
-        user
-          ? { title: 'Messages refreshed', description: 'Latest messages have been loaded' }
-          : {
-              title: 'Sign in to read messages',
-              description: 'The message board is for league members.',
-            }
-      );
+      // Only members see the refresh button, so the read returned their posts.
+      toast({ title: 'Messages refreshed', description: 'Latest messages have been loaded' });
     } catch (err) {
       toast({
         title: 'Refresh failed',
@@ -102,7 +102,7 @@ const MessageBoard: React.FC = () => {
     } finally {
       setIsRefreshing(false);
     }
-  }, [refreshMessages, user]);
+  }, [refreshMessages]);
   return (
     <PageLayout>
       <SeoHead
@@ -111,12 +111,13 @@ const MessageBoard: React.FC = () => {
         path="/message-board"
       />
       <PageTransition animation="fadeInSlideDown">
-        <div className="container max-w-4xl mx-auto pb-20 md:pb-24 px-px">
+        <div className="container max-w-4xl mx-auto pb-20 md:pb-24 px-4">
           <MessageBoardHeader
             filterOptions={filterOptions}
             onFilterChange={setFilter}
             onRefresh={handleRefresh}
             isRefreshing={isRefreshing}
+            showFilters={!isSignedOut}
           />
 
           <MessageFeedRegion
@@ -129,14 +130,15 @@ const MessageBoard: React.FC = () => {
             onLoadMore={loadMoreMessages}
             loadingMore={loadingMore}
             loadMoreError={loadMoreError}
-            // Wait for auth to settle, or a reload flashes the sign-in
-            // prompt at a signed-in reader before the session is restored.
-            isSignedOut={authInitialized && !user}
+            isSignedOut={isSignedOut}
           />
 
-          <div className={cn(animations.fadeIn, 'animation-delay-300')}>
-            {user ? <MessageInput onSend={postMessage} /> : <LoginPrompt />}
-          </div>
+          {/* Signed-out visitors get one sign-in prompt: the feed card above. */}
+          {user && (
+            <div className={cn(animations.fadeIn, 'animation-delay-300')}>
+              <MessageInput onSend={postMessage} />
+            </div>
+          )}
         </div>
       </PageTransition>
     </PageLayout>
