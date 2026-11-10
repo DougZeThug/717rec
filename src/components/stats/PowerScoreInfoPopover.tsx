@@ -40,7 +40,8 @@ export const PowerScoreInfoPopover: React.FC = () => (
     </PopoverTrigger>
     <PopoverContent
       align="start"
-      className="w-80 max-w-[calc(100vw-2rem)] space-y-3 text-sm font-inter"
+      // Never taller than the screen has room for (it ran off a 320x640 phone); scrolls if it is.
+      className="max-h-(--radix-popover-content-available-height) w-80 max-w-[calc(100vw-2rem)] space-y-3 overflow-y-auto text-sm font-inter"
     >
       <h3 className="font-bebas text-base uppercase tracking-wide">How teams are rated</h3>
       <PowerScoreExplainer />
