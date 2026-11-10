@@ -52,4 +52,21 @@ describe('ScoreButtonGroup', () => {
     const grid = screen.getAllByRole('button')[0].parentElement;
     expect(grid).toHaveClass('grid-cols-4', 'max-[342px]:grid-cols-2');
   });
+
+  // The team names over the buttons tell the admin which side each result favours. At 11px
+  // (text-2xs) they were too small to read; text-xs is 12px with the same 1rem line height.
+  it('shows the team names over the buttons at 12px', () => {
+    render(
+      <ScoreButtonGroup
+        value={null}
+        onChange={vi.fn()}
+        team1Name="Corn Stars"
+        team2Name="Bag Boys"
+      />
+    );
+
+    const names = screen.getByText(/Corn Stars/).parentElement;
+    expect(names).toHaveClass('text-xs');
+    expect(names).not.toHaveClass('text-2xs');
+  });
 });
