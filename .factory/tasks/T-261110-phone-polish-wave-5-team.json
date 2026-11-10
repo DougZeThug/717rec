@@ -2,7 +2,7 @@
   "id": "T-261110-phone-polish-wave-5-team",
   "title": "Phone polish wave 5: team pages and message board",
   "kind": "polish",
-  "status": "repairing",
+  "status": "ready",
   "request": "start wave 5",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -11,35 +11,43 @@
   "criteria": [
     {
       "text": "Message board posts wrap inside the box at 320 and 390 px (ScrollArea content wrapper forced to block locally in MessageFeed.tsx; the long URL and 42-letter word in mock post 1508 wrap); the inner scroll, its thumb and load-more still work; page margin 16 px (px-4); a long team name and username end in an ellipsis and never cover the time (min-w-0 on badge, name, username; time shrink-0), also in match comments.",
-      "done": false
+      "done": true,
+      "evidence": "Commits a768bf0, 9152f0f, d34eb3d. QA at 320/390/1280 member: scroll content = box width (278/348/862, display:block); post 1508 URL and long word wrap; inner scroll 0->400; margin 16 px; long names end in '...' and never cover the time; match comments on the 1010 card fit at 320. /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa5/mb.json"
     },
     {
       "text": "Doug: signed-out board visitors see one sign-in prompt (the feed card) and no search, refresh, filter or bottom bar, decided with authInitialized && !user; LoginPrompt removed if unused; the dead signed-out toast branch and its test removed; members unchanged; the mock gives signed-out visitors no posts, as the database does.",
-      "done": false
+      "done": true,
+      "evidence": "Commit f90867b. QA: signed out at 3 widths: exactly 1 'Sign in to read the board' card, no search/refresh/filter/composer, 0 posts; member reload: filter bar never disappears after showing (30 ms poll, 2.5 s); LoginPrompt and its test deleted (Doug-approved integrity waiver recorded)."
     },
     {
       "text": "Doug: a #match-<id> link opens the tab that holds the match (checked before the date rule, first pick only): unscored past match -> Upcoming with its card; tonight's scored match -> Completed; no or unknown id -> date rule. Hook tests (a)-(d); useScrollToLinkedMatch comment updated.",
-      "done": false
+      "done": true,
+      "evidence": "Commits d03e5b8, aa5140c. QA: ...1016 link -> Upcoming with card in view (320/390/1280); ...1010 -> Completed with card; no or unknown id -> date rule; later night picks use the date rule. Tonight's-scored case in useScheduleTabs.test.ts:73. Before: link opened Completed with no card (/tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa5/../w5 probe)."
     },
     {
       "text": "Colour and accessibility: power-score tier text reaches 4.5:1 in light (yellow-700, green-700, orange-700, amber-700; dark unchanged; tier floors unchanged; colorModules and RankTrendIndicator tests updated); H2HMobileCard win/loss text 4.5:1 in light and dark; standings team links' spoken name starts with the visible name (aria-label removed, logo aria-hidden) in the 5 places; schedule date group has valid aria-controls (hand-made attributes removed); finished match player table is a focusable named region. axe on /stats, /schedule and a finished match at 320 and 390: these rules clean.",
-      "done": false
+      "done": true,
+      "evidence": "Commits 7206359, 5a6648e, 92d8329, 0c4f47b, d3934a7. QA: axe color-contrast and label-content-name-mismatch clean on /stats at 320/390 light and dark; tier numbers measured on pixels >= 4.51:1 in light; aria-valid-attr-value clean on /schedule; finished match ...1010 axe clean, Tab reaches the 'Player stats' region (8 presses), arrows scroll it; H2H text light 4.53+, dark 6.95+. /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa5/axe.json"
     },
     {
       "text": "Team page and live scoring layout: Records by Division one column below 640 px (sm:grid-cols-3), whole at 320 with 3 records in the mock; 'Game Win %' label (and 'Win %' only if cut at 320); opponent history pop-up shows a loading view instead of nothing; live round preview stays one line with a long name (truncate name, shrink-0 '+N', test text unchanged), grids do not move.",
-      "done": false
+      "done": true,
+      "evidence": "Commits 547f4d2, 340bae7, 2891cdf, bee57bd. QA: Records by Division 1 column at 320/390, 3 at 1280, nothing cut; 'Win %'/'Game Win %' fit; opponent pop-up loading view at ~0.1 s, data at ~2.6 s (RPC delayed); live 1000 at 320: preview one line ('Fake Team Bravo With A Ver... +6', 16 px), grids keep their position after both taps. /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa5/team.json, team2.json"
     },
     {
       "text": "Phone carousel on /schedule remembers the shown night per tab: a refetch that adds or removes a night keeps it (nearest if gone); a swipe updates it; picking a night still moves it (own commit, tests).",
-      "done": false
+      "done": true,
+      "evidence": "Commit 270256e. QA: Completed carousel at '2 of 11' stays after refresh; a faked newer night -> '3 of 12', same night. Swipe gesture and removed-night cases covered by 3 new ScheduleContent tests (fail on the old code)."
     },
     {
       "text": "Docs in the same change: on-a-phone.md, read-the-board.md, post-and-reply.md, permissions.md, the team page, schedule, live scoring and standings docs, UI-UX audit and UX-AUDIT-2026-09 (MB-01), verification rows, the Wave 5 checklist in the plan file with [-] for the player stat line, team tap overlaps, send button and tooltip-only info (with why); follow-ups logged (SOS/win% colour helpers, Elite vs Below Average both brown in light).",
-      "done": false
+      "done": true,
+      "evidence": "Commit 9fed5b3: on-a-phone, read-the-board, post-and-reply, permissions, the-schedule-page, team-details, head-to-head, enter-a-round, finish-the-match, standings-and-rankings, power-score, both audits (MB-01 done), BOARD-42/43, SCHED-44/45, TEAM-51, POWER-30, six stale rows rewritten, README 1,982, plan Wave 5 with [-] and follow-ups. QA and reviewer checked against code."
     },
     {
       "text": "Before/after shots at 320, 390 and 1280 px of the team page, message board (signed out and member), /schedule link case, a finished match and /stats; no page scrolls sideways; no new console errors; required checks (typecheck, lint, unit, build, knip, integrity) pass on the final commit.",
-      "done": false
+      "done": true,
+      "evidence": "Before/after: .factory/evidence/T-261110-phone-polish-wave-5-team/before and /after at 390/1280, probes at 320 (w5, qa5): no sideways scroll, no console errors, desktop only intended changes. F check at 4edd99c: typecheck, lint, unit (398 s), build, knip PASS; integrity's only finding is the deleted LoginPrompt.test.tsx, waived by Doug. e2e a11y, smoke, navigation-scroll, offline: 39/39 (QA, backend blocked)."
     }
   ],
   "checks": {
@@ -56,19 +64,19 @@
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "9fed5b3f7d230c5914a3b72342a20feff9cbbbaa",
+      "sha": "4edd99c75eb708ba6844d5d7e895f8905a297861",
       "dirty": false,
-      "at": "2026-11-10T19:02:03.122Z",
-      "seconds": 71,
+      "at": "2026-11-10T19:50:23.234Z",
+      "seconds": 74,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "9fed5b3f7d230c5914a3b72342a20feff9cbbbaa",
+      "sha": "4edd99c75eb708ba6844d5d7e895f8905a297861",
       "dirty": false,
-      "at": "2026-11-10T19:02:08.297Z",
+      "at": "2026-11-10T19:50:26.020Z",
       "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/knip.log"
@@ -76,9 +84,9 @@
     "integrity": {
       "result": "fail",
       "exit": 1,
-      "sha": "9fed5b3f7d230c5914a3b72342a20feff9cbbbaa",
+      "sha": "4edd99c75eb708ba6844d5d7e895f8905a297861",
       "dirty": false,
-      "at": "2026-11-10T19:02:10.694Z",
+      "at": "2026-11-10T19:50:26.183Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/integrity.log"
@@ -86,25 +94,33 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "9fed5b3f7d230c5914a3b72342a20feff9cbbbaa",
+      "sha": "4edd99c75eb708ba6844d5d7e895f8905a297861",
       "dirty": false,
-      "at": "2026-11-10T19:02:22.452Z",
-      "seconds": 4,
+      "at": "2026-11-10T19:50:29.510Z",
+      "seconds": 3,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "9fed5b3f7d230c5914a3b72342a20feff9cbbbaa",
+      "sha": "4edd99c75eb708ba6844d5d7e895f8905a297861",
       "dirty": false,
-      "at": "2026-11-10T19:09:14.789Z",
-      "seconds": 408,
+      "at": "2026-11-10T19:57:07.695Z",
+      "seconds": 398,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/unit.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "4edd99c75eb708ba6844d5d7e895f8905a297861",
+      "at": "2026-11-10T19:57:29.114Z",
+      "summary": "Review of e7145a1..9fed5b3 APPROVE (board wrap selector compiled and scoped, signed-out logic and RLS TO authenticated, link rule first pick only, carousel day-key memory, tier floors unchanged, accessible names, docs incl. README 1,982 and ROLE-06 reset). Re-review of 9fed5b3..045d16f APPROVE: useScheduleTabs first-pick-only with linkUsed state, no effect loop, original disable line unchanged and still covering the first setState; direct-child selector; TeamLogo note."
+    }
+  ],
   "issues": {
     "integrity-suppression": {
       "attempts": 1,
@@ -132,5 +148,7 @@
       "at": "2026-11-10T19:48:55.027Z"
     }
   ],
-  "updatedAt": "2026-11-10T19:49:09.546Z"
+  "updatedAt": "2026-11-10T19:57:29.488Z",
+  "readySha": "4edd99c75eb708ba6844d5d7e895f8905a297861",
+  "readyAt": "2026-11-10T19:57:29.488Z"
 }
