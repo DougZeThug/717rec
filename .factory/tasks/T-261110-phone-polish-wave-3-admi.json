@@ -2,7 +2,7 @@
   "id": "T-261110-phone-polish-wave-3-admi",
   "title": "Phone polish wave 3: admin tools used at the venue",
   "kind": "polish",
-  "status": "building",
+  "status": "repairing",
   "request": "Start wave 3",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -62,12 +62,81 @@
       "seconds": 74,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261110-phone-polish-wave-3-admi/lint.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e5ba1f0e9336740e695acfc50712ea17cccf0564",
+      "dirty": false,
+      "at": "2026-11-10T14:05:30.822Z",
+      "seconds": 445,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-3-admi/unit.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e5ba1f0e9336740e695acfc50712ea17cccf0564",
+      "dirty": false,
+      "at": "2026-11-10T14:05:35.141Z",
+      "seconds": 4,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-3-admi/build.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e5ba1f0e9336740e695acfc50712ea17cccf0564",
+      "dirty": false,
+      "at": "2026-11-10T14:05:38.308Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-3-admi/knip.log"
+    },
+    "integrity": {
+      "result": "fail",
+      "exit": 1,
+      "sha": "e5ba1f0e9336740e695acfc50712ea17cccf0564",
+      "dirty": false,
+      "at": "2026-11-10T14:05:38.432Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-3-admi/integrity.log"
     }
   },
-  "reviews": [],
-  "issues": {},
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "e5ba1f0e9336740e695acfc50712ea17cccf0564",
+      "at": "2026-11-10T14:15:15.349Z",
+      "summary": "Code correct (group open fix, Edit round sheet with vaul dismissible, flex-wrap, wrapper padding, tags, hint, chart, labels, Developer all verified). Block: two docs still say five dialogs become bottom drawers: on-a-phone.md:350 and verification/cross-cutting.md:168 (PHONE-11); Edit round is the sixth."
+    }
+  ],
+  "issues": {
+    "integrity-assertions": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-10T14:15:15.385Z",
+          "summary": "QA: integrity FAIL, MassScoreEntryTool.test.tsx has 5 fewer assertions (921c703 removed the 3 filter-tag tests with the tags). Builder adds a real test of the change: with a date and a bracket set, the date button and the bracket picker still show both values and no Date:/Bracket: tag shows. No padding."
+        }
+      ],
+      "escalated": false
+    },
+    "review-five-dialogs": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-10T14:15:15.425Z",
+          "summary": "Reviewer: on-a-phone.md:350 and PHONE-11 (verification/cross-cutting.md:168) still say five dialogs; make them six with Edit round, PHONE-11 marked Changed 2026-11-10."
+        }
+      ],
+      "escalated": false
+    }
+  },
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-10T13:58:05.968Z"
+  "updatedAt": "2026-11-10T14:15:15.425Z"
 }
