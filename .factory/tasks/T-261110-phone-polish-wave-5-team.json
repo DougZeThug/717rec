@@ -114,11 +114,23 @@
           "summary": "QA: integrity flags a moved eslint-disable (react-hooks/set-state-in-effect) in useScheduleTabs.ts. Builder restructures to one handleTabChange call so the original disable line stays unchanged (no new suppression). Also reviewer suggestion: MessageFeed selector '_' -> '>' like NotificationList.tsx:32; TeamLogo decorative+clickable guard note."
         }
       ],
-      "escalated": false
+      "escalated": false,
+      "resolved": "Commit aa5140c: the link picks among the existing tab calls; the original eslint-disable line is unchanged (no new suppression); behaviour and tests unchanged. Reviewer suggestions done: d34eb3d (direct-child selector), 4edd99c (TeamLogo note)."
     }
   },
-  "interventions": [],
+  "interventions": [
+    {
+      "at": "2026-11-10T19:48:55.067Z",
+      "why": "Doug approved the integrity waiver for the deleted LoginPrompt.test.tsx (2026-11-10)."
+    }
+  ],
   "notes": [],
-  "waivers": [],
-  "updatedAt": "2026-11-10T19:37:32.097Z"
+  "waivers": [
+    {
+      "check": "integrity",
+      "reason": "Doug approved (2026-11-10, in chat): LoginPrompt.test.tsx removed with LoginPrompt.tsx, because Doug decided signed-out message board visitors see one sign-in prompt; replaced by 3 MessageBoard page tests (one card only; filter bar kept while auth starts; member view). The integrity scan's only remaining finding is this file (4 fewer assertions).",
+      "at": "2026-11-10T19:48:55.027Z"
+    }
+  ],
+  "updatedAt": "2026-11-10T19:48:55.105Z"
 }
