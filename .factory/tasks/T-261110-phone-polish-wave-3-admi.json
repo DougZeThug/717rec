@@ -1,0 +1,19 @@
+{
+  "id": "T-261110-phone-polish-wave-3-admi",
+  "title": "Phone polish wave 3: admin tools used at the venue",
+  "kind": "polish",
+  "status": "intake",
+  "request": "Start wave 3",
+  "trivial": false,
+  "branch": "claude/intelligent-knuth-8pjz9p",
+  "baseSha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
+  "createdAt": "2026-11-10T13:07:59.659Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-10T13:07:59.659Z"
+}
