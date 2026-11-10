@@ -57,6 +57,15 @@ describe('MatchComments', () => {
     expect(screen.getByText('Nice toss')).toBeInTheDocument();
   });
 
+  // It sits in a flex row beside the reactions. Without min-w-0 a long team
+  // name widened the row past the match card at 320 px.
+  it('may shrink inside the comments and reactions row', () => {
+    setup([comment]);
+    const { container } = render(<MatchComments matchId="m1" />);
+
+    expect(container.firstChild).toHaveClass('min-w-0');
+  });
+
   it('uses the plural label when there are no comments', () => {
     setup([]);
     render(<MatchComments matchId="m1" />);

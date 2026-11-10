@@ -24,7 +24,7 @@ const TeamNameTrigger: React.FC<
   Pick<MessageHeaderProps, 'username' | 'teamName' | 'powerScore'>
 > = ({ username, teamName, powerScore }) => (
   <TooltipTrigger asChild>
-    <div>
+    <div className="min-w-0">
       <TeamNameDisplay username={username} teamName={teamName} powerScore={powerScore} compact />
     </div>
   </TooltipTrigger>
@@ -49,7 +49,7 @@ const MessageTime: React.FC<
   Pick<MessageHeaderProps, 'timeString' | 'timeTitle' | 'timeDateTime'>
 > = ({ timeString, timeTitle, timeDateTime }) => (
   <time
-    className="text-xs text-muted-foreground flex items-center whitespace-nowrap"
+    className="text-xs text-muted-foreground flex items-center whitespace-nowrap shrink-0"
     dateTime={timeDateTime || undefined}
     title={timeTitle || undefined}
     aria-label={timeTitle || undefined}
@@ -71,7 +71,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
   return (
     <>
       <div className="flex items-center justify-between gap-1 mb-1">
-        <div className="flex items-center gap-2 max-w-full">
+        <div className="flex items-center gap-2 min-w-0">
           <TeamNameTooltip username={username} teamName={teamName} powerScore={powerScore} />
 
           <MessageTime timeString={timeString} timeTitle={timeTitle} timeDateTime={timeDateTime} />
