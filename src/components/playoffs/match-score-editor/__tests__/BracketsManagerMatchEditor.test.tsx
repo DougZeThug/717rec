@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockHandleSave = vi.fn();
 const mockHandleToggleByeStatus = vi.fn();
 const mockOnClose = vi.fn();
+const mockHandleOpenChange = vi.fn();
 
 type Opponent = { id: number; team_id: string; name: string; score: number; result: string | null };
 type MockMatchData = {
@@ -27,6 +28,7 @@ interface MockEditorState {
   isSaving: boolean;
   isTogglingStatus: boolean;
   byeEligible: null;
+  handleOpenChange: ReturnType<typeof vi.fn>;
   handleSave: ReturnType<typeof vi.fn>;
   handleToggleByeStatus: ReturnType<typeof vi.fn>;
 }
@@ -43,6 +45,7 @@ let mockEditorState: MockEditorState = {
   isSaving: false,
   isTogglingStatus: false,
   byeEligible: null,
+  handleOpenChange: mockHandleOpenChange,
   handleSave: mockHandleSave,
   handleToggleByeStatus: mockHandleToggleByeStatus,
 };
@@ -156,6 +159,7 @@ const defaultEditorState = {
   isSaving: false,
   isTogglingStatus: false,
   byeEligible: null,
+  handleOpenChange: mockHandleOpenChange,
   handleSave: mockHandleSave,
   handleToggleByeStatus: mockHandleToggleByeStatus,
 };
@@ -309,8 +313,11 @@ describe('BracketsManagerMatchEditor', () => {
     });
   });
 
-  describe('onClose', () => {
-    it('passes onClose through to ByeMatchEditor', () => {
+  // Cancel goes through the same guarded close as a tap outside or Escape
+  // (useMatchEditorState.handleOpenChange), never straight to onClose: that
+  // would throw typed scores away without asking.
+  describe('Cancel', () => {
+    it('asks through the guarded close on a BYE match', () => {
       mockEditorState = {
         ...defaultEditorState,
         matchData: makeMatchData({ opponent2: null }),
@@ -318,15 +325,17 @@ describe('BracketsManagerMatchEditor', () => {
       render(<BracketsManagerMatchEditor {...defaultProps} onClose={mockOnClose} />);
 
       screen.getByTestId('bye-close').click();
-      expect(mockOnClose).toHaveBeenCalled();
+      expect(mockHandleOpenChange).toHaveBeenCalledWith(false);
+      expect(mockOnClose).not.toHaveBeenCalled();
     });
 
-    it('passes onClose through to RegularMatchEditor', () => {
+    it('asks through the guarded close on a regular match', () => {
       mockEditorState = { ...defaultEditorState, matchData: makeMatchData() };
       render(<BracketsManagerMatchEditor {...defaultProps} onClose={mockOnClose} />);
 
       screen.getByTestId('regular-close').click();
-      expect(mockOnClose).toHaveBeenCalled();
+      expect(mockHandleOpenChange).toHaveBeenCalledWith(false);
+      expect(mockOnClose).not.toHaveBeenCalled();
     });
   });
 });
