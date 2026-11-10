@@ -272,8 +272,10 @@ the selected night when it has upcoming matches, otherwise on today's group or
 the next future one. Completed starts on the selected night when it has results,
 otherwise on the newest night. The night is chosen while the page is drawn, not
 just after, so the cards of a linked match are already there when the page
-scrolls to them. It moves again only when the selected night or the tab changes:
-a refetch does not pull the reader back off a night they swiped to. Every date the
+scrolls to them. It moves again only when a night is picked or the tab changes:
+a refetch does not pull the reader back off a night they swiped to. Pressing the
+night that is already picked counts as picking it, so after a swipe it brings the
+carousel back to that night. Every date the
 carousel moves to opens with its first time group showing, so pressing Next never
 lands on a bare date heading. The tab bar sticks to the top of the screen as the
 list scrolls under it.
