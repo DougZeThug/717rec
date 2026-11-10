@@ -166,6 +166,16 @@ describe('RankingsMobileView', () => {
     }
   });
 
+  // jsdom does no layout, so this pins the class. At 320px the view toggle and the
+  // Compact/Detailed toggle did not fit on one row and "Detailed" was cut off.
+  it('lets the Compact/Detailed toggle wrap under the view toggle on a narrow phone', () => {
+    render(<RankingsMobileView {...defaultProps} view="all" onViewChange={vi.fn()} />);
+
+    const row = screen.getByTestId('view-toggle').parentElement;
+    expect(row).toContainElement(screen.getByRole('radio', { name: 'Detailed' }));
+    expect(row).toHaveClass('flex', 'flex-wrap', 'justify-between', 'gap-2');
+  });
+
   it('restores the detailed view preference from localStorage', () => {
     localStorage.setItem('rankingsDetailedView', 'true');
     render(<RankingsMobileView {...defaultProps} />);
