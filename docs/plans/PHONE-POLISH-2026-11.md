@@ -119,10 +119,30 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 
 ### Wave 3: admin tools used at the venue
 
-- [ ] Live Corrections pop-ups become bottom sheets (Edit round, Change game winner).
-- [ ] Fixed widths: timeslot date button, Live Corrections filters.
-- [ ] Score filter hint is in a tooltip only.
-- [ ] Space above the work on a phone (title, Sections bar, Quick Access).
+- [ ] Scores: the night's group opened collapsed on first load (a bug: the first
+      night is meant to be open). It and its first time group now open with no tap.
+- [ ] Live Corrections: the "Change winner" button was squeezed and its words ran
+      over the game title. The button now drops under the title when there is no room.
+- [ ] Live Corrections: Edit round becomes a bottom sheet on a phone. A swipe does
+      not close it while a change is typed; Cancel still asks first.
+- [-] Change game winner stays a centred pop-up: one picker, not a long form, and it
+      fits at 320 px.
+- [ ] Space above the work: the admin sections that had a second side margin line up
+      with the Sections bar, with less space above the title. The repeated filter
+      tags on Scores ("Date: …", "Bracket: …") are gone. The page title, the Sections
+      bar and Quick Access stay.
+- [ ] Score filter hint: the visible line stays; the tooltip nobody could open on a
+      phone is gone.
+- [ ] League Night Status: the chart's side labels were cut to one digit; now whole,
+      at 12 px. The "Developer" button is 44 px. (The chart line does draw; an early
+      screenshot caught its start-up animation.)
+- [ ] Scores: the team names over the score buttons are 12 px (were 11).
+- [-] Timeslots date button (`w-[240px]`): fits at 320 px. Left alone.
+- [-] Live Corrections filters (`min-w-[200px]`): they stack full width. Left alone.
+- [-] Hide the "Admin Dashboard" title on a phone: dropped. It is the only sign of
+      admin mode and tests look for it.
+- [-] Timeslots table at 320 px: the delete button sits past the right edge of the
+      table's own sideways scroll. Moved to Wave 8 (it needs three changes).
 
 ### Wave 4: home, standings, insights, compare
 
@@ -169,6 +189,10 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 
 - [ ] Fixed-width selects and date buttons.
 - [ ] Blind draw sign-ups table clips instead of scrolling.
+- [ ] Carried from Wave 3: the Timeslots table (`TimeslotList.tsx`) needs about 300 px
+      but has 204 px at 320 px, so the delete button is reached only by a sideways
+      swipe inside the table. Dropping `w-[100px]` alone does not fix it; the cell
+      padding and the box padding also count.
 - [ ] Team Management tabs wrap unevenly.
 - [ ] Edit team, create division and request pop-ups become bottom sheets.
 - [ ] Auto Schedule switches: a tap in the gap hits the lower one.
