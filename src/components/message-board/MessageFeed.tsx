@@ -125,7 +125,7 @@ const MessageFeed: React.FC<MessageFeedProps> = React.memo(
             className={cn(
               'h-[calc(100dvh-250px)]',
               'lg:h-[calc(100dvh-280px)]',
-              '[&_[data-radix-scroll-area-viewport]>div]:block!'
+              '[&>[data-radix-scroll-area-viewport]>div]:block!'
             )}
           >
             <div className="space-y-2 p-3">

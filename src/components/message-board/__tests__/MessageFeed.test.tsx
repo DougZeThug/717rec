@@ -135,7 +135,7 @@ describe('MessageFeed scroll box width', () => {
 
     const viewport = container.querySelector('[data-radix-scroll-area-viewport]');
     expect(viewport).not.toBeNull();
-    expect(viewport?.parentElement).toHaveClass('[&_[data-radix-scroll-area-viewport]>div]:block!');
+    expect(viewport?.parentElement).toHaveClass('[&>[data-radix-scroll-area-viewport]>div]:block!');
     // The table display that the class overrides is still what Radix renders.
     expect((viewport?.firstElementChild as HTMLElement).style.display).toBe('table');
   });
