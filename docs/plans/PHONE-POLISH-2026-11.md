@@ -229,11 +229,39 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 
 ### Wave 6: playoffs, history, weekly recap
 
-- [ ] Recap tables do not scroll sideways; recap "Home" link height.
-- [ ] Bracket admin pop-ups become bottom sheets.
-- [ ] Division tabs squeeze long names.
-- [ ] Seeding and rearrange drag by touch (fix only if it fails).
-- [ ] PO-04 (raw bracket ID as heading), PO-05 (slow spinner).
+- [x] Update Bracket Seeding was 522 px wide at 320 and 390 px: `DialogContent` is a
+      grid, and its auto track grew to the truncated team names. `grid-cols-1` on
+      this pop-up only. Create Bracket scrolled sideways at 320 px too: the same fix,
+      the team cards' 240 px floor starts at `sm`, and Cancel/Create wrap. Both stay
+      centred (Doug, 2026-11-10).
+- [x] Doug: the playoff score pop-up stays centred and asks before a tap outside,
+      Escape or Cancel throws a typed score away (`useUnsavedChangesGuard`, as in
+      Edit round). Save never asks. Closing clears the typed score, so the same
+      match reopens with the stored scores. Scoring and the tie block unchanged.
+- [x] Delete Bracket logged a `<p>` inside `<p>` console error: the description is
+      one `div` (`asChild`).
+- [x] Recap: W–L stays on one line; the team column keeps 112 px and the power
+      rankings table scrolls sideways in a focusable named region at 320 px (the
+      page does not); at 390 and 1280 px every table fits. The "Home" link is 24 px.
+- [x] History: the page title lines up with the cards (it sat 16 px nearer the edge).
+- [x] PO-04: the raw bracket id no longer flashes as a heading. It is hidden as soon
+      as the bracket draws, not one second later. The fake bracket now carries the
+      id as its stage name, as real brackets do.
+- [x] Division tabs: a long division name spilled out of its half of the strip at
+      320 px (shown with a scratch route; the fake data has none). The labels wrap.
+- [-] Edit Bracket, Move team and Edit teams stay centred: each is a one or
+      two-field picker that fits at 320 px.
+- [-] Touch drag for seeding and rearrange: dnd-kit's pointer sensor handles touch
+      and the drag handles are `touch-none`. Read from the code; not probed with a
+      touch drag (the fake bracket is past seeding, so its list is locked).
+- [-] PO-05 (slow spinner): not measurable with fake data, which loads at once.
+- Later (logged in Wave 6):
+  - [ ] Create Bracket's manual seeding list at 320 px: the team names shrink to
+        nothing, and "Reset to Auto" sits outside its blue box (card padding inside
+        pop-up padding). No sideways scroll.
+  - [ ] `ByeMatchEditor` colours have no dark variants.
+  - [ ] The league-night mocks do not answer Create Bracket's seed check (a POST),
+        so the probe logs "Failed to validate seeds". A mock gap, not an app error.
 
 ### Wave 7: account, help and info pages
 

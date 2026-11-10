@@ -166,6 +166,12 @@ On failure a red panel inside the dialog names the reason, a red toast repeats
 it, and the half-made bracket row is deleted again. If that cleanup also fails
 the row survives with no matches and the admin is told creation failed.
 
+Create Bracket and Update Seeding are centred pop-ups on every screen size, and
+both fit a 320-pixel phone (since 2026-11-10). Create Bracket stays centred on a
+phone on purpose (Doug, 2026-11-10): a bottom drawer closes with a swipe, and a
+swipe would fight its drag-to-seed list. On a 320-pixel phone its Cancel and
+"Create Bracket (*N* teams)" buttons sit on two lines.
+
 **Deleting** asks first, and says exactly what it means:
 
 > Are you sure you want to delete the bracket **name**? This action cannot be
@@ -290,7 +296,10 @@ dialog and as a toast. Every other control reports only by toast.
 
 **Unsaved changes.** The Blind Draw signup message is guarded: an edit that has
 not been saved asks before another admin section is opened, and raises the
-browser's warning on leaving the site. Nothing else here is. The create form, the
+browser's warning on leaving the site. The playoff score editor is guarded too
+(since 2026-11-10): once a typed score differs from the stored one, a tap
+outside it, Escape or Cancel asks first, and Save never asks. See
+[`read-a-bracket.md`](../playoffs/read-a-bracket.md). Nothing else here is. The create form, the
 seeding order, and an unsaved Challonge row are all lost on close.
 
 **Optimistic updates and rollback.** Creating, seeding and deleting a bracket all
@@ -324,10 +333,17 @@ The tab, the blind draw, and the Challonge settings are not in the address.
 
 **On a phone.** Every bracket admin control is reachable, behind the **⋯**
 menu in the bracket header. Blind draw and the Challonge settings work at every
-width.
+width. The Update Seeding, Create Bracket, Edit Bracket and Delete pop-ups fit a
+320-pixel phone without sideways scrolling (measured 2026-11-10 with fake data).
+On the Teams tab the division tabs sit two to a row, and a long division name
+wraps inside its tab. In Create Bracket's manual seeding list at 320 pixels the
+team names shrink to nothing and "Reset to Auto" sits outside its box; this is
+logged for a later wave.
 
 **Accessibility.** The seeding list is keyboard-reorderable. The delete
-confirmations are proper alert dialogs. The create dialog's team picker is a
+confirmations are proper alert dialogs. The Delete Bracket text is read as the
+pop-up's description. Until 2026-11-10 it put two paragraphs inside a third,
+which is invalid HTML and logged a console error. The create dialog's team picker is a
 long scroll of checkboxes with a progress bar that is not announced.
 
 **Side effects the user can notice.** Creating a bracket makes it public

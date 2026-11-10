@@ -250,6 +250,23 @@ step. Its six documents start at
     link to one match (`#match-<id>`) opens the tab that holds that match. See
     [the schedule page](../schedule/the-schedule-page.md).
   Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
+- **Playoffs, history and the weekly recap fit a 320-pixel phone**
+  (changed 2026-11-10).
+  - Playoffs: the Update Bracket Seeding and Create Bracket pop-ups fit the
+    screen. Before, Update Bracket Seeding was 522 pixels wide on a 320 or
+    390-pixel phone, and Create Bracket scrolled sideways at 320. On the admin
+    Teams tab, a long division name wraps inside its tab.
+  - Playoffs: the raw bracket id no longer shows as a heading over a bracket
+    for its first second.
+  - History: the "Season History" title lines up with the cards below it. It
+    was 16 pixels nearer the screen edge.
+  - Weekly recap: a win-loss record ("9–1") stays on one line. The team column
+    keeps at least 112 pixels, so names and notes wrap on whole words. On a
+    320-pixel phone the power rankings table is too wide, and it scrolls
+    sideways inside its card. The page itself does not scroll sideways. At 390
+    and 1280 pixels each table fits and does not scroll. The "Home" link at the
+    top is 24 pixels tall.
+  Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
 - **A centred dialog keeps a 16-pixel gap on each side** on a phone, has round
   corners, is never taller than the screen minus 32 pixels, and scrolls inside
   when its content is taller. Before, a dialog touched both screen edges. The
@@ -264,9 +281,12 @@ step. Its six documents start at
   create division, approve request, edit team, Live Corrections edit round,
   change winner and delete round, playoff score editor, edit bracket, update
   seeding, command palette): every box at 1280 pixels kept its size. (Edit round
-  became a bottom drawer on a phone after this run.) One dialog
-  still scrolls sideways inside itself on a phone, as it did before: Update
-  Bracket Seeding. It is tracked separately.
+  became a bottom drawer on a phone after this run.) Update Bracket Seeding
+  scrolled sideways inside itself on a phone. Since 2026-11-10 it fits, and so
+  does Create Bracket. Two long pop-ups stay centred on a phone on purpose
+  (Doug, 2026-11-10). The playoff score pop-up has only two score boxes, and a
+  swipe on a bottom drawer would fight the Create Bracket drag-to-seed list. See
+  [`MODAL_PATTERNS.md`](../../../src/docs/MODAL_PATTERNS.md).
 - **Text fields are 16 pixels on a phone**, so iPhone Safari does not zoom the
   page in when one gets focus (it zooms on anything smaller). That covers the
   team search box in pickers and multi-selects, the match comment box, the
@@ -314,7 +334,7 @@ step. Its six documents start at
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | A phone keyboard has no Escape, so on a phone nothing can be cancelled by key; only by tapping a Cancel or Close control. **The hamburger menu has no close-by-tapping-away** — it closes on a route change or by pressing the button again. It does close on Escape, which reaches it from an attached keyboard but not from a touch keyboard. | Same. A dialog's Cancel button works; there is no key that reaches it. |
-| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top; switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). Back puts `/teams`, `/stats`, `/history` and `/insights` back where they were (except when a page's data arrives late: the restore stops watching after one quiet second, three at most; see [navigation](../foundations/navigation.md#open-questions-and-verification)), and every other page wherever the browser puts it. Measured 2026-11-06 for `/teams` at 390 pixels wide in headless Chromium with fake data: within 1 pixel in every run. The fix is on this branch and not yet live. Safari, iOS, and a real phone's back swipe were not tried. | On the six admin screens that guard unsaved work (listed under Unsaved changes below) the app asks first. Everywhere else everything typed is lost with no warning, exactly as on a desktop. |
+| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top; switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). Back puts `/teams`, `/stats`, `/history` and `/insights` back where they were (except when a page's data arrives late: the restore stops watching after one quiet second, three at most; see [navigation](../foundations/navigation.md#open-questions-and-verification)), and every other page wherever the browser puts it. Measured 2026-11-06 for `/teams` at 390 pixels wide in headless Chromium with fake data: within 1 pixel in every run. The fix is on this branch and not yet live. Safari, iOS, and a real phone's back swipe were not tried. | On the seven admin screens that guard unsaved work (listed under Unsaved changes below) the app asks first. Everywhere else everything typed is lost with no warning, exactly as on a desktop. |
 | Browser back or forward | The gesture-based back swipe is the browser's, and the app cannot intercept it. It behaves as an in-app navigation. | The six guarded admin screens ask first, because a back swipe is a Back. Everywhere else the same as above. On a phone this is the most likely way work is lost, because the swipe is easy to trigger by accident. |
 | Reload, or the tab closed | Everything in memory is lost and every page refetches. A mobile browser closing a background tab to save memory looks identical to a reload when the user comes back. | A sent write still lands. An unsent one is gone. |
 | Network lost mid-request | Nothing to lose. Cached data stays on screen and looks current, which on a phone at a venue is the common case. | The request fails and is lost, except on live scoring. **Live scoring holds a round saved with no signal** and sends it by itself when the signal returns; the screen says so ("Offline — 1 round waiting to sync. Keep this page open."). Held rounds live in memory, so a reload or a closed tab loses them, and the browser asks before either. Nothing else is queued. |
@@ -338,9 +358,12 @@ is the user menu, which on a phone sits beside the hamburger. See
 **Validation and error display.** Field errors appear under fields as they do on
 a desktop. Long forms stack rather than sitting side by side.
 
-**Unsaved changes.** Six admin screens ask before their unsaved work is lost:
+**Unsaved changes.** Seven admin screens ask before their unsaved work is lost:
 Auto Schedule, mass score entry, the hero card form, the Live Corrections
-edit-round dialog, the blind draw sign-up message and the weekly content pack.
+edit-round dialog, the blind draw sign-up message, the weekly content pack and
+the playoff score pop-up (since 2026-11-10). The playoff score pop-up also asks
+before a tap outside it, Escape or Cancel throws a typed score away; Save never
+asks.
 They ask on a link, tab or menu tap, on Back or Forward (a back swipe included),
 and on a reload or a closed tab (the browser's own warning). Live scoring asks
 before a reload or a closed tab while rounds are held or still sending.
@@ -481,3 +504,9 @@ and the linked match that opens its tab came in the Wave 5 phone polish
 (2026-11-10). They were measured in headless Chromium with fake data at 320,
 390 and 1280 pixels, not on a real phone. The carousel refetch cases are pinned
 by tests only.
+The seeding and Create Bracket pop-ups that fit, the playoff score pop-up that
+asks before it loses a typed score, the hidden bracket id, the wrapping division
+tabs, the history title and the recap tables came in the Wave 6 phone polish
+(2026-11-10). They were measured in headless Chromium with fake data at 320, 390
+and 1280 pixels, not on a real phone. The long division names were a scratch
+route in the probe; the fake data has none.

@@ -202,6 +202,15 @@ linked or restored by URL.
 **On a phone.** Usable, but the preview is small. The graphics are made for a
 1080×1350 post, not for reading on the device that built them.
 
+The public recap page (`/recap/<season>/week-<n>`) fits a 320-pixel phone
+(since 2026-11-10). A win-loss record stays on one line, and the team column
+keeps at least 112 pixels, so names and notes wrap on whole words. Where a table
+is still too wide (the power rankings at 320 pixels), it scrolls sideways inside
+its card; the page does not. Each table box is a named region ("Power rankings
+table", "*Division* standings table") that the keyboard can reach. At 390 and
+1280 pixels every table fits and does not scroll. The "Home" link at the top is
+24 pixels tall.
+
 **Accessibility.** Every control has a label. The preview graphics are decorative
 copies of information that is also in the fields and on the public page.
 

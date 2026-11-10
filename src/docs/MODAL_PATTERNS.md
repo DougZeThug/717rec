@@ -231,10 +231,35 @@ The 16px gap leaves 240px for content on a 320px phone (`p-6` takes 48px). A row
 that cannot wrap (buttons side by side, an icon-date-place line) scrolls the
 pop-up sideways there. Give such a row `flex-wrap`, or stack it below `sm`.
 
+`DialogContent` is a CSS grid with no column set, so its one track grows to the
+widest child's min-content width. A `truncate` or `whitespace-nowrap` child
+(a long team name, a `min-w-[...]` card) then makes the whole pop-up scroll
+sideways. Pass `grid-cols-1` (a `minmax(0,1fr)` track) on that DialogContent.
+Examples: `SeedingUpdateDialog` and `BracketCreationDialog`.
+
 A text field inside a pop-up must be at least 16px on a phone
 (`text-base md:text-sm`), or iPhone Safari zooms in when it gets focus. `Input`,
 `Textarea` and `CommandInput` already do this; do not override them with
 `text-sm` or `text-xs`.
+
+### Named exceptions: long pop-ups that stay centred on a phone
+
+The house rule is that a long form becomes a bottom sheet (`ResponsiveDialog`) on
+a phone. Two pop-ups stay centred on purpose (Doug, 2026-11-10):
+
+- **The playoff score pop-up** (`BracketsManagerMatchEditor` with
+  `RegularMatchEditor` and `ByeMatchEditor`). It holds two score boxes, not a long
+  form. It guards typed scores instead: `useMatchEditorState` gives `isDirty`
+  (open, and the typed score differs from the stored one) and one
+  `handleOpenChange` that runs `useUnsavedChangesGuard` for a tap outside,
+  Escape and Cancel. Save closes without asking. Closing clears the draft,
+  because the editor stays mounted and would otherwise reopen the same match with
+  the thrown-away scores.
+- **Create Bracket** (`BracketCreationDialog`). A swipe on a bottom sheet would
+  fight the drag-to-seed list.
+
+Edit Bracket, Move team and Edit teams also stay centred: each is a one or
+two-field picker that fits at 320px.
 
 ### ResponsiveDialog on a phone
 
