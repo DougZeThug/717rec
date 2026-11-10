@@ -14,16 +14,18 @@ interface PercentileBadgeProps {
   statName?: string;
 }
 
+// Light-theme text is -700/-800, not -600, so each pill reads at 4.5:1 or more on
+// its own tint (emerald-700 measured 4.44:1, so emerald-800). Dark stays -400.
 const tierStyles: Record<string, string> = {
-  elite: 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30',
-  strong: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-  average: 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30',
+  elite: 'bg-yellow-500/20 text-yellow-800 dark:text-yellow-400 border-yellow-500/30',
+  strong: 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border-emerald-500/30',
+  average: 'bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30',
   below: 'bg-muted text-muted-foreground border-border',
-  weak: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30',
+  weak: 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30',
 };
 
 const sizeStyles: Record<string, string> = {
-  xs: 'text-2xs px-1.5 py-0.5',
+  xs: 'text-xs px-1.5 py-0.5',
   sm: 'text-xs px-2 py-0.5',
   md: 'text-sm px-2.5 py-1',
 };
@@ -50,9 +52,12 @@ const PercentileBadge: React.FC<PercentileBadgeProps> = ({
   // Display rank as ordinal (1st, 2nd, 3rd) instead of percentile
   const displayText = rank ? formatOrdinal(rank) : `${percentile}%`;
 
+  // "of 10 teams in Win %": the tooltip's words after the rank. A screen reader
+  // never opens the tooltip, so the pill also carries them as hidden text.
+  const outOfText = `of ${total} teams${statName ? ` in ${statName}` : ''}`;
   const tooltipText =
     rank && total
-      ? `Ranked ${formatOrdinal(rank)} of ${total} teams${statName ? ` in ${statName}` : ''}`
+      ? `Ranked ${formatOrdinal(rank)} ${outOfText}`
       : `${percentile}th percentile${statName ? ` in ${statName}` : ''}`;
 
   /** Pill showing the rank as an ordinal (or percentile), colored by performance tier. */
@@ -66,6 +71,8 @@ const PercentileBadge: React.FC<PercentileBadgeProps> = ({
       )}
     >
       {displayText}
+      {/* Nested, so the pill's own text stays "3rd" and nothing visible changes. */}
+      {rank && total ? <span className="sr-only"> {outOfText}</span> : null}
     </span>
   );
 
