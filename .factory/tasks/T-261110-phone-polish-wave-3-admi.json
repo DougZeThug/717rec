@@ -42,11 +42,32 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e5ba1f0e9336740e695acfc50712ea17cccf0564",
+      "dirty": false,
+      "at": "2026-11-10T13:56:36.651Z",
+      "seconds": 8,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-3-admi/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "e5ba1f0e9336740e695acfc50712ea17cccf0564",
+      "dirty": false,
+      "at": "2026-11-10T13:58:05.968Z",
+      "seconds": 74,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-3-admi/lint.log"
+    }
+  },
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-10T13:28:59.341Z"
+  "updatedAt": "2026-11-10T13:58:05.968Z"
 }
