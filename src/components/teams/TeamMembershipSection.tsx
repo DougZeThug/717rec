@@ -42,11 +42,12 @@ const MembershipIdentity: React.FC<{ membership: Membership }> = ({ membership }
     <div className="min-w-0">
       <div className="flex flex-wrap items-center gap-2">
         <p className="truncate font-medium">{membership.team?.name}</p>
-        {/* -700 fills with white text, 4.7:1 or better in both themes. White on green-600 was
-            3.1:1; Pending's "secondary" text is dark in light but white in dark, 2.8:1 on
-            yellow-600, so it sets white itself. */}
+        {/* -700 fills with white text set here, 4.7:1 or better in every theme. White on
+            green-600 was 3.1:1. The variants' own text colours change with the theme:
+            "default" is dark navy in winter (3.6:1 on green-700) and "secondary" was white
+            on yellow-600 in dark (2.8:1). */}
         {membership.is_approved ? (
-          <Badge variant="default" className="bg-green-700">
+          <Badge variant="default" className="bg-green-700 text-white">
             <CheckCircle className="size-3 mr-1" />
             Approved
           </Badge>

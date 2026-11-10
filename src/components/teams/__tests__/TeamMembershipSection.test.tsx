@@ -56,8 +56,9 @@ describe('TeamMembershipSection', () => {
   });
 
   // jsdom has no colours, so this pins the classes. White on green-600 was 3.1:1, and Pending's
-  // "secondary" text turned white in dark, 2.8:1 on yellow-600. -700 fills with white pass 4.5:1.
-  it('draws the status badges dark enough for white text in both themes', () => {
+  // "secondary" text turned white in dark, 2.8:1 on yellow-600. -700 fills with white pass 4.5:1
+  // in light, dark and winter.
+  it('draws the status badges dark enough for white text in every theme', () => {
     mockUseTeamMembership.mockReturnValue({ ...baseState, membership: membership() });
     const { unmount } = render(<TeamMembershipSection />);
     const pending = screen.getByText('Pending Approval');
@@ -70,7 +71,8 @@ describe('TeamMembershipSection', () => {
       membership: membership({ is_approved: true, approved_at: '2026-08-02T12:00:00.000Z' }),
     });
     render(<TeamMembershipSection />);
-    expect(screen.getByText('Approved')).toHaveClass('bg-green-700');
+    // White set here: the default variant's text is dark navy in the winter theme.
+    expect(screen.getByText('Approved')).toHaveClass('bg-green-700', 'text-white');
     expect(screen.getByText('Approved')).not.toHaveClass('bg-green-600');
     expect(screen.getByText('You can edit team details')).toHaveClass(
       'text-green-700',
