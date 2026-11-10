@@ -1,0 +1,19 @@
+{
+  "id": "T-261110-phone-polish-wave-4-home",
+  "title": "Phone polish wave 4: home, standings, insights, compare",
+  "kind": "polish",
+  "status": "intake",
+  "request": "start wave 4",
+  "trivial": false,
+  "branch": "claude/intelligent-knuth-8pjz9p",
+  "baseSha": "65c4fc9a0ff8ae062fe8482d3e55cc7374eea844",
+  "createdAt": "2026-11-10T15:11:08.831Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-10T15:11:08.831Z"
+}

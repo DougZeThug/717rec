@@ -193,6 +193,9 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
       but has 204 px at 320 px, so the delete button is reached only by a sideways
       swipe inside the table. Dropping `w-[100px]` alone does not fix it; the cell
       padding and the box padding also count.
+- [ ] Carried from Wave 3 (found by QA, older than Wave 3): on Divisions the "New
+      Division" words run past their button at 320 and 390 px (text 101 px in an
+      87 px button at 320).
 - [ ] Team Management tabs wrap unevenly.
 - [ ] Edit team, create division and request pop-ups become bottom sheets.
 - [ ] Auto Schedule switches: a tap in the gap hits the lower one.
