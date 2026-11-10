@@ -189,6 +189,27 @@ describe('ProfileSetup', () => {
     expect(screen.getByText('Team Membership')).toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the class. The card sat 4px from a phone's edge (the page
+  // gives only px-1); px-4 makes it 20px like the other pages, so Leave Team is not cut.
+  it('keeps the card, and the loading card, 16px in from the page edge', () => {
+    vi.mocked(useAuth).mockReturnValue(authenticatedAuth() as never);
+    const { container, unmount } = renderPage();
+    expect(container.querySelector('.min-h-\\[calc\\(100dvh-200px\\)\\]')).toHaveClass('px-4');
+    unmount();
+
+    vi.mocked(useAuth).mockReturnValue({
+      user: null,
+      profile: null,
+      refreshProfile: vi.fn(),
+      isLoading: true,
+      authInitialized: true,
+    } as never);
+    const loading = renderPage();
+    expect(loading.container.querySelector('.min-h-\\[calc\\(100dvh-200px\\)\\]')).toHaveClass(
+      'px-4'
+    );
+  });
+
   // The user menu's Edit Profile link carries no destination. The page must not
   // read that as "they asked for the home page" and forward them there, or the
   // only way to change a username is gone for everybody who already has one.

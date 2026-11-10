@@ -48,4 +48,17 @@ describe('AuthContainer', () => {
     );
     expect(screen.getByText('Back to sign in')).toBeInTheDocument();
   });
+
+  // jsdom does no layout, so this pins the class. Without it the card sat 4px from a phone's
+  // edge (the page gives only px-1); px-4 makes it 20px like the other pages.
+  it('keeps the card 16px in from the page edge', () => {
+    render(
+      <AuthContainer>
+        <p>form</p>
+      </AuthContainer>
+    );
+
+    const card = screen.getByRole('heading', { level: 1 }).closest('.rounded-card');
+    expect(card?.parentElement).toHaveClass('px-4');
+  });
 });

@@ -80,7 +80,7 @@ const ProfileSetup = () => {
             screen-reader user with nothing to say where they are. */}
         <h1 className="sr-only">Set Up Your Profile</h1>
         <PageTransition>
-          <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
+          <div className="flex justify-center items-center min-h-[calc(100dvh-200px)] px-4">
             <ProfileLoadingState />
           </div>
         </PageTransition>
@@ -101,7 +101,8 @@ const ProfileSetup = () => {
         path="/setup-profile"
       />
       <PageTransition>
-        <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
+        {/* px-4: the card sat 4px from a phone's edge; 20px matches the other pages. */}
+        <div className="flex justify-center items-center min-h-[calc(100dvh-200px)] px-4">
           <ProfileSetupCard
             initialUsername={profile?.username || ''}
             initialFullName={profile?.full_name || ''}
