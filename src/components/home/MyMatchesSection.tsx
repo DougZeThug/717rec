@@ -38,7 +38,7 @@ const SectionHeader = ({
       <span
         className={cn(
           'text-xs font-semibold uppercase tracking-wider',
-          shouldApplyWinter ? 'text-cyan-300' : 'text-primary'
+          shouldApplyWinter ? 'text-cyan-300' : 'text-primary-text'
         )}
       >
         {headerText}
@@ -53,10 +53,10 @@ const ScheduleCtaLink = ({ shouldApplyWinter }: { shouldApplyWinter: boolean }) 
     <Link
       to="/schedule"
       className={cn(
-        'text-xs font-medium transition-colors inline-flex items-center gap-1',
+        'text-xs font-medium transition-colors inline-flex min-h-6 items-center gap-1',
         shouldApplyWinter
           ? 'text-cyan-400/70 hover:text-cyan-300'
-          : 'text-primary/70 hover:text-primary'
+          : 'text-primary-text hover:underline'
       )}
     >
       See full schedule
