@@ -2,18 +2,56 @@
   "id": "T-261110-phone-polish-wave-4-home",
   "title": "Phone polish wave 4: home, standings, insights, compare",
   "kind": "polish",
-  "status": "intake",
+  "status": "building",
   "request": "start wave 4",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
   "baseSha": "65c4fc9a0ff8ae062fe8482d3e55cc7374eea844",
   "createdAt": "2026-11-10T15:11:08.831Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Standings view toggle row (RankingsMobileView.tsx:142) wraps at 320 px so 'Detailed' is whole (scrollWidth <= clientWidth); still one row at 390 px.",
+      "done": false
+    },
+    {
+      "text": "Power Score help popover (PowerScoreInfoPopover.tsx) is capped to the available height and scrolls inside at 320x640 (same classes as NotificationBell.tsx:88); axe clean with it open.",
+      "done": false
+    },
+    {
+      "text": "Home hero no longer pads the notch twice (HeroSection.tsx: inline safe-area style removed, pt-4); no change in a normal browser tab (inset 0).",
+      "done": false
+    },
+    {
+      "text": "Names: leaderboard title sits above the 3 cards below 640 px so the cards are wider (LeagueLeaderboardCarousel.tsx; 'Leaderboard' text kept); Your next matches names w-full max-w-28 (MyMatchRow.tsx) with no overlap at 320 incl. a finished match; Division Matchups row wraps (DivisionMatchupsCard.tsx); compare header names line-clamp-2 with min-w-0 (TeamComparisonView.tsx:36-37).",
+      "done": false
+    },
+    {
+      "text": "Text: 11 px labels to 12 px where nothing moves (EventDetails, ChampionsHeroCard, PastWinnersDisplay, LeagueParityCard, DivisionStrengthChart, PercentileBadge; WinLossBarChart only if its labels do not overlap at 320 with 10 teams). AllTeamsCareerPowerScoreChart and PowerScoreChart stay; the doc names every label still under 12 px. Short links 'Read the full recap' and 'See full schedule' at least 24 px tall.",
+      "done": false
+    },
+    {
+      "text": "Contrast: plain text-primary used as text becomes text-primary-text (ComparisonStatRow, HeadToHeadSection, MyMatchesSection, CareerRankingsDesktopView (+ its test), OpponentHistoryModal, SwipeableDateGroups Previous/Next); percentile pills reach 4.5:1 in light on /compare and the team page for all five tiers (darker light colours, dark: colours kept); sr-only ' of N teams' text in a nested span inside the pill (no visible change).",
+      "done": false
+    },
+    {
+      "text": "Docs in the same change: on-a-phone.md (home label sentence true, exceptions named), the standings, home, insights and compare feature docs, UI-UX audit boxes, verification rows, the Wave 4 checklist in docs/plans/PHONE-POLISH-2026-11.md ([-] compare rows, Insights 110 px labels, opponent history pop-up; percentile done for screen readers only, with why).",
+      "done": false
+    },
+    {
+      "text": "Before/after shots at 320, 390 and 1280 px of /, /stats, /insights, /compare (signed out and member home); no page scrolls sideways; no new console errors; required checks (typecheck, lint, unit, build, knip, integrity) pass on the final commit.",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
   "interventions": [],
-  "notes": [],
+  "notes": [
+    {
+      "at": "2026-11-10T15:34:13.143Z",
+      "text": "Skeptic logs, not in Wave 4: OpponentHistoryModal.tsx:108 returns null until data arrives so the loading view at :176 never shows (behaviour change, later); OpponentHistoryModal.tsx:130,135,149 emerald-600/rose-600 text likely under 4.5:1 in dark (unmeasured); AllTeamsCareerPowerScoreChart.tsx:234 left margin 0 cuts the first rotated season label with long fake season names (check real names before a fix)."
+    }
+  ],
   "waivers": [],
-  "updatedAt": "2026-11-10T15:11:08.831Z"
+  "updatedAt": "2026-11-10T15:34:13.198Z"
 }
