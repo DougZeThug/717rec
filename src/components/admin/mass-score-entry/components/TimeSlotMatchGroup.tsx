@@ -41,6 +41,16 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   onDeleteMatch,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  // Same as DateMatchGroup: this slot can mount closed and only later become
+  // the first slot of the open-by-default night. When the default turns true,
+  // open the slot; never close it here.
+  const [prevDefaultOpen, setPrevDefaultOpen] = useState(defaultOpen);
+  if (defaultOpen !== prevDefaultOpen) {
+    setPrevDefaultOpen(defaultOpen);
+    if (defaultOpen) setIsOpen(true);
+  }
+
   const failedMatchIds = useMemo(() => new Set(failedMatches), [failedMatches]);
 
   // Debug log to track the matches in this group
