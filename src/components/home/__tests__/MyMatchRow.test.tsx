@@ -82,3 +82,24 @@ describe('MyMatchRow Score live button', () => {
     expect(screen.getByRole('link', { name: /score .* live/i })).toHaveClass('min-h-[44px]');
   });
 });
+
+describe('MyMatchRow team names', () => {
+  // jsdom does no layout, so this pins the class. Names were cut at 80px even when
+  // the row had room; they now take up to 112px and still end in "...".
+  it('lets each team name use up to 112px and cuts it with an ellipsis after that', () => {
+    renderRow(makeMatchInfo({ iscompleted: true, team1_game_wins: 2, team2_game_wins: 1 }), true);
+
+    for (const name of ['Three Amigos', 'Baggin Rights']) {
+      const label = screen.getByText(name);
+      expect(label).toHaveClass('truncate', 'w-full', 'max-w-28');
+      expect(label).not.toHaveClass('max-w-[80px]');
+    }
+    expect(screen.getByText('Win')).toBeInTheDocument();
+
+    // The three-column row may shrink below the two names, so on a 320px phone
+    // they truncate instead of pushing the arrow out of the card.
+    const teamsRow = screen.getByText('Three Amigos').parentElement?.parentElement;
+    expect(teamsRow).toContainElement(screen.getByText('Baggin Rights'));
+    expect(teamsRow).toHaveClass('flex-1', 'min-w-0');
+  });
+});

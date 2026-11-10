@@ -58,7 +58,7 @@ const TeamColumn = ({
         )}
       />
     </div>
-    <span className={cn('text-xs font-medium text-center truncate max-w-[80px]', nameClass)}>
+    <span className={cn('text-xs font-medium text-center truncate w-full max-w-28', nameClass)}>
       {team.name}
     </span>
   </div>
@@ -138,7 +138,9 @@ const MatchTeamsRow = ({
   didLose: boolean;
   styles: RowStyleFragments;
 }) => (
-  <div className="flex items-center justify-center gap-3 flex-1">
+  // min-w-0: lets the row shrink on a 320px phone so the names truncate instead
+  // of pushing the arrow out of the card.
+  <div className="flex items-center justify-center gap-3 flex-1 min-w-0">
     <TeamColumn
       team={myTeam}
       ringClass={styles.myLogoRing}
