@@ -23,15 +23,15 @@ const fmtDay = (iso: string): string => {
 
 const VisitorsLineChart: React.FC<{ rows: DailyTrafficRow[] }> = ({ rows }) => (
   <ResponsiveContainer width="100%" height="100%">
-    <LineChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+    <LineChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
       <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
       <XAxis
         dataKey="day"
         tickFormatter={fmtDay}
-        tick={{ fontSize: 10 }}
+        tick={{ fontSize: 12 }}
         interval="preserveStartEnd"
       />
-      <YAxis tick={{ fontSize: 10 }} allowDecimals={false} width={30} />
+      <YAxis tick={{ fontSize: 12 }} allowDecimals={false} width={30} />
       <Tooltip
         labelFormatter={(v) => fmtDay(String(v))}
         formatter={(value, name) => [
