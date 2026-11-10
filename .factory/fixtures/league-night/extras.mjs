@@ -24,7 +24,9 @@ BRACKETS.forEach((b, k) => {
     challonge_tournament_id: null, cn_bracket_id: null, uses_brackets_manager: true, created_at: `2026-11-0${k + 1}T12:00:00Z`,
     bracket_data: null, participants: null, migrated: false, migrated_at: null, reset_match_needed: false, wb_champion_id: null,
   });
-  bm.stage.push({ id: n + 1, tournament_id: b.id, name: b.title, type: 'single_elimination', number: 1,
+  // The stage is named with the bracket id, as BracketCreationService writes it, so the shots show whether that raw id
+  // ever appears as a heading over the bracket (UI-UX audit PO-04).
+  bm.stage.push({ id: n + 1, tournament_id: b.id, name: b.id, type: 'single_elimination', number: 1,
     settings: { size: 4, seedOrdering: ['inner_outer'], grandFinal: 'none', consolationFinal: false, matchesChildCount: 0 } });
   bm.group.push({ id: n + 1, stage_id: n + 1, number: 1, name: null });
   bm.round.push({ id: n + 1, stage_id: n + 1, group_id: n + 1, number: 1, name: null }, { id: n + 2, stage_id: n + 1, group_id: n + 1, number: 2, name: null });

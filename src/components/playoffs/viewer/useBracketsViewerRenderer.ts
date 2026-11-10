@@ -294,6 +294,10 @@ export const useBracketsViewerRenderer = ({
         // badges. Cosmetic only — a failure here must never break the render.
         const runDecorations = (el: HTMLElement) => {
           try {
+            // Straight after the draw, not only in the delayed pass: the stage
+            // is named with the bracket id, and waiting a second let that raw
+            // id flash as a heading over the bracket (UI-UX audit PO-04).
+            hideUuidNodes(el);
             // First, and outside the flow-hint work below: that returns early
             // for brackets with no groups or rounds, and their logos still need
             // taking out of the accessibility tree.
@@ -382,7 +386,6 @@ export const useBracketsViewerRenderer = ({
             errorLog('No matches rendered - brackets-viewer failed silently');
           }
 
-          hideUuidNodes(el);
           // render() is awaited now, so the immediate pass already had the DOM.
           // This one stays as belt and braces for anything the viewer settles
           // after its promise resolves.
