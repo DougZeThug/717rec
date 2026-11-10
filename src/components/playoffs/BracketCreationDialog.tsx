@@ -275,7 +275,11 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl lg:max-w-5xl xl:max-w-6xl max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto">
+      {/* grid-cols-1 (a minmax(0,1fr) track): the shared DialogContent is a grid,
+          and its auto track grew wider than a 320 px phone, so the pop-up
+          scrolled sideways. It stays a centred pop-up on purpose (Doug,
+          2026-11-10): a bottom-sheet swipe would fight the drag-to-seed list. */}
+      <DialogContent className="grid-cols-1 max-w-2xl lg:max-w-5xl xl:max-w-6xl max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Playoff Bracket</DialogTitle>
           <DialogDescription className="sr-only">

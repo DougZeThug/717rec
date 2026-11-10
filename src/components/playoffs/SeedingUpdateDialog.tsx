@@ -269,7 +269,10 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] supports-[height:80dvh]:max-h-[80dvh] overflow-y-auto">
+      {/* grid-cols-1 (a minmax(0,1fr) track): the shared DialogContent is a grid,
+          and its auto track grows to the full width of the truncated team names,
+          so the pop-up scrolled sideways on a phone. */}
+      <DialogContent className="grid-cols-1 max-w-2xl max-h-[80vh] supports-[height:80dvh]:max-h-[80dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Update Bracket Seeding</DialogTitle>
           <DialogDescription>

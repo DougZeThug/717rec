@@ -265,3 +265,14 @@ describe('SeedingUpdateDialog saving a new seeding', () => {
     expect(updateSeeding).not.toHaveBeenCalled();
   });
 });
+
+// Phone polish wave 6: the shared DialogContent is a CSS grid. Without an
+// explicit minmax(0,1fr) column its track grew to the full width of the
+// truncated team names, and the pop-up scrolled sideways at 320 and 390 px.
+describe('SeedingUpdateDialog on a phone', () => {
+  it('gives the pop-up a single shrinkable grid column', () => {
+    renderDialog(notStarted);
+
+    expect(screen.getByRole('dialog')).toHaveClass('grid-cols-1');
+  });
+});

@@ -338,6 +338,8 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
     const isPending = formStateManager.seedManagementState.state.pendingChanges.has(team.id);
     const isManual = formStateManager.seedManagementState.state.mode === 'manual';
 
+    // The 240px floor starts at sm: on a 320px phone the card column is only
+    // 192px, and the floor pushed the Create Bracket pop-up sideways.
     return (
       <Button
         key={team.id}
@@ -346,7 +348,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
         onClick={() => safeFormState.handleTeamToggle(team.id)}
         disabled={isDisabled}
         className={`
-          flex items-center gap-2 p-3 h-auto justify-start overflow-hidden min-w-[240px]
+          flex items-center gap-2 p-3 h-auto justify-start overflow-hidden sm:min-w-[240px]
           ${isSelected ? 'bg-primary text-primary-foreground' : ''}
           ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted'}
           ${hasConflict ? 'border-destructive' : ''}

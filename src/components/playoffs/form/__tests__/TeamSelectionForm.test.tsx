@@ -205,3 +205,23 @@ describe('TeamSelectionForm', () => {
     expect(seedsTab).toHaveAttribute('aria-selected', 'true');
   });
 });
+
+// Phone polish wave 6: on a 320px phone the Create Bracket card column is
+// 192px wide, so a 240px floor on every team card pushed the pop-up sideways.
+// The floor now starts at the sm breakpoint.
+describe('TeamSelectionForm on a phone', () => {
+  it('keeps the 240px team-card floor off small screens', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        teams={[createMockTeam()]}
+        formState={createMockFormState()}
+        maxTeams={16}
+        minTeams={2}
+      />
+    );
+
+    const card = screen.getByRole('button', { name: /Team Alpha/ });
+    expect(card).toHaveClass('sm:min-w-[240px]');
+    expect(card).not.toHaveClass('min-w-[240px]');
+  });
+});

@@ -120,3 +120,22 @@ describe('BracketForm', () => {
     expect(mockOnCancel).toHaveBeenCalledTimes(1);
   });
 });
+
+// Phone polish wave 6: Cancel and "Create Bracket (N teams)" do not fit on one
+// line at 320px. The row wraps instead of pushing the pop-up sideways.
+describe('BracketForm on a phone', () => {
+  it('lets the Cancel and Create buttons wrap', () => {
+    render(
+      <BracketForm
+        divisions={mockDivisions}
+        teams={mockTeams}
+        isSubmitting={false}
+        onSubmit={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+
+    const row = screen.getByRole('button', { name: /Create Bracket/ }).parentElement;
+    expect(row).toHaveClass('flex', 'flex-wrap');
+  });
+});
