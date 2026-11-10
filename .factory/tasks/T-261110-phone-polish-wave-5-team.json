@@ -2,7 +2,7 @@
   "id": "T-261110-phone-polish-wave-5-team",
   "title": "Phone polish wave 5: team pages and message board",
   "kind": "polish",
-  "status": "building",
+  "status": "repairing",
   "request": "start wave 5",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -92,12 +92,33 @@
       "seconds": 4,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "9fed5b3f7d230c5914a3b72342a20feff9cbbbaa",
+      "dirty": false,
+      "at": "2026-11-10T19:09:14.789Z",
+      "seconds": 408,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/unit.log"
     }
   },
   "reviews": [],
-  "issues": {},
+  "issues": {
+    "integrity-suppression": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-10T19:37:32.096Z",
+          "summary": "QA: integrity flags a moved eslint-disable (react-hooks/set-state-in-effect) in useScheduleTabs.ts. Builder restructures to one handleTabChange call so the original disable line stays unchanged (no new suppression). Also reviewer suggestion: MessageFeed selector '_' -> '>' like NotificationList.tsx:32; TeamLogo decorative+clickable guard note."
+        }
+      ],
+      "escalated": false
+    }
+  },
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-10T19:02:22.453Z"
+  "updatedAt": "2026-11-10T19:37:32.097Z"
 }
