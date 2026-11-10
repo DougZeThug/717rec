@@ -182,8 +182,8 @@ step. Its six documents start at
   margins, and a long name with no spaces breaks. A long email, name or team
   in the contact inbox wraps inside its card. The team logo in Update Logos shows
   whole (the box showed only the middle 80 of 144 pixels). The My Team edit row
-  drops its text under the logo when it would have less than 128 pixels, and the
-  long team ID breaks. On live scoring a long team name ends in "…" inside the
+  drops its text under the logo when it would have less than 160 pixels (128
+  until 2026-11-10), and the long team ID breaks. On live scoring a long team name ends in "…" inside the
   scoreboard and the round history, and each round's "+N" stays on screen; before
   2026-11-09 the names under the game totals ran past both screen edges and long
   rows ran past the list. These are measured in a real browser against fake data,
@@ -266,6 +266,21 @@ step. Its six documents start at
     sideways inside its card. The page itself does not scroll sideways. At 390
     and 1280 pixels each table fits and does not scroll. The "Home" link at the
     top is 24 pixels tall.
+  Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
+- **Account, help and info pages line up on a phone** (changed 2026-11-10).
+  - Sign in, forgot password, reset password, set up profile and Contact start
+    20 pixels from the screen edge, like My Team and Join. Before, the first four
+    sat 4 pixels from the edge and Contact 36. On a wide screen nothing moved;
+    Contact's card is still 608 pixels wide. Help and the app authorisation page
+    keep their 16 pixels (a shared page frame would add a new backdrop).
+  - "Back to login" on the "This link has expired" page has a 36-pixel tap area,
+    as on the forgot-password page (it was 20).
+  - My Team: on a phone the team name and ID sit under the logo with the full
+    card width, so a long name takes 2 lines, not 4. At 320 pixels the edit
+    form's Cancel drops under Save Changes; it ran past the row. The Team Image
+    URL field opens the web-address keyboard.
+  - Help: the Accessibility section has the same bordered box as the other
+    sections, and a section title that wraps starts at the left.
   Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
 - **A centred dialog keeps a 16-pixel gap on each side** on a phone, has round
   corners, is never taller than the screen minus 32 pixels, and scrolls inside
@@ -510,3 +525,8 @@ tabs, the history title and the recap tables came in the Wave 6 phone polish
 (2026-11-10). They were measured in headless Chromium with fake data at 320, 390
 and 1280 pixels, not on a real phone. The long division names were a scratch
 route in the probe; the fake data has none.
+The account, help and info page margins, the reset page's "Back to login", the My
+Team logo row and edit buttons and the Help Accessibility box came in the Wave 7
+phone polish (2026-11-10). They were measured in headless Chromium with fake data
+at 320, 390 and 1280 pixels, not on a real phone. The Pending Approval badge is
+not in the fake data; its colours were measured on a copy of the Approved badge.

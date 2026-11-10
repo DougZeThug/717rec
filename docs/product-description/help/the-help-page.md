@@ -170,8 +170,11 @@ a two-column list, which is the tightest thing on the page.
 
 **Accessibility.** The section bars are proper accordion controls: they report
 whether they are open, and arrow keys move between them. The Accessibility section
-itself is built differently from the other eight — no icon panel, no border —
-so it reads as a different kind of thing than the sections around it. The admin
+has the same bordered box, icon panel and text size as the other eight (since
+2026-11-10; before, it had no icon panel and no border, and a card inside). A
+section title that wraps on a phone starts at the left, like the one-line titles.
+The Contact page link in it is underlined and readable in the dark theme (axe
+flagged a link told apart by colour alone, 3.8:1 in dark). The admin
 dashboard card puts a button inside a link, which gives assistive technology two
 overlapping controls for one action.
 
@@ -237,8 +240,6 @@ inside them. A search result quoting the league's formula comes from here. See
 - Not confirmed by hand: what the machine-readable FAQ summary looks like in a
   search result, and whether the weights inside it are the live ones at the time
   the page was crawled.
-- Not confirmed by hand: whether the Accessibility section's differing appearance
-  is deliberate or an oversight.
 - Assumption: the help page is meant to be the first place a confused user looks.
   Nothing links to it from an error state, an empty state, or a failed action
   anywhere else in the app.

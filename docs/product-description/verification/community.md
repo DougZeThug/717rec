@@ -167,6 +167,7 @@ Not checkable by hand:
 | HELP-23 | P2 | admin, second browser | An admin changing the weights does not reach an open page; the reader keeps the old numbers until something causes a refetch ([Cancel and interrupt](../help/the-help-page.md#cancel-and-interrupt)). | Browser A on `/help` with the power score bullet open, browser B an admin. | 1. Change a weight in browser B.<br>2. Watch browser A untouched for six minutes.<br>3. Leave browser A's tab and return.<br>4. Put the weight back. | Nothing changes while watching. Returning to the tab can quietly refresh the weights, so the sentence can change between one look and the next. | — |
 | HELP-24 | P2 | admin | An expiring session makes the admin sections vanish when the app notices ([Cancel and interrupt](../help/the-help-page.md#cancel-and-interrupt)). | Admin on `/help` with an Admin Guide section open. | 1. Let the session expire, or sign out from a browser sharing it.<br>2. Watch the page and then reload. | The five extra sections and the dashboard card go. An already-open section can be pushed up or down the page as they do. | — |
 | HELP-25 | P2 | visitor | The page publishes its four FAQ answers in a form search engines read, with the league's live power score weights inside them ([Interactions with other systems](../help/the-help-page.md#interactions-with-other-systems)). | Any. | 1. View the page source and find the machine-readable FAQ block.<br>2. Read the weights inside it. | Four questions and answers, carrying the same weights the visible copy shows. | — |
+| HELP-26 | P3 | visitor | The Accessibility section has the same bordered box, icon panel and text size as the other sections, with no card inside, and its Contact page link is underlined ([Interactions with other systems](../help/the-help-page.md#interactions-with-other-systems)). **Changed 2026-11-10.** | Signed out, browser at 390 × 844 in the light theme, then the dark theme. | 1. Open `/help` and compare the Accessibility bar with the bars above it.<br>2. Open it and read the content.<br>3. Switch to the dark theme and read the Contact page link. | The bar has a border and an icon panel like the others; its two-line title starts at the left. Inside, the text is the same size as the other sections and there is no second box. The Contact page link is underlined and easy to read in both themes. | — |
 
 Not checkable by hand:
 
@@ -179,8 +180,9 @@ Not checkable by hand:
 - What the machine-readable FAQ summary looks like in a search result, and whether
   the weights inside it were live when the page was crawled. HELP-25 checks the
   markup; the search result is outside the app.
-- Whether the Accessibility section's differing appearance — no icon panel, no
-  border — is deliberate or an oversight. A design question for the league.
+- Resolved 2026-11-10: the Accessibility section's differing appearance (no icon
+  panel, no border) was an oversight. It now has the same box as the other
+  sections; HELP-26 checks it.
 - Whether the help page and the admin dashboard's Getting Started tab should be
   one document. Both exist and neither points at the other; merging them is a
   product decision.

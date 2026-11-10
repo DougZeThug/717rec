@@ -18,7 +18,7 @@ time.
 | [admin.md](admin.md) | `admin/*` |
 | [cross-cutting.md](cross-cutting.md) | `cross-cutting/*` |
 
-There are **1,986 items** across the nine files, **115** of them P1 rows marked
+There are **1,990 items** across the nine files, **115** of them P1 rows marked
 **(suspected bug)**. `admin.md` is the largest at 393 and carries a safety warning:
 the dev server writes to the league's real database, and 70 of its items are
 marked **(destructive)**. An item is a table row whose first cell is an ID, such

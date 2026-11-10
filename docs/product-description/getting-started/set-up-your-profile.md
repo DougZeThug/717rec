@@ -201,8 +201,10 @@ lands after saving, and it can skip the page entirely for a finished profile. Th
 pages that carry state in the address are listed in
 [`foundations/navigation.md`](../foundations/navigation.md#while-editing).
 
-**On a phone.** The card fills the width. Both fields are full width. The tick and
-warning sit inside the right edge of the first-name field.
+**On a phone.** The card fills the width, with a 20-pixel gap to each screen edge
+(since 2026-11-10; it was 4 pixels), and so does the loading card. Both fields are
+full width. The tick and warning sit inside the right edge of the first-name field.
+The team membership box and its Leave Team button fit a 320-pixel phone.
 
 **Accessibility.** Both fields have real labels and descriptions tied to them, and
 error messages are tied to the field. The tick and the warning triangle are hidden

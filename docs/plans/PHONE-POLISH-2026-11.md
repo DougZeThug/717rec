@@ -265,8 +265,32 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
 
 ### Wave 7: account, help and info pages
 
-- [ ] Page side margins differ (Contact about 36 px, others about 20 px).
-- [ ] Long forms and the leave-team confirmation at 320 px.
+- [x] Page side margins: sign in, forgot password, reset password and set up
+      profile sat 4 px from a phone's edge (`AuthContainer` and `ProfileSetup` now
+      `px-4`) and Contact 36 px (now `px-4 sm:px-8`). All 20 px on a phone; the
+      Contact card stays 608 px at 1280. The sign-in and sign-up links under the
+      login form look the same and stay on one line at 320 px.
+- [x] Set up profile at 320 px: the membership box and Leave Team fit.
+- [x] My Team: the logo row's text column is `basis-40`, so on a phone (320 and
+      390 px) the name and Team ID go under the logo and the name takes at most 2
+      lines (it was 4 at 390). 1280 px unchanged. The Team Image URL field is
+      `type="url"`. At 320 px Save Changes and Cancel needed 248 px of a 230 px
+      row: the row wraps.
+- [x] Reset password: "Back to login" on the expired-link page is 36 px tall (it
+      was 20), as on forgot password.
+- [x] Help: the Accessibility section uses `HelpAccordionItem` (border, icon
+      panel, small text) and lost its inner card. A wrapped section title now
+      starts at the left. axe: its Contact page link is underlined and
+      `text-primary-text` (`link-in-text-block`; 3.8:1 in dark).
+- [x] Contrast: Contact "Verified" emerald-700 in light (5.0:1); My Team
+      Approved badge green-700 (4.7:1) and "You can edit team details"
+      green-700 in light (4.7:1); Pending Approval badge `bg-yellow-700
+      text-white` (4.9:1 in both themes; it was 2.8:1 in dark).
+- [-] `PageLayout`-style margins on Help and OAuth consent: a design change (a new
+      backdrop). Help's 16 px matches the message board. Left alone.
+- [-] The My Team "Team ID" line: kept.
+- [-] axe `heading-order` on `/help`, `/my-team` and `/contact` (an `h1` then
+      `h3` card titles): older than Wave 7 and a best-practice rule. Left alone.
 
 ### Wave 8: admin setup and content, then close-out
 
@@ -293,6 +317,11 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
       both names, so the username shows as "fa…".
 - [ ] Logged in Wave 5 (older): the "bags in the hole?" prompt moves the second
       score grid down 92 px when the first score is tapped.
+- [ ] Logged in Wave 7: on a short page the footer floats mid-screen. The
+      `PageTransition` div around the routes does not grow to fill the page
+      (`src/App.tsx:139-141`).
+- [ ] Logged in Wave 7 (product review): the `/setup-profile` "First Name" field
+      holds the username. Ask whether the label or the field should change.
 - [ ] Doug's own-phone check of the P1 phone cases in
       `docs/product-description/verification/`.
 - [ ] Delete this file.
