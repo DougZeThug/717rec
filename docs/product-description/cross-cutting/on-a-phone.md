@@ -183,8 +183,8 @@ step. Its six documents start at
   in the contact inbox wraps inside its card. The team logo in Update Logos shows
   whole (the box showed only the middle 80 of 144 pixels). The My Team edit row
   drops its text under the logo when it would have less than 160 pixels (128
-  until 2026-11-10), and the long team ID breaks. On live scoring a long team name ends in "…" inside the
-  scoreboard and the round history, and each round's "+N" stays on screen; before
+  until 2026-11-10), and the long team ID breaks. On live scoring a long team
+  name ends in "…" inside the scoreboard and the round history, and each round's "+N" stays on screen; before
   2026-11-09 the names under the game totals ran past both screen edges and long
   rows ran past the list. These are measured in a real browser against fake data,
   not on a real phone.

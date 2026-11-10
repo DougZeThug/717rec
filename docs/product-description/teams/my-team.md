@@ -196,10 +196,11 @@ Cancel drops under Save Changes (since 2026-11-10; it ran 18 pixels past the
 row).
 
 **Accessibility.** Both fields in the edit form have real labels. The Approved
-and Pending Approval badges are a dark green and a dark amber with white text,
-and "You can edit team details" is a darker green in the light theme (since
-2026-11-10; they were 2.8:1 to 3.1:1 in one theme, now 4.7:1 or better in light
-and dark). The three
+and Pending Approval badges are white text on a dark green and a dark amber in
+every theme, and "You can edit team details" is a darker green in the light
+theme (since 2026-11-10). Before, the Approved badge was about 3.1:1 in light and
+dark, the Pending badge 2.8:1 in dark and the note 3.1:1 in light; now each is
+4.5:1 or better in light, dark and winter. The three
 membership states replace one another with no announcement, so a screen reader
 user is not told that a request was accepted or that the page changed shape. The
 Leave Team dialog traps focus correctly.

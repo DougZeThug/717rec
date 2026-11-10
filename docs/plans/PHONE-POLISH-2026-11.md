@@ -322,6 +322,12 @@ Status: `[ ]` to do, `[x]` done (with the PR), `[-]` checked and left alone (wit
       (`src/App.tsx:139-141`).
 - [ ] Logged in Wave 7 (product review): the `/setup-profile` "First Name" field
       holds the username. Ask whether the label or the field should change.
+- [ ] Found in Wave 7 QA (older): the header notification bell's name
+      "Notifications (1 unread)" fails axe `label-content-name-mismatch`
+      (`NotificationBell.tsx:72`).
+- [ ] Found in Wave 7 QA: the verification README says "115 … (suspected bug)"
+      P1 rows. 115 rows carry the text, but only 113 are P1 (NAV-10 and MSG-07
+      are P2; MSG-07 has broken bold). Fix the count and the rows at close-out.
 - [ ] Doug's own-phone check of the P1 phone cases in
       `docs/product-description/verification/`.
 - [ ] Delete this file.
