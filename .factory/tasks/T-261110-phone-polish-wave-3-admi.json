@@ -2,18 +2,51 @@
   "id": "T-261110-phone-polish-wave-3-admi",
   "title": "Phone polish wave 3: admin tools used at the venue",
   "kind": "polish",
-  "status": "intake",
+  "status": "building",
   "request": "Start wave 3",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
   "baseSha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
   "createdAt": "2026-11-10T13:07:59.659Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Scores first load: tonight's date group and its first time slot are open with no tap (DateMatchGroup and TimeSlotMatchGroup open when their default turns from false to true; never close). New test file with the real components: 5 nights then only the last night; and 3 or fewer nights with more than 5 matches tonight, then only tonight; a true-to-false default stays open.",
+      "done": false
+    },
+    {
+      "text": "Live Corrections game card: the 'Change winner' button keeps its words inside the button at 320 and 390 px (flex-wrap on the card header, the button drops under the title); desktop unchanged.",
+      "done": false
+    },
+    {
+      "text": "Edit round is a bottom sheet below 768 px (ResponsiveDialog) and a centred pop-up from 768 px. A swipe cannot throw away typed changes: dismissible is true when nothing is typed and false when typed or saving; Cancel still asks 'Close and lose them?'. Own test file for dismissible; dialogs.test.tsx unchanged and passing. Browser at 390 with touch: type, swipe (stays), Cancel (asks), Save, then the page still scrolls and takes taps.",
+      "done": false
+    },
+    {
+      "text": "Admin sections that use AdminSectionWrapper line up with the Sections bar on a phone (no second 16 px side gutter, smaller top space below 768 px; unchanged from 768 px). Shots at 320 and 390 of Scores and the 6 setup sections that use it (no sideways scroll).",
+      "done": false
+    },
+    {
+      "text": "Scores: the filter tag row ('Date: ...', 'Bracket: ...') that repeats the date button and bracket select is removed (the tags had no remove buttons); Clear All Filters stays and its test still passes. The filter hint line stays visible as plain text; its tooltip (unreachable by tap) is removed and its icon is aria-hidden.",
+      "done": false
+    },
+    {
+      "text": "Text and controls: League Night Status chart axis labels are whole and 12 px (left margin -16 to 0); Scores score-button team labels are 12 px (text-2xs to text-xs, same 1rem line height); the 'Developer' button is at least 44 px tall. 320 and 390 scan (Scores groups open): no text under 12 px and no control under 44 px on the five Wave 3 routes.",
+      "done": false
+    },
+    {
+      "text": "Docs in the same change: on-a-phone.md, enter-scores-in-bulk.md and the Live Corrections, League Night Status feature docs, MODAL_PATTERNS.md (a sheet with typed input passes dismissible false while dirty, with an onOpenChange guard), UI-UX audit boxes, verification rows, the Wave 3 checklist in docs/plans/PHONE-POLISH-2026-11.md ([-] Change winner sheet, Timeslots date button, Live Corrections filters, Timeslots table moved to Wave 8), and the carried Wave 2 note (the-schedule-page.md: the carousel also moves when the selected night is pressed again; SCHED-43 re-tap step).",
+      "done": false
+    },
+    {
+      "text": "Before/after shots at 320, 390 and 1280 px of the five Wave 3 routes; no page scrolls sideways; no new console errors; required checks (typecheck, lint, unit, build, knip, integrity) pass on the final commit.",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-10T13:07:59.659Z"
+  "updatedAt": "2026-11-10T13:28:59.341Z"
 }
