@@ -2,18 +2,47 @@
   "id": "T-261110-phone-polish-wave-7-acco",
   "title": "Phone polish wave 7: account, help and info pages",
   "kind": "polish",
-  "status": "intake",
+  "status": "building",
   "request": "start wave 7",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
   "baseSha": "fec4766575fc3532fa1ece16b73dd4e1b81dc47c",
   "createdAt": "2026-11-10T21:19:34.221Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Side margins: auth, forgot-password, reset-password (AuthContainer px-4) and setup-profile (px-4) content starts 20 px from a phone's edge; Contact 20 px on a phone with px-4 sm:px-8 so the desktop card stays 608 px; Help and OAuth consent unchanged (16 px, no PageLayout: cut by the skeptic). The sign-in/sign-up links under the login form look the same.",
+      "done": false
+    },
+    {
+      "text": "My Team: the team logo row lets the name and Team ID drop under the logo on a phone (basis-40), name at most 2 lines, desktop unchanged; the edit form's Save/Cancel row measured at 320 and wrapped only if it overflows; the team link field opens the URL keyboard (type=url).",
+      "done": false
+    },
+    {
+      "text": "Reset password: 'Back to login' has a 24 px+ tap height like the forgot-password page (py-2 -my-2), with a test.",
+      "done": false
+    },
+    {
+      "text": "Help: the Accessibility section uses HelpAccordionItem with its bordered box like the other sections, inner card removed; existing tests still pass; axe on /help in light and dark clean.",
+      "done": false
+    },
+    {
+      "text": "Light-theme small text 4.5:1: Contact 'Verified' (emerald-700), My Team Approved badge (bg-green-700) and Pending badge (bg-yellow-700 text-white, both themes); axe on /my-team and /contact in light and dark.",
+      "done": false
+    },
+    {
+      "text": "Docs in the same change: on-a-phone.md, the auth/account, my-team, contact and help docs, UI-UX audit boxes, verification rows, the Wave 7 checklist with [-] items (PageLayout on Help/OAuth cut; Team ID kept) and the shell footer-floats item logged for Wave 8; setup-profile 'First Name' label holding the username logged for product review.",
+      "done": false
+    },
+    {
+      "text": "Before/after shots at 320, 390 and 1280 px of the nine Wave 7 pages (signed out and member); no page scrolls sideways; no new console errors; required checks (typecheck, lint, unit, build, knip, integrity) pass on the final commit.",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-10T21:19:34.221Z"
+  "updatedAt": "2026-11-10T21:31:44.359Z"
 }
