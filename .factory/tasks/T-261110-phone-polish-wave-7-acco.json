@@ -1,0 +1,19 @@
+{
+  "id": "T-261110-phone-polish-wave-7-acco",
+  "title": "Phone polish wave 7: account, help and info pages",
+  "kind": "polish",
+  "status": "intake",
+  "request": "start wave 7",
+  "trivial": false,
+  "branch": "claude/intelligent-knuth-8pjz9p",
+  "baseSha": "fec4766575fc3532fa1ece16b73dd4e1b81dc47c",
+  "createdAt": "2026-11-10T21:19:34.221Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-10T21:19:34.221Z"
+}
