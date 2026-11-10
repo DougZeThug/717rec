@@ -41,7 +41,8 @@ export const LockableField: React.FC<LockableFieldProps> = ({
     <Label htmlFor={id} className="flex items-center gap-1.5">
       {label}
       {locked && (
-        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+        // emerald-700 in light: -600 was 3.4:1 on the page background.
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
           <CheckCircle2 className="size-3" /> Verified
         </span>
       )}
