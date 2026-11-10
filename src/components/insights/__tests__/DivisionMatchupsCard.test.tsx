@@ -84,4 +84,21 @@ describe('DivisionMatchupsCard', () => {
 
     expect(screen.getByText('Recreational won 90%')).toBeInTheDocument();
   });
+
+  // jsdom does no layout, so this pins the classes. At 390px a row with a real
+  // record ("288–30 Competitive won 91%") cut both division names short (57 of
+  // 81px of "Competitive" showed; 26px at 320px). The record now drops below.
+  it('lets the record drop under the division names on a narrow phone', () => {
+    mockUseLeagueDivisionMatchups.mockReturnValue({
+      data: [{ tierA: 'competitive', tierB: 'recreational', winsA: 288, winsB: 30 }],
+      isLoading: false,
+    });
+    render(<DivisionMatchupsCard />);
+
+    const record = screen.getByText('Competitive won 91%').parentElement;
+    expect(record).toHaveTextContent('288–30Competitive won 91%');
+    const row = record?.parentElement;
+    expect(row).toContainElement(screen.getByText('Recreational'));
+    expect(row).toHaveClass('flex', 'flex-wrap', 'justify-between', 'gap-3', 'gap-y-1');
+  });
 });
