@@ -138,7 +138,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
             'min-h-[44px] min-w-[44px]', // Touch target
             'scroll-mt-16', // Keyboard focus lands below the sticky tab bar
             canGoPrev
-              ? 'text-primary hover:bg-primary/10 active:scale-95'
+              ? 'text-primary-text hover:bg-primary/10 active:scale-95'
               : 'text-muted-foreground/50 cursor-not-allowed'
           )}
         >
@@ -185,7 +185,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
             'min-h-[44px] min-w-[44px]', // Touch target
             'scroll-mt-16', // Keyboard focus lands below the sticky tab bar
             canGoNext
-              ? 'text-primary hover:bg-primary/10 active:scale-95'
+              ? 'text-primary-text hover:bg-primary/10 active:scale-95'
               : 'text-muted-foreground/50 cursor-not-allowed'
           )}
         >

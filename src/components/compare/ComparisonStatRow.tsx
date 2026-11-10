@@ -56,7 +56,7 @@ export const ComparisonStatRow: React.FC<ComparisonStatRowProps> = ({
         <span
           className={cn(
             'text-base font-semibold tabular-nums',
-            winner === 'team1' && 'text-primary'
+            winner === 'team1' && 'text-primary-text'
           )}
         >
           {value1}
@@ -83,7 +83,7 @@ export const ComparisonStatRow: React.FC<ComparisonStatRowProps> = ({
         <span
           className={cn(
             'text-base font-semibold tabular-nums',
-            winner === 'team2' && 'text-primary'
+            winner === 'team2' && 'text-primary-text'
           )}
         >
           {value2}

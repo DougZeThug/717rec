@@ -83,6 +83,27 @@ describe('OpponentHistoryModal', () => {
     expect(screen.getByText('66.7%')).toBeInTheDocument(); // 8 of 12 games
   });
 
+  // --primary is a fill colour. As text on a card it read under 4.5:1 in the
+  // dark theme; text-primary-text is the text shade of the same blue.
+  it('draws the matches, win rate and game win rate in the primary text colour', () => {
+    mockUseOpponentHistory.mockReturnValue({
+      data: { summary, matches: [] },
+      isLoading: false,
+    });
+    renderModal();
+
+    const values = [
+      screen.getByText('Matches').previousElementSibling,
+      screen.getByText('60.0%'),
+      screen.getByText('66.7%'),
+    ];
+    expect(values[0]).toHaveTextContent('5');
+    for (const value of values) {
+      expect(value).toHaveClass('text-primary-text');
+      expect(value).not.toHaveClass('text-primary');
+    }
+  });
+
   it('falls back to 0.0% game win rate when no games were played', () => {
     mockUseOpponentHistory.mockReturnValue({
       data: { summary: { ...summary, game_wins: 0, game_losses: 0 }, matches: [] },

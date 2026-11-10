@@ -73,10 +73,10 @@ export const HeadToHeadSection: React.FC<HeadToHeadSectionProps> = ({
       {/* Series Record Bar */}
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-1">
-          <span className={cn(team1Wins > team2Wins && 'font-semibold text-primary')}>
+          <span className={cn(team1Wins > team2Wins && 'font-semibold text-primary-text')}>
             {team1Wins} wins
           </span>
-          <span className={cn(team2Wins > team1Wins && 'font-semibold text-primary')}>
+          <span className={cn(team2Wins > team1Wins && 'font-semibold text-primary-text')}>
             {team2Wins} wins
           </span>
         </div>
@@ -102,13 +102,17 @@ export const HeadToHeadSection: React.FC<HeadToHeadSectionProps> = ({
       {/* Game Record */}
       <div className="grid grid-cols-3 gap-2 py-3 border-t border-border">
         <div className="text-left">
-          <span className={cn('text-lg font-semibold', gameWins1 > gameWins2 && 'text-primary')}>
+          <span
+            className={cn('text-lg font-semibold', gameWins1 > gameWins2 && 'text-primary-text')}
+          >
             {gameWins1}
           </span>
         </div>
         <div className="text-center text-sm text-muted-foreground">Game Record</div>
         <div className="text-right">
-          <span className={cn('text-lg font-semibold', gameWins2 > gameWins1 && 'text-primary')}>
+          <span
+            className={cn('text-lg font-semibold', gameWins2 > gameWins1 && 'text-primary-text')}
+          >
             {gameWins2}
           </span>
         </div>

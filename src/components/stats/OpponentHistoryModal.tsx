@@ -122,7 +122,7 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
         {/* Summary Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <SummaryStatCard
-            valueClassName="text-2xl font-bold text-primary"
+            valueClassName="text-2xl font-bold text-primary-text"
             value={summary.matches_played}
             label="Matches"
           />
@@ -137,7 +137,7 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
             label="Losses"
           />
           <SummaryStatCard
-            valueClassName="text-2xl font-bold text-primary"
+            valueClassName="text-2xl font-bold text-primary-text"
             value={<>{Number(summary.win_pct).toFixed(1)}%</>}
             label="Win Rate"
           />
@@ -155,7 +155,7 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
             label="Game Record"
           />
           <SummaryStatCard
-            valueClassName="text-xl font-bold text-primary"
+            valueClassName="text-xl font-bold text-primary-text"
             value={
               <>
                 {summary.game_wins + summary.game_losses > 0

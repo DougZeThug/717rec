@@ -76,4 +76,27 @@ describe('ComparisonStatRow', () => {
     expect(screen.getByText('62.5%')).toBeInTheDocument();
     expect(screen.getByText('41.0%')).toBeInTheDocument();
   });
+
+  // --primary is a fill colour. As text on a card it read under 4.5:1 in the
+  // dark theme; text-primary-text is the text shade of the same blue.
+  it('draws the better value in the primary text colour, not the fill colour', () => {
+    setup();
+
+    const better = screen.getByText('62.5%');
+    expect(better).toHaveClass('text-primary-text');
+    expect(better).not.toHaveClass('text-primary');
+    expect(screen.getByText('41.0%')).not.toHaveClass('text-primary-text');
+
+    // A lower value that is better marks the second team instead.
+    setup({
+      value1: '9',
+      value2: '4',
+      numericValue1: 9,
+      numericValue2: 4,
+      higherIsBetter: false,
+      suffix: '',
+    });
+    expect(screen.getByText('4')).toHaveClass('text-primary-text');
+    expect(screen.getByText('4')).not.toHaveClass('text-primary');
+  });
 });
