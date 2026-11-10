@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 import { FilterState } from './types';
 
@@ -52,27 +51,15 @@ const DateFilter: React.FC<DateFilterProps> = ({ date, onDateChange }) => (
   </Popover>
 );
 
-/** TooltipTrigger asChild hands this its hover/focus handlers and ref; they must land on the div. */
-const SessionDateHintLabel: React.FC<React.ComponentProps<'div'>> = (triggerProps) => (
-  <div {...triggerProps} className="flex items-center">
-    <Info className="size-3 mr-1" />
+/**
+ * Plain text. It had a tooltip about UTC storage, but its trigger was a div
+ * that a keyboard could not reach and a phone could not open.
+ */
+const SessionDateHint: React.FC = () => (
+  <div className="flex items-center">
+    <Info className="size-3 mr-1" aria-hidden="true" />
     <span>Showing matches for the entire session (including evening games)</span>
   </div>
-);
-
-const SessionDateHint: React.FC = () => (
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <SessionDateHintLabel />
-      </TooltipTrigger>
-      <TooltipContent>
-        <p className="max-w-xs">
-          This view includes evening matches that might be stored with next-day UTC dates
-        </p>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
 );
 
 interface BracketFilterProps {

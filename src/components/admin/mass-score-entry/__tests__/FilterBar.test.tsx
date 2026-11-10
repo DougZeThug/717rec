@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -22,9 +22,9 @@ beforeAll(() => {
 });
 
 describe('FilterBar', () => {
-  // The hint only shows once a date filter is set. TooltipTrigger asChild passes its handlers to the hint label. If the label
-  // drops them, the tooltip can never open.
-  it('opens the session-date tooltip when the hint gets focus', async () => {
+  // The hint is plain text once a date filter is set. It had a tooltip about UTC storage whose
+  // trigger was a div: no keyboard could reach it and no phone could open it.
+  it('shows the session-date hint as plain text when a date is set', () => {
     render(
       <FilterBar
         filters={filters}
@@ -35,15 +35,27 @@ describe('FilterBar', () => {
       />
     );
 
-    const hint = screen.getByText(/Showing matches for the entire session/);
-    const trigger = hint.closest('[data-state]');
-    expect(trigger).not.toBeNull();
+    const hint = screen.getByText(
+      'Showing matches for the entire session (including evening games)'
+    );
+    expect(hint).toBeVisible();
+    expect(hint.closest('[data-state]')).toBeNull();
+    expect(hint.parentElement?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.queryByText(/next-day UTC dates/)).not.toBeInTheDocument();
+  });
 
-    fireEvent.focus(trigger as HTMLElement);
+  it('shows no session-date hint when no date is set', () => {
+    render(
+      <FilterBar
+        filters={{}}
+        brackets={[]}
+        onDateChange={vi.fn()}
+        onBracketChange={vi.fn()}
+        onClearFilters={vi.fn()}
+      />
+    );
 
-    expect(
-      (await screen.findAllByText(/might be stored with next-day UTC dates/)).length
-    ).toBeGreaterThan(0);
+    expect(screen.queryByText(/Showing matches for the entire session/)).not.toBeInTheDocument();
   });
 
   it('lists every bracket and reports the one picked', async () => {
