@@ -38,7 +38,6 @@ export const RankingTeamCell: React.FC<RankingTeamCellProps> = ({
       <Link
         to={`/teams/${toTeamSlug(teamName)}`}
         state={{ from: '/stats' }}
-        aria-label={`View ${teamName} team details`}
         className={cn(
           'flex items-center gap-3 transition-colors group flex-1 min-w-0',
           isWinterTheme
@@ -52,6 +51,7 @@ export const RankingTeamCell: React.FC<RankingTeamCellProps> = ({
           teamName={teamName}
           size="sm"
           className="shrink-0"
+          decorative
         />
         <div className="flex flex-col min-w-0">
           <span

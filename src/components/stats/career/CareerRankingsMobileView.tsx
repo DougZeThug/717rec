@@ -54,7 +54,6 @@ const CompactTeamLink: React.FC<{
 }> = ({ ranking, formatPercentage }) => (
   <Link
     to={`/teams/${toTeamSlug(ranking.teamName)}`}
-    aria-label={`View ${ranking.teamName} team details`}
     className="flex items-center gap-2 flex-1 min-w-0 group"
     onClick={(e) => e.stopPropagation()}
   >
@@ -63,6 +62,7 @@ const CompactTeamLink: React.FC<{
       teamName={ranking.teamName}
       size="sm"
       className="shrink-0"
+      decorative
     />
     <div className="min-w-0 flex-1">
       <h3 className="text-sm font-semibold leading-tight text-foreground group-hover:text-primary transition-colors">
@@ -77,7 +77,6 @@ const CompactTeamLink: React.FC<{
 const DetailedTeamLink: React.FC<{ ranking: CareerRanking }> = ({ ranking }) => (
   <Link
     to={`/teams/${toTeamSlug(ranking.teamName)}`}
-    aria-label={`View ${ranking.teamName} team details`}
     className="flex items-center gap-2 min-w-0 group"
   >
     <TeamLogo
@@ -85,6 +84,7 @@ const DetailedTeamLink: React.FC<{ ranking: CareerRanking }> = ({ ranking }) => 
       teamName={ranking.teamName}
       size="sm"
       className="shrink-0"
+      decorative
     />
     <div className="min-w-0">
       <h3 className="font-semibold text-sm transition-colors truncate text-foreground group-hover:text-primary">

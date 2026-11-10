@@ -98,7 +98,6 @@ const TeamColumn: React.FC<{ ranking: Ranking; showDivision: boolean }> = ({
   <Link
     to={`/teams/${toTeamSlug(ranking.teamName)}`}
     state={{ from: '/stats' }}
-    aria-label={`View ${ranking.teamName} team details`}
     className="flex items-center gap-2 flex-1 min-w-0 min-h-11 group"
     onClick={stopCardToggle}
   >
@@ -107,6 +106,7 @@ const TeamColumn: React.FC<{ ranking: Ranking; showDivision: boolean }> = ({
       teamName={ranking.teamName}
       size="sm"
       className="shrink-0"
+      decorative
     />
     <div className="min-w-0 flex-1">
       <h3 className="text-sm font-semibold leading-tight text-foreground group-hover:text-primary transition-colors">

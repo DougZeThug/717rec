@@ -15,6 +15,11 @@ export interface TeamLogoProps {
   clickable?: boolean;
   className?: string;
   fallbackText?: string;
+  /**
+   * Hide the logo from screen readers. Use it inside a link or row that already
+   * shows the team name as text, so the name is read once, not twice.
+   */
+  decorative?: boolean;
 }
 
 const sizeClasses = {
@@ -34,6 +39,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
   clickable = false,
   className,
   fallbackText,
+  decorative = false,
 }) => {
   const containerClasses = cn(
     'flex items-center justify-center bg-muted',
@@ -43,7 +49,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
   );
 
   const logoContent = (
-    <div className={containerClasses}>
+    <div className={containerClasses} aria-hidden={decorative || undefined}>
       {imageUrl ? (
         <img
           src={imageUrl}

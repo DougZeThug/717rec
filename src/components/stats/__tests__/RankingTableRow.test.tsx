@@ -121,10 +121,19 @@ describe('RankingTableRow', () => {
 
   it('links to the team details page', () => {
     renderRow();
-    expect(screen.getByRole('link', { name: 'View Team One team details' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^Team One/ })).toHaveAttribute(
       'href',
       expect.stringContaining('/teams/')
     );
+  });
+
+  // axe label-content-name-mismatch: the spoken name must start with the
+  // visible name, so no "View … team details" label and the logo is hidden.
+  it('gives the team link its visible name, read once', () => {
+    renderRow();
+    const link = screen.getByRole('link', { name: /^Team One/ });
+    expect(link).not.toHaveAttribute('aria-label');
+    expect(link.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
   });
 
   // The badges sit inside the team link: a button there would be nested
@@ -132,7 +141,7 @@ describe('RankingTableRow', () => {
   it('keeps the badges non-interactive because they sit inside the team link', () => {
     renderRow();
 
-    const link = screen.getByRole('link', { name: 'View Team One team details' });
+    const link = screen.getByRole('link', { name: /^Team One/ });
     expect(link).toContainElement(screen.getByTestId('badges-team-1'));
     expect(screen.getByTestId('badges-team-1')).toHaveAttribute('data-interactive', 'false');
   });
@@ -154,7 +163,7 @@ describe('RankingTableRow', () => {
   it('does not call onToggleExpand when the team link is clicked (propagation stopped)', async () => {
     const onToggleExpand = vi.fn();
     renderRow({ onToggleExpand });
-    await userEvent.click(screen.getByRole('link', { name: 'View Team One team details' }));
+    await userEvent.click(screen.getByRole('link', { name: /^Team One/ }));
     expect(onToggleExpand).not.toHaveBeenCalled();
   });
 
