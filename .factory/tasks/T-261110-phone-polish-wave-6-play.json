@@ -42,11 +42,22 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fec4766575fc3532fa1ece16b73dd4e1b81dc47c",
+      "dirty": false,
+      "at": "2026-11-10T20:52:40.229Z",
+      "seconds": 8,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-6-play/typecheck.log"
+    }
+  },
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-10T20:16:09.081Z"
+  "updatedAt": "2026-11-10T20:52:40.229Z"
 }
