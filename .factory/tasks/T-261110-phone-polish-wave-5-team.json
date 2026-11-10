@@ -42,11 +42,62 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "9fed5b3f7d230c5914a3b72342a20feff9cbbbaa",
+      "dirty": false,
+      "at": "2026-11-10T19:00:49.988Z",
+      "seconds": 9,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "9fed5b3f7d230c5914a3b72342a20feff9cbbbaa",
+      "dirty": false,
+      "at": "2026-11-10T19:02:03.122Z",
+      "seconds": 71,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "9fed5b3f7d230c5914a3b72342a20feff9cbbbaa",
+      "dirty": false,
+      "at": "2026-11-10T19:02:08.297Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/knip.log"
+    },
+    "integrity": {
+      "result": "fail",
+      "exit": 1,
+      "sha": "9fed5b3f7d230c5914a3b72342a20feff9cbbbaa",
+      "dirty": false,
+      "at": "2026-11-10T19:02:10.694Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/integrity.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "9fed5b3f7d230c5914a3b72342a20feff9cbbbaa",
+      "dirty": false,
+      "at": "2026-11-10T19:02:22.452Z",
+      "seconds": 4,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-5-team/build.log"
+    }
+  },
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-10T18:23:36.768Z"
+  "updatedAt": "2026-11-10T19:02:22.453Z"
 }
