@@ -142,6 +142,16 @@ so a non-zero exit code means drift was detected.
   another player's profile finds nothing, while the function reports that name
   as taken. The player's own name and a free name read as not taken, the match
   is exact like `profiles_username_unique`, and only signed-in users may call it.
+- `head_to_head_records.sql` — pins the head-to-head counts the app shows, from
+  both live readers: `get_head_to_head_records` (a wrapper over the view
+  `v_head_to_head`) and `get_batch_head_to_head`. One fixture, worked out by hand
+  in the file: regular-season, playoff and archived matches all count, a match
+  with the sides swapped reads from the right side, and a tie or an unfinished
+  regular-season or archived match is left out. (Playoff matches count whenever
+  a winner and loser are set, whatever their status; that is described, not
+  pinned.) Also pins the win % order, the mirrored rows for
+  `get_head_to_head_records(NULL)`, a row of zeros for a pair that never met, and
+  no row for a team paired with itself.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.

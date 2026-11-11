@@ -5,9 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { usePlayoffData } from '../usePlayoffViewModel.compat';
 
-vi.mock('@/hooks/playoffs/usePlayoffViewModel', () => ({
-  usePlayoffViewModel: () => ({}),
-}));
 vi.mock('@/hooks/teams', () => ({
   useTeamsArray: () => ({ teams: [], isLoading: false }),
 }));

@@ -1,16 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Match, Team } from '@/types';
+import type { Match } from '@/types';
 import type { HeadToHeadRecord } from '@/types/headToHead';
 
-import { calculateHeadToHead } from '../headToHeadUtils';
 import { calculateClutchRecord } from '../matchOutcomeUtils';
-import {
-  getMatchResult,
-  getOpponentId,
-  getScoreDisplay,
-  getUpcomingAndPastMatches,
-} from '../matchUtils';
 import {
   classifyRivalries,
   getRivalryType,
@@ -19,24 +12,8 @@ import {
 } from '../rivalryUtils';
 import { calculateSweepRate } from '../sweepRateUtils';
 
-type MinimalMatch = Pick<
-  Match,
-  | 'id'
-  | 'team1Id'
-  | 'team2Id'
-  | 'date'
-  | 'iscompleted'
-  | 'winnerId'
-  | 'loserId'
-  | 'team1Score'
-  | 'team2Score'
-  | 'team1_game_wins'
-  | 'team2_game_wins'
->;
-
 describe('teamDetails utilities', () => {
   it('handles undefined/empty inputs with safe defaults', () => {
-    expect(getUpcomingAndPastMatches([])).toEqual({ upcomingMatches: [], pastMatches: [] });
     expect(calculateSweepRate('team-a', [])).toEqual({ sweeps: 0, totalMatches: 0, sweepRate: 0 });
     expect(calculateClutchRecord('team-a', [])).toEqual({
       clutchWins: 0,
@@ -49,94 +26,6 @@ describe('teamDetails utilities', () => {
       closestRivalries: [],
       dominantMatchups: [],
       nemeses: [],
-    });
-  });
-
-  it('splits upcoming and past matches by date and sorts each bucket', () => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const inTwoDays = new Date();
-    inTwoDays.setDate(inTwoDays.getDate() + 2);
-
-    const matches: MinimalMatch[] = [
-      { id: 'up-2', team1Id: 'a', team2Id: 'b', date: inTwoDays.toISOString() },
-      { id: 'past-1', team1Id: 'a', team2Id: 'b', date: yesterday.toISOString() },
-      { id: 'up-1', team1Id: 'a', team2Id: 'b', date: tomorrow.toISOString() },
-    ];
-
-    const result = getUpcomingAndPastMatches(matches as Match[]);
-
-    expect(result.upcomingMatches.map((m) => m.id)).toEqual(['up-1', 'up-2']);
-    expect(result.pastMatches.map((m) => m.id)).toEqual(['past-1']);
-  });
-
-  it.each([
-    {
-      label: 'completed win for team1',
-      match: {
-        id: 'm1',
-        iscompleted: true,
-        winnerId: 'team-a',
-        team1Id: 'team-a',
-        team2Id: 'team-b',
-        team1Score: 2,
-        team2Score: 1,
-      },
-      teamId: 'team-a',
-      expected: { opponentId: 'team-b', result: 'Win', score: '2–1' },
-    },
-    {
-      label: 'incomplete match',
-      match: {
-        id: 'm2',
-        iscompleted: false,
-        winnerId: 'team-b',
-        team1Id: 'team-a',
-        team2Id: 'team-b',
-      },
-      teamId: 'team-a',
-      expected: { opponentId: 'team-b', result: 'Incomplete', score: '' },
-    },
-    {
-      label: 'team as team2 score flips',
-      match: {
-        id: 'm3',
-        iscompleted: true,
-        winnerId: 'team-a',
-        team1Id: 'team-b',
-        team2Id: 'team-a',
-        team1Score: 1,
-        team2Score: 2,
-      },
-      teamId: 'team-a',
-      expected: { opponentId: 'team-b', result: 'Win', score: '2–1' },
-    },
-  ])('$label', ({ match, teamId, expected }) => {
-    const typedMatch = match as Match;
-    expect(getOpponentId(typedMatch, teamId)).toBe(expected.opponentId);
-    expect(getMatchResult(typedMatch, teamId)).toBe(expected.result);
-    expect(getScoreDisplay(typedMatch, teamId)).toBe(expected.score);
-  });
-
-  it('calculates head-to-head records and skips teams without ids', () => {
-    const teams: Team[] = [
-      { id: 'team-a', name: 'A' },
-      { id: 'team-b', name: 'B' },
-      { id: 'team-c', name: '' },
-    ];
-
-    const matches: Match[] = [
-      { id: 'm1', iscompleted: true, team1Id: 'team-a', team2Id: 'team-b', winnerId: 'team-a' },
-      { id: 'm2', iscompleted: true, team1Id: 'team-a', team2Id: 'team-b', winnerId: 'team-b' },
-      { id: 'm3', iscompleted: true, team1Id: 'team-c', team2Id: 'team-a', winnerId: 'team-c' },
-      { id: 'm4', iscompleted: false, team1Id: 'team-a', team2Id: 'team-c', winnerId: 'team-a' },
-    ];
-
-    expect(calculateHeadToHead('team-a', teams, matches)).toEqual({
-      'team-b': { opponentName: 'B', wins: 1, losses: 1 },
-      'team-c': { opponentName: 'Unknown Team', wins: 0, losses: 1 },
     });
   });
 

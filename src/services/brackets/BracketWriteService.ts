@@ -57,7 +57,6 @@ export const deleteBracket = async (bracketId: string): Promise<void> => {
 
 /**
  * Update a playoff match result (winner, scores, status)
- * Used by usePlayoffActions hook
  *
  * updated_at is stamped here rather than left to the caller: playoff_matches has
  * no updated_at trigger, and season stats order playoff results by that column
@@ -85,7 +84,6 @@ export const updatePlayoffMatchResult = async (
 
 /**
  * Upsert a playoff game record
- * Used by usePlayoffActions hook
  */
 export const upsertPlayoffGame = async (gameData: {
   id: string;

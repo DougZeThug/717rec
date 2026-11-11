@@ -5,5 +5,4 @@ export * from './cards';
 export * from './divisions';
 export * from './gradients';
 export * from './interactive';
-export * from './lists';
 export * from './typography';
