@@ -1,11 +1,12 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { SeasonPlayoffMatch } from '@/services/brackets/read/PlayoffSeasonMatchService';
 import type { Match } from '@/types';
+import type { TeamStreakInfo } from '@/types/weeklyRecap';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { buildOrderedMatchesForStreaks } from '@/utils/rankingUtils/buildOrderedMatchesForStreaks';
 import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 
-import { MIN_STREAK_COUNT, type TeamStreakInfo } from './types';
+import { MIN_STREAK_COUNT } from './types';
 
 export async function fetchHotStreaks(
   seasonId: string,

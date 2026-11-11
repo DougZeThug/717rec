@@ -1,10 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { SeasonPlayoffMatch } from '@/services/brackets/read/PlayoffSeasonMatchService';
+import type { WeeklyUpset } from '@/types/weeklyRecap';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import type { TeamStats } from '@/utils/predictions';
 import { isUpset, predictMatch } from '@/utils/predictions';
 
-import type { WeeklyUpset } from './types';
 import {
   fetchUpsetPredictionInputs,
   h2hKey,

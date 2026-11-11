@@ -8,7 +8,7 @@ import type { RecapMode, WeeklyRecapData } from './types';
 import { fetchUpsets } from './upsets';
 import { deriveWeekNumber, getWeekWindow } from './weekWindow';
 
-export type { RecapMode, TeamStreakInfo, WeeklyRecapData, WeeklyUpset } from './types';
+export type { RecapMode, WeeklyRecapData } from './types';
 
 type PlayoffMatches = Awaited<ReturnType<typeof fetchCompletedPlayoffMatchesForSeason>>;
 
