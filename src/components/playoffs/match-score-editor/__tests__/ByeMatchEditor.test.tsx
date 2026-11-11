@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -176,14 +176,30 @@ describe('ByeMatchEditor', () => {
 
       expect(screen.queryByText('Match Status Control')).not.toBeInTheDocument();
     });
-    it('reopens safely, or clears downstream, from a completed zombie match', () => {
+    it('reopens safely, or clears downstream after a confirm, from a completed zombie match', async () => {
       render(<ByeMatchEditor {...defaultProps} byeEligible={eligibleAt(4, 'Completed')} />);
 
       fireEvent.click(screen.getByRole('button', { name: /reopen \(safe\)/i }));
       expect(defaultProps.onToggleByeStatus).toHaveBeenLastCalledWith(false);
 
       fireEvent.click(screen.getByRole('button', { name: /reopen \+ clear downstream/i }));
-      expect(defaultProps.onToggleByeStatus).toHaveBeenLastCalledWith(true);
+      // Clearing downstream is destructive: nothing happens until it is confirmed.
+      expect(defaultProps.onToggleByeStatus).toHaveBeenCalledTimes(1);
+      fireEvent.click(await screen.findByRole('button', { name: 'Reopen and clear' }));
+      await waitFor(() => expect(defaultProps.onToggleByeStatus).toHaveBeenLastCalledWith(true));
+    });
+
+    it('does not clear downstream when the confirm is cancelled', async () => {
+      render(<ByeMatchEditor {...defaultProps} byeEligible={eligibleAt(4, 'Completed')} />);
+
+      fireEvent.click(screen.getByRole('button', { name: /reopen \+ clear downstream/i }));
+      expect(await screen.findByText('Clear the later matches?')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      await waitFor(() =>
+        expect(screen.queryByText('Clear the later matches?')).not.toBeInTheDocument()
+      );
+      expect(defaultProps.onToggleByeStatus).not.toHaveBeenCalled();
     });
 
     it('unlocks a locked match', () => {

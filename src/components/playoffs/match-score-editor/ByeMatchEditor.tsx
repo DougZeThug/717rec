@@ -1,7 +1,8 @@
 import { ArrowLeftRight, Loader2, Shuffle } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   DialogContent,
   DialogDescription,
@@ -27,7 +28,7 @@ interface ByeMatchEditorProps {
   isTogglingStatus: boolean;
   onSave: () => void;
   onClose: () => void;
-  onToggleByeStatus: (clearDownstream: boolean) => void;
+  onToggleByeStatus: (clearDownstream: boolean) => void | Promise<void>;
   /** Admin-only, losers bracket only: move the team into a sibling match. */
   onSwapTeams?: () => void;
   /** Admin-only: change who plays in a winners round 1 match (e.g. fill the BYE). */
@@ -74,7 +75,7 @@ interface ByeStatusActionsProps {
   byeEligible: ByeEligibility;
   isRevertable: boolean;
   isTogglingStatus: boolean;
-  onToggleByeStatus: (clearDownstream: boolean) => void;
+  onToggleByeStatus: (clearDownstream: boolean) => void | Promise<void>;
 }
 
 const ByeStatusActions: React.FC<ByeStatusActionsProps> = ({
@@ -83,22 +84,38 @@ const ByeStatusActions: React.FC<ByeStatusActionsProps> = ({
   isTogglingStatus,
   onToggleByeStatus,
 }) => {
+  // Clearing downstream empties every later match this one feeds, so it asks first.
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   if (byeEligible.currentStatus === 4) {
     return (
       <>
         <ByeToggleButton
           emoji="🔄"
           label="Reopen (Safe)"
-          colour="border-blue-600 text-blue-600 hover:bg-blue-50"
+          colour="border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10"
           busy={isTogglingStatus}
           onClick={() => onToggleByeStatus(false)}
         />
         <ByeToggleButton
           emoji="⚠️"
           label="Reopen + Clear Downstream"
-          colour="border-red-600 text-red-600 hover:bg-red-50"
+          colour="border-destructive text-destructive-text hover:bg-destructive/10"
           busy={isTogglingStatus}
-          onClick={() => onToggleByeStatus(true)}
+          onClick={() => setConfirmOpen(true)}
+        />
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          isPending={isTogglingStatus}
+          title="Clear the later matches?"
+          description="This reopens this BYE match and empties every later match it feeds. Their teams and scores are removed and they go back to Waiting. Use this only if those results are wrong. This cannot be undone."
+          confirmLabel="Reopen and clear"
+          pendingLabel="Clearing..."
+          onConfirm={async () => {
+            await onToggleByeStatus(true);
+            setConfirmOpen(false);
+          }}
         />
       </>
     );
@@ -109,7 +126,7 @@ const ByeStatusActions: React.FC<ByeStatusActionsProps> = ({
       <ByeToggleButton
         emoji="🔒"
         label="Revert to Waiting"
-        colour="border-amber-600 text-amber-600 hover:bg-amber-50"
+        colour="border-amber-600 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10"
         busy={isTogglingStatus}
         onClick={() => onToggleByeStatus(false)}
       />
@@ -120,7 +137,7 @@ const ByeStatusActions: React.FC<ByeStatusActionsProps> = ({
     <ByeToggleButton
       emoji="🔓"
       label="Unlock to Ready"
-      colour="border-green-600 text-green-600 hover:bg-green-50"
+      colour="border-green-600 text-green-700 dark:text-green-400 hover:bg-green-500/10"
       busy={isTogglingStatus}
       onClick={() => onToggleByeStatus(false)}
     />
@@ -169,7 +186,7 @@ const ByeStatusHint: React.FC<{ currentStatus: number; isRevertable: boolean }> 
 const ByeStatusControl: React.FC<{
   byeEligible: ByeEligibility;
   isTogglingStatus: boolean;
-  onToggleByeStatus: (clearDownstream: boolean) => void;
+  onToggleByeStatus: (clearDownstream: boolean) => void | Promise<void>;
 }> = ({ byeEligible, isTogglingStatus, onToggleByeStatus }) => {
   // Ready (2) and Running (3) both revert to Waiting — adminToggleByeReady's revert
   // path accepts anything below Completed. Only Locked (0) and Waiting (1) unlock,

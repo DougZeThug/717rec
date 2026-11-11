@@ -18,7 +18,8 @@ interface ConfirmDialogProps {
   title: string;
   /** What the action will do. Say what cannot be undone, and to what. */
   description: ReactNode;
-  onConfirm: () => void;
+  /** May return a promise; the caller decides when to close (e.g. after it settles). */
+  onConfirm: () => void | Promise<void>;
   /** Keeps the dialog open and both buttons disabled while the action runs. */
   isPending?: boolean;
   confirmLabel?: string;
@@ -60,7 +61,7 @@ export const ConfirmDialog = ({
             // Keep the dialog mounted while the action runs, so the pending
             // state is visible and a second click cannot get through.
             e.preventDefault();
-            onConfirm();
+            void onConfirm();
           }}
           disabled={isPending}
           className={
