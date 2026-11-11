@@ -18,7 +18,10 @@ interface ConfirmDialogProps {
   title: string;
   /** What the action will do. Say what cannot be undone, and to what. */
   description: ReactNode;
-  /** May return a promise; the caller decides when to close (e.g. after it settles). */
+  /**
+   * May return a promise; the caller decides when to close (e.g. after it
+   * settles). A returned promise must catch its own errors: nothing here does.
+   */
   onConfirm: () => void | Promise<void>;
   /** Keeps the dialog open and both buttons disabled while the action runs. */
   isPending?: boolean;

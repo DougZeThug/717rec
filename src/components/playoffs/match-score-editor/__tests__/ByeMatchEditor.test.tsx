@@ -187,6 +187,10 @@ describe('ByeMatchEditor', () => {
       expect(defaultProps.onToggleByeStatus).toHaveBeenCalledTimes(1);
       fireEvent.click(await screen.findByRole('button', { name: 'Reopen and clear' }));
       await waitFor(() => expect(defaultProps.onToggleByeStatus).toHaveBeenLastCalledWith(true));
+      // The question closes once the reset has finished.
+      await waitFor(() =>
+        expect(screen.queryByText('Clear the later matches?')).not.toBeInTheDocument()
+      );
     });
 
     it('does not clear downstream when the confirm is cancelled', async () => {
