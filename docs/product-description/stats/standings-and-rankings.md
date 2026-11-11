@@ -244,6 +244,15 @@ card (changed 2026-11-10). Gold, green, orange and amber text use a darker shade
 in light; the dark theme is unchanged. The green "moved up" arrow and number use
 a darker green in light too.
 
+The Win % and SOS figures reach 4.5:1 in the light theme too (changed
+2026-11-11). Each takes the lightest shade of its colour that passes. Win %
+(and Game %) uses a darker green, orange and red; its blue already passed. SOS
+uses a darker green (easy), orange (moderate) and red (hard), and a still deeper
+red for a very hard schedule. The band floors and the dark theme did not change.
+The same colours are used on the team pages and the home page team stats. The
+career rankings phone cards keep their own copy of the old Game Win % colours,
+so there those figures are still under 4.5:1 in light (a known gap).
+
 **Side effects the user can notice.** None. Opening the standings changes
 nothing, records nothing, and writes no snapshot.
 
@@ -283,6 +292,10 @@ nothing, records nothing, and writes no snapshot.
 - Assumption: "Based on opponent-weighted win percentage, strength of schedule
   (SOS), and game-level performance" is meant as an explanation of power score
   rather than of the sort order.
+- Known, kept for now: the career rankings phone cards
+  (`CareerRankingsMobileView.tsx`) colour Game Win % with their own copy of the
+  old light shades (green-600, orange-500, red-600), so they did not get the
+  2026-11-11 contrast fix.
 
 Verified against `717rec` commit `ea5c8f4`, except the sorting and keyboard
 behaviour above, which was changed after that commit — see
@@ -297,3 +310,5 @@ and the 12-pixel win-loss chart labels came in the Wave 4 phone polish
 The team links' spoken names and the light-theme band colours came in the Wave 5
 phone polish (2026-11-10). axe found no name or contrast problem on `/stats` in
 headless Chromium with fake data at 390 pixels, and tests pin both.
+The light-theme Win % and SOS shades came in the Wave 8 phone polish
+(2026-11-11). Tests pin the new class names.

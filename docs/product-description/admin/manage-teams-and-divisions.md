@@ -92,7 +92,11 @@ writes it immediately.
 
 **Edit on a team row** opens a dialog headed "Edit Team: *name*" holding the
 name, the division, the image, and a list of player names. It is dirty from the
-first keystroke and shows nothing to say so.
+first keystroke and shows nothing to say so. Below 768 pixels it is a bottom
+sheet (since 2026-11-11; it was a centred pop-up). A swipe down does not close
+the sheet, so a stray swipe while scrolling the long form cannot throw the edits
+away. Only its Cancel or Update Team button closes it. From 768 pixels up it is
+the centred pop-up, as before.
 
 **Create Team** is the same form, empty, shown inline as a card rather than a
 dialog. Its Cancel button returns to **Manage Teams**, which also discards
@@ -198,14 +202,14 @@ waiting. It is described in [`handle-requests.md`](handle-requests.md).
 | The user's role (visitor, player, admin) | Only an admin reaches the dashboard; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). Every admin sees every control. | Losing admin elsewhere leaves every control on screen and the writes start failing. |
 | The record's state | A hidden team appears in this list and nowhere else. A division in use has its delete refused, not hidden. A division displayed as Hidden has Edit and delete disabled. | A team hidden in another browser keeps its old division here until a re-fetch. |
 | The season's state (active, archived, playoffs on) | Teams and divisions are **not** season-scoped, so the screen looks the same in every season state. | Changing a division weight moves power scores in live seasons only. Archived seasons are frozen; see [`../foundations/seasons.md`](../foundations/seasons.md#what-frozen-means). |
-| Viewport | The three count cards stack. The four tabs wrap onto two or three rows, so every tab can be reached by touch. The team table becomes one card per team with a full-width division dropdown. The divisions table becomes cards. The Create Team form fits its card on a 320 pixel phone: its Cancel and Create Team buttons wrap onto two rows below 328 pixels wide. On an Update Logos card the "Add Logo" label wraps onto two lines below 355 pixels wide instead of being cut off. | No effect beyond re-flowing. |
+| Viewport | The three count cards stack. Below 640 pixels the four tabs sit in an even grid, two rows of two, and a long label wraps inside its tab (since 2026-11-11; before, they wrapped unevenly onto two or three rows). From 640 up they sit in one row that wraps. Edit Team is a bottom sheet below 768 pixels. On Divisions the New Division button keeps its full width and the line beside it wraps (since 2026-11-11; at 320 and 390 pixels its words ran past the button). The team table becomes one card per team with a full-width division dropdown. The divisions table becomes cards. The Create Team form fits its card on a 320 pixel phone: its Cancel and Create Team buttons wrap onto two rows below 328 pixels wide. On an Update Logos card the "Add Logo" label wraps onto two lines below 355 pixels wide instead of being cut off. | No effect beyond re-flowing. |
 | Keys the form honours | Tab reaches the search box, the filter, then each row's dropdown and Edit button. | Enter in the team name field submits the form. Escape closes the team dialog, the confirmation, or an open dropdown. Escape does **not** leave a division row's inline editor. |
 
 ## Cancel and interrupt
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | No effect. | Escape closes the team dialog and discards it with no confirmation. The division editor's Cancel restores all three fields. The Create Team tab's Cancel returns to Manage Teams. Nothing aborts a request already sent. |
+| Escape, or a Cancel button | No effect. | On a wide screen Escape closes the team dialog and discards it with no confirmation. On a phone the Edit Team sheet ignores Escape, a tap outside and a swipe (read from the drawer library's code); its Cancel discards with no confirmation. The division editor's Cancel restores all three fields. The Create Team tab's Cancel returns to Manage Teams. Nothing aborts a request already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. The search and filter reset when the section is reopened. | **Everything typed is lost, with no warning** — including switching between the four tabs inside the Teams section. A division change already sent still lands. |
 | Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away. A section holding unsaved work asks first; this one holds none. |
 | Reload, or the tab closed | Returns to the same section, with an empty search and the Manage Teams tab. | Everything in a form is lost. A sent write still lands. An uploaded image stays uploaded whether or not the form was saved. |
@@ -249,8 +253,10 @@ sentence; division failures carry the server's reason.
 the team being edited are all invisible to the address bar.
 
 **On a phone.** The four tabs — Manage Teams, Create Team, Update Logos, Member
-Approvals — wrap onto two or three rows instead of running off the screen, so
-Member Approvals can be touched. The team table becomes cards, each with a
+Approvals — sit in an even grid of two rows of two instead of running off the
+screen, so Member Approvals can be touched. Edit Team opens as a bottom sheet
+that only its own buttons close. The New Division button keeps its words inside
+it. The team table becomes cards, each with a
 full-width division dropdown, so the single most consequential control on the
 screen is also the easiest to hit by accident. Both the division filter and each
 row's division dropdown are 44 pixels high.
@@ -310,6 +316,11 @@ live season's power scores; archived seasons do not move.
   rights after its team is hidden.
 - Assumption: playoff seeds are never set from these screens. Only the bracket
   editor writes them.
+- Not confirmed on a real phone: the team image file picker (Upload Image)
+  inside the Edit Team bottom sheet. No bottom sheet held a file picker before.
+  Doug's own-phone check is still to do. In headless Chromium with fake data the
+  sheet opened at 390 pixels with every field, the division picker worked, and
+  Cancel and Update Team were in reach.
 
 Verified against `717rec` commit `ea5c8f4`, except the division-editor and
 Cancel behaviour above, which was changed after that commit — see
@@ -317,3 +328,7 @@ Cancel behaviour above, which was changed after that commit — see
 wrapping tabs and 44-pixel selects above, changed after it too (the admin phone
 polish).
 The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. The Update Logos preview (commit `0942667`) and the Member Approvals phone layout (commits `afda9d1` to `e3a8bdd`) changed after that too, and the tap-size fixes made the tabs, the division dropdowns and the text fields 44 pixels (commits `96b6036` to `8626e6c`). They were measured in a real browser against fake data, not on a real phone or tablet.
+The Edit Team bottom sheet, the 2 by 2 tab grid and the New Division button
+came in the Wave 8 phone polish (2026-11-11). They were measured in headless
+Chromium with fake data at 320, 390 and 1280 pixels, not on a real phone. A test
+pins that a swipe cannot close the sheet.

@@ -68,9 +68,11 @@ possible.
 or may not be linked to a signed-in account; a person can appear as a player
 without ever having signed in.
 
-**Profile.** The record attached to a signed-in account: a display name, a
-username, an avatar, and the admin flag. A signed-in user without a completed
-profile is sent to the profile setup page before they can do much else.
+**Profile.** The record attached to a signed-in account: one league name, an
+optional full name, an avatar, and the admin flag. The league name is stored as
+the username and is shown on the profile page as "Display Name"; it is unique in
+the league. A signed-in user without a completed profile is sent to the profile
+setup page before they can do much else.
 
 **Roster.** The set of players on a team for a season. Adding a player is not the
 same as that player having an account.

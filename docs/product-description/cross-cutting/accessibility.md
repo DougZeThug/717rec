@@ -217,7 +217,11 @@ red below: darker shades in the light theme, lighter shades in the dark theme. T
 crown is dark amber in the light theme and yellow in the dark theme.
 The ratios were measured when the change was made. The SOS figure and the power
 score dial in the same cards keep colours shared with other pages and were not
-part of that change. See
+part of that change. The shared SOS colours take a darker shade in the light
+theme since 2026-11-11 and reach 4.5:1 too, as do the shared Win % colours on
+the standings and team pages; see
+[`stats/standings-and-rankings.md`](../stats/standings-and-rankings.md#interactions-with-other-systems).
+See
 [`history/past-seasons.md`](../history/past-seasons.md#interactions-with-other-systems).
 
 Nothing in the product responds to a high-contrast or forced-colours setting.

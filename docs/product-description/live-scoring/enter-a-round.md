@@ -283,7 +283,8 @@ feed per-player statistics only once the result is saved.
   fake data at 320 pixels).
 - **The "how many bags in the hole?" prompt moves the second grid down** about
   92 pixels when the first score is tapped (measured at 320 pixels). This is
-  older than the 2026-11-10 change and was left for a later wave.
+  older than the 2026-11-10 change. Doug (2026-11-11) chose to keep it: the
+  prompt stays next to the score that was tapped, and the grid below moves.
 - **A round that wins the game keeps the panel on screen until the save
   settles.** The win banner and the disabled grids overlap for the length of the
   request, so a failure that rolls the round back does not take the tapped

@@ -3,7 +3,7 @@
 ## Summary
 
 `/setup-profile` is where a signed-in user chooses the name the rest of the league
-sees. It holds one small form — a first name and an optional full name — and,
+sees. It holds one small form — a display name and an optional full name — and,
 below a divider, the panel for asking to join a team, which is described in
 [`join-a-team.md`](join-a-team.md).
 
@@ -18,11 +18,16 @@ The route has no guard. It handles being signed out by itself, badly; see
 ## The simple case
 
 The user arrives and sees a card headed "Set Up Your Profile" with the line "Enter
-your name and details". Under it are two fields: **First Name**, marked required,
-and **Full Name (Optional)**. Both are already filled in with whatever the profile
-holds. Under the first is the note "This is how you will be identified in the
-league." A full-width **Save Profile** button sits below them, greyed out until
-the first name is at least three characters long.
+your name and details". Under it are two fields: **Display Name**, marked required,
+with the placeholder "Enter your display name", and **Full Name (Optional)**. Both
+are already filled in with whatever the profile holds. Under the first is the note
+"The name other players see. At least 3 letters or numbers." A full-width **Save
+Profile** button sits below them, greyed out until the display name is at least
+three characters long.
+
+The display name is the league name (the username): one name, unique in the
+league. It is not a first name. Until 2026-11-11 the field was labelled "First
+Name"; Doug renamed it to match what it holds. No stored data changed.
 
 Below a divider is the Team Membership panel. At the foot of the card: "This
 information will be visible to other players".
@@ -39,7 +44,7 @@ stateDiagram-v2
     [*] --> checking : arrive
     checking --> form : signed in
     checking --> sent_to_sign_in : no session after three tries
-    form --> checking_name : first name reaches three characters
+    form --> checking_name : display name reaches three characters
     checking_name --> form : the league answers (tick or warning)
     form --> saving : press Save Profile
     form --> form : press Save Profile while a name check is running (refused)
@@ -82,7 +87,7 @@ menu calls them by whatever name the league filled in for them.
 ### Begin editing
 
 The first keystroke changes nothing visible and no error appears. The Save Profile
-button becomes usable as soon as the first name is three characters long, and is
+button becomes usable as soon as the display name is three characters long, and is
 greyed out again if it drops below three.
 
 ### While editing
@@ -104,7 +109,7 @@ leave a stale tick behind.
 > player and an admin. The check used to read profiles directly, found nobody but
 > the player, and almost always answered "free".
 
-**The field rules.** The first name must be at least 3 characters and may contain
+**The field rules.** The display name must be at least 3 characters and may contain
 only letters, numbers, and underscores. These are checked on submit, not while
 typing. A name that breaks these rules is never sent for the "is it free" check, so
 it never shows "Name is available", and a late reply for an older name does not
@@ -114,9 +119,9 @@ rules), that "taken" message goes away. It was for the old name.
 
 | Field | Rule | Message shown |
 | --- | --- | --- |
-| First Name | at least 3 characters | "First name must be at least 3 characters" |
-| First Name | letters, numbers, and underscores only | "First name can only contain letters, numbers, and underscores" |
-| First Name | not already taken | "This name is already taken" |
+| Display Name | at least 3 characters | "Display name must be at least 3 characters" |
+| Display Name | letters, numbers, and underscores only | "Display name can only contain letters, numbers, and underscores" |
+| Display Name | not already taken | "This name is already taken" |
 | Full Name | none — anything, including nothing | none |
 
 ### Submit
@@ -126,10 +131,10 @@ The button reads "Saving..." and goes dead. The two fields stay editable.
 Before anything is sent, two conditions block the save and raise a red toast
 instead: the name check said the name is taken, or the check is still running.
 The second is the one a user meets — pressing Save within half a second of typing
-gives "Invalid first name — Please wait for the name check to complete" and
+gives "Invalid display name — Please wait for the name check to complete" and
 nothing is sent. Pressing again works.
 
-What is sent is the first name and the full name, written over the profile. The
+What is sent is the display name and the full name, written over the profile. The
 full name is stored as empty when the field is blank.
 
 On success three things happen: a toast says "Profile updated", the app re-reads
@@ -149,7 +154,7 @@ that is already taken and a network failure produce the same sentence.
 | The record's state | A profile with no username gives empty fields and a greyed-out button. A finished profile gives prefilled fields and a usable button. A finished profile **plus** a `next` destination skips the page entirely. | No effect. The page does not notice the profile changing under it. |
 | The season's state (active, archived, playoffs on) | No effect. A profile is not scoped to a season. | No effect. |
 | Viewport | The card is centred and capped at a readable width. Fields are full width on a phone. | No effect beyond re-flowing on rotation. |
-| Keys the form honours | Tab reaches First Name, Full Name, Save Profile, and then the team panel below. | Enter in either field submits, which can fire before the name check has finished and be refused. |
+| Keys the form honours | Tab reaches Display Name, Full Name, Save Profile, and then the team panel below. | Enter in either field submits, which can fire before the name check has finished and be refused. |
 
 ## Cancel and interrupt
 
@@ -163,7 +168,7 @@ that is already taken and a network failure produce the same sentence.
 | The request fails or times out | A failed name check is silent — no tick, no warning, no message — and the save is allowed to proceed. | The generic "Error updating profile" toast. The user cannot tell a taken name from a dropped connection. |
 | The session expires | The page finds no session, waits three seconds, and sends the user to `/auth` with this page remembered. | The save fails with the generic toast. Nothing tells the user their session ended, and the page does not redirect. |
 | The same record changed in another tab, or by another user | The fields are filled from the copy the app already has, which may be minutes old. | No effect. There is no subscription on profiles, so a name changed elsewhere does not reach this form and the save overwrites it. |
-| Browser autofill or a password manager writes into the form | Possible on both fields, which are ordinary text inputs. An autofilled first name starts the name check exactly as typing would. | Same. |
+| Browser autofill or a password manager writes into the form | Possible on both fields, which are ordinary text inputs. An autofilled display name starts the name check exactly as typing would. | Same. |
 | The window loses focus | No effect. | No effect. The name check's half-second timer keeps running and its request completes. |
 
 After any interrupt the user is left wherever the interrupt took them. Nothing is
@@ -177,7 +182,7 @@ page cannot change the admin flag; the database refuses any attempt. See
 
 **Season scoping.** None. A profile belongs to the account, not to a season.
 
-**Validation and error display.** Three rules on the first name, shown under the
+**Validation and error display.** Three rules on the display name, shown under the
 field. The name-taken rule is the only one checked before submit, and it is
 unreliable. Server refusals never appear under the field; they become one generic
 toast.
@@ -203,7 +208,7 @@ pages that carry state in the address are listed in
 
 **On a phone.** The card fills the width, with a 20-pixel gap to each screen edge
 (since 2026-11-10; it was 4 pixels), and so does the loading card. Both fields are
-full width. The tick and warning sit inside the right edge of the first-name field.
+full width. The tick and warning sit inside the right edge of the display-name field.
 The team membership box and its Leave Team button fit a 320-pixel phone.
 
 **Accessibility.** Both fields have real labels and descriptions tied to them, and
@@ -225,7 +230,7 @@ keep the name they were written under.
 - **The auto-filled name can be one the form will not accept.** The league fills a
   new account's name in from the part of the email address before the `@`, which
   can contain dots and hyphens. The form forbids those, so a user who opens this
-  page and presses Save without touching anything is told their first name can only
+  page and presses Save without touching anything is told their display name can only
   contain letters, numbers, and underscores — about a name they never chose.
 - **The green tick holds nothing.** It is right when it appears, but it reserves
   nothing: a name another player takes after the check still fails at save time,

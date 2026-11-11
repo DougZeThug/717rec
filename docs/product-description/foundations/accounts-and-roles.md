@@ -69,8 +69,9 @@ to grant part of it.
 
 ## Profile
 
-The record attached to a signed-in account: a display name, a username, an avatar,
-and the admin flag.
+The record attached to a signed-in account: one league name, an optional full
+name, an avatar, and the admin flag. The league name is stored as the username and
+is shown on the profile page as **Display Name**. It is unique in the league.
 
 **A profile without a username is treated as incomplete.** When the app loads a
 profile and finds no username, it sends the user to `/setup-profile`

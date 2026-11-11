@@ -279,6 +279,12 @@ desktop Escape and a click outside call it. Examples: `EditRoundDialog` (Live Co
 `ScoreSubmissionModal` (it passes `dismissible={!isSubmitting}`, because it
 resets its form on close).
 
+A long form with no dirty flag can pass `dismissible={false}` always. Example:
+`EditTeamDialog` (admin Teams, Edit Team). On a phone it is a bottom sheet that
+only its own Cancel or Update Team button closes, so a stray swipe while scrolling
+the form cannot throw the edits away. On desktop it is the centred pop-up, and
+Escape and a click outside still close it with no question.
+
 Ensure your modal content:
 - Uses proper spacing (space-y-4 for vertical rhythm)
 - Has reasonable max-heights for scrollable lists

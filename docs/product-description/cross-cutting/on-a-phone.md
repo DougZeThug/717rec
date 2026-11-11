@@ -58,7 +58,7 @@ calls itself mobile. Above it, desktop. The stylesheet has more breakpoints —
 | Toasts fill the width at the top of the screen, below the notch | Toasts are at most 420 pixels wide, bottom right |
 | The teams list defaults to grouped by division | The teams list defaults to one list |
 | Several stats and standings tables render as stacked cards | The same data as a table |
-| Six dialogs open as a bottom drawer: score submission on the home page, the match form on the schedule, approving a score submission in admin Scores, playoff team divisions, the live scoring player picker and Edit round in Live Corrections. Every other dialog is a centred box with a 16-pixel gap each side | The same six open as centred dialogs |
+| Seven dialogs open as a bottom drawer: score submission on the home page, the match form on the schedule, approving a score submission in admin Scores, playoff team divisions, the live scoring player picker, Edit round in Live Corrections and Edit Team in admin Teams. Every other dialog is a centred box with a 16-pixel gap each side | The same seven open as centred dialogs |
 
 The top bar is the one exception, and it changes later:
 
@@ -149,8 +149,7 @@ step. Its six documents start at
   pixels apart.
 - A few controls are still under 44 pixels, on purpose: the day cells of a
   calendar are 36 pixels wide and 44 tall (seven must fit a 320-pixel phone), the
-  two Auto Schedule switches that sit one above the other share the 36-pixel gap
-  between them, the Auto Schedule team checkbox has a tap area 30 pixels wide (its
+  Auto Schedule team checkbox has a tap area 30 pixels wide (its
   scrolling list cuts the left side, and the team name beside it toggles the same
   box), and the small clear cross inside a multi-select was left alone.
   The select box, tab, switch, checkbox, close cross and small buttons are shared
@@ -197,7 +196,9 @@ step. Its six documents start at
   in a 16-pixel line, as before, so nothing around them moved; a date chip is
   still 64 pixels tall and "100%" fits its box.
   The admin console followed on 2026-11-10: the team names over the Scores
-  result buttons are 12 pixels (they were 11), in the same 16-pixel line. The
+  result buttons are 12 pixels (they were 11), in the same 16-pixel line. On
+  2026-11-11 the Contact Inbox time and the notification dates, EXPIRED tag and
+  "Expires" line followed (they were 11). The
   League Night Status traffic chart's axis labels are 12 pixels (they were 10),
   and the chart no longer cuts its left labels off.
   The playoff bracket's participant names are 15 pixels on a phone (the phone
@@ -237,8 +238,10 @@ step. Its six documents start at
     grew wider than the box. A long username or team name ends in "…", and the
     post time always shows whole. The same holds in match comments, which used
     to run past the match card. On a 320-pixel phone, a member's own post also
-    shows the "…" menu, so both names share about 50 pixels. There the
-    username shows as "fa…".
+    shows the "…" menu. Since 2026-11-11 the time drops to its own line when
+    the names do not fit, so the names get the row; before, both names shared
+    about 50 pixels and the username showed as "fa…". A long team badge still
+    takes most of the row (known and kept).
   - Live scoring: the round preview ("*Team* +N") stays on one line. A long
     team name ends in "…" and "+N" stays whole, so the score grids do not move
     when the second score is tapped.
@@ -282,6 +285,23 @@ step. Its six documents start at
   - Help: the Accessibility section has the same bordered box as the other
     sections, and a section title that wraps starts at the left.
   Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
+- **The admin setup screens fit a 320-pixel phone** (changed 2026-11-11).
+  - Timeslots: the delete button in the Current Timeslots table shows with no
+    sideways swipe (the cells have less padding and a long team name wraps).
+    The date button is full width below 640 pixels. Known and kept: a long team
+    name wraps nearly one word per line at 320 pixels.
+  - Participation: the season picker is full width below 640 pixels.
+  - Divisions: the New Division words stay inside their button.
+  - Teams: the four tabs sit in an even grid of two rows of two. Edit Team is a
+    bottom sheet that a swipe cannot close (see
+    [manage teams and divisions](../admin/manage-teams-and-divisions.md#begin-editing)).
+  - Auto Schedule: each Match Rules switch sits in a row 44 pixels tall, so the
+    tap areas no longer overlap.
+  - Blind draw: the sign-ups table scrolls sideways inside its box when it is
+    too wide, instead of cutting off its right side.
+  - Every page: on a short page the footer sits at the bottom of the screen, on
+    a phone and on a wide screen. Before, it floated in the middle.
+  Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
 - **A centred dialog keeps a 16-pixel gap on each side** on a phone, has round
   corners, is never taller than the screen minus 32 pixels, and scrolls inside
   when its content is taller. Before, a dialog touched both screen edges. The
@@ -296,7 +316,8 @@ step. Its six documents start at
   create division, approve request, edit team, Live Corrections edit round,
   change winner and delete round, playoff score editor, edit bracket, update
   seeding, command palette): every box at 1280 pixels kept its size. (Edit round
-  became a bottom drawer on a phone after this run.) Update Bracket Seeding
+  became a bottom drawer on a phone after this run, and Edit Team on
+  2026-11-11.) Update Bracket Seeding
   scrolled sideways inside itself on a phone. Since 2026-11-10 it fits, and so
   does Create Bracket. Two long pop-ups stay centred on a phone on purpose
   (Doug, 2026-11-10). The playoff score pop-up has only two score boxes, and a
@@ -436,8 +457,9 @@ much of its traffic is phones. Nothing more precise is stored. See
 - **The command palette's keyboard shortcut is unreachable on a phone**, which is
   harmless, but so is the Search button — there is no search anywhere below 768
   pixels.
-- **Six dialogs become bottom drawers** on a phone (listed in the table
-  above; the sixth, Edit round in Live Corrections, since 2026-11-10). Every other dialog is a centred box with a 16-pixel gap each side,
+- **Seven dialogs become bottom drawers** on a phone (listed in the table
+  above; Edit round in Live Corrections since 2026-11-10, Edit Team since
+  2026-11-11). Every other dialog is a centred box with a 16-pixel gap each side,
   including the live scoring confirmations.
 - **The teams page remembers its scroll position, and in the 2026-11-06 test it
   came back to it every time** (headless Chromium, 390 pixels wide, fake data; the
@@ -530,3 +552,10 @@ Team logo row and edit buttons and the Help Accessibility box came in the Wave 7
 phone polish (2026-11-10). They were measured in headless Chromium with fake data
 at 320, 390 and 1280 pixels, not on a real phone. The Pending Approval badge is
 not in the fake data; its colours were measured on a copy of the Approved badge.
+The admin setup fixes (Timeslots, Participation, Divisions, Teams, Auto
+Schedule, blind draw), the Edit Team bottom drawer, the footer at the bottom of
+a short page, the post time that wraps on the message board and the 12-pixel
+Contact Inbox and notification dates came in the Wave 8 phone polish
+(2026-11-11). They were measured in headless Chromium with fake data at 320, 390
+and 1280 pixels, not on a real phone. The team image file picker inside the
+Edit Team drawer was not tried on a real phone.

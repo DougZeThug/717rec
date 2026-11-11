@@ -70,7 +70,9 @@ Each entry shows a coloured type badge — Timeslot Request, Score, Join the
 league, General, Other — a "Verified" badge when the sender was signed in, the
 time, the sender's name and team, their contact detail as a `mailto:` or `tel:`
 link where it looks like one, the message, and, for a join request, the players
-they listed.
+they listed. The time is 12 pixels (it was 11 until 2026-11-11). In the light
+theme the Score, Join the league and Verified badges use a darker shade, so
+their text reaches 4.5:1 (since 2026-11-11).
 
 **Requests** loads team requests filtered to **Pending** by default, with a
 picker offering All, Pending, Approved, Rejected. A time change names one of the
@@ -340,3 +342,6 @@ UX audit items W7 (the two message forms became one) and L4 (an approval hands
 Timeslots the change to make). Those passages were written from the change and
 its tests, not from a fresh pass over the running app. The phone layout of the
 Requests card above changed after that commit too (the admin phone polish). The Member Approvals and Contact Inbox phone layout (Viewport row and "On a phone") changed after it as well, in the phone-overflow fixes (commits `f5bb3df`, `afda9d1`, `a450501`, `e3a8bdd`) and the tap-size fixes (commit `93d48a3`). They were measured in a real browser against fake data at 320, 360 and 390 pixels, not on a real phone.
+The 12-pixel Contact Inbox time and the darker light-theme badges came in the
+Wave 8 phone polish (2026-11-11). They were measured in headless Chromium with
+fake data at 320 and 390 pixels (Score 4.6:1, Join the league 4.9:1).

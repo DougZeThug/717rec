@@ -196,7 +196,10 @@ missing score is neutral grey. In the light theme each band's text reaches
 4.5:1 or more (changed 2026-11-10: gold, green, orange and amber use a darker
 shade; measured 4.93, 4.95, 5.22 and 5.03). The band floors did not change, and
 the dark theme did not change. In light, the gold (85 and up) and amber (40 to
-49) shades both look brown; that is a known follow-up.
+49) shades both look brown. Doug (2026-11-11) chose to leave them as they are:
+the number and the band name (in the legend, on hover and for a screen
+reader) tell the two apart. The sweep rate colours stay as
+they are too.
 
 ## Modifiers
 
