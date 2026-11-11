@@ -56,28 +56,28 @@ const singular = (t) => t.replace(/^v_/, '').replace(/_details$/, '').replace(/i
 
 export const shape = (tables, table, row, items) => {
   // Nested so the two can call each other with no forward reference.
-  const embed = (tables, parentTable, row, item) => {
+  const embed = (parentTable, parentRow, item) => {
     const named = item.name;
     const target = tables[named] !== undefined ? named : (item.alias && tables[item.alias] !== undefined ? item.alias : FK_TABLE[named]);
     if (!target || tables[target] === undefined) return { value: null, known: false };
     const rows = tables.rowsOf(target);
     const hint = item.hints.find((h) => h !== 'inner' && h !== 'left');
     let fk = null;
-    if (tables[named] === undefined && named in row) fk = named; // teams:team_id(...)
-    else if (hint && hint in row) fk = hint; // v_team_details!team1_id(...)
+    if (tables[named] === undefined && named in parentRow) fk = named; // teams:team_id(...)
+    else if (hint && hint in parentRow) fk = hint; // v_team_details!team1_id(...)
     else if (hint) {
       const match = new RegExp(`^${parentTable}_(\\w+)_fkey$`).exec(hint); // teams!matches_team1_id_fkey(...)
-      if (match && match[1] in row) fk = match[1];
+      if (match && match[1] in parentRow) fk = match[1];
     }
-    if (!fk && `${singular(target)}_id` in row) fk = `${singular(target)}_id`;
+    if (!fk && `${singular(target)}_id` in parentRow) fk = `${singular(target)}_id`;
     if (fk) {
       const key = KEY[target] ?? 'id';
-      const found = rows.find((r) => r[key] === row[fk] && row[fk] != null) ?? null;
+      const found = rows.find((r) => r[key] === parentRow[fk] && parentRow[fk] != null) ?? null;
       return { value: found ? shape(tables, target, found, item.children) : null, known: true };
     }
     // one-to-many: child rows that point back at the parent
     const back = `${singular(parentTable)}_id`;
-    const parentKey = row[KEY[parentTable] ?? 'id'];
+    const parentKey = parentRow[KEY[parentTable] ?? 'id'];
     const kids = rows.filter((r) => r[back] === parentKey);
     return { value: kids.map((k) => shape(tables, target, k, item.children)), known: true };
   };
@@ -86,7 +86,7 @@ export const shape = (tables, table, row, items) => {
   const out = { ...row };
   for (const item of items) {
     if (item.children) {
-      const { value } = embed(tables, table, row, item);
+      const { value } = embed(table, row, item);
       if (item.spread && value && !Array.isArray(value)) Object.assign(out, value);
       else out[item.alias ?? item.name] = value;
     } else if (item.alias) out[item.alias] = row[item.name];
@@ -96,43 +96,55 @@ export const shape = (tables, table, row, items) => {
 
 // ---- filters ----
 const num = (v) => (/^-?\d+(\.\d+)?$/.test(String(v)) ? Number(v) : Date.parse(v));
+const unquote = (value) => value.replace(/^"|"$/g, '');
+const likePattern = (value, flags) => new RegExp(`^${value.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/[*%]/g, '.*')}$`, flags);
+const isValue = (cell, text, val) => {
+  if (val === 'null') return cell == null;
+  if (val === 'true') return cell === true;
+  if (val === 'false') return cell === false;
+  return text === val;
+};
+const ORDER = { gt: (left, right) => left > right, gte: (left, right) => left >= right, lt: (left, right) => left < right, lte: (left, right) => left <= right };
+const inRange = (op) => (cell, text, val) => {
+  if (cell == null) return false;
+  const [left, right] = [num(text), num(val)];
+  return Number.isNaN(left) || Number.isNaN(right) ? ORDER[op](text, val) : ORDER[op](left, right);
+};
+const OPERATORS = {
+  is: isValue,
+  eq: (cell, text, val) => text === unquote(val),
+  neq: (cell, text, val) => text !== val,
+  in: (cell, text, val) => val.slice(1, -1).split(',').map(unquote).includes(text),
+  like: (cell, text, val) => likePattern(val, '').test(text),
+  ilike: (cell, text, val) => likePattern(val, 'i').test(text),
+  cs: (cell, text, val) => Array.isArray(cell) && val.replace(/^[{[]|[}\]]$/g, '').split(',').every((part) => cell.map(String).includes(part.replace(/"/g, ''))),
+  gt: inRange('gt'),
+  gte: inRange('gte'),
+  lt: inRange('lt'),
+  lte: inRange('lte'),
+};
 export const test = (cell, spec) => {
   if (spec.startsWith('not.')) return !test(cell, spec.slice(4));
   const dot = spec.indexOf('.');
-  const op = spec.slice(0, dot);
-  const val = spec.slice(dot + 1);
+  const name = spec.slice(0, dot);
+  const operator = Object.hasOwn(OPERATORS, name) ? OPERATORS[name] : null;
   const text = cell === null || cell === undefined ? 'null' : String(cell);
-  if (op === 'is') return val === 'null' ? cell == null : val === 'true' ? cell === true : val === 'false' ? cell === false : text === val;
-  if (op === 'eq') return text === val.replace(/^"|"$/g, '');
-  if (op === 'neq') return text !== val;
-  if (op === 'in') return val.slice(1, -1).split(',').map((v) => v.replace(/^"|"$/g, '')).includes(text);
-  if (op === 'like' || op === 'ilike') {
-    const re = new RegExp(`^${val.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/[*%]/g, '.*')}$`, op === 'ilike' ? 'i' : '');
-    return re.test(text);
-  }
-  if (op === 'cs') return Array.isArray(cell) && val.replace(/^[{[]|[}\]]$/g, '').split(',').every((v) => cell.map(String).includes(v.replace(/"/g, '')));
-  if (['gt', 'gte', 'lt', 'lte'].includes(op)) {
-    if (cell == null) return false;
-    const [a, b] = [num(text), num(val)];
-    if (Number.isNaN(a) || Number.isNaN(b)) return op.startsWith('gt') ? text > val || (op === 'gte' && text === val) : text < val || (op === 'lte' && text === val);
-    return op === 'gt' ? a > b : op === 'gte' ? a >= b : op === 'lt' ? a < b : a <= b;
-  }
-  return true; // fts and other operators do not filter
+  return operator ? operator(cell, text, spec.slice(dot + 1)) : true; // fts and other operators do not filter
 };
 
 const cellOf = (row, path) => {
-  const m = /^(\w+)\((\w+)\)$/.exec(path) ?? /^(\w+)\.(\w+)$/.exec(path);
-  if (m) { const v = row[m[1]]; return Array.isArray(v) ? v[0]?.[m[2]] : v?.[m[2]]; }
+  const match = /^(\w+)\((\w+)\)$/.exec(path) ?? /^(\w+)\.(\w+)$/.exec(path);
+  if (match) { const value = row[match[1]]; return Array.isArray(value) ? value[0]?.[match[2]] : value?.[match[2]]; }
   return row[path];
 };
 
 // "a.eq.1,and(b.gt.2,c.is.null),d.in.(x,y)" inside or=(...) / and=(...)
 const logic = (row, kind, body) => {
-  const terms = splitTop(body).map((t) => {
-    const m = /^(not\.)?(and|or)\((.*)\)$/.exec(t);
-    if (m) return () => { const r = logic(row, m[2], m[3]); return m[1] ? !r : r; };
-    const dot = t.indexOf('.');
-    return () => test(cellOf(row, t.slice(0, dot)), t.slice(dot + 1));
+  const terms = splitTop(body).map((term) => {
+    const group = /^(not\.)?(and|or)\((.*)\)$/.exec(term);
+    if (group) return () => { const result = logic(row, group[2], group[3]); return group[1] ? !result : result; };
+    const dot = term.indexOf('.');
+    return () => test(cellOf(row, term.slice(0, dot)), term.slice(dot + 1));
   });
   return kind === 'or' ? terms.some((f) => f()) : terms.every((f) => f());
 };
@@ -221,7 +233,7 @@ export const rowsFromMock = async (mock, table) => {
       headers: () => ({ accept: 'application/json' }),
       postDataJSON: () => ({}),
     }),
-    fulfill: async ({ body }) => { captured = body; },
+    fulfill: ({ body }) => { captured = body; },
   };
   const handled = await mock(fake);
   return handled && captured ? JSON.parse(captured) : null;

@@ -67,7 +67,7 @@ const teamPlayers = [
   ...roster(TEAM.CHARLIE, 410, ['2A', '2B']),
   ...teams.flatMap((t, i) => (i === TEAM.BRAVO || i === TEAM.CHARLIE ? [] : roster(i, 420 + i * 2, [`${i}A`, `${i}B`]))),
 ];
-const P = (team, k) => teamPlayers.filter((player) => player.team_id === tid(team))[k].id;
+const playerOf = (team, slot) => teamPlayers.filter((player) => player.team_id === tid(team))[slot].id;
 
 // ---- League night matches ----
 const matchBase = {
@@ -167,7 +167,7 @@ SCRIPTS.forEach(({ match, team1, team2, day, games: list }, sk) => {
       matchRounds.push({
         id: ID(1200 + sk * 100 + gk * 30 + r), match_id: ID(match), game_id: gameId, round_number: r + 1, team1_score: a, team2_score: b,
         net_points: Math.abs(a - b), winner_team: a === b ? null : a > b ? 1 : 2,
-        team1_thrower_id: P(team1, r % 2), team2_thrower_id: P(team2, r % 2),
+        team1_thrower_id: playerOf(team1, r % 2), team2_thrower_id: playerOf(team2, r % 2),
         team1_bags_in: i1, team1_bags_on: o1, team1_bags_off: f1, team2_bags_in: i2, team2_bags_on: o2, team2_bags_off: f2,
         entered_by_user_id: MEMBER.id, created_at: new Date(clock).toISOString(),
       });
@@ -178,7 +178,7 @@ SCRIPTS.forEach(({ match, team1, team2, day, games: list }, sk) => {
       started_at: started, completed_at: done ? new Date(clock).toISOString() : null, created_at: started, updated_at: new Date(clock).toISOString(),
     });
     [[team1, 0], [team1, 1], [team2, 0], [team2, 1]].forEach(([t, k], s) => gamePlayers.push({
-      id: ID(1700 + sk * 40 + gk * 4 + s), game_id: gameId, team_id: tid(t), player_id: P(t, k), slot: k + 1, created_at: started,
+      id: ID(1700 + sk * 40 + gk * 4 + s), game_id: gameId, team_id: tid(t), player_id: playerOf(t, k), slot: k + 1, created_at: started,
     }));
     clock += 4 * 60e3;
   });
