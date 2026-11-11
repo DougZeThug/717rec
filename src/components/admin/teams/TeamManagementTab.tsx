@@ -36,15 +36,20 @@ type TabsProps = {
   handleTeamSubmit: (teamData: Omit<Team, 'id' | 'created_at'>) => Promise<void>;
 };
 
+// Two even rows of two on a phone; the same wrapping row as before from sm up.
 const TeamManagementTabList = ({ pendingMembershipCount }: { pendingMembershipCount: number }) => (
-  <TabsList className="flex-wrap justify-start">
-    <TabsTrigger value="manage">Manage Teams</TabsTrigger>
-    <TabsTrigger value="create">Create Team</TabsTrigger>
-    <TabsTrigger value="logos" className="gap-1.5">
+  <TabsList className="grid w-full grid-cols-2 sm:inline-flex sm:w-auto sm:flex-wrap sm:justify-start">
+    <TabsTrigger value="manage" className="whitespace-normal">
+      Manage Teams
+    </TabsTrigger>
+    <TabsTrigger value="create" className="whitespace-normal">
+      Create Team
+    </TabsTrigger>
+    <TabsTrigger value="logos" className="gap-1.5 whitespace-normal">
       <Image className="size-3.5" />
       Update Logos
     </TabsTrigger>
-    <TabsTrigger value="approvals" className="gap-1.5">
+    <TabsTrigger value="approvals" className="gap-1.5 whitespace-normal">
       <UserCheck className="size-3.5" />
       Member Approvals
       {pendingMembershipCount > 0 && (
