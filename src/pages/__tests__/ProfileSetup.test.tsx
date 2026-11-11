@@ -183,7 +183,7 @@ describe('ProfileSetup', () => {
 
     expect(screen.getByText('Set Up Your Profile')).toBeInTheDocument();
     // Real ProfileForm children
-    expect(screen.getByText('First Name')).toBeInTheDocument();
+    expect(screen.getByText('Display Name')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save Profile' })).toBeInTheDocument();
     // Real TeamMembershipSection
     expect(screen.getByText('Team Membership')).toBeInTheDocument();
@@ -308,7 +308,7 @@ describe('ProfileSetup', () => {
 
     renderPage();
 
-    const firstName = screen.getByPlaceholderText('Enter your first name');
+    const firstName = screen.getByPlaceholderText('Enter your display name');
     act(() => {
       fireEvent.change(firstName, { target: { value: 'Doug' } });
     });

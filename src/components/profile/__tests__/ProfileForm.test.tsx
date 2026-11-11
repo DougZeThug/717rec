@@ -35,7 +35,7 @@ const renderForm = () =>
 const SETTLE_TIMEOUT_MS = 5000;
 
 const typeName = (name: string) =>
-  userEvent.setup().type(screen.getByPlaceholderText('Enter your first name'), name);
+  userEvent.setup().type(screen.getByPlaceholderText('Enter your display name'), name);
 
 describe('ProfileForm name availability', () => {
   beforeEach(() => {
@@ -110,7 +110,7 @@ describe('ProfileForm name availability', () => {
     );
     renderForm();
     const user = userEvent.setup();
-    const input = screen.getByPlaceholderText('Enter your first name');
+    const input = screen.getByPlaceholderText('Enter your display name');
 
     await user.type(input, 'abc');
     await waitFor(() => expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(1), {
@@ -122,7 +122,7 @@ describe('ProfileForm name availability', () => {
 
     await act(() => Promise.resolve(resolveSlow({ available: true })));
 
-    expect(screen.getByText(/can only contain letters/i)).toBeInTheDocument();
+    expect(screen.getByText(/display name can only contain letters/i)).toBeInTheDocument();
     expect(screen.queryByText('Name is available')).not.toBeInTheDocument();
   });
 
@@ -137,7 +137,7 @@ describe('ProfileForm name availability', () => {
     );
     renderForm();
     const user = userEvent.setup();
-    const input = screen.getByPlaceholderText('Enter your first name');
+    const input = screen.getByPlaceholderText('Enter your display name');
 
     await user.type(input, 'abc');
     await waitFor(() => expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(1), {
@@ -156,7 +156,7 @@ describe('ProfileForm name availability', () => {
     mockCheckUsernameAvailability.mockResolvedValue({ available: false });
     renderForm();
     const user = userEvent.setup();
-    const input = screen.getByPlaceholderText('Enter your first name');
+    const input = screen.getByPlaceholderText('Enter your display name');
 
     await user.type(input, 'abc');
     await screen.findByText('This name is already taken', undefined, {
@@ -174,7 +174,7 @@ describe('ProfileForm name availability', () => {
     mockCheckUsernameAvailability.mockResolvedValue({ available: false });
     renderForm();
     const user = userEvent.setup();
-    const input = screen.getByPlaceholderText('Enter your first name');
+    const input = screen.getByPlaceholderText('Enter your display name');
 
     await user.type(input, 'abc');
     await screen.findByText('This name is already taken', undefined, {
@@ -203,7 +203,7 @@ describe('ProfileForm name availability', () => {
 
     renderForm();
     const user = userEvent.setup();
-    const input = screen.getByPlaceholderText('Enter your first name');
+    const input = screen.getByPlaceholderText('Enter your display name');
 
     await user.type(input, 'ABC');
     await waitFor(() => expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(1), {
@@ -237,7 +237,7 @@ describe('ProfileForm name availability', () => {
     mockCheckUsernameAvailability.mockResolvedValue({ available: true });
     renderForm();
     const user = userEvent.setup();
-    const input = screen.getByPlaceholderText('Enter your first name');
+    const input = screen.getByPlaceholderText('Enter your display name');
 
     await user.type(input, 'Dougie');
     expect(
@@ -267,7 +267,7 @@ describe('ProfileForm name availability', () => {
     renderForm();
     const user = userEvent.setup();
 
-    await user.type(screen.getByPlaceholderText('Enter your first name'), 'Dougie');
+    await user.type(screen.getByPlaceholderText('Enter your display name'), 'Dougie');
     await waitFor(() => expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(1), {
       timeout: SETTLE_TIMEOUT_MS,
     });
@@ -302,7 +302,7 @@ describe('ProfileForm name availability', () => {
     renderForm();
     const user = userEvent.setup();
 
-    await user.type(screen.getByPlaceholderText('Enter your first name'), 'Dougie');
+    await user.type(screen.getByPlaceholderText('Enter your display name'), 'Dougie');
     await screen.findByText('Name is available', undefined, { timeout: SETTLE_TIMEOUT_MS });
     await user.click(screen.getByRole('button', { name: 'Save Profile' }));
 
@@ -319,7 +319,7 @@ describe('ProfileForm name availability', () => {
     renderForm();
     const user = userEvent.setup();
 
-    await user.type(screen.getByPlaceholderText('Enter your first name'), 'Dougie');
+    await user.type(screen.getByPlaceholderText('Enter your display name'), 'Dougie');
     await screen.findByText('Name is available', undefined, { timeout: SETTLE_TIMEOUT_MS });
     await user.click(screen.getByRole('button', { name: 'Save Profile' }));
 
