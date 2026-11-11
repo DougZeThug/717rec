@@ -1,9 +1,13 @@
-import { TimeslotService } from '@/services/timeslots/TimeslotService';
 import { Team } from '@/types';
+import { BACK_TO_BACK_PAIRS, getPairConfig } from '@/utils/autoSchedule/constants';
+import {
+  createSafeScheduleDate,
+  normalizeScheduleDate,
+  validateScheduleDate,
+} from '@/utils/autoSchedule/dateUtils';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
-import { BACK_TO_BACK_PAIRS, getPairConfig } from './constants';
-import { createSafeScheduleDate, normalizeScheduleDate, validateScheduleDate } from './dateUtils';
+import { TimeslotService } from './TimeslotService';
 
 /**
  * Get teams by back-to-back pair name (e.g., 'Early', 'Mid', 'Late')

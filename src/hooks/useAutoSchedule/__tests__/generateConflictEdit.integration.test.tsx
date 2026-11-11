@@ -72,7 +72,7 @@ vi.mock('../storage', () => ({
 }));
 
 // Team loader seam (Supabase-backed) -> known teams for the block.
-vi.mock('@/utils/autoSchedule/teamLoaderUtils', () => ({
+vi.mock('@/services/timeslots/teamLoaderUtils', () => ({
   getAllBackToBackTeams: vi.fn().mockResolvedValue({ Early: [] }),
   getTeamsByBackToBackPair: vi.fn().mockResolvedValue([]),
 }));
@@ -124,7 +124,7 @@ vi.mock('@/utils/logger', async (importOriginal) => {
   };
 });
 
-import { getAllBackToBackTeams } from '@/utils/autoSchedule/teamLoaderUtils';
+import { getAllBackToBackTeams } from '@/services/timeslots/teamLoaderUtils';
 
 import { useAutoSchedule } from '../index';
 
