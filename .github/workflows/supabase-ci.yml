@@ -159,10 +159,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v1
         with:
-          # Pinned to Deno 2.x to match local dev; no repo-level deno.lock is
-          # committed (edge functions import via URL/npm specifiers and rely on
-          # the module cache). If a lockfile is added later, also add
-          # `deno.json` and pass `--frozen` to the test command below.
+          # Pinned to Deno 2.x to match local dev. A deno.lock is committed, and
+          # Deno finds it on its own because package.json sits next to it. The
+          # test command below turns it off with --no-lock; see the comment there.
           deno-version: v2.x
       - name: Cache Deno dependencies
         uses: actions/cache@v4
@@ -173,8 +172,13 @@ jobs:
             deno-${{ runner.os }}-
       - name: Run Deno tests
         run: |
+          # --no-lock: do not enforce the committed deno.lock in CI. esm.sh serves
+          # different bytes for the same unpinned URL (files rebuilt at its origin,
+          # older copies still held in its CDN cache), so a lock-checked run passes
+          # or fails at random with "Integrity check failed" (seen for tslib and
+          # zod). The tests still run against the real dependencies.
           run_deno_tests() {
-            deno test --allow-net --allow-env --allow-read --no-check supabase/functions/
+            deno test --no-lock --allow-net --allow-env --allow-read --no-check supabase/functions/
           }
           if compgen -G "supabase/functions/**/*_test.ts" > /dev/null || \
              compgen -G "supabase/functions/**/*.test.ts" > /dev/null; then
