@@ -25,14 +25,6 @@ vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 
-vi.mock('@/hooks/playoffs/usePlayoffState', () => ({
-  usePlayoffState: vi.fn(),
-}));
-
-vi.mock('@/hooks/playoffs/usePlayoffBracketData', () => ({
-  usePlayoffBracketData: vi.fn(() => ({ data: null, isLoading: false, isError: false })),
-}));
-
 vi.mock('@/hooks/playoffs/useOptimisticScoreMutation', () => ({
   useOptimisticScoreMutation: vi.fn(() => ({
     applyOptimisticUpdate: vi.fn(),

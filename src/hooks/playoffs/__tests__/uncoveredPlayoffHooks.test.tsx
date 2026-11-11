@@ -55,7 +55,6 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 import { useBracketsManagerMatch } from '../useBracketsManagerMatch';
-import { usePlayoffBracketData } from '../usePlayoffBracketData';
 import { usePlayoffEditMatchParticipants } from '../usePlayoffEditMatchParticipants';
 import { useLoserSwapEligibility, usePlayoffSwapLoserSlots } from '../usePlayoffLoserSwap';
 import { usePlayoffMatchUpdate } from '../usePlayoffMatchUpdate';
@@ -76,22 +75,11 @@ describe('uncovered playoff hooks', () => {
     vi.clearAllMocks();
     mocks.invalidateRelated.mockImplementation(() => Promise.resolve());
   });
-  it('returns null bracket data without a service call', async () => {
-    const { wrapper } = setup();
-    const { result } = renderHook(() => usePlayoffBracketData(null), { wrapper });
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toBeNull();
-    expect(mocks.bracket).not.toHaveBeenCalled();
-  });
-  it('fetches bracket data and playoff teams', async () => {
-    mocks.bracket.mockResolvedValue({ id: 'b1' });
+  it('fetches playoff teams', async () => {
     mocks.teams.mockResolvedValue([{ id: 't1' }]);
     const { wrapper } = setup();
-    const bracket = renderHook(() => usePlayoffBracketData('b1'), { wrapper });
     const teams = renderHook(() => usePlayoffTeams(), { wrapper });
-    await waitFor(() => expect(bracket.result.current.data).toEqual({ id: 'b1' }));
     await waitFor(() => expect(teams.result.current.data).toEqual([{ id: 't1' }]));
-    expect(mocks.bracket).toHaveBeenCalledWith('b1');
   });
   it('maps a brackets-manager match and stays idle for null', async () => {
     mocks.bmMatch.mockResolvedValue({
