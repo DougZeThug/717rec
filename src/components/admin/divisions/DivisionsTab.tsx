@@ -48,11 +48,11 @@ const DivisionsTab: React.FC = () => {
 
   return (
     <AdminSectionWrapper title="Divisions" icon={Trophy}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between gap-3 mb-4">
         <p className="text-sm text-muted-foreground">
           Manage division names, display grouping, and weights.
         </p>
-        <Button size="sm" onClick={() => setCreateOpen(true)}>
+        <Button size="sm" className="shrink-0" onClick={() => setCreateOpen(true)}>
           <Plus className="size-4 mr-1" />
           New Division
         </Button>
