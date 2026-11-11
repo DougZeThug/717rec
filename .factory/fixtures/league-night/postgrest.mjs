@@ -54,33 +54,34 @@ const FK_TABLE = {
 const KEY = { v_team_details: 'team_id', v_player_season_stats: 'player_id' };
 const singular = (t) => t.replace(/^v_/, '').replace(/_details$/, '').replace(/ies$/, 'y').replace(/(ch|sh|x)es$/, '$1').replace(/s$/, '');
 
-const embed = (tables, parentTable, row, item) => {
-  const named = item.name;
-  const target = tables[named] !== undefined ? named : (item.alias && tables[item.alias] !== undefined ? item.alias : FK_TABLE[named]);
-  if (!target || tables[target] === undefined) return { value: null, known: false };
-  const rows = tables.rowsOf(target);
-  const hint = item.hints.find((h) => h !== 'inner' && h !== 'left');
-  let fk = null;
-  if (tables[named] === undefined && named in row) fk = named; // teams:team_id(...)
-  else if (hint && hint in row) fk = hint; // v_team_details!team1_id(...)
-  else if (hint) {
-    const m = new RegExp(`^${parentTable}_(\\w+)_fkey$`).exec(hint); // teams!matches_team1_id_fkey(...)
-    if (m && m[1] in row) fk = m[1];
-  }
-  if (!fk && `${singular(target)}_id` in row) fk = `${singular(target)}_id`;
-  if (fk) {
-    const key = KEY[target] ?? 'id';
-    const found = rows.find((r) => r[key] === row[fk] && row[fk] != null) ?? null;
-    return { value: found ? shape(tables, target, found, item.children) : null, known: true };
-  }
-  // one-to-many: child rows that point back at the parent
-  const back = `${singular(parentTable)}_id`;
-  const parentKey = row[KEY[parentTable] ?? 'id'];
-  const kids = rows.filter((r) => r[back] === parentKey);
-  return { value: kids.map((k) => shape(tables, target, k, item.children)), known: true };
-};
-
 export const shape = (tables, table, row, items) => {
+  // Nested so the two can call each other with no forward reference.
+  const embed = (tables, parentTable, row, item) => {
+    const named = item.name;
+    const target = tables[named] !== undefined ? named : (item.alias && tables[item.alias] !== undefined ? item.alias : FK_TABLE[named]);
+    if (!target || tables[target] === undefined) return { value: null, known: false };
+    const rows = tables.rowsOf(target);
+    const hint = item.hints.find((h) => h !== 'inner' && h !== 'left');
+    let fk = null;
+    if (tables[named] === undefined && named in row) fk = named; // teams:team_id(...)
+    else if (hint && hint in row) fk = hint; // v_team_details!team1_id(...)
+    else if (hint) {
+      const match = new RegExp(`^${parentTable}_(\\w+)_fkey$`).exec(hint); // teams!matches_team1_id_fkey(...)
+      if (match && match[1] in row) fk = match[1];
+    }
+    if (!fk && `${singular(target)}_id` in row) fk = `${singular(target)}_id`;
+    if (fk) {
+      const key = KEY[target] ?? 'id';
+      const found = rows.find((r) => r[key] === row[fk] && row[fk] != null) ?? null;
+      return { value: found ? shape(tables, target, found, item.children) : null, known: true };
+    }
+    // one-to-many: child rows that point back at the parent
+    const back = `${singular(parentTable)}_id`;
+    const parentKey = row[KEY[parentTable] ?? 'id'];
+    const kids = rows.filter((r) => r[back] === parentKey);
+    return { value: kids.map((k) => shape(tables, target, k, item.children)), known: true };
+  };
+
   if (!items) return { ...row };
   const out = { ...row };
   for (const item of items) {
@@ -119,6 +120,12 @@ export const test = (cell, spec) => {
   return true; // fts and other operators do not filter
 };
 
+const cellOf = (row, path) => {
+  const m = /^(\w+)\((\w+)\)$/.exec(path) ?? /^(\w+)\.(\w+)$/.exec(path);
+  if (m) { const v = row[m[1]]; return Array.isArray(v) ? v[0]?.[m[2]] : v?.[m[2]]; }
+  return row[path];
+};
+
 // "a.eq.1,and(b.gt.2,c.is.null),d.in.(x,y)" inside or=(...) / and=(...)
 const logic = (row, kind, body) => {
   const terms = splitTop(body).map((t) => {
@@ -130,11 +137,6 @@ const logic = (row, kind, body) => {
   return kind === 'or' ? terms.some((f) => f()) : terms.every((f) => f());
 };
 
-const cellOf = (row, path) => {
-  const m = /^(\w+)\((\w+)\)$/.exec(path) ?? /^(\w+)\.(\w+)$/.exec(path);
-  if (m) { const v = row[m[1]]; return Array.isArray(v) ? v[0]?.[m[2]] : v?.[m[2]]; }
-  return row[path];
-};
 
 const sortRows = (rows, order) => {
   const keys = order.split(',').map((o) => {

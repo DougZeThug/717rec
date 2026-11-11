@@ -67,7 +67,7 @@ const teamPlayers = [
   ...roster(TEAM.CHARLIE, 410, ['2A', '2B']),
   ...teams.flatMap((t, i) => (i === TEAM.BRAVO || i === TEAM.CHARLIE ? [] : roster(i, 420 + i * 2, [`${i}A`, `${i}B`]))),
 ];
-const P = (team, k) => teamPlayers.filter((p) => p.team_id === tid(team))[k].id;
+const P = (team, k) => teamPlayers.filter((player) => player.team_id === tid(team))[k].id;
 
 // ---- League night matches ----
 const matchBase = {
@@ -111,7 +111,7 @@ const toMatch = (day) => ([n, a, b, h, m, result]) => {
 export const LIVE_MATCH = ID(1000);
 // The standings mock's own "upcoming" match (ID(230), three days out) is dropped: tonight's schedule replaces it.
 const matches = [
-  ...base.matches.filter((m) => m.id !== ID(230)).map(({ team1, team2, ...m }) => ({ ...m, round_number: m.round_number ?? 0 })),
+  ...base.matches.filter((m) => m.id !== ID(230)).map((match) => { const row = { ...match, round_number: match.round_number ?? 0 }; delete row.team1; delete row.team2; return row; }),
   ...NIGHT_ROWS.map(toMatch(NIGHT)),
   ...LAST_ROWS.map(toMatch(LAST)),
 ];
@@ -189,7 +189,7 @@ SCRIPTS.forEach(({ match, team1, team2, day, games: list }, sk) => {
 const seasonStart = Date.UTC(2026, 0, 5);
 export const weekOf = (day) => Math.floor((Date.UTC(day.getFullYear(), day.getMonth(), day.getDate()) - seasonStart) / (7 * DAY)) + 1;
 export const RECAP_WEEK = weekOf(LAST);
-const snapAt = (offsetDays) => { const d = new Date(LAST); d.setDate(d.getDate() + offsetDays); return d; };
+const snapAt = (offsetDays) => { const day = new Date(LAST); day.setDate(day.getDate() + offsetDays); return day; };
 const freshSnapshots = base.power_score_snapshots.map((row) => {
   const latest = row.week_number === 17;
   const day = snapAt(latest ? 1 : -6);

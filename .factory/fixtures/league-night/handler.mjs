@@ -30,7 +30,7 @@ const session = (user) => ({
 //    token pushes, echoing postgres_changes bindings with ids. It never sends a change event. Other sockets
 //    (the Vite dev server's) get the real WebSocket.
 export function init(arg) {
-  if (arg && arg.key) {
+  if (arg?.key) {
     const now = Math.floor(Date.now() / 1000);
     window.localStorage.setItem(arg.key, JSON.stringify({ ...arg.session, expires_at: now + 3600 }));
     window.sessionStorage.removeItem('adminActiveTab');
@@ -46,11 +46,11 @@ export function init(arg) {
     emit(event) { this.dispatchEvent(event); const handler = this[`on${event.type}`]; if (handler) handler.call(this, event); }
     send(data) {
       if (typeof data !== 'string') return;
-      let msg;
+      let msg = null;
       try { msg = JSON.parse(data); } catch { return; }
       const [joinRef, ref, topic, event, payload] = Array.isArray(msg) ? msg : [msg.join_ref, msg.ref, msg.topic, msg.event, msg.payload];
       if (ref == null) return;
-      const changes = event === 'phx_join' ? ((payload && payload.config && payload.config.postgres_changes) || []) : [];
+      const changes = event === 'phx_join' ? (payload?.config?.postgres_changes ?? []) : [];
       const response = event === 'phx_join' ? { postgres_changes: changes.map((c, i) => ({ ...c, id: 9000 + i })) } : {};
       const reply = JSON.stringify([joinRef ?? null, ref, topic, 'phx_reply', { status: 'ok', response }]);
       setTimeout(() => { if (this.readyState === 1) this.emit(new MessageEvent('message', { data: reply })); }, 5);
@@ -75,7 +75,7 @@ const TABLES = { ...LEAGUE_NIGHT, ...EXTRA_TABLES };
 // Tables whose only SELECT policy is granted TO authenticated: a signed-out read gets zero rows and no error, as in
 // the database (messages: migration 20251010171351).
 const MEMBERS_ONLY = new Set(['messages']);
-const tables = { ...TABLES, rowsOf(name) { const v = TABLES[name]; return typeof v === 'function' ? v() : (v ?? []); } };
+const tables = { ...TABLES, rowsOf(name) { const value = TABLES[name]; return typeof value === 'function' ? value() : (value ?? []); } };
 
 export const createMock = (person) => {
   const user = person ? makeUser(person) : null;
@@ -116,7 +116,7 @@ export const createMock = (person) => {
     if (req.method() === 'HEAD') { await route.fulfill({ status: 200, headers: { ...CORS, ...headers }, body: '' }); return true; }
     if ((req.headers().accept ?? '').includes('vnd.pgrst.object')) {
       await (rows.length === 1 ? json(route, rows[0], 200, headers)
-        : json(route, { code: 'PGRST116', message: `JSON object requested, multiple (or no) rows returned`, details: `The result contains ${rows.length} rows`, hint: null }, 406));
+        : json(route, { code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned', details: `The result contains ${rows.length} rows`, hint: null }, 406));
       return true;
     }
     await json(route, rows, 200, headers);

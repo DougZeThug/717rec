@@ -31,15 +31,15 @@ BRACKETS.forEach((b, k) => {
   bm.group.push({ id: n + 1, stage_id: n + 1, number: 1, name: null });
   bm.round.push({ id: n + 1, stage_id: n + 1, group_id: n + 1, number: 1, name: null }, { id: n + 2, stage_id: n + 1, group_id: n + 1, number: 2, name: null });
   b.seeds.forEach((team, s) => bm.participant.push({ id: n + 1 + s, tournament_id: b.id, name: teams[team].name, team_id: tid(team), position: s + 1 }));
-  const p = (seed) => n + seed; // participant id of seed 1..4
-  const done = (a, bb, aGames, bGames) => ({ opponent1_id: p(a), opponent1_position: a, opponent1_score: aGames, opponent1_result: aGames > bGames ? 'win' : 'loss',
-    opponent2_id: p(bb), opponent2_position: bb, opponent2_score: bGames, opponent2_result: aGames > bGames ? 'loss' : 'win', status: 4 });
+  const pid = (seed) => n + seed; // participant id of seed 1..4
+  const done = (a, bb, aGames, bGames) => ({ opponent1_id: pid(a), opponent1_position: a, opponent1_score: aGames, opponent1_result: aGames > bGames ? 'win' : 'loss',
+    opponent2_id: pid(bb), opponent2_position: bb, opponent2_score: bGames, opponent2_result: aGames > bGames ? 'loss' : 'win', status: 4 });
   const common = { stage_id: n + 1, group_id: n + 1, child_count: 0 };
   bm.match.push(
     { ...common, id: n + 1, round_id: n + 1, number: 1, ...done(1, 4, 2, 0) },
     { ...common, id: n + 2, round_id: n + 1, number: 2, ...done(2, 3, 2, 1) },
-    { ...common, id: n + 3, round_id: n + 2, number: 1, opponent1_id: p(1), opponent1_position: null, opponent1_score: null, opponent1_result: null,
-      opponent2_id: p(2), opponent2_position: null, opponent2_score: null, opponent2_result: null, status: 2 },
+    { ...common, id: n + 3, round_id: n + 2, number: 1, opponent1_id: pid(1), opponent1_position: null, opponent1_score: null, opponent1_result: null,
+      opponent2_id: pid(2), opponent2_position: null, opponent2_score: null, opponent2_result: null, status: 2 },
   );
 });
 
@@ -90,7 +90,7 @@ const recapEditions = [{
   created_at: published, created_by: ADMIN.id, updated_at: published,
 }];
 const recapVersions = [{
-  id: ID(2110), edition_id: ID(2100), version: 1, facts, facts_schema_version: 2, headline: 'Fake Team Echo stuns Fake Team Charlie in week ' + RECAP_WEEK,
+  id: ID(2110), edition_id: ID(2100), version: 1, facts, facts_schema_version: 2, headline: `Fake Team Echo stuns Fake Team Charlie in week ${RECAP_WEEK}`,
   caption: 'A fake week of upsets and long names. Fake Team Bravo climbs, Fake Team Echo bites back, and two fake matches still need scores.',
   caption_source: 'manual', caption_model: null, blurbs, blurbs_source: 'fallback', commissioner_note: 'Fake commissioner note: bring a jacket, the fake lanes get cold after 8.',
   correction_note: null, graphic_url: null, created_at: published, created_by: ADMIN.id,
@@ -137,10 +137,10 @@ const blindDrawSettings = [{ id: ID(2650), signup_confirmation_message: 'Fake co
 const challongeConfig = [{ id: ID(2660), enabled: false, header_title: 'Fake Playoff Brackets', header_subtitle: 'Fake subtitle', created_at: ago(90 * DAY), updated_at: ago(90 * DAY) }];
 // 30 days of first-party traffic, busiest on Thursdays.
 const traffic = Array.from({ length: 30 }, (_, k) => {
-  const d = new Date(Date.now() - (29 - k) * DAY);
-  const busy = d.getDay() === 4 ? 3 : d.getDay() === 5 ? 2 : 1;
+  const day = new Date(Date.now() - (29 - k) * DAY);
+  const busy = day.getDay() === 4 ? 3 : day.getDay() === 5 ? 2 : 1;
   const visitors = 18 * busy + ((k * 7) % 11);
-  return { day: dayKey(d), visitors, pageviews: visitors * 4 + (k % 5), ios_visitors: Math.round(visitors * 0.55), android_visitors: Math.round(visitors * 0.3), other_visitors: visitors - Math.round(visitors * 0.55) - Math.round(visitors * 0.3) };
+  return { day: dayKey(day), visitors, pageviews: visitors * 4 + (k % 5), ios_visitors: Math.round(visitors * 0.55), android_visitors: Math.round(visitors * 0.3), other_visitors: visitors - Math.round(visitors * 0.55) - Math.round(visitors * 0.3) };
 });
 
 // Power Score Sandbox inputs (0-1 scale), worked out from the same records the standings mock shows.

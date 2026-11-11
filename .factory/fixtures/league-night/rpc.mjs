@@ -18,9 +18,13 @@ export const RPC = {
   ],
   // Power migration: unified formula applied, backup kept. The "before" numbers are the live ones nudged a little.
   admin_power_unification_status: () => [{ status: 'applied', backed_up_at: BACKED_UP, backup_season_rows: base.team_season_stats.length, backup_team_rows: teams.length, live_season_rows: base.team_season_stats.length }],
-  admin_get_pre_unification_season_stats: () => base.team_season_stats.map(({ seasons, career_power_score, ...row }, k) => ({
+  admin_get_pre_unification_season_stats: () => base.team_season_stats.map((stats, k) => {
+    const row = { ...stats };
+    delete row.seasons;
+    delete row.career_power_score;
+    return {
     ...row, power_score: Number((row.power_score - 0.02 + (k % 5) * 0.01).toFixed(3)), recorded_at: BACKED_UP, backed_up_at: BACKED_UP, season_name: seasonName(row.season_id),
-  })),
+  }; }),
   admin_get_pre_unification_team_power: () => teams.map((t, k) => ({
     team_id: t.team_id, power_score: Number((t.power_score - 2 + (k % 4)).toFixed(1)), wins: t.wins, losses: t.losses, game_wins: t.game_wins,
     game_losses: t.game_losses, win_percentage: t.win_percentage, game_win_percentage: t.game_win_percentage, backed_up_at: BACKED_UP,
