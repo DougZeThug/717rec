@@ -7,7 +7,7 @@ interface UseScheduleTabsOptions {
   matchesLoading: boolean;
   timeslotsLoading: boolean;
   upcomingMatches: { id: string }[] | undefined;
-  completedMatches?: { id: string }[] | undefined;
+  completedMatches?: { id: string }[];
   /**
    * The match a shared link names (`#match-<id>`). On the first tab pick only,
    * the page opens the tab that holds it, before the date rule.

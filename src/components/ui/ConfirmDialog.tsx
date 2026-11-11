@@ -64,7 +64,7 @@ export const ConfirmDialog = ({
             // Keep the dialog mounted while the action runs, so the pending
             // state is visible and a second click cannot get through.
             e.preventDefault();
-            void onConfirm();
+            onConfirm();
           }}
           disabled={isPending}
           className={
