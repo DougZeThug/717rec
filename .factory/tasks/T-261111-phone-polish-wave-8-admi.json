@@ -2,7 +2,7 @@
   "id": "T-261111-phone-polish-wave-8-admi",
   "title": "Phone polish wave 8: admin setup and content, then close-out",
   "kind": "polish",
-  "status": "building",
+  "status": "ready",
   "request": "Lets go with wave 8 now",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
@@ -11,7 +11,8 @@
   "criteria": [
     {
       "text": "Doug: Reopen + Clear Downstream on the playoff BYE editor asks first (ConfirmDialog, closes after the action, pending state, Cancel makes no call; tests cover confirm and cancel). Its four buttons are readable in light, dark and winter (red text-destructive-text; amber/green -700; dark twins) and a tap leaves no pale fill in dark.",
-      "done": false
+      "done": true,
+      "evidence": "ByeMatchEditor.test.tsx: tap makes no call, 'Reopen and clear' calls toggle(true), the question then closes (313c094), Cancel makes no call; ConfirmDialog isPending disables both buttons (handler sets isTogglingStatus before its first await, reviewer verified). Contrast measured in the app's real CSS (scratchpad w8/bye.mjs, bg-background + muted box): light 4.95-5.83 rest / 4.50-5.11 tapped; dark 6.63-11.55 / 6.45-10.23; winter 6.29-10.95 / 6.15-9.58; tapped tint stays dark (e.g. 12,21,36) in dark and winter. No BYE match in the fake data, so not seen inside the real editor."
     },
     {
       "text": "Admin setup at 320 and 390 px: Timeslots delete button visible with no sideways swipe; Timeslots date button and Participation season select full width below sm; New Division text inside its button; Team Management tabs in an even 2x2 grid; Auto Schedule switch tap areas no longer overlap; blind draw sign-ups table scrolls sideways instead of clipping. Desktop 1280 unchanged.",
@@ -35,7 +36,8 @@
     },
     {
       "text": "Contrast in light: SOS and win%/standings % helpers use the lowest passing shade (green-700, orange-700, hard red-600, very hard red-700; dark unchanged; sweep helpers untouched per Doug). Contact inbox Verified, Join and Score badges -700 in light; 11 px dates and Expires/Expired on contact inbox and notifications are 12 px. Tests updated to the new values.",
-      "done": false
+      "done": true,
+      "evidence": "Code: SOS easy green-700, moderate orange-700, hard red-700, very hard red-800 (red-600 measured 4.35 on /stats zebra rows by QA, so red-700 is the lowest passing shade and very hard moved one darker to stay distinct); win%/standings green-700, blue-600, orange-700, red-700; dark and sweep unchanged; tests updated values only. QA measured on real pixels: /stats green-700 4.68, orange-700 4.91, blue-600 4.96, red-700 6.08; axe color-contrast 0 on /stats and /history. Inbox Score 4.62, Join 4.86; dates and Expires 12 px."
     },
     {
       "text": "Doug: the /setup-profile league-name field reads Display Name with the hint 'The name other players see. At least 3 letters or numbers.'; placeholder, toast and error messages match; blind draw First name untouched; tests and profile docs (set-up-your-profile, accounts-and-roles, glossary, verification) match.",
@@ -52,9 +54,9 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "894b352fc1c4112b4f072c95b83617f9d58e1dd5",
+      "sha": "75ff76ec90a56f808a4d40418c794aa7b86cf997",
       "dirty": false,
-      "at": "2026-11-11T01:08:23.931Z",
+      "at": "2026-11-11T01:31:01.173Z",
       "seconds": 7,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261111-phone-polish-wave-8-admi/typecheck.log"
@@ -62,29 +64,29 @@
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "894b352fc1c4112b4f072c95b83617f9d58e1dd5",
+      "sha": "75ff76ec90a56f808a4d40418c794aa7b86cf997",
       "dirty": false,
-      "at": "2026-11-11T01:09:26.961Z",
-      "seconds": 59,
+      "at": "2026-11-11T01:32:02.671Z",
+      "seconds": 61,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261111-phone-polish-wave-8-admi/lint.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "894b352fc1c4112b4f072c95b83617f9d58e1dd5",
+      "sha": "75ff76ec90a56f808a4d40418c794aa7b86cf997",
       "dirty": false,
-      "at": "2026-11-11T01:16:19.081Z",
-      "seconds": 408,
+      "at": "2026-11-11T01:38:14.586Z",
+      "seconds": 369,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261111-phone-polish-wave-8-admi/unit.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "894b352fc1c4112b4f072c95b83617f9d58e1dd5",
+      "sha": "75ff76ec90a56f808a4d40418c794aa7b86cf997",
       "dirty": false,
-      "at": "2026-11-11T01:16:26.561Z",
+      "at": "2026-11-11T01:38:20.044Z",
       "seconds": 3,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261111-phone-polish-wave-8-admi/build.log"
@@ -92,28 +94,38 @@
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "894b352fc1c4112b4f072c95b83617f9d58e1dd5",
+      "sha": "75ff76ec90a56f808a4d40418c794aa7b86cf997",
       "dirty": false,
-      "at": "2026-11-11T01:16:32.212Z",
-      "seconds": 3,
+      "at": "2026-11-11T01:38:22.462Z",
+      "seconds": 2,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261111-phone-polish-wave-8-admi/knip.log"
     },
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "894b352fc1c4112b4f072c95b83617f9d58e1dd5",
+      "sha": "75ff76ec90a56f808a4d40418c794aa7b86cf997",
       "dirty": false,
-      "at": "2026-11-11T01:16:34.131Z",
+      "at": "2026-11-11T01:38:22.581Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261111-phone-polish-wave-8-admi/integrity.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "75ff76ec90a56f808a4d40418c794aa7b86cf997",
+      "at": "2026-11-11T01:39:16.799Z",
+      "summary": "Independent reviewer at 894b352: Wave 8 meets the request; BYE clear asks first and cannot double-fire; Edit Team sheet closes only from its buttons on phone, desktop unchanged; no tests weakened; recount correct; control files untouched. 4 non-blocking suggestions: closes-after-reset test and ConfirmDialog error comment added (313c094), Escape doc row fixed (75ff76e), criterion 6 shade wording explained in its evidence; Timeslots desktop Actions heading is now screen-reader only (documented in manage-timeslots.md)."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-11T01:29:21.152Z"
+  "updatedAt": "2026-11-11T01:39:16.921Z",
+  "readySha": "75ff76ec90a56f808a4d40418c794aa7b86cf997",
+  "readyAt": "2026-11-11T01:39:16.921Z"
 }
