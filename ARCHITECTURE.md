@@ -70,7 +70,7 @@ Components → Hooks → Services → Supabase → PostgreSQL
 **Example**: Displaying teams
 
 ```
-TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.from('v_team_details')
+TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeamsWithOptions() → supabase.from('v_team_details')
 ```
 
 ### Pure decision modules
