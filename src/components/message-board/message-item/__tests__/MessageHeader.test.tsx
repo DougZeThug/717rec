@@ -64,6 +64,8 @@ describe('MessageHeader', () => {
     expect(time).toHaveClass('shrink-0');
     const row = time.parentElement as HTMLElement;
     expect(row).toHaveClass('min-w-0');
+    // On a narrow phone the time wraps under the name instead of crushing it.
+    expect(row).toHaveClass('flex-wrap');
     expect(row).not.toHaveClass('max-w-full');
     // The tooltip trigger wraps the name block and must be allowed to shrink.
     expect(row.firstElementChild).toHaveClass('min-w-0');
