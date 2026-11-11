@@ -2757,7 +2757,7 @@ finding read a superseded migration.
 - **Decision needed:** `fix`.
 - **Raised by:** a code reading, not a feature document.
 - **Status:** **fixed.** The toast now comes from the QueryCache
-  (`src/utils/queryErrorToast.ts`, wired in `App.tsx`), which runs **once per
+  (`src/hooks/queryErrorToast.ts`, wired in `App.tsx`), which runs **once per
   query failure after retries are exhausted**. Queries opt in with
   `meta.errorToast`, which supplies the fallback wording only — the server's own
   message still wins through `getUIErrorMessage`.

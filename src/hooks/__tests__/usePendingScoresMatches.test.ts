@@ -3,8 +3,8 @@ import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { handleQueryError } from '@/hooks/queryErrorToast';
 import { usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';
-import { handleQueryError } from '@/utils/queryErrorToast';
 
 // One stable spy at module scope. A `() => ({ toast: vi.fn() })` factory mints a
 // new function per render, which makes call counts unassertable.
