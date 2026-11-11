@@ -1,7 +1,5 @@
 import { bracketLog } from '@/utils/logger';
 
-import type { SimpleBracketData } from './useBracketData';
-
 interface RawMatch {
   id: number;
   opponent1_id: number | null;
@@ -82,6 +80,58 @@ interface TransformBracketsManagerDataInput {
   rounds: RawRound[];
   matches: RawMatch[];
   teamDetails: TeamDetail[];
+}
+
+export interface SimpleBracketData {
+  id: string;
+  name: string;
+  title: string;
+  format: string;
+  state: string;
+  /** Display name of the division, for showing to the user. */
+  division: string;
+  /** The division's database id, needed to edit or re-file the bracket. */
+  divisionId: string | null;
+  /** The season this bracket belongs to, so a link to it can select that season. */
+  seasonId?: string | null;
+  challonge_tournament_id?: number | null;
+  /** brackets.wb_champion_id — the winning team, once the bracket is decided. */
+  champion?: string | null;
+  uses_brackets_manager?: boolean;
+  matches: Array<{
+    id: string;
+    /** The round's place inside its half of the bracket (`round.number`), not `round_id`. */
+    round: number;
+    position: number;
+    team1Id: string | null;
+    team2Id: string | null;
+    team1Name?: string;
+    team2Name?: string;
+    team1Logo?: string;
+    team2Logo?: string;
+    winnerId: string | null;
+    team1Score: number | null;
+    team2Score: number | null;
+    matchType: string;
+    status: string;
+    nextWinMatchId?: string | null;
+    nextLoseMatchId?: string | null;
+    team1Seed?: number | null;
+    team2Seed?: number | null;
+  }>;
+  teams: Array<{
+    id: string;
+    name: string;
+    logo_url?: string;
+  }>;
+  participants?: Array<{
+    position: number;
+    team_id: string;
+    name: string;
+    logo_url?: string;
+    image_url?: string;
+  }>;
+  stageId?: number;
 }
 
 /**

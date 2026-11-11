@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 
 import { BRACKET_FORMATS, BRACKET_STATES } from '@/constants/brackets';
-import type { SimpleBracketData } from '@/hooks/brackets/useBracketData';
+import type { SimpleBracketData } from '@/hooks/brackets/transformBracketData';
 import { useBracketData } from '@/hooks/brackets/useBracketData';
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
