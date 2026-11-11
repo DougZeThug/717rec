@@ -55,10 +55,10 @@ calls itself mobile. Above it, desktop. The stylesheet has more breakpoints —
 | A fixed tab bar at the bottom of the screen, four tabs: Standings, Schedule, Teams, Playoffs | No bottom bar, and nothing replaces it — the top bar is the only navigation |
 | No search | A search icon in the top bar, and **Cmd/Ctrl+K** opens a command palette that jumps to nine pages or any of the first ten teams |
 | Pages get five extra lines of bottom padding, plus the phone's own safe area, so the tab bar clears the content | Ordinary page padding |
-| Toasts fill the width at the top of the screen | Toasts are at most 420 pixels wide, bottom right |
+| Toasts fill the width at the top of the screen, below the notch | Toasts are at most 420 pixels wide, bottom right |
 | The teams list defaults to grouped by division | The teams list defaults to one list |
 | Several stats and standings tables render as stacked cards | The same data as a table |
-| One dialog — playoff team divisions — opens as a bottom drawer | It opens as a centred dialog |
+| Seven dialogs open as a bottom drawer: score submission on the home page, the match form on the schedule, approving a score submission in admin Scores, playoff team divisions, the live scoring player picker, Edit round in Live Corrections and Edit Team in admin Teams. Every other dialog is a centred box with a 16-pixel gap each side | The same seven open as centred dialogs |
 
 The top bar is the one exception, and it changes later:
 
@@ -134,7 +134,8 @@ step. Its six documents start at
   bar, the calendar's month arrows, the close cross of a dialog, the small round
   and remove buttons (the remove-signup, hero card remove and reaction picker
   buttons are pinned by tests, not measured in a browser), the text fields that once set their own height, and the
-  block buttons in Timeslots and the Scores time-slot headers. A switch or a
+  block buttons in Timeslots, the Scores time-slot headers and the League Night
+  Status "Developer" button (it was 36 pixels until 2026-11-10). A switch or a
   checkbox looks the same as before and has an invisible 44-pixel tap area (the
   Auto Schedule team checkbox is the one exception, in the next bullet). In a
   list of options or a menu, each row is 44 pixels tall on a touch screen; a
@@ -148,20 +149,20 @@ step. Its six documents start at
   pixels apart.
 - A few controls are still under 44 pixels, on purpose: the day cells of a
   calendar are 36 pixels wide and 44 tall (seven must fit a 320-pixel phone), the
-  two Auto Schedule switches that sit one above the other share the 36-pixel gap
-  between them, the Auto Schedule team checkbox has a tap area 30 pixels wide (its
+  Auto Schedule team checkbox has a tap area 30 pixels wide (its
   scrolling list cuts the left side, and the team name beside it toggles the same
   box), and the small clear cross inside a multi-select was left alone.
   The select box, tab, switch, checkbox, close cross and small buttons are shared
   pieces, so they have the same size on the public pages. The home page's "Score
-  live" button, the schedule card's live-score and recap buttons and the recap
-  dialog's "Open full recap" link are 44 pixels tall too (they were 40). On a
+  live" button, the schedule card's live-score, "Watch live" and recap buttons and
+  the recap dialog's "Open full recap" link are 44 pixels tall too (they were 40).
+  The menu (…) beside a player's own match comment is 44 by 44 pixels and always
+  shown; it used to appear only on hover, so a phone never showed it. On a
   phone the Teams page's division header bars are 44 pixels tall (they were 40)
   and the standings sort buttons (Power, Win %, SOS, Wins) are 44 (they were 36); so are the career rankings sort buttons, which are a copy of the same code.
   The public pages were scanned control by control at 390 and 320 pixels, with
   fake data, after the admin console. Left as they are: the standings badge
-  buttons (32 pixels, side by side), the "View … team details" rows in the
-  standings (36), and the "Sign in" and "Sign up" links inside the sentence under
+  buttons (32 pixels, side by side), the team links in the standings (36), and the "Sign in" and "Sign up" links inside the sentence under
   the login form (39).
 - Other controls are whatever size the component library gives, which is
   smaller — but no row is now under **24 pixels**, the accessibility floor. The rows raised to it are the home page's
@@ -180,15 +181,172 @@ step. Its six documents start at
   margins, and a long name with no spaces breaks. A long email, name or team
   in the contact inbox wraps inside its card. The team logo in Update Logos shows
   whole (the box showed only the middle 80 of 144 pixels). The My Team edit row
-  drops its text under the logo when it would have less than 128 pixels, and the
-  long team ID breaks. These are measured in a real browser against fake data,
+  drops its text under the logo when it would have less than 160 pixels (128
+  until 2026-11-10), and the long team ID breaks. On live scoring a long team
+  name ends in "…" inside the scoreboard and the round history, and each round's "+N" stays on screen; before
+  2026-11-09 the names under the game totals ran past both screen edges and long
+  rows ran past the list. These are measured in a real browser against fake data,
   not on a real phone.
-- **No label is under 12 pixels** on the home page, the standings, the teams
-  list or history. Labels there were 9 to 11 pixels, which is unreadable in a
-  bar. The schedule's weekday strip and the playoff bracket's participant names
-  are still smaller; they are tracked separately.
-- The phone's safe areas are honoured in the top bar, the bottom tab bar and the
-  padding under every page. A notch or a home indicator does not sit over them.
+- **No label is under 12 pixels** on the home page, the teams list or history,
+  nor on the standings outside its Power Score charts (see below). Labels there
+  were 9 to 11 pixels, which is unreadable in a bar. The schedule and live
+  scoring followed on 2026-11-09: the date strip's weekdays, a match card's prediction numbers, High/Medium/Low, "Won", the
+  rivalry tag, the timeslot double-header pill and division badge, and live
+  scoring's "Games" and thrower headings are 12 pixels (they were 11). Each sits
+  in a 16-pixel line, as before, so nothing around them moved; a date chip is
+  still 64 pixels tall and "100%" fits its box.
+  The admin console followed on 2026-11-10: the team names over the Scores
+  result buttons are 12 pixels (they were 11), in the same 16-pixel line. On
+  2026-11-11 the Contact Inbox time and the notification dates, EXPIRED tag and
+  "Expires" line followed (they were 11). The
+  League Night Status traffic chart's axis labels are 12 pixels (they were 10),
+  and the chart no longer cuts its left labels off.
+  The playoff bracket's participant names are 15 pixels on a phone (the phone
+  rule in `src/styles/brackets-viewer-717rec-theme.css`).
+  Home, standings, Insights and compare followed on 2026-11-10: the event tile
+  labels (Check-in, Start, Buy-in, Payouts), the champion card's division, the
+  past winners' "Week N", the parity bar's "Lopsided" and "Competitive", the
+  Division Strength scale, the rank pills ("2nd") and the win-loss chart's names
+  and scale are 12 pixels (they were 10 or 11). Still under 12 pixels on these
+  screens: the Power Score chart's team names, scale and bar values on the
+  standings (11), and the career Power Score chart's season names (11), whose
+  slanted labels were left until real season names are checked.
+- **Home, standings, Insights and compare fit a 320-pixel phone** (2026-11-10).
+  The standings' Compact/Detailed switch drops under the Division/All switch
+  when the two do not fit; before, "Detailed" was cut off. The Power Score help
+  (the "i" beside Current Standings) is never taller than the room under its
+  button and scrolls inside. The League Leaderboard title is one line above the
+  three cards below 640 pixels, so the cards get the full width and their rank
+  circles are whole. A next-match team name takes up to 112 pixels (it was cut
+  at 80) and still ends in "…"; on a 320-pixel phone it shrinks, so the arrow
+  stays in the card. Compare shows each team name on up to two lines in its half
+  of the row, and a long word breaks instead of running over the other name. A
+  Division Matchups row puts its record under the two division names when they
+  do not fit side by side. "Read the full recap" and "See full schedule" are 24
+  pixels tall (they were 20 and 16). The phone hero card no longer adds the
+  notch height: the top bar above it already does. That last one is from the
+  code; the headless browser has no notch, so it was not seen on a real iPhone.
+  Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
+- **Team pages, the message board and the schedule fit a 320-pixel phone**
+  (changed 2026-11-10).
+  - Team page: Records by Division shows one card per row below 640 pixels and
+    three side by side from 640 up. Before, three cards in one row were cut at
+    320 pixels. The Core tab's tile says "Win %" and the Game tab's says
+    "Game Win %"; "Win Percentage" was cut off in its half-width tile.
+  - Message board: the page has a 16-pixel side margin (it was 1 pixel). A long
+    link or a long word in a post wraps inside the post box. Before, the posts
+    grew wider than the box. A long username or team name ends in "…", and the
+    post time always shows whole. The same holds in match comments, which used
+    to run past the match card. On a 320-pixel phone, a member's own post also
+    shows the "…" menu. Since 2026-11-11 the time drops to its own line when
+    the names do not fit, so the names get the row; before, both names shared
+    about 50 pixels and the username showed as "fa…". A long team badge still
+    takes most of the row (known and kept).
+  - Live scoring: the round preview ("*Team* +N") stays on one line. A long
+    team name ends in "…" and "+N" stays whole, so the score grids do not move
+    when the second score is tapped.
+  - Schedule: the phone carousel keeps the night it shows when the matches are
+    fetched again. If a refetch adds or removes an earlier night, the carousel
+    stays on its night. If that night is gone (a filter removed it), the
+    carousel shows the nearest night by date. A swipe changes the kept night.
+    Picking a night on the date strip still moves the carousel to it. A shared
+    link to one match (`#match-<id>`) opens the tab that holds that match. See
+    [the schedule page](../schedule/the-schedule-page.md).
+  Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
+- **Playoffs, history and the weekly recap fit a 320-pixel phone**
+  (changed 2026-11-10).
+  - Playoffs: the Update Bracket Seeding and Create Bracket pop-ups fit the
+    screen. Before, Update Bracket Seeding was 522 pixels wide on a 320 or
+    390-pixel phone, and Create Bracket scrolled sideways at 320. On the admin
+    Teams tab, a long division name wraps inside its tab.
+  - Playoffs: the raw bracket id no longer shows as a heading over a bracket
+    for its first second.
+  - History: the "Season History" title lines up with the cards below it. It
+    was 16 pixels nearer the screen edge.
+  - Weekly recap: a win-loss record ("9–1") stays on one line. The team column
+    keeps at least 112 pixels, so names and notes wrap on whole words. On a
+    320-pixel phone the power rankings table is too wide, and it scrolls
+    sideways inside its card. The page itself does not scroll sideways. At 390
+    and 1280 pixels each table fits and does not scroll. The "Home" link at the
+    top is 24 pixels tall.
+  Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
+- **Account, help and info pages line up on a phone** (changed 2026-11-10).
+  - Sign in, forgot password, reset password, set up profile and Contact start
+    20 pixels from the screen edge, like My Team and Join. Before, the first four
+    sat 4 pixels from the edge and Contact 36. On a wide screen nothing moved;
+    Contact's card is still 608 pixels wide. Help and the app authorisation page
+    keep their 16 pixels (a shared page frame would add a new backdrop).
+  - "Back to login" on the "This link has expired" page has a 36-pixel tap area,
+    as on the forgot-password page (it was 20).
+  - My Team: on a phone the team name and ID sit under the logo with the full
+    card width, so a long name takes 2 lines, not 4. At 320 pixels the edit
+    form's Cancel drops under Save Changes; it ran past the row. The Team Image
+    URL field opens the web-address keyboard.
+  - Help: the Accessibility section has the same bordered box as the other
+    sections, and a section title that wraps starts at the left.
+  Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
+- **The admin setup screens fit a 320-pixel phone** (changed 2026-11-11).
+  - Timeslots: the delete button in the Current Timeslots table shows with no
+    sideways swipe (the cells have less padding and a long team name wraps).
+    The date button is full width below 640 pixels. Known and kept: a long team
+    name wraps nearly one word per line at 320 pixels.
+  - Participation: the season picker is full width below 640 pixels.
+  - Divisions: the New Division words stay inside their button.
+  - Teams: the four tabs sit in an even grid of two rows of two. Edit Team is a
+    bottom sheet that a swipe cannot close (see
+    [manage teams and divisions](../admin/manage-teams-and-divisions.md#begin-editing)).
+  - Auto Schedule: each Match Rules switch sits in a row 44 pixels tall, so the
+    tap areas no longer overlap.
+  - Blind draw: the sign-ups table scrolls sideways inside its box when it is
+    too wide, instead of cutting off its right side.
+  - Every page: on a short page the footer sits at the bottom of the screen, on
+    a phone and on a wide screen. Before, it floated in the middle.
+  Measured in headless Chromium with fake data at 320, 390 and 1280 pixels.
+- **A centred dialog keeps a 16-pixel gap on each side** on a phone, has round
+  corners, is never taller than the screen minus 32 pixels, and scrolls inside
+  when its content is taller. Before, a dialog touched both screen edges. The
+  Live Corrections "Edit round" dialog was the tallest: 668 pixels on a
+  640-pixel-tall phone. Since 2026-11-10 it is a bottom drawer on a phone
+  instead (see the table above). The drawer is never taller than 90 per cent of
+  the screen, and its content scrolls inside it. A dialog that sets its
+  own height limit (for example 80 or 90 per cent of the screen) keeps it. The
+  command palette stays clipped and its list scrolls. Measured 2026-11-09 in
+  headless Chromium with fake data, at 320, 390 and 1280 pixels, on 15 dialogs
+  (team badge, GPA leaderboard, opponent history, match recap, leave team,
+  create division, approve request, edit team, Live Corrections edit round,
+  change winner and delete round, playoff score editor, edit bracket, update
+  seeding, command palette): every box at 1280 pixels kept its size. (Edit round
+  became a bottom drawer on a phone after this run, and Edit Team on
+  2026-11-11.) Update Bracket Seeding
+  scrolled sideways inside itself on a phone. Since 2026-11-10 it fits, and so
+  does Create Bracket. Two long pop-ups stay centred on a phone on purpose
+  (Doug, 2026-11-10). The playoff score pop-up has only two score boxes, and a
+  swipe on a bottom drawer would fight the Create Bracket drag-to-seed list. See
+  [`MODAL_PATTERNS.md`](../../../src/docs/MODAL_PATTERNS.md).
+- **Text fields are 16 pixels on a phone**, so iPhone Safari does not zoom the
+  page in when one gets focus (it zooms on anything smaller). That covers the
+  team search box in pickers and multi-selects, the match comment box, the
+  message edit box, the admin hero card fields (week, winner names, extra data),
+  the weekly blurb fields and the seed number box when an admin seeds a new
+  playoff bracket by hand. From 768 pixels up they stay 14 pixels. Measured in
+  the same run: the multi-select search, the comment box, the message edit box
+  and the three hero card fields. The home page's team picker search, the weekly
+  blurb box and the bracket seed box were not reached with the fake data; they
+  were changed by class and not measured in a browser (the team picker uses the
+  same search box as the multi-select).
+- **The admin console lines up and opens ready on a phone** (2026-11-10). The
+  seven admin sections that share one frame (Mass Score Entry, Match Creation,
+  Season Management, Divisions, Weekly Content Pack, Power Score Migration
+  Review and Power Score Sandbox) have no second side margin below 768 pixels.
+  Their left edge lines up with the Sections bar, 16 pixels from the screen
+  edge; before, they sat 16 pixels further in. From 768 pixels up they keep
+  their padding. Scores opens tonight's date group and its first time group
+  with no tap. In Live Corrections, the "Change winner" button drops under the
+  game title when the row is too narrow. Before, it was squeezed to 54 to 64
+  pixels and its words ran over the title and past the card.
+- The phone's safe areas are honoured in the top bar, the bottom tab bar, the
+  padding under every page and the toast list, which starts below the notch. A
+  notch or a home indicator does not sit over them.
   The playoffs page has no bottom bar of its own.
 - The bottom tab bar reaches four of the app's twenty-four routes. The hamburger reaches
   the other main pages — the message board, history, help, contact, and Admin for
@@ -202,18 +360,22 @@ step. Its six documents start at
 - The message board puts its list in a fixed-height scrolling box sized from the
   viewport, so the page has a scroller inside a scroller. On a phone the outer
   page barely moves and the inner list does the scrolling.
+- **A signed-out visitor sees one sign-in card on the message board** (Doug,
+  2026-11-10). There is no search, refresh, filter or bottom bar for them,
+  because they cannot read posts. A signed-in member sees all of them as before.
+  See [read the board](../message-board/read-the-board.md).
 
 ## Cancel and interrupt
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | A phone keyboard has no Escape, so on a phone nothing can be cancelled by key; only by tapping a Cancel or Close control. **The hamburger menu has no close-by-tapping-away** — it closes on a route change or by pressing the button again. It does close on Escape, which reaches it from an attached keyboard but not from a touch keyboard. | Same. A dialog's Cancel button works; there is no key that reaches it. |
-| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top; switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). Back puts `/teams`, `/stats`, `/history` and `/insights` back where they were (except when a page's data arrives late: the restore stops watching after one quiet second, three at most; see [navigation](../foundations/navigation.md#open-questions-and-verification)), and every other page wherever the browser puts it. Measured 2026-11-06 for `/teams` at 390 pixels wide in headless Chromium with fake data: within 1 pixel in every run. The fix is on this branch and not yet live. Safari, iOS, and a real phone's back swipe were not tried. | Everything typed is lost with no warning, exactly as on a desktop. |
-| Browser back or forward | The gesture-based back swipe is the browser's, and the app cannot intercept it. It behaves as an in-app navigation. | Same. On a phone this is the most likely way work is lost, because the swipe is easy to trigger by accident. |
+| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top; switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). Back puts `/teams`, `/stats`, `/history` and `/insights` back where they were (except when a page's data arrives late: the restore stops watching after one quiet second, three at most; see [navigation](../foundations/navigation.md#open-questions-and-verification)), and every other page wherever the browser puts it. Measured 2026-11-06 for `/teams` at 390 pixels wide in headless Chromium with fake data: within 1 pixel in every run. The fix is on this branch and not yet live. Safari, iOS, and a real phone's back swipe were not tried. | On the seven admin screens that guard unsaved work (listed under Unsaved changes below) the app asks first. Everywhere else everything typed is lost with no warning, exactly as on a desktop. |
+| Browser back or forward | The gesture-based back swipe is the browser's, and the app cannot intercept it. It behaves as an in-app navigation. | The six guarded admin screens ask first, because a back swipe is a Back. Everywhere else the same as above. On a phone this is the most likely way work is lost, because the swipe is easy to trigger by accident. |
 | Reload, or the tab closed | Everything in memory is lost and every page refetches. A mobile browser closing a background tab to save memory looks identical to a reload when the user comes back. | A sent write still lands. An unsent one is gone. |
-| Network lost mid-request | Nothing to lose. Cached data stays on screen and looks current, which on a phone at a venue is the common case. | The request fails and is lost. **Nothing is queued.** This matters most during live scoring, which is the one thing done on a phone at a place with poor signal. |
+| Network lost mid-request | Nothing to lose. Cached data stays on screen and looks current, which on a phone at a venue is the common case. | The request fails and is lost, except on live scoring. **Live scoring holds a round saved with no signal** and sends it by itself when the signal returns; the screen says so ("Offline — 1 round waiting to sync. Keep this page open."). Held rounds live in memory, so a reload or a closed tab loses them, and the browser asks before either. Nothing else is queued. |
 | The request fails or times out | A read retries once, then falls back to the page's own state. | One red toast across the top of the screen, covering the top bar while it is there. |
-| The session expires | Public pages keep working. | Writes fail. A phone left in a pocket for hours is the most likely place for a session to lapse, and nothing says so. |
+| The session expires | Public pages keep working. | Writes fail. Where the screen shows the reason, it now says "Your session has expired. Please sign in again." (`src/utils/errorHandler.ts`). A phone left in a pocket for hours is the most likely place for a session to lapse. |
 | The same record changed in another tab, or by another user | The screens that hold a realtime channel find out; standings, records, and the schedule do not. Two phones at the same live match stay in step, which is the design. | Same. Two phones editing anything without a channel overwrite each other silently. |
 | Browser autofill or a password manager writes into the form | Mobile keyboards and password managers fill fields the same way as on a desktop, including the contact form's hidden bot trap. | Same. |
 | The window loses focus | Switching apps suspends the tab. Coming back refetches anything past its fresh window, so numbers change as the app is re-opened — far more visible on a phone than on a desktop, because backgrounding is constant. | The request continues while the app is in the background if the browser allows it, and its toast is waiting when the user returns. |
@@ -232,8 +394,17 @@ is the user menu, which on a phone sits beside the hamburger. See
 **Validation and error display.** Field errors appear under fields as they do on
 a desktop. Long forms stack rather than sitting side by side.
 
-**Unsaved changes.** Unprotected, and more exposed: a back swipe, an incoming
-call, or the browser reclaiming a background tab all discard typed work with no
+**Unsaved changes.** Seven admin screens ask before their unsaved work is lost:
+Auto Schedule, mass score entry, the hero card form, the Live Corrections
+edit-round dialog, the blind draw sign-up message, the weekly content pack and
+the playoff score pop-up (since 2026-11-10). The playoff score pop-up also asks
+before a tap outside it, Escape or Cancel throws a typed score away; Save never
+asks.
+They ask on a link, tab or menu tap, on Back or Forward (a back swipe included),
+and on a reload or a closed tab (the browser's own warning). Live scoring asks
+before a reload or a closed tab while rounds are held or still sending.
+Everything else is unprotected, and a phone exposes it more: an incoming call or
+the browser reclaiming a background tab still discards typed work with no
 warning.
 
 **Optimistic updates and rollback.** No difference.
@@ -242,12 +413,13 @@ warning.
 backgrounding an app closes them. Each reconnection refetches, so a short drop is
 invisible; only live scoring shows the connection's state while it is down.
 
-**Offline.** No difference in behaviour, and much more likely to happen. See
-[`errors-and-offline.md`](errors-and-offline.md).
+**Offline.** Live scoring holds rounds until the signal is back (see the
+interrupt table). Everything else behaves the same as on a desktop, and going
+offline is much more likely. See [`errors-and-offline.md`](errors-and-offline.md).
 
 **Toasts and notifications.** On a narrow screen a toast is full width at the top
-of the screen. It covers the top bar and the page heading while it is there, not
-the submit button at the bottom.
+of the screen, below the notch. It covers the top bar and the page heading while
+it is there, not the submit button at the bottom.
 
 **URL state.** A phone adds nothing to the URL. Sharing a page from a phone shares
 what the page keeps in the address (see
@@ -271,11 +443,10 @@ much of its traffic is phones. Nothing more precise is stored. See
 
 ## Edge cases
 
-- **The message board's "Sign in to post messages" bar sits at the very bottom of
-  the screen, underneath the fixed tab bar**, because it positions itself against
-  a spacing value that is never defined anywhere in the app. A signed-out visitor
-  on a phone probably cannot see or tap it. **May be worth treating as a bug
-  rather than documenting.**
+- **The message board has no bottom bar for a signed-out visitor** (changed
+  2026-11-10). Before, a "Sign in to post messages" bar sat just above the
+  bottom tab bar. It is gone. The feed card "Sign in to read the board" is the
+  one sign-in prompt.
 - **A link opens the new page at the top**, which matters most on a phone: a long
   schedule followed by a short page no longer leaves a blank screen ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation),
   fixed). On the way the position passes through two in-between values; see [navigation](../foundations/navigation.md#arrive).
@@ -286,8 +457,10 @@ much of its traffic is phones. Nothing more precise is stored. See
 - **The command palette's keyboard shortcut is unreachable on a phone**, which is
   harmless, but so is the Search button — there is no search anywhere below 768
   pixels.
-- **Only one dialog in the app becomes a drawer.** Every other dialog is a
-  centred modal on a phone, including the live scoring confirmations.
+- **Seven dialogs become bottom drawers** on a phone (listed in the table
+  above; Edit round in Live Corrections since 2026-11-10, Edit Team since
+  2026-11-11). Every other dialog is a centred box with a 16-pixel gap each side,
+  including the live scoring confirmations.
 - **The teams page remembers its scroll position, and in the 2026-11-06 test it
   came back to it every time** (headless Chromium, 390 pixels wide, fake data; the
   fix is on this branch and not yet live). Safari, iOS and a real phone were not
@@ -301,9 +474,6 @@ much of its traffic is phones. Nothing more precise is stored. See
 
 ## Open questions and verification
 
-- **The sign-in bar on the message board is very likely hidden behind the bottom
-  tab bar on a phone.** Read from the positioning value and the absence of the
-  variable it depends on; not seen on a device.
 - **Toasts appear at the top on a narrow screen, not the bottom.**
   [`foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md)
   says a toast could cover a submit button at the bottom of a small screen. It
@@ -321,9 +491,10 @@ much of its traffic is phones. Nothing more precise is stored. See
 - Not confirmed by hand: whether touch targets on the public pages meet the
   44-pixel guideline everywhere. The admin console and the public pages were
   scanned control by control (390 and 320 pixels wide, fake data). The scan did
-  not reach the message board feed (the fake data has no messages), the career
+  not reach the message board feed (the fake data had no messages then; the
+  Wave 5 phone polish measured it, see below), the career
   rankings panel (its sort buttons were fixed from the code and pinned by a test),
-  dialogs that need real data, live scoring while a game is under way, or three
+  dialogs that need real data, or three
   states whose steps timed out (the team page badge pop-up, the "What is Power
   Score?" pop-up and the "View All Teams" switch on the standings). Live scoring, the
   hamburger, the bracket admin menu and its seeding drag handle, the history
@@ -344,3 +515,47 @@ The scroll behaviour changed after that commit: a link now opens the new page at
 The restore of the scroll position on Back changed again on this branch (not yet live) and was measured on 2026-11-06; the opening story, the interrupt table and the edge cases describe it.
 The 44-pixel controls in the admin console, listed under Touch and reach, changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too.
 The tap-size fixes (commits `96b6036` to `8626e6c`) changed the first two bullets under Touch and reach, and the phone-overflow fixes (commits `2af1fa1` to `e3a8bdd`) added the bullet that starts "Nothing in these places", after that commit. They were measured in a real browser against fake data, not on a real phone or tablet. The three 44-pixel buttons named there came later, in commit `fd5d43a`; they are pinned by tests and were not measured in a browser. The division header bars, the standings sort buttons and the 32 to 36-pixel links came in commit `6e15b27`; they were measured in a real browser against fake data at 320, 390, 768 and 1280 pixels. The career sort buttons came in commit `0524ba6` and are pinned by a test only.
+The centred dialog gap, height limit and inside scroll, the 16-pixel text fields
+and the toast list below the notch came in the Wave 1 phone polish (2026-11-09).
+They were measured in headless Chromium against fake data at 320, 390 and 1280
+pixels, not on a real phone; iPhone Safari's zoom on focus was not tried on a
+device. The five bottom drawers, the 15-pixel bracket names, the held live
+scoring rounds, the session-expired message, the unsaved-work warnings and the
+sign-in bar's position were read from the code on that date; the sign-in bar was
+also measured.
+The 12-pixel schedule and live scoring labels, the always-shown comment menu, the
+"Watch live" button and the live scoring long-name layout came in the Wave 2
+phone polish (2026-11-09). They were measured in headless Chromium with fake
+data at 320, 390 and 1280 pixels, including live scoring mid-game, not on a real
+phone. The double-header pill, the division badge and the rivalry tag were not in
+the fake data; they changed by class only.
+The Edit round bottom drawer, the admin section margin, the Scores groups that
+open with no tap, the "Change winner" wrap, the 12-pixel admin labels and the
+44-pixel Developer button came in the Wave 3 phone polish (2026-11-10). They
+were measured in headless Chromium with fake data at 320, 390 and 1280 pixels,
+not on a real phone. The swipe on the Edit round drawer was a scripted touch
+drag.
+The team page layout, the message board margin, wrap and name truncation, the
+signed-out board, the one-line round preview, the carousel that keeps its night
+and the linked match that opens its tab came in the Wave 5 phone polish
+(2026-11-10). They were measured in headless Chromium with fake data at 320,
+390 and 1280 pixels, not on a real phone. The carousel refetch cases are pinned
+by tests only.
+The seeding and Create Bracket pop-ups that fit, the playoff score pop-up that
+asks before it loses a typed score, the hidden bracket id, the wrapping division
+tabs, the history title and the recap tables came in the Wave 6 phone polish
+(2026-11-10). They were measured in headless Chromium with fake data at 320, 390
+and 1280 pixels, not on a real phone. The long division names were a scratch
+route in the probe; the fake data has none.
+The account, help and info page margins, the reset page's "Back to login", the My
+Team logo row and edit buttons and the Help Accessibility box came in the Wave 7
+phone polish (2026-11-10). They were measured in headless Chromium with fake data
+at 320, 390 and 1280 pixels, not on a real phone. The Pending Approval badge is
+not in the fake data; its colours were measured on a copy of the Approved badge.
+The admin setup fixes (Timeslots, Participation, Divisions, Teams, Auto
+Schedule, blind draw), the Edit Team bottom drawer, the footer at the bottom of
+a short page, the post time that wraps on the message board and the 12-pixel
+Contact Inbox and notification dates came in the Wave 8 phone polish
+(2026-11-11). They were measured in headless Chromium with fake data at 320, 390
+and 1280 pixels, not on a real phone. The team image file picker inside the
+Edit Team drawer was not tried on a real phone.

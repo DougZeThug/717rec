@@ -186,12 +186,21 @@ approved. See
 **On a phone.** One narrow column throughout. The membership card stacks: the
 team block first, the Leave Team button under it on the left; from 640 pixels
 the two share a row, and a long team name is cut with an ellipsis. In Team
-Management the logo, the team name and the team ID share a row; on a 320-pixel
-phone the text drops under the logo when it would have less than 128 pixels
-beside it, and the long team ID breaks (before, the row's content was 30 pixels wider
-than the row, so the ID took 5 lines and ran a few pixels past the card).
+Management the logo, the team name and the team ID share a row on a wide
+screen. On a phone (320 and 390 pixels) the name and the team ID drop under the
+logo, because they would have less than 160 pixels beside it, and use the card's
+full width: a long name takes at most 2 lines (since 2026-11-10; at 390 pixels it
+took 4 lines in a 140-pixel column). The long team ID breaks. In the edit form,
+the Team Image URL field opens the phone's web-address keyboard, and at 320 pixels
+Cancel drops under Save Changes (since 2026-11-10; it ran 18 pixels past the
+row).
 
-**Accessibility.** Both fields in the edit form have real labels. The three
+**Accessibility.** Both fields in the edit form have real labels. The Approved
+and Pending Approval badges are white text on a dark green and a dark amber in
+every theme, and "You can edit team details" is a darker green in the light
+theme (since 2026-11-10). Before, the Approved badge was about 3.1:1 in light and
+dark, the Pending badge 2.8:1 in dark and the note 3.1:1 in light; now each is
+4.5:1 or better in light, dark and winter. The three
 membership states replace one another with no announcement, so a screen reader
 user is not told that a request was accepted or that the page changed shape. The
 Leave Team dialog traps focus correctly.

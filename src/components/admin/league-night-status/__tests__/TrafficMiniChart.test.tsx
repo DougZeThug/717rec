@@ -73,6 +73,31 @@ describe('TrafficMiniChart', () => {
     ).toBeInTheDocument();
   });
 
+  // On a 320-390px phone the 10px tick labels were hard to read, and the -16px left margin
+  // pulled the y labels under the card edge. The plot area now starts right after the 30px
+  // y axis (it started at 14px).
+  it('draws 12px axis labels and keeps the y axis inside the chart', () => {
+    query = {
+      data: Array.from({ length: 10 }, (_, i) =>
+        day(`2026-09-${String(i + 1).padStart(2, '0')}`, 20 + i * 5)
+      ),
+      isLoading: false,
+      error: null,
+    };
+    const { container } = render(<TrafficMiniChart />);
+
+    const yLabels = [...container.querySelectorAll('.recharts-yAxis-tick-labels text')];
+    const xLabels = [...container.querySelectorAll('.recharts-xAxis-tick-labels text')];
+    expect(yLabels.length).toBeGreaterThan(0);
+    expect(xLabels.length).toBeGreaterThan(0);
+    for (const label of [...yLabels, ...xLabels]) {
+      expect(label).toHaveAttribute('font-size', '12');
+    }
+
+    const gridLine = container.querySelector('.recharts-cartesian-grid-horizontal line');
+    expect(gridLine).toHaveAttribute('x1', '30');
+  });
+
   it('summarises the line for screen readers, with the date range and recent total', () => {
     query = {
       data: Array.from({ length: 10 }, (_, i) =>

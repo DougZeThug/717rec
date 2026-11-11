@@ -76,7 +76,7 @@ const NightSelect: React.FC<NightSelectProps> = ({ night, nights, onNightChange 
 const SignupCountBadge: React.FC<{ count: number }> = ({ count }) => (
   <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full w-fit">
     <Users className="size-4 text-primary" />
-    <span className="font-semibold text-primary text-sm">{count} signed up</span>
+    <span className="font-semibold text-primary-text text-sm">{count} signed up</span>
   </div>
 );
 

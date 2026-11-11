@@ -127,7 +127,7 @@ it once and not twice.
 | The user's role | Both controls need the right to score. Notably **reopening a game is not admin-only** — any approved member of either team can do it, which is deliberate. Spectators see neither. | Losing the right to score leaves the buttons on screen until the screen refetches; the write then fails. |
 | The record's state | Undo needs at least one round in the current game. Reopen needs at least one completed game. Neither appears on an officially completed match. | If the other scorer undoes first, this screen's undo target changes underneath. |
 | The season's state | No effect. | No effect. |
-| Viewport | Both are comfortable tap targets: undo is 44 pixels high, the dialogs are full-width on a phone. | No effect. |
+| Viewport | Both are comfortable tap targets: undo is 44 pixels high. On a phone the confirmations are centred boxes with a 16-pixel gap each side; they were full-width before the 2026-11-09 phone polish. | No effect. |
 | Keys the app honours | The dialogs are proper dialogs: Escape closes them, Tab is trapped inside, focus returns to the trigger on close. | Escape cancels the confirmation without undoing. |
 
 ## Cancel and interrupt

@@ -25,13 +25,15 @@ const History: React.FC = () => {
         path="/history"
       />
       <PageTransition animation="fadeInSlideDown">
+        {/* The title sits in the same padded container as the content, so it
+            lines up with the cards below (16px from the edge on a phone). */}
         <div className="container mx-auto px-4">
           <AnimatedBreadcrumbs className="mb-2" />
+          <PageHeader
+            title="Season History"
+            description={isMobile ? undefined : 'Explore past seasons, champions, and standings'}
+          />
         </div>
-        <PageHeader
-          title="Season History"
-          description={isMobile ? undefined : 'Explore past seasons, champions, and standings'}
-        />
       </PageTransition>
 
       <div className="container mx-auto px-4">

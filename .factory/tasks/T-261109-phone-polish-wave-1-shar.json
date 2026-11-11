@@ -1,0 +1,167 @@
+{
+  "id": "T-261109-phone-polish-wave-1-shar",
+  "title": "Phone polish wave 1: shared parts (pop-ups, iPhone zoom, toasts, dvh)",
+  "kind": "polish",
+  "status": "ready",
+  "request": "Doug: 'start wave 1' (2026-11-09), from the approved phone polish plan (docs/plans/PHONE-POLISH-2026-11.md, Wave 1): pop-ups get a phone side margin, height limit and own scroll; the command search box and text fields with a text-sm override use 16 px on phones so iPhone Safari does not zoom; toasts clear the notch; remaining vh become dvh; w-96 chart loading boxes stop sideways scroll; fix the stale claims in on-a-phone.md. Keep the design.",
+  "trivial": false,
+  "branch": "claude/intelligent-knuth-8pjz9p",
+  "baseSha": "b2b3506f32e7a9eb4aa58d3e408523d36e0cc066",
+  "createdAt": "2026-11-09T15:52:06.737Z",
+  "criteria": [
+    {
+      "text": "Pop-ups (ui/dialog.tsx): at 320 and 390 px a centred pop-up keeps a 16 px gap each side, has rounded corners, is no taller than the screen minus 2rem and scrolls inside itself; at 1280 px the measured box is unchanged. A caller's own max-h still wins and CommandDialog keeps overflow-hidden (unit tests). Every pop-up the fake data can open at 320 px has no sideways scroll inside it (scrollWidth <= clientWidth), or that caller is fixed.",
+      "done": true,
+      "evidence": "QA (independent, head db2072e): 15 pop-ups at 320x640, 390x844, 1280x800 (+390x600 for tall ones): on phones 16 px gaps each side, 12 px corners, no taller than the screen minus 32 px, scroll inside; edit round at 390x600: scrolled 56 px, pressed Save, one PATCH to the mock, toast 'Round updated'; Thrower select opens fully on screen. 1280: all 15 boxes same size as main, pixel-identical. Unit tests pin caller max-h wins and CommandDialog overflow-hidden. Playoff score editor and opponent history fixed so nothing scrolls sideways inside (opponent history row refined in c2a4eea). One stated exception: Update Bracket Seeding scrolls sideways inside at 320/390 (content 522 px) exactly as on main; not caused by this change and moved to Wave 6 in the plan."
+    },
+    {
+      "text": "Confirm pop-ups (ui/alert-dialog.tsx): the same 16 px side gap and rounded corners on phones; desktop unchanged.",
+      "done": true,
+      "evidence": "QA (independent, fake data, headless Chromium, touch on below 768): Leave team (member /my-team) and Live Corrections Delete round confirmations: L16 R16, radius 12px at 320x640 and 390x844; at 1280x800 box 512x206 and 512x246 identical to main and the screenshots are pixel-identical to main. Evidence: /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa1/out/head/popups.json vs /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa1/out/main/popups.json."
+    },
+    {
+      "text": "No iPhone zoom: the command search box (ui/command.tsx) and the seven fields with a text-sm/text-xs override (match comment, message edit, two event winner fields, team blurb, hero card metadata, bracket seed box) compute to 16 px at 390 px and keep their small size from 768 px; the search box text is not cut.",
+      "done": true,
+      "evidence": "QA measured on focus at 390/767 vs 768/1280: team-picker search box, match comment, message edit, hero week, hero winner names, hero metadata = 16 px on phones, 14 px from 768 px (main: 14 px, metadata 12 px on phones). Search text with descenders not cut (h 44, scroll h 44). Weekly blurb and bracket seed box are not reachable with fake data: class evidence only (BlurbEditorCard uses the base Input with no override = text-base md:text-sm; SortableTeamItem has text-base md:text-sm); on-a-phone.md says so."
+    },
+    {
+      "text": "Toasts (ui/toast.tsx): on phones the toast area's top padding includes the top safe area (--sat); from 640 px up it is unchanged.",
+      "done": true,
+      "evidence": "QA: with --sat forced to 47px, the toast list padding-top is 63px at 390 and 639 (toast top at 63px), 16px at 640 and 1280 (bottom-right, 16px from the bottom), real toast 'Round updated'. Unit test toast.test.tsx passes. Evidence: /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa1/out/head/misc.json."
+    },
+    {
+      "text": "dvh with vh fallback in ErrorBoundary, StatsErrorState, MatchRecapDialog and RearrangeBracketDialog; the two w-96 chart loading bars become w-full max-w-96 and no longer poke past their card at 320 px.",
+      "done": true,
+      "evidence": "Four dvh changes in source (ErrorBoundary, StatsErrorState: min-h-screen + supports min-h-dvh; MatchRecapDialog, RearrangeBracketDialog: + supports 85dvh) and their CSS rules reach the browser (QA). Team chart loading bar at 320 px: main 384 px wide, 139 px past its card; now 228 px and inside (QA). The /stats chart bar has the same class but its loading state could not be held (class evidence)."
+    },
+    {
+      "text": "Docs in the same change: on-a-phone.md (six stale claims fixed, new pop-up, zoom and toast behaviour), correct-a-round.md and correct-a-live-match.md (pop-ups no longer full width), src/docs/MODAL_PATTERNS.md, and the Wave 1 boxes in docs/plans/PHONE-POLISH-2026-11.md.",
+      "done": true,
+      "evidence": "QA read git diff main..HEAD: on-a-phone.md (toast row, five drawers, 15px bracket names, unsaved-work guards, live scoring offline hold, session-expired text, sign-in bar, new pop-up/zoom/toast bullets), correct-a-round.md:130, correct-a-live-match.md:266, src/docs/MODAL_PATTERNS.md, plan Wave 1 boxes ticked. Spot-checked against code (errorHandler.ts:122, LoginPrompt.tsx:15, brackets-viewer theme css:350, 5 ResponsiveDialog/Drawer callers) and re-measured the 'Edit round ran 14px off top and bottom at 640' claim on main (T-14 B-14)."
+    },
+    {
+      "text": "Before/after shots and measurements at 320, 390 and 1280 px; no new console errors; no page scrolls sideways; required checks pass on the final head and an independent code review approves.",
+      "done": true,
+      "evidence": "Before/after at 320, 390 and 1280 by the builder and independently by QA (QA compared against main: page shots differ only in clock text and fade timing). shoot.mjs with the member mock on 5 routes: 0 console errors, 0 overflow. On code head 65fa862: typecheck, lint, knip, integrity, build and unit (855 files, 7844 tests) PASS through F check. Independent code review: CHANGES on db2072e, then APPROVE on 61e2e5e after the repair."
+    },
+    {
+      "text": "Create New Playoff Bracket: no button inside a button. The seed badge in each team row (SeedStatusBadge, rendered with onEdit inside the team Button in TeamSelectionForm.tsx) is plain text, so a tap on it selects or deselects the team like the rest of the row and no longer also jumps to the Seeds tab; the now unused onEdit button branch is removed. Opening the dialog logs no console error at 390 and 1280 px; a unit test pins that the team list has no nested button and a tap on the badge toggles the team once.",
+      "done": true,
+      "evidence": "Commit 8aa5ebf. Builder, admin mock, 390 and 1280: before, opening Create Bracket logged 'button cannot be a descendant of button' (before/create-bracket-console.json); after, 0 console errors, 0 nested buttons, one tap on the '#1' badge changed 'Create Bracket (0 teams)' to '(1 teams)' and the tab stayed Select Teams (after/screens/create-bracket-after-*.png, create-bracket-after.json). New unit test: no button inside a button, one badge click toggles the team once, Seeds tab not selected; src/components/playoffs/form 19 files, 114 pass."
+    }
+  ],
+  "checks": {
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
+      "dirty": false,
+      "at": "2026-11-09T18:13:11.481Z",
+      "seconds": 7,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
+      "dirty": false,
+      "at": "2026-11-09T18:14:22.293Z",
+      "seconds": 71,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
+      "dirty": false,
+      "at": "2026-11-09T18:14:25.793Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/knip.log"
+    },
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
+      "dirty": false,
+      "at": "2026-11-09T18:14:25.945Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/integrity.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
+      "dirty": false,
+      "at": "2026-11-09T18:14:31.307Z",
+      "seconds": 5,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
+      "dirty": false,
+      "at": "2026-11-09T18:21:02.455Z",
+      "seconds": 391,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-1-shar/unit.log"
+    }
+  },
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "APPROVE",
+      "sha": "b2b3506f32e7a9eb4aa58d3e408523d36e0cc066",
+      "at": "2026-11-09T16:02:51.387Z",
+      "summary": "Skeptic: GO WITH CHANGES, all adopted: (1) QA opens every reachable pop-up at 320 px and checks no sideways scroll inside it; (2) add correct-a-round.md:130 and correct-a-live-match.md:266 to the docs; (3) toast: keep only the top safe-area padding, drop the bottom change; (4) w-96 reason corrected (bar pokes past the card edge, the page does not scroll); (5) tests pin the tailwind-merge behaviour (caller max-h wins, CommandDialog keeps overflow-hidden). No question for Doug."
+    },
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "db2072e8f9d187868eadbf9fc3edf2aa07151943",
+      "at": "2026-11-09T18:04:27.970Z",
+      "summary": "Independent factory-reviewer on db2072e: code correct (tailwind-merge simulated for every caller; 1280 boxes unchanged; tests pin behaviour; scope clean). Changes asked: (1) on-a-phone.md:193-195 and commit 501bc0e overstate the edit-round problem: before, Cancel and Save were on screen and only the padding was cut; after, Save needs a scroll inside on 600-640 px tall phones; (2) finish-a-game.md:125 still says the End Game dialog fills a phone screen; (3) OpponentHistoryModal.tsx:46 space-x-2 with flex-wrap indents the wrapped line, use gap-x-2. Suggested: stale verification rows PHONE-11/20/23/25, LIVEFIX-29, GAMEEND-22; list the bracket seed box in on-a-phone.md."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
+      "at": "2026-11-09T18:21:16.427Z",
+      "summary": "Independent factory-reviewer re-review on 61e2e5e (code head 65fa862): its three asks met (opponent history gap-x-2 with icon/text pairs, edit-round doc claim matches the measurements with the trade-off stated, finish-a-game.md); the nested-button fix is correct and minimal (one user, setActiveTab still used by the Tabs, badge text read as part of the team button, no control lost); the new test would fail on the old code; verification row edits claim nothing unmeasured. Ran src/components/playoffs/form (114 pass) and src/components/stats (287 pass)."
+    }
+  ],
+  "issues": {
+    "review-docs-and-wrap": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-09T18:04:28.013Z",
+          "summary": "Builder fixes the two doc claims, the finish-a-game doc, the six stale verification rows and the seed-box mention, and changes OpponentHistoryModal's row to gap-x-2 with each icon kept beside its text (QA's suggestion)."
+        }
+      ],
+      "escalated": false,
+      "resolved": "Commits c2a4eea (opponent history row: gap-x-2, icon kept with its text; 1280 positions identical; at 320/390 pin and place together with no indent), 65fa862 (on-a-phone.md edit-round claim corrected to what was measured, trade-off stated; finish-a-game.md; verification rows PHONE-11/20/23/25, LIVEFIX-29, GAMEEND-22; seed box and blurb listed as class-only)."
+    }
+  },
+  "interventions": [
+    {
+      "at": "2026-11-09T18:05:39.494Z",
+      "why": "Doug asked mid-wave: also fix the opponent history wrap row (already in the repair pass) and the older console error on Create New Playoff Bracket ('<button> cannot be a descendant of <button>')."
+    }
+  ],
+  "notes": [
+    {
+      "at": "2026-11-09T18:12:50.892Z",
+      "text": "Likely stale verification rows not from Wave 1, left for a later wave: verification/live-scoring.md START-16 (live scoring offline), POST-32 and PERM-19 (expired-session message). Builder report, INFERRED."
+    }
+  ],
+  "waivers": [],
+  "updatedAt": "2026-11-09T18:21:16.619Z",
+  "readySha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
+  "readyAt": "2026-11-09T18:21:16.619Z"
+}

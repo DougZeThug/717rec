@@ -208,7 +208,9 @@ to anyone when a match is resulted.
 
 **On a phone.** The review is long; the statistics table scrolls sideways.
 
-**Accessibility.** Both dialogs are announced. The screen becoming the review is
+**Accessibility.** The player statistics table sits in a region named "Player
+stats" that the keyboard can reach with Tab, so a keyboard user can scroll it
+sideways. It shows a focus ring (changed 2026-11-10). Both dialogs are announced. The screen becoming the review is
 not, so a screen reader user is moved to entirely new content silently.
 
 **Side effects the user can notice.** Standings move, both teams' records

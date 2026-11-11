@@ -8,8 +8,8 @@ import { z } from 'zod';
 export const profileSchema = z.object({
   username: z
     .string()
-    .min(3, 'First name must be at least 3 characters')
-    .regex(/^[a-zA-Z0-9_]+$/, 'First name can only contain letters, numbers, and underscores'),
+    .min(3, 'Display name must be at least 3 characters')
+    .regex(/^[a-zA-Z0-9_]+$/, 'Display name can only contain letters, numbers, and underscores'),
   fullName: z.string().optional(),
 });
 

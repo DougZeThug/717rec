@@ -809,6 +809,25 @@ describe('useBracketsViewerRenderer', () => {
       expect(normalNode.style.display).not.toBe('none');
     });
 
+    // PO-04: the stage is named with the bracket id. Waiting for the 1s pass
+    // let that raw id flash as a heading over the bracket.
+    it('hides UUID text nodes as soon as the render resolves, before the delayed pass', async () => {
+      vi.useFakeTimers();
+      const uuidNode = document.createElement('h1');
+      uuidNode.textContent = '00000000-0000-4000-8000-000000002000';
+      renderMock.mockImplementation(() => {
+        const match = document.createElement('div');
+        match.className = 'match';
+        container.append(match, uuidNode);
+      });
+
+      renderRenderer({ bracket: makeBracket() });
+      await flushAsync();
+      expect(renderMock).toHaveBeenCalledTimes(1);
+
+      expect(uuidNode.style.display).toBe('none');
+    });
+
     it('logs an error when brackets-viewer silently rendered no matches', async () => {
       vi.useFakeTimers();
       renderRenderer({ bracket: makeBracket() });

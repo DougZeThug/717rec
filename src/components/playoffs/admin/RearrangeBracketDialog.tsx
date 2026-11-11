@@ -219,7 +219,7 @@ const RearrangeBracketDialog: React.FC<RearrangeBracketDialogProps> = ({
   initialWorking,
 }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="flex max-h-[85vh] flex-col overflow-y-auto sm:max-w-5xl">
+    <DialogContent className="flex max-h-[85vh] supports-[height:85dvh]:max-h-[85dvh] flex-col overflow-y-auto sm:max-w-5xl">
       <RearrangeHeader />
       {/* State lives in the body, keyed by bracket: the closed dialog unmounts
           it entirely, so drags reset on reopen without state-syncing effects. */}

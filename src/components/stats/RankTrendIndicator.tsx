@@ -53,7 +53,7 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
     return (
       <m.div
         className={cn(
-          'flex items-center text-green-600 dark:text-green-400 relative',
+          'flex items-center text-green-700 dark:text-green-400 relative',
           showFlash && 'animate-pulse'
         )}
         initial={{ scale: 1 }}

@@ -68,7 +68,6 @@ const BlurbRow: React.FC<{
       value={blurb}
       onChange={(e) => onChange(e.target.value)}
       maxLength={BLURB_MAX_LENGTH}
-      className="text-sm"
       placeholder="One line about this team."
     />
   </div>

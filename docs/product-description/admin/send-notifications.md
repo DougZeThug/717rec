@@ -65,7 +65,8 @@ newest first, with no paging.
 Each entry shows its title, its body with line breaks kept, when it was posted
 as both an exact time and a relative one, an **Edit** button, and a **bin**. An
 entry past its expiry also carries a grey **EXPIRED** tag and a line reading
-"Expires *date*".
+"Expires *date*". The posted time, the EXPIRED tag and the "Expires" line are
+12 pixels (they were 11 until 2026-11-11).
 
 **An expiry is optional.** The New notification form carries an **Expires
 (optional)** date-and-time control under the message. Leave it empty and the
@@ -256,6 +257,10 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
   warning; only deletion is noticed.
 - **The unread badge is per browser**, so the same person sees the same
   notification as new on their phone after reading it on a laptop.
+- **The bell's spoken name does not match its badge text.** A member hears
+  "Notifications (*N* unread)", and axe flags it (`label-content-name-mismatch`,
+  a best-practice rule). Known and kept (2026-11-11): the badge shows "9+" above
+  nine, so a name that matches the badge is not simple.
 - **Opening the bell marks everything seen**, including items below the fold and
   items never scrolled to.
 - **The page lists a hundred and the bell lists twenty**, and neither says older
@@ -297,3 +302,6 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
   row in the list is one an admin typed; no automatic announcement was found.
 
 Verified against `717rec` commit `ea5c8f4`, except the bell popover size and scrolling (Viewport row and "On a phone"), which changed after that commit (the phone-overflow fixes, commits `e2a9798` and `12994d8`). They were measured in a real browser against fake data at 320, 360 and 390 pixels, not on a real phone.
+The 12-pixel dates, EXPIRED tag and "Expires" line came in the Wave 8 phone
+polish (2026-11-11). They were measured in headless Chromium with fake data at
+320 and 390 pixels.

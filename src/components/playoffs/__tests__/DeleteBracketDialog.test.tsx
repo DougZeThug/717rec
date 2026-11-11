@@ -21,6 +21,24 @@ const renderDialog = (props: Partial<React.ComponentProps<typeof DeleteBracketDi
 };
 
 describe('DeleteBracketDialog', () => {
+  // Phone polish wave 6: the description used to render the two <p> lines
+  // inside its own <p>, which React logs as a console error.
+  it('renders the description as a div, so its paragraphs are valid HTML', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    renderDialog();
+
+    const description = screen.getByText(/This action cannot be undone/).parentElement;
+    expect(description?.tagName).toBe('DIV');
+    expect(description).toHaveClass('space-y-2');
+    expect(screen.getByRole('alertdialog')).toHaveAccessibleDescription(
+      /Are you sure you want to delete the bracket Competitive Playoffs/
+    );
+    expect(
+      consoleError.mock.calls.some((call) => String(call[0]).includes('cannot be a descendant'))
+    ).toBe(false);
+    consoleError.mockRestore();
+  });
+
   it('names the bracket and warns that the delete cannot be undone', () => {
     renderDialog();
 

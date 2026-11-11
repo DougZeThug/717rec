@@ -95,7 +95,10 @@ const BracketFormActions: React.FC<BracketFormActionsProps> = ({
   canSubmit,
   selectedTeamCount,
 }) => (
-  <div className="flex gap-3 pt-4 border-t">
+  // flex-wrap: on a 320px phone "Create Bracket (N teams)" and Cancel do not
+  // fit on one line, so Create drops below Cancel instead of pushing the
+  // pop-up sideways.
+  <div className="flex flex-wrap gap-3 pt-4 border-t">
     <Button
       type="button"
       variant="outline"

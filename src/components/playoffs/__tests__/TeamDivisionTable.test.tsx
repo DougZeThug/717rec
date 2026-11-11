@@ -65,6 +65,24 @@ describe('TeamDivisionTable', () => {
     expect(pill).toHaveClass('bg-background', 'border', 'border-border');
   });
 
+  // Phone polish wave 6: the strip is two columns on a phone, and a long
+  // division name spilled past its half. The tab label now wraps.
+  it('lets a long division name wrap inside its tab', () => {
+    render(
+      <TeamDivisionTable
+        divisions={['Competitive', 'Recreational']}
+        teams={[competitive, recreational]}
+        isLoading={false}
+      />,
+      { wrapper: MemoryRouter }
+    );
+
+    for (const tab of screen.getAllByRole('tab')) {
+      expect(tab).toHaveClass('whitespace-normal');
+      expect(tab).not.toHaveClass('whitespace-nowrap');
+    }
+  });
+
   it('falls back to the "All Teams" tab when the selected division disappears', async () => {
     const user = userEvent.setup();
     const { rerender } = render(

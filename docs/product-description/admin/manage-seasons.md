@@ -250,6 +250,8 @@ The separate **Participation** section reads, per season, which teams have said
 they are playing. It is a table of every team with **Playing**, **Not Playing**,
 or **No Response**, four count cards, a season picker, a status filter, and an
 **Export CSV** button that downloads the filtered list straight from the browser.
+Below 640 pixels the season picker is full width (since 2026-11-11; it was a
+fixed 200 pixels).
 
 It is read-only: an admin cannot set a team's answer from this table. The
 confirmation window itself is opened and closed by the **Open for confirmation**
@@ -382,3 +384,6 @@ at 320 pixels the Activate Season dialog used to push its title and confirm butt
 off the screen (commit `1244167`). The last two changed the Viewport row above.
 They were measured with a desktop browser window at set widths against fake data,
 not on a real phone or tablet.
+The full-width Participation season picker came in the Wave 8 phone polish
+(2026-11-11). It was measured in headless Chromium with fake data at 320 and 390
+pixels.

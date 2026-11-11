@@ -64,7 +64,8 @@ describe('useMatchEditorState', () => {
 
   it('sets opponent1 score independently', () => {
     const { result } = renderHook(
-      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      () =>
+        useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose: vi.fn() }),
       {
         wrapper,
       }
@@ -76,7 +77,8 @@ describe('useMatchEditorState', () => {
 
   it('sets opponent2 score independently', () => {
     const { result } = renderHook(
-      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      () =>
+        useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose: vi.fn() }),
       {
         wrapper,
       }
@@ -88,7 +90,8 @@ describe('useMatchEditorState', () => {
 
   it('drops a typed score when the teams in the match change', () => {
     const { result, rerender } = renderHook(
-      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      () =>
+        useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose: vi.fn() }),
       { wrapper }
     );
     act(() => result.current.setOpponent1Score(3));
@@ -120,7 +123,8 @@ describe('useMatchEditorState', () => {
     check.mockReturnValueOnce(older.promise).mockReturnValueOnce(newer.promise);
 
     const { result, rerender } = renderHook(
-      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      () =>
+        useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose: vi.fn() }),
       { wrapper }
     );
 
@@ -150,7 +154,8 @@ describe('useMatchEditorState', () => {
 
   it('preserves opponent1 score when opponent2 setter runs after (double-setter)', () => {
     const { result } = renderHook(
-      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      () =>
+        useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose: vi.fn() }),
       {
         wrapper,
       }
@@ -165,7 +170,8 @@ describe('useMatchEditorState', () => {
 
   it('preserves opponent2 score when opponent1 setter runs after (double-setter)', () => {
     const { result } = renderHook(
-      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      () =>
+        useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose: vi.fn() }),
       {
         wrapper,
       }
@@ -181,7 +187,8 @@ describe('useMatchEditorState', () => {
   it('rejects tied scores before writing (PR-06)', async () => {
     const { bracketManagerService } = await import('@/services/brackets/manager');
     const { result } = renderHook(
-      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      () =>
+        useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose: vi.fn() }),
       {
         wrapper,
       }
@@ -199,7 +206,8 @@ describe('useMatchEditorState', () => {
   it('allows decisive (non-tied) scores', async () => {
     const { bracketManagerService } = await import('@/services/brackets/manager');
     const { result } = renderHook(
-      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      () =>
+        useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose: vi.fn() }),
       {
         wrapper,
       }
@@ -217,7 +225,8 @@ describe('useMatchEditorState', () => {
   it('refreshes the bracket grid after a score save', async () => {
     const spy = vi.spyOn(client, 'invalidateQueries');
     const { result } = renderHook(
-      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      () =>
+        useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose: vi.fn() }),
       { wrapper }
     );
     act(() => {
@@ -251,7 +260,8 @@ describe('useMatchEditorState', () => {
     const spy = vi.spyOn(client, 'invalidateQueries');
 
     const { result } = renderHook(
-      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      () =>
+        useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose: vi.fn() }),
       { wrapper }
     );
     await waitFor(() => expect(result.current.byeEligible?.currentStatus).toBe(4));
@@ -271,9 +281,12 @@ describe('useMatchEditorState', () => {
 
   describe('failure paths', () => {
     const renderEditor = (onClose = vi.fn()) =>
-      renderHook(() => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose }), {
-        wrapper,
-      });
+      renderHook(
+        () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose }),
+        {
+          wrapper,
+        }
+      );
 
     it('logs a failed BYE eligibility check and leaves the panel empty', async () => {
       const { bracketManagerService } = await import('@/services/brackets/manager');
@@ -399,7 +412,13 @@ describe('useMatchEditorState', () => {
       } as never);
 
       const { result } = renderHook(
-        () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+        () =>
+          useMatchEditorState({
+            matchId: 1,
+            bracketId: 'bracket-1',
+            isOpen: true,
+            onClose: vi.fn(),
+          }),
         {
           wrapper,
         }
@@ -411,6 +430,61 @@ describe('useMatchEditorState', () => {
       });
 
       expect(bracketManagerService.adminToggleByeReady).toHaveBeenCalledWith(1, makeReady, false);
+    });
+  });
+
+  // Phone polish wave 6: a typed score counts as unsaved only while the editor
+  // is open and the score differs from the stored one.
+  describe('isDirty', () => {
+    it('is false until a score differs from the stored one', () => {
+      const { result } = renderHook(
+        () =>
+          useMatchEditorState({
+            matchId: 1,
+            bracketId: 'bracket-1',
+            isOpen: true,
+            onClose: vi.fn(),
+          }),
+        { wrapper }
+      );
+      expect(result.current.isDirty).toBe(false);
+
+      act(() => result.current.setOpponent1Score(4));
+      expect(result.current.isDirty).toBe(true);
+
+      act(() => result.current.setOpponent1Score(0));
+      expect(result.current.isDirty).toBe(false);
+    });
+
+    it('is false while the editor is closed', () => {
+      const { result } = renderHook(
+        () =>
+          useMatchEditorState({
+            matchId: 1,
+            bracketId: 'bracket-1',
+            isOpen: false,
+            onClose: vi.fn(),
+          }),
+        { wrapper }
+      );
+
+      act(() => result.current.setOpponent1Score(4));
+      expect(result.current.isDirty).toBe(false);
+    });
+
+    it('closes and clears the draft when nothing is typed, without asking', () => {
+      const confirmSpy = vi.spyOn(window, 'confirm');
+      const onClose = vi.fn();
+      const { result } = renderHook(
+        () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', isOpen: true, onClose }),
+        { wrapper }
+      );
+
+      act(() => result.current.handleOpenChange(false));
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(confirmSpy).not.toHaveBeenCalled();
+      confirmSpy.mockRestore();
     });
   });
 });

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Match, Team } from '@/types';
 
@@ -9,6 +9,8 @@ import ScheduleContent from '../ScheduleContent';
 
 const mockNavigate = vi.hoisted(() => vi.fn());
 const mockIsMobile = vi.hoisted(() => vi.fn(() => false));
+// Every night index the phone carousel was drawn with, in order.
+const carouselDraws = vi.hoisted(() => vi.fn());
 
 vi.mock('@/hooks/useMobile', () => ({
   useIsMobile: () => mockIsMobile(),
@@ -35,8 +37,30 @@ vi.mock('../DateMatchGroup', () => ({
   ),
 }));
 
+// Shows the night on screen and stands in for a swipe to the next one.
 vi.mock('../SwipeableDateGroups', () => ({
-  default: () => <div data-testid="swipeable-date-groups">SwipeableDateGroups</div>,
+  default: ({
+    groupedMatches,
+    activeIndex,
+    onIndexChange,
+  }: {
+    groupedMatches: Array<{ date: Date }>;
+    activeIndex: number;
+    onIndexChange: (index: number) => void;
+  }) => {
+    carouselDraws(activeIndex);
+    return (
+      <div data-testid="swipeable-date-groups">
+        SwipeableDateGroups
+        <span data-testid="carousel-night">
+          {groupedMatches[activeIndex]?.date.toDateString() ?? 'none'}
+        </span>
+        <button type="button" onClick={() => onIndexChange(activeIndex + 1)}>
+          Swipe to next night
+        </button>
+      </div>
+    );
+  },
 }));
 
 vi.mock('../TimeslotGrouping', () => ({
@@ -242,6 +266,210 @@ describe('ScheduleContent', () => {
 
       expect(screen.queryByText('No matches')).not.toBeInTheDocument();
       expect(screen.getAllByTestId('date-match-group')).toHaveLength(1);
+    });
+  });
+
+  // Doug's B (2026-11-09): on a phone, the night picked on the date strip is
+  // the night the Upcoming and Completed cards show, when it has matches.
+  describe('the phone carousel follows the picked night', () => {
+    const night = (day: string) => new Date(`${day}T00:00:00`);
+    const upcoming = [
+      buildMatch({ id: 'u1', date: '2026-07-15T18:30:00', iscompleted: false }),
+      buildMatch({ id: 'u2', date: '2026-07-22T18:30:00', iscompleted: false }),
+      buildMatch({ id: 'u3', date: '2026-07-29T18:30:00', iscompleted: false }),
+    ];
+    const completed = upcoming.map((m) => ({ ...m, id: `c-${m.id}`, iscompleted: true }));
+
+    beforeEach(() => {
+      mockIsMobile.mockReturnValue(true);
+      // "Today" is the day before the first night, so the old default is night 1.
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date('2026-07-14T12:00:00'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('opens Upcoming on the picked night, chosen in the same render', () => {
+      renderContent({
+        activeTab: 'upcoming',
+        filteredMatches: upcoming,
+        selectedDate: night('2026-07-22'),
+      });
+
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 22 2026');
+      // Never drawn on another night first: an effect after the draw would show
+      // night 0 for one frame, and a linked-match scroll would find no card.
+      expect(carouselDraws).toHaveBeenCalled();
+      expect(carouselDraws.mock.calls.every(([index]) => index === 1)).toBe(true);
+    });
+
+    it('keeps the old default when the picked night has no upcoming matches', () => {
+      renderContent({
+        activeTab: 'upcoming',
+        filteredMatches: upcoming,
+        selectedDate: night('2026-07-18'),
+      });
+
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 15 2026');
+    });
+
+    it('moves Completed to a past night picked on the strip', () => {
+      const props: React.ComponentProps<typeof ScheduleContent> = {
+        activeTab: 'completed',
+        setActiveTab: vi.fn(),
+        filteredMatches: completed,
+        teams: [],
+        selectedDate: night('2026-07-15'),
+        groupedTimeslots: {},
+        timeslotsLoading: false,
+      };
+      const { rerender } = render(<ScheduleContent {...props} />);
+      // Newest first, so the picked night is the last group, not the first.
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 15 2026');
+
+      rerender(<ScheduleContent {...props} selectedDate={night('2026-07-22')} />);
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 22 2026');
+    });
+
+    it('opens Completed on the newest night when the picked night has no results', () => {
+      renderContent({
+        activeTab: 'completed',
+        filteredMatches: completed,
+        selectedDate: night('2026-07-18'),
+      });
+
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 29 2026');
+    });
+
+    it('does not jump back after a swipe when the matches are fetched again', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const props: React.ComponentProps<typeof ScheduleContent> = {
+        activeTab: 'upcoming',
+        setActiveTab: vi.fn(),
+        filteredMatches: upcoming,
+        teams: [],
+        selectedDate: night('2026-07-15'),
+        groupedTimeslots: {},
+        timeslotsLoading: false,
+      };
+      const { rerender } = render(<ScheduleContent {...props} />);
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 15 2026');
+
+      await user.click(screen.getByRole('button', { name: 'Swipe to next night' }));
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 22 2026');
+
+      // A refetch, as the page does it: the same selected Date object (the URL
+      // state keeps it for the same day) and a new list of new rows.
+      rerender(
+        <ScheduleContent
+          {...props}
+          selectedDate={props.selectedDate}
+          filteredMatches={upcoming.map((m) => ({ ...m }))}
+        />
+      );
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 22 2026');
+    });
+
+    // A tap on a strip chip stores a new Date, even for the night already
+    // picked. Keyed on the day alone, the carousel stayed on the night swiped to
+    // while the chip for tonight stayed highlighted.
+    it('comes back to the picked night when it is picked again after a swipe', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const props: React.ComponentProps<typeof ScheduleContent> = {
+        activeTab: 'upcoming',
+        setActiveTab: vi.fn(),
+        filteredMatches: upcoming,
+        teams: [],
+        selectedDate: night('2026-07-15'),
+        groupedTimeslots: {},
+        timeslotsLoading: false,
+      };
+      const { rerender } = render(<ScheduleContent {...props} />);
+
+      await user.click(screen.getByRole('button', { name: 'Swipe to next night' }));
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 22 2026');
+
+      // The same night, picked again: a new Date object for the same day.
+      rerender(<ScheduleContent {...props} selectedDate={night('2026-07-15')} />);
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 15 2026');
+    });
+
+    // Wave 5: the carousel keeps a night, not a position. A refetch that adds or
+    // removes an earlier night used to move the reader one night along.
+    const carouselProps = (
+      overrides: Partial<React.ComponentProps<typeof ScheduleContent>>
+    ): React.ComponentProps<typeof ScheduleContent> => ({
+      activeTab: 'upcoming',
+      setActiveTab: vi.fn(),
+      filteredMatches: upcoming,
+      teams: [],
+      selectedDate: night('2026-07-15'),
+      groupedTimeslots: {},
+      timeslotsLoading: false,
+      ...overrides,
+    });
+
+    it('keeps the Completed night when a refetch adds a newer night at the top', () => {
+      const props = carouselProps({
+        activeTab: 'completed',
+        filteredMatches: completed,
+        selectedDate: night('2026-07-22'),
+      });
+      const { rerender } = render(<ScheduleContent {...props} />);
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 22 2026');
+
+      const newest = buildMatch({ id: 'c-u4', date: '2026-08-05T18:30:00', iscompleted: true });
+      rerender(<ScheduleContent {...props} filteredMatches={[...completed, newest]} />);
+
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 22 2026');
+    });
+
+    it('keeps the Upcoming night when a refetch removes an earlier night', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const props = carouselProps({});
+      const { rerender } = render(<ScheduleContent {...props} />);
+
+      await user.click(screen.getByRole('button', { name: 'Swipe to next night' }));
+      await user.click(screen.getByRole('button', { name: 'Swipe to next night' }));
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 29 2026');
+
+      // The first night was scored, so it left Upcoming.
+      rerender(<ScheduleContent {...props} filteredMatches={upcoming.slice(1)} />);
+
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 29 2026');
+    });
+
+    it('moves to the nearest night when a filter removes the shown night', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const later = buildMatch({ id: 'u5', date: '2026-08-26T18:30:00', iscompleted: false });
+      const props = carouselProps({ filteredMatches: [...upcoming, later] });
+      const { rerender } = render(<ScheduleContent {...props} />);
+
+      await user.click(screen.getByRole('button', { name: 'Swipe to next night' }));
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 22 2026');
+
+      // Jul 22 is gone. Jul 15 and Jul 29 are 7 days away, Aug 26 is 35.
+      rerender(<ScheduleContent {...props} filteredMatches={[upcoming[0], upcoming[2], later]} />);
+
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 15 2026');
+
+      // Without the earlier night, the nearest is the later one.
+      rerender(<ScheduleContent {...props} filteredMatches={[upcoming[2], later]} />);
+      expect(screen.getByTestId('carousel-night')).toHaveTextContent('Wed Jul 29 2026');
+    });
+
+    it('leaves the desktop list alone: every night, no carousel', () => {
+      mockIsMobile.mockReturnValue(false);
+      renderContent({
+        activeTab: 'upcoming',
+        filteredMatches: upcoming,
+        selectedDate: night('2026-07-22'),
+      });
+
+      expect(screen.getAllByTestId('date-match-group')).toHaveLength(3);
+      expect(screen.queryByTestId('swipeable-date-groups')).not.toBeInTheDocument();
     });
   });
 

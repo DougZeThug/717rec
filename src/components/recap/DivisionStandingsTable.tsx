@@ -7,8 +7,11 @@ import type { RecapDivisionFact, RecapStandingsRow } from '@/types/recapEdition'
 const StandingsRow: React.FC<{ row: RecapStandingsRow }> = ({ row }) => (
   <tr className="border-t border-border">
     <td className="py-2 tabular-nums text-muted-foreground">{row.rank}</td>
-    <td className="py-2">{row.teamName}</td>
-    <td className="py-2 text-right tabular-nums">
+    {/* min-w-28 keeps the team column readable (the table scrolls sideways
+        instead of squeezing it). The name may break inside a word only when one
+        word is too long for the column. */}
+    <td className="py-2 min-w-28 [overflow-wrap:anywhere]">{row.teamName}</td>
+    <td className="py-2 text-right tabular-nums whitespace-nowrap">
       {row.wins}–{row.losses}
     </td>
     <td className="py-2 text-right tabular-nums">
@@ -24,7 +27,7 @@ const StandingsGrid: React.FC<{ standings: RecapStandingsRow[] }> = ({ standings
       <tr className="text-muted-foreground text-left">
         <th className="pb-2 w-8">#</th>
         <th className="pb-2">Team</th>
-        <th className="pb-2 text-right">W–L</th>
+        <th className="pb-2 text-right whitespace-nowrap">W–L</th>
         <th className="pb-2 text-right">Power</th>
       </tr>
     </thead>
@@ -46,7 +49,16 @@ const DivisionStandingsTable: React.FC<{ division: RecapDivisionFact }> = ({ div
     <h2 className="text-xl font-semibold mb-2">{division.divisionName}</h2>
     <Card>
       <CardContent className="pt-6">
-        <StandingsGrid standings={division.standings} />
+        {/* Scrolls sideways if a phone is too narrow, so a keyboard user must be
+            able to reach it (axe scrollable-region-focusable). */}
+        <div
+          className="overflow-x-auto rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          tabIndex={0}
+          role="region"
+          aria-label={`${division.divisionName} standings table`}
+        >
+          <StandingsGrid standings={division.standings} />
+        </div>
       </CardContent>
     </Card>
   </section>

@@ -13,7 +13,7 @@ interface StatsErrorStateProps {
 
 const StatsErrorState: React.FC<StatsErrorStateProps> = ({ teamsError, matchesError, onRetry }) => {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen supports-[height:100dvh]:min-h-dvh flex items-center justify-center">
       <Alert variant="destructive" className="max-w-xl">
         <AlertTriangle className="size-5 mr-2" />
         <AlertDescription>

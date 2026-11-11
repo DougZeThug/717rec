@@ -49,12 +49,14 @@ export const GameScoreboard: React.FC<GameScoreboardProps> = ({
       Game {gameNumber} · {rulesLabel}
     </div>
     <div className="flex items-center justify-center gap-6">
-      <div className="flex-1 text-right">
+      {/* min-w-0: a flex item will not shrink below its content without it, so
+          a long team name pushed both columns past the card edge. */}
+      <div className="min-w-0 flex-1 text-right">
         <ScoreTotal value={totals.team1} isLeading={leaderSide === 1} testId="team1-total" />
         <div className="truncate text-xs text-muted-foreground">{team1Name}</div>
       </div>
       <span className="text-2xl text-muted-foreground">:</span>
-      <div className="flex-1 text-left">
+      <div className="min-w-0 flex-1 text-left">
         <ScoreTotal value={totals.team2} isLeading={leaderSide === 2} testId="team2-total" />
         <div className="truncate text-xs text-muted-foreground">{team2Name}</div>
       </div>

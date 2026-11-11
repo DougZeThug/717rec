@@ -196,10 +196,12 @@ raise toasts. Every other block reports failure by not appearing.
 **URL state.** None. `/` carries nothing. Nothing on this page can be linked to
 or bookmarked in a particular state.
 
-**On a phone.** The banner becomes a card plus a four-button grid. The League
-History bar is removed entirely. The top ten becomes a swipe carousel of ten
-cards under the words "Swipe to see more →". The page reserves space at the
-bottom for the fixed bottom bar.
+**On a phone.** The banner becomes a card plus a four-button grid. The card has
+16 pixels of top padding; the top bar above it already makes room for the notch.
+The League History bar is removed entirely. The top ten becomes a swipe carousel
+of ten cards under the words "Swipe to see more →". The published recap's "Read
+the full recap" link is 24 pixels tall. The page reserves space at the bottom
+for the fixed bottom bar.
 
 **Accessibility.** The banner's large "717Rec" wordmark is hidden from screen
 readers on desktop and read from a hidden phrase on mobile. Blocks appearing as
@@ -279,4 +281,7 @@ message form is submitted, which creates a request an admin will see.
 Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
 UX audit item W7 (the two message forms became one). Those passages were written
 from the change and its tests, not from a fresh pass over the running app.
+The hero card's top padding and the 24-pixel recap link came in the Wave 4 phone
+polish (2026-11-10). The link was measured in headless Chromium with fake data;
+the notch change was not seen on a real iPhone.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).

@@ -73,7 +73,7 @@ const DatePickerPopover = ({
 }) => (
   <Popover>
     <PopoverTrigger asChild>
-      <Button variant="outline" className="w-[240px] pl-3 text-left font-normal">
+      <Button variant="outline" className="w-full pl-3 text-left font-normal sm:w-[240px]">
         <CalendarIcon className="mr-2 size-4" />
         {format(selectedDate, 'PPP')}
       </Button>
@@ -139,7 +139,7 @@ const TimeslotColumns = ({
       {isLoadingTimeslots ? (
         <p>Loading timeslots...</p>
       ) : (
-        <div className="bg-card p-4 rounded-md border border-border">
+        <div className="bg-card p-2 sm:p-4 rounded-md border border-border">
           <TimeslotList
             timeslots={timeslots}
             teams={teams}

@@ -41,7 +41,8 @@ describe('RankTrendIndicator', () => {
   it('shows a green upward trend with +N when the team moved up', () => {
     const { container } = render(<RankTrendIndicator rankChange={3} />);
     expect(screen.getByText('+3')).toBeInTheDocument();
-    expect(container.querySelector('.text-green-600')).toBeInTheDocument();
+    // green-700: green-600 is under 4.5:1 on white.
+    expect(container.querySelector('.text-green-700')).toBeInTheDocument();
     expect(container.querySelector('.text-red-600')).not.toBeInTheDocument();
   });
 
@@ -49,6 +50,6 @@ describe('RankTrendIndicator', () => {
     const { container } = render(<RankTrendIndicator rankChange={-2} />);
     expect(screen.getByText('-2')).toBeInTheDocument();
     expect(container.querySelector('.text-red-600')).toBeInTheDocument();
-    expect(container.querySelector('.text-green-600')).not.toBeInTheDocument();
+    expect(container.querySelector('.text-green-700')).not.toBeInTheDocument();
   });
 });

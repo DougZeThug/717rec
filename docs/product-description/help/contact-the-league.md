@@ -262,11 +262,14 @@ sign-up event sent to Google Analytics ([what the league sees](../cross-cutting/
 What the reader types is never written to the address, so a part-filled form
 cannot be shared, bookmarked, or linked to.
 
-**On a phone.** The two top fields stack. The email field asks for the email
-keyboard. The message box is 150 pixels tall before it grows. Nothing else
-changes.
+**On a phone.** The card has a 20-pixel gap to each screen edge, like the
+other pages (since 2026-11-10; it was 36). From 640 pixels up the gap is as
+before, and on a wide screen the card is still 608 pixels wide. The two top
+fields stack. The email field asks for the email keyboard. The message box is
+150 pixels tall before it grows.
 
-**Accessibility.** Every field has a real label. Error messages are tied to their
+**Accessibility.** Every field has a real label. The "Verified" badge is a
+darker green in the light theme (since 2026-11-10; it was 3.4:1, now 5:1). Error messages are tied to their
 fields. The hidden bot trap is marked as hidden from screen readers and removed
 from tab order, so it does not reach anyone navigating by keyboard or by voice.
 The success panel replaces the form rather than appearing beside it, which means

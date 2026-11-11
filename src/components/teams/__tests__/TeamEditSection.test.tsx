@@ -70,7 +70,8 @@ describe('TeamEditSection', () => {
 
   // jsdom does no layout, so this pins the classes. On a 320px phone the 144px logo, the name and
   // the 36-character team ID sat in one no-wrap row 30px wider than its card, with the ID squeezed
-  // into 5 lines.
+  // into 5 lines. basis-40 (was basis-32) also drops them under the logo at 390px, where the name
+  // took 4 lines in a 140px column.
   it('lets the team name and ID drop under the logo, and the long team ID break', () => {
     const longId = '3f2504e0-4f89-11d3-9a0c-0305e82c3301';
     mockUseTeamMembership.mockReturnValue({
@@ -85,7 +86,7 @@ describe('TeamEditSection', () => {
     expect(id).toHaveTextContent(longId);
     expect(name).toHaveClass('wrap-break-word');
     expect(id).toHaveClass('break-all');
-    expect(name.parentElement).toHaveClass('min-w-0', 'flex-1', 'basis-32');
+    expect(name.parentElement).toHaveClass('min-w-0', 'flex-1', 'basis-40');
     expect(name.parentElement?.parentElement).toHaveClass('flex-wrap');
   });
 
@@ -98,6 +99,26 @@ describe('TeamEditSection', () => {
 
     await user.clear(name);
     expect(screen.getByRole('button', { name: /save changes/i })).toBeDisabled();
+  });
+
+  // A phone opens its URL keyboard (with "/" and ".com") for a type="url" field.
+  it('asks for the team image as a URL', async () => {
+    const { user } = renderSection();
+    await user.click(screen.getByRole('button', { name: /edit team details/i }));
+
+    expect(screen.getByLabelText('Team Image URL')).toHaveAttribute('type', 'url');
+  });
+
+  // jsdom does no layout, so this pins the class. At 320px "Save Changes" and "Cancel" need
+  // 248px of a 230px row; Cancel ran 18px past it. The row wraps now.
+  it('lets Cancel wrap under Save on a narrow phone', async () => {
+    const { user } = renderSection();
+    await user.click(screen.getByRole('button', { name: /edit team details/i }));
+
+    expect(screen.getByRole('button', { name: 'Cancel' }).parentElement).toHaveClass(
+      'flex',
+      'flex-wrap'
+    );
   });
 
   it('previews the image once a URL is typed', async () => {

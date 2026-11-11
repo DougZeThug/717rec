@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Match } from '@/types';
 
@@ -28,12 +28,14 @@ vi.mock('@/components/transitions/TransitionLink', () => ({
     to,
     children,
     className,
+    'aria-label': ariaLabel,
   }: {
     to: string;
     children: React.ReactNode;
     className?: string;
+    'aria-label'?: string;
   }) => (
-    <a href={to} className={className}>
+    <a href={to} className={className} aria-label={ariaLabel}>
       {children}
     </a>
   ),
@@ -191,9 +193,8 @@ describe('MatchCard', () => {
 
     render(<MatchCard match={{ ...baseMatch, iscompleted: false }} />);
 
-    // The TransitionLink test stub only forwards to/children/className, so the
-    // accessible name is the visible text.
-    const link = screen.getByRole('link', { name: 'Live score this match' });
+    const link = screen.getByRole('link', { name: 'Live score Team Alpha vs Team Beta' });
+    expect(link).toHaveTextContent('Live score this match');
     expect(link).toHaveAttribute('href', '/matches/match-1/live');
     // jsdom does no layout, so this pins the class. The button was 40px tall, under the 44px tap size.
     expect(link).toHaveClass('min-h-[44px]');
@@ -213,6 +214,79 @@ describe('MatchCard', () => {
 
     rerender(<MatchCard match={{ ...baseMatch, status: 'postponed', iscompleted: false }} />);
     expect(screen.queryByText('Live score this match')).not.toBeInTheDocument();
+  });
+
+  // Doug, 2026-11-09: on match night everyone who cannot score a match can
+  // still open its live page, view only.
+  describe('Watch live', () => {
+    // Built in local time, so "today" does not depend on the test machine's zone.
+    const matchDay: Match = {
+      ...baseMatch,
+      iscompleted: false,
+      date: new Date(2026, 7, 1, 18, 30).toISOString(),
+    };
+
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 7, 1, 12, 0));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('offers a non-scorer a full-width link to the live page on match day', () => {
+      render(<MatchCard match={matchDay} />);
+
+      const link = screen.getByRole('link', { name: 'Watch Team Alpha vs Team Beta live' });
+      expect(link).toHaveTextContent('Watch live');
+      expect(link).toHaveAttribute('href', '/matches/match-1/live');
+      expect(link).toHaveClass('min-h-[44px]', 'w-full');
+      expect(screen.queryByText('Live score this match')).not.toBeInTheDocument();
+    });
+
+    it('gives a scorer only the live scoring link', () => {
+      mockUseCanScoreMatch.mockReturnValue({ canScore: true, isAdmin: false, isLoading: false });
+      render(<MatchCard match={matchDay} />);
+
+      expect(screen.getByText('Live score this match')).toBeInTheDocument();
+      expect(screen.queryByText('Watch live')).not.toBeInTheDocument();
+    });
+
+    it('offers nothing while the scorer check is still loading', () => {
+      mockUseCanScoreMatch.mockReturnValue({ canScore: false, isAdmin: false, isLoading: true });
+      render(<MatchCard match={matchDay} />);
+
+      expect(screen.queryByText('Watch live')).not.toBeInTheDocument();
+      expect(screen.queryByText('Live score this match')).not.toBeInTheDocument();
+    });
+
+    it('offers nothing on another day', () => {
+      render(
+        <MatchCard match={{ ...matchDay, date: new Date(2026, 7, 2, 18, 30).toISOString() }} />
+      );
+
+      expect(screen.queryByText('Watch live')).not.toBeInTheDocument();
+      expect(screen.queryByText('Live score this match')).not.toBeInTheDocument();
+    });
+
+    it.each([
+      ['completed', { iscompleted: true }],
+      ['postponed', { status: 'postponed' as const }],
+      ['canceled', { status: 'canceled' as const }],
+    ])('offers nothing for a %s match', (_state, overrides) => {
+      render(<MatchCard match={{ ...matchDay, ...overrides }} />);
+
+      expect(screen.queryByText('Watch live')).not.toBeInTheDocument();
+      expect(screen.queryByText('Live score this match')).not.toBeInTheDocument();
+    });
+
+    // matchTransformers maps a missing team to an empty id.
+    it('offers nothing while a team is still missing', () => {
+      render(<MatchCard match={{ ...matchDay, team2Id: '', team2Details: undefined }} />);
+
+      expect(screen.queryByText('Watch live')).not.toBeInTheDocument();
+    });
   });
 
   // `iscompleted` is nullable. A null row used to fall out of both Schedule

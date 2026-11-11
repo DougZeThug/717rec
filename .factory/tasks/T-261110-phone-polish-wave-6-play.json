@@ -1,0 +1,131 @@
+{
+  "id": "T-261110-phone-polish-wave-6-play",
+  "title": "Phone polish wave 6: playoffs, history, weekly recap",
+  "kind": "polish",
+  "status": "ready",
+  "request": "start wave 6",
+  "trivial": false,
+  "branch": "claude/intelligent-knuth-8pjz9p",
+  "baseSha": "4edd99c75eb708ba6844d5d7e895f8905a297861",
+  "createdAt": "2026-11-10T19:59:48.492Z",
+  "criteria": [
+    {
+      "text": "Update Bracket Seeding pop-up fits at 320 and 390 px (no sideways scroll; min-w-0 on the drag section or grid-cols-1 on its content), stays centred; Create Bracket checked at 320 in manual seed mode and fixed the same way if it overflows (stays centred: Doug's exception).",
+      "done": true,
+      "evidence": "Commit 7f55cc6. QA admin: Update Seeding, Edit Bracket, Delete scrollWidth = clientWidth at 320 (286), 390 (356), 1280 (670/510), centred; Create Bracket manual seed mode 286/286 at 320, 356/356 at 390, centred (stays centred: Doug). Remaining manual-seed list cramping at 320 logged as a later item. /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa6/out"
+    },
+    {
+      "text": "Doug: the playoff score pop-up (BracketsManagerMatchEditor + Regular/Bye editors) stays centred and asks before a tap outside, Escape or Cancel throws typed scores away (useUnsavedChangesGuard, isDirty includes isOpen); Save never asks; reopening a match after Cancel shows the stored scores (draft cleared on close). Tests for each; scoring and the tie block unchanged.",
+      "done": true,
+      "evidence": "Commit 405ab38. QA at 320, 390 (touch), 1280: typed 17, tap outside/Escape/Cancel ask; dismiss keeps 17, accept closes; reopen shows stored 0; untouched or typed-back closes without asking; Save closes without asking (mock accepted the fake PATCH). New unsaved test file (8 tests) fails without the draft clear. Bye editor path wired, covered by code reading only (no fake bye match)."
+    },
+    {
+      "text": "Delete Bracket pop-up logs no console error (AlertDialogDescription asChild + div, no <p> in <p>).",
+      "done": true,
+      "evidence": "Commit 9e45398. QA: no console errors at 320, 390, 1280 opening Delete Bracket; test pins the div description."
+    },
+    {
+      "text": "Recap: W-L header and cells stay on one line (whitespace-nowrap) with no sideways scroll at 320 even with a long team-name word; recap Home link at least 24 px tall.",
+      "done": true,
+      "evidence": "Commit eaf1c38. QA: at 320 the 'Power rankings table' region scrolls inside (276 > 238), page 320/320; no region scrolls at 390/1280; 23 W-L cells one line; Home link 24 px; axe 0 violations at 320/390/1280; Tab reaches all 3 regions."
+    },
+    {
+      "text": "History: the page title lines up with the content (16 px from the edge on a phone); 390, 1280 and 1440 px shots show only that change.",
+      "done": true,
+      "evidence": "Commit 64c04ce. QA: title left edge = card left edge, 20/20 at 320 and 390 (16 px container padding + the page's 4 px), 36/36 at 1280 and 1440; pixel diff vs before: only the title strip changed."
+    },
+    {
+      "text": "PO-04: the raw bracket id heading no longer flashes after the bracket draws (hideUuidNodes right after rendering); the mock uses the id as the stage name so a shot shows it. Division tabs: wrap only if a shot shows a long name spilling, else [-].",
+      "done": true,
+      "evidence": "Commits e2c81a0, 1e90a71. QA: per-frame watcher found no visible bracket id after .match appears (0, 0.2, 1.5 s) signed out and admin at 320/390/1280; the mock names the stage with the id. Division tabs: builder showed the spill with long fake division names (150 > 144 at 320) and the fix (144/144); test pins whitespace-normal."
+    },
+    {
+      "text": "Docs in the same change: on-a-phone.md, the playoffs/bracket admin docs, history and recap docs, MODAL_PATTERNS.md (named exceptions: playoff score pop-up and Create Bracket stay centred), UI-UX audit boxes (PO-04), verification rows, the Wave 6 checklist with [-] items (Edit Bracket/Move team/Edit teams stay centred: 1-2 field pickers; touch drag works; PO-05 not measurable) and the logged later items.",
+      "done": true,
+      "evidence": "Commit fec4766: on-a-phone, run-the-playoffs, read-a-bracket, past-seasons, weekly-content-pack, MODAL_PATTERNS named exceptions (Doug), PO-04 done, PLAYADMIN-39/40, HIST-43, PHONE-35, both READMEs 1,986, Wave 6 checklist with [-] and later items. QA and reviewer checked against code."
+    },
+    {
+      "text": "Before/after shots at 320, 390 and 1280 px of /playoffs, the bracket (signed out and admin), /history and the recap; no page scrolls sideways; no new console errors; required checks (typecheck, lint, unit, build, knip, integrity) pass on the final commit.",
+      "done": true,
+      "evidence": "Before/after: .factory/evidence/T-261110-phone-polish-wave-6-play/before and /after (out, admin) at 390/1280 plus 320 probes (w6, qa6): consoleErrors [], overflow []; phone-scan 320/390 all counts 0. F check at fec4766: typecheck, lint, unit (394 s), build, knip, integrity PASS. e2e playoff-bracket, a11y, navigation-scroll, offline: 39 passed (backend blocked)."
+    }
+  ],
+  "checks": {
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fec4766575fc3532fa1ece16b73dd4e1b81dc47c",
+      "dirty": false,
+      "at": "2026-11-10T20:52:40.229Z",
+      "seconds": 8,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-6-play/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fec4766575fc3532fa1ece16b73dd4e1b81dc47c",
+      "dirty": false,
+      "at": "2026-11-10T20:55:06.241Z",
+      "seconds": 142,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-6-play/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fec4766575fc3532fa1ece16b73dd4e1b81dc47c",
+      "dirty": false,
+      "at": "2026-11-10T20:55:10.995Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-6-play/knip.log"
+    },
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fec4766575fc3532fa1ece16b73dd4e1b81dc47c",
+      "dirty": false,
+      "at": "2026-11-10T20:55:15.082Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-6-play/integrity.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fec4766575fc3532fa1ece16b73dd4e1b81dc47c",
+      "dirty": false,
+      "at": "2026-11-10T20:55:21.816Z",
+      "seconds": 3,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-6-play/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "fec4766575fc3532fa1ece16b73dd4e1b81dc47c",
+      "dirty": false,
+      "at": "2026-11-10T21:01:59.136Z",
+      "seconds": 394,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261110-phone-polish-wave-6-play/unit.log"
+    }
+  },
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "fec4766575fc3532fa1ece16b73dd4e1b81dc47c",
+      "at": "2026-11-10T21:16:06.508Z",
+      "summary": "Review of 7578bb6..fec4766: score guard on all four roots (backdrop, Escape, X, Cancel), isDirty needs isOpen + matching draft + changed score, Save raw close, draft cleared so reopen shows stored scores, tie block and scoring untouched, tests real and not weakened; grid-cols-1 changes nothing on desktop; Delete asChild div; hideUuidNodes in the first decoration pass; recap regions, History title move, tab wrap; docs and both README counts (1,986) match. Suggestions (wording only) left."
+    }
+  ],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-10T21:16:06.833Z",
+  "readySha": "fec4766575fc3532fa1ece16b73dd4e1b81dc47c",
+  "readyAt": "2026-11-10T21:16:06.833Z"
+}

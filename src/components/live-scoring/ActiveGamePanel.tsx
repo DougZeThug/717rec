@@ -220,10 +220,6 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
         rulesLabel={rulesLabel}
       />
 
-      <RoundSavedNotice saved={savedRound} />
-
-      <SyncStatusNotice isOnline={isOnline} pausedCount={pausedRounds} />
-
       {gameWon && (
         <GameWonBanner
           gameNumber={game.game.game_number}
@@ -281,6 +277,16 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
           />
         </>
       )}
+
+      {/*
+        Below the score grids, not above them: a line that comes and goes
+        above the grids moved every score button while the scorer was tapping.
+        Both lines are about this scorer's own rounds, so a watcher sees
+        neither.
+      */}
+      <RoundSavedNotice saved={savedRound} />
+
+      {canScore && <SyncStatusNotice isOnline={isOnline} pausedCount={pausedRounds} />}
 
       {canScore && (
         <LiveScoringControls

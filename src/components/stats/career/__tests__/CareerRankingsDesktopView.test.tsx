@@ -56,8 +56,8 @@ describe('CareerRankingsDesktopView', () => {
 
     const rankCell = (rank: string) => screen.getByText(rank, { selector: 'td > span' });
     expect(rankCell('1')).toHaveClass('text-amber-700');
-    expect(rankCell('2')).toHaveClass('text-primary');
-    expect(rankCell('3')).toHaveClass('text-primary');
+    expect(rankCell('2')).toHaveClass('text-primary-text');
+    expect(rankCell('3')).toHaveClass('text-primary-text');
     expect(rankCell('4')).toHaveClass('text-muted-foreground');
   });
 });

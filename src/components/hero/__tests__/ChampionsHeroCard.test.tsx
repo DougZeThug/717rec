@@ -154,4 +154,19 @@ describe('ChampionsHeroCard', () => {
 
     expect(await screen.findByText('Season Champions')).toHaveClass('text-amber-50');
   });
+
+  // The phone card's division label was 11px, under the 12px floor for text a
+  // reader needs.
+  it('draws the division label on the phone card at 12px', async () => {
+    mocks.fetchChampionTeams.mockImplementation(() =>
+      Promise.resolve([{ id: 't1', name: 'Bag Boys', image_url: null }])
+    );
+    renderCard(makeCard({ Competitive: 't1' }));
+
+    await screen.findByText('Season Champions');
+    // The phone carousel's label is a <p>; the desktop grid's is an <h3>.
+    const label = screen.getAllByText('Competitive').find((el) => el.tagName === 'P');
+    expect(label).toHaveClass('text-xs');
+    expect(label).not.toHaveClass('text-2xs');
+  });
 });

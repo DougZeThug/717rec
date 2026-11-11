@@ -24,4 +24,22 @@ describe('HelpAccordionItem', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByText('Tap a match to enter the score.')).toBeInTheDocument();
   });
+
+  // jsdom does no layout, so this pins the class. A title that wraps on a phone was centred,
+  // because a button centres its text; the one-line titles above it start at the left.
+  it('keeps a wrapped title at the left', () => {
+    render(
+      <Accordion type="single" collapsible>
+        <HelpAccordionItem
+          value="a11y"
+          icon={HelpCircle}
+          title="Accessibility & Keyboard Navigation"
+        >
+          <p>body</p>
+        </HelpAccordionItem>
+      </Accordion>
+    );
+
+    expect(screen.getByText('Accessibility & Keyboard Navigation')).toHaveClass('text-left');
+  });
 });

@@ -14,7 +14,7 @@ const colorClasses = {
 /** Small pill labeling prediction confidence, color-coded for Low/Medium/High. */
 const ConfidenceBadge: React.FC<{ level: ConfidenceLevel }> = ({ level }) => {
   return (
-    <span className={cn('text-2xs font-semibold px-1.5 py-0.5 rounded-full', colorClasses[level])}>
+    <span className={cn('text-xs font-semibold px-1.5 py-0.5 rounded-full', colorClasses[level])}>
       {level}
     </span>
   );
@@ -46,7 +46,7 @@ export const MatchPrediction: React.FC<MatchPredictionProps> = ({
       <div className="flex items-center gap-1.5 mb-1">
         <span
           className={cn(
-            'text-2xs font-bold tabular-nums w-8 text-right',
+            'text-xs font-bold tabular-nums w-9 text-right',
             !isCoinFlip && probA > probB
               ? 'text-blue-600 dark:text-blue-400'
               : 'text-muted-foreground'
@@ -66,9 +66,9 @@ export const MatchPrediction: React.FC<MatchPredictionProps> = ({
         </div>
         <span
           className={cn(
-            'text-2xs font-bold tabular-nums w-8',
+            'text-xs font-bold tabular-nums w-9',
             !isCoinFlip && probB > probA
-              ? 'text-orange-600 dark:text-orange-400'
+              ? 'text-orange-700 dark:text-orange-400'
               : 'text-muted-foreground'
           )}
         >

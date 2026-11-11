@@ -162,9 +162,11 @@ including when its data fails to load.
 in `?date=` and the match in the hash, which the schedule reads to scroll to the
 card.
 
-**On a phone.** Date and time move above the teams. Team names are truncated at
-about 80 pixels, so long names are cut. The **Score live** button is at least 44
-pixels tall (it was 40).
+**On a phone.** Date and time move above the teams. A team name takes up to 112
+pixels and ends in "…" past that; on a 320-pixel phone it gets less, so the
+arrow stays in the card. The **Score live** button is at least 44 pixels tall
+(it was 40). **See full schedule** is 24 pixels tall and drawn in the blue
+text colour; in the winter theme it keeps its cyan.
 
 **Accessibility.** The **Score live** button carries a spoken name naming both
 teams. The row itself is an ordinary link whose name is read out of the logos,
@@ -228,3 +230,6 @@ card now reads the membership fetch, so its skeleton is shown on a first load).
 Those passages were written from the change and its tests, not from a fresh pass
 over the running app.
 The **Score live** button height (44 pixels, was 40) changed after that (commit `fd5d43a`). It is pinned by a test; it was not measured in a browser.
+The name width, the 24-pixel link and its colour came in the Wave 4 phone polish
+(2026-11-10). They were measured in headless Chromium with fake data at 320 and
+390 pixels and are pinned by tests.

@@ -39,4 +39,14 @@ describe('LeagueParityCard', () => {
 
     expect(container.querySelector('[style*="width: 60%"]')).toBeInTheDocument();
   });
+
+  // The two ends of the bar were 11px, under the 12px floor for text a reader needs.
+  it('labels the ends of the bar at 12px', () => {
+    render(<LeagueParityCard parity={parity(60)} totalTeams={10} />);
+
+    const ends = screen.getByText('Lopsided').parentElement;
+    expect(ends).toHaveTextContent('LopsidedCompetitive');
+    expect(ends).toHaveClass('text-xs');
+    expect(ends).not.toHaveClass('text-2xs');
+  });
 });

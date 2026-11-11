@@ -1,5 +1,5 @@
 import { RotateCcw, Trophy } from 'lucide-react';
-import React from 'react';
+import React, { useId } from 'react';
 
 import {
   AlertDialog,
@@ -107,6 +107,7 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
   team1Id = null,
   team2Id = null,
 }) => {
+  const playerStatsHeadingId = useId();
   // Keep every attributed line — a thrower may have left the roster since.
   const playerLines = computePlayerStatLines(rounds).sort(
     (a, b) => b.roundsThrown - a.roundsThrown
@@ -171,8 +172,17 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
 
       {playerLines.length > 0 && (
         <div className="rounded-lg border bg-card p-4">
-          <h3 className="mb-2 text-sm font-semibold">Player stats</h3>
-          <div className="overflow-x-auto">
+          <h3 id={playerStatsHeadingId} className="mb-2 text-sm font-semibold">
+            Player stats
+          </h3>
+          {/* The table scrolls sideways on a phone, so a keyboard user must be
+              able to reach it (axe scrollable-region-focusable). */}
+          <div
+            className="overflow-x-auto rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            tabIndex={0}
+            role="region"
+            aria-labelledby={playerStatsHeadingId}
+          >
             <PlayerStatsTable playerLines={playerLines} playerNames={playerNames} />
           </div>
         </div>

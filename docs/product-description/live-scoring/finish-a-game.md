@@ -122,7 +122,7 @@ banner stays exactly as it was. Nothing is lost and the scorer can press again.
 | The connection | With no signal the End Game button is greyed out and a line above it says the game cannot be ended until the signal comes back. | Losing the signal greys the button. Reconnecting does not hand it straight back: it stays greyed, now naming the round still being filed, until that round settles. |
 | The record's state | The banner appears only from the totals. A game already ended does not show it. | The other scorer ending the game first replaces the banner with the next stage, mid-dialog. |
 | The season's state | No effect. | No effect. |
-| Viewport | The banner is full width; the End Game button is 48 pixels high. The dialog fills a phone screen. | No effect. |
+| Viewport | The banner is full width; the End Game button is 48 pixels high. On a phone the dialog is a centred box with a 16-pixel gap each side, never taller than the screen minus 32 pixels; it was full-width before the 2026-11-09 phone polish. | No effect. |
 | Keys the app honours | The dialog is a proper dialog: Escape closes it, focus is trapped, and returns to the button on close. | Escape is the same as "Keep scoring". |
 
 ## Cancel and interrupt

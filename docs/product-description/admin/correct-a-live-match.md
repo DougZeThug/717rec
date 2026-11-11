@@ -130,7 +130,9 @@ Choosing a match loads it and draws one card per game: "Game 2 · *Team A* 21 �
 score under it and a pencil and a bin on the right.
 
 A **Change winner** button appears on the card header of every game whose status
-is completed. A game still in progress does not offer it.
+is completed. A game still in progress does not offer it. When the header is too
+narrow for the title and the button side by side, the button drops under the
+title.
 
 None of the three buttons writes anything on its own. Each opens a dialog.
 
@@ -162,6 +164,14 @@ because the old breakdown no longer matched the new score.
 The dialog loads the round's stored values when it opens and **does not reload
 them if the round changes underneath**, so a half-finished correction is not
 wiped by a background refresh.
+
+**On a phone, Edit round is a bottom sheet** (below 768 pixels wide). A swipe
+down closes it only while nothing is typed and nothing is saving. Once a field
+has changed, a swipe down, a tap outside the sheet and Escape do nothing; only
+Cancel closes it, and Cancel asks first. A swipe cannot ask, so it must not throw
+a typed correction away. The sheet does not put focus in the first box, so the
+phone keyboard does not open by itself. From 768 pixels up it is the same
+centred dialog as before.
 
 **Delete round** asks first: "Delete round *N*? This removes round *N* from game
 *M*. The game totals shown here recompute at once, but the game's stored winner
@@ -263,8 +273,8 @@ in a single press. See [`site-settings.md`](site-settings.md).
 | The user's role | Admin only, by the guard on `/admin`. Reopening a match likewise needs admin; **reopening a single game does not** — any scorer can do that from the live page. | Losing admin leaves the panel on screen; the writes then fail with the league's refusal as the message. |
 | The record's state | A finalised match shows the amber warning, offers **Reopen & re-save result**, and refreshes standings after each edit. An unfinalised one does none of the three. Only a completed game offers Change winner. | A match finalised elsewhere while the panel is open does not show the warning until the panel is re-read. |
 | The season's state | An **archived** season is read-only: a grey banner replaces the amber one, and the pencil, the bin, **Change winner** and **Reopen & re-save result** are all absent. The service refuses the write as well, naming the season. | Read from **the open match's own season**, not from the filter, so a match selected under one filter keeps the right answer after the filter changes. |
-| Viewport | From 768 pixels wide the list (at most 320 pixels wide) sits beside the panel; below that it stacks above it. On a tablet the open admin sidebar takes 240 pixels of that width, so the panel is narrow there, and a score such as 3 – 0 stays on one line instead of breaking after the dash (before, 14 of 23 round rows split at 768 to 940 pixels wide). Below 768 pixels, selecting a match scrolls to the panel and the clear button reads "Back to list" with a left arrow; at or above it there is no scroll and the button reads "Clear selection". The dialogs are full-width on a phone. | No effect. |
-| Keys the app honours | All three dialogs are proper dialogs: Escape closes, Tab is trapped, focus returns to the trigger. | Escape is the same as Cancel or "Keep round" and never writes. |
+| Viewport | From 768 pixels wide the list (at most 320 pixels wide) sits beside the panel; below that it stacks above it. On a tablet the open admin sidebar takes 240 pixels of that width, so the panel is narrow there, and a score such as 3 – 0 stays on one line instead of breaking after the dash (before, 14 of 23 round rows split at 768 to 940 pixels wide). Below 768 pixels, selecting a match scrolls to the panel and the clear button reads "Back to list" with a left arrow; at or above it there is no scroll and the button reads "Clear selection". On a phone Edit round is a bottom sheet (since 2026-11-10; see While editing). Change winner and Delete round stay centred boxes with a 16-pixel gap each side, never taller than the screen minus 32 pixels. Before the 2026-11-09 phone polish all three were full-width, and Edit round ran 14 pixels off the top and the bottom of a 640-pixel-tall phone (measured in headless Chromium with fake data). On a narrow game card the Change winner button drops under the game title; before 2026-11-10 it was squeezed to 54 to 64 pixels and its words ran over the title and past the card. | No effect. |
+| Keys the app honours | All three dialogs are proper dialogs: Escape closes, Tab is trapped, focus returns to the trigger. | Escape is the same as Cancel or "Keep round" and never writes. On a phone, Escape does nothing in the Edit round sheet once a field has changed or while it saves. |
 
 ## Cancel and interrupt
 
@@ -309,7 +319,8 @@ real message.
 
 **Unsaved changes.** The edit-round dialog is guarded: Cancel, Escape and a tap
 outside all ask "This round has changes that are not saved. Close and lose them?"
-once a field has been changed. Saving closes without asking, and a fresh copy of
+once a field has been changed. On a phone only Cancel can close the sheet then,
+and it asks the same question. Saving closes without asking, and a fresh copy of
 the same round arriving from the server does not count as a change. The other two
 dialogs hold nothing to lose. Browser Back asks the same question; see
 [`the-admin-dashboard.md`](the-admin-dashboard.md).
@@ -333,8 +344,8 @@ another admin as a link but a particular correction cannot.
 match scrolls the panel into view, and a **← Back to list** button at the top of
 the panel clears the selection and scrolls back up. Neither happens on a wide
 screen, where the panel is already beside the list and the same button reads
-"Clear selection". The edit dialog's eight numeric fields in a four-column grid
-are cramped.
+"Clear selection". Edit round opens as a bottom sheet; see While editing. Its
+eight numeric fields in a four-column grid are cramped.
 
 The Season and Night pickers stack on a phone, each with its label above a
 full-width select 44 pixels high. From 768 pixels wide they sit side by side. A
@@ -429,3 +440,4 @@ Verified against `717rec` commit `ea5c8f4`, except the pickers and round buttons
 described under "On a phone", which were changed after that commit (the admin
 phone polish).
 The tablet score-text fix (commits `d96c454` to `0ca8b0f`) changed the Viewport row above after that commit: a score such as 3 – 0 now stays on one line in the round rows and the game title. It was measured in a real browser against fake data, not on a real phone or tablet.
+The Edit round bottom sheet and the Change winner wrap came in the Wave 3 phone polish (2026-11-10). They were measured in headless Chromium with fake data at 320, 390 and 1280 pixels: a typed sheet stayed open after a scripted touch swipe, Cancel asked first, an untouched sheet closed on a swipe, and the page still scrolled after a save. A tap outside the typed sheet and Escape on a phone were read from the code, not tried.

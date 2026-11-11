@@ -139,7 +139,7 @@ const ChartSkeleton: React.FC = () => (
   <Card className="mb-4">
     <CardHeader>
       <Skeleton className="h-6 w-64" />
-      <Skeleton className="h-4 w-96 mt-2" />
+      <Skeleton className="h-4 w-full max-w-96 mt-2" />
     </CardHeader>
     <CardContent>
       <Skeleton className="h-[400px] w-full" />

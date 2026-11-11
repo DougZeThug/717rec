@@ -45,7 +45,7 @@ const SignupsTableHeader: React.FC = () => (
 );
 
 const SignupsTable: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="border rounded-lg overflow-hidden">
+  <div className="border rounded-lg overflow-x-auto">
     <table className="w-full">
       <SignupsTableHeader />
       <tbody className="divide-y">{children}</tbody>

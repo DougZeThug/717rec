@@ -101,7 +101,8 @@ const TeamEditSection: React.FC = () => {
         {!isEditing ? (
           <div className="space-y-4">
             {/* The 144px logo leaves little room for the name and the 36-character team ID on a
-                phone: the text drops under the logo until it can have 128px beside it. */}
+                phone: the text drops under the logo until it can have 160px beside it, so on a
+                phone the name gets the card's full width (2 lines at most) instead of 4 lines. */}
             <div className="flex flex-wrap items-center gap-4">
               <TeamLogo
                 imageUrl={membership.team.imageUrl || membership.team.logoUrl}
@@ -109,7 +110,7 @@ const TeamEditSection: React.FC = () => {
                 size="lg"
                 rounded
               />
-              <div className="min-w-0 flex-1 basis-32">
+              <div className="min-w-0 flex-1 basis-40">
                 <h3 className="wrap-break-word text-lg font-semibold">{membership.team.name}</h3>
                 <p className="break-all text-sm text-muted-foreground">
                   Team ID: {membership.team.id}
@@ -138,6 +139,7 @@ const TeamEditSection: React.FC = () => {
               <Label htmlFor="team-image">Team Image URL</Label>
               <Input
                 id="team-image"
+                type="url"
                 value={formData.image_url}
                 onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
                 placeholder="https://example.com/team-logo.png"
@@ -162,7 +164,8 @@ const TeamEditSection: React.FC = () => {
               </div>
             )}
 
-            <div className="flex gap-2">
+            {/* At 320px "Save Changes" and "Cancel" need 248px of a 230px row: Cancel wraps. */}
+            <div className="flex flex-wrap gap-2">
               <Button
                 onClick={handleSave}
                 disabled={isLoading || !formData.name.trim()}

@@ -1,0 +1,186 @@
+{
+  "id": "T-261109-phone-polish-wave-2-sche",
+  "title": "Phone polish wave 2: schedule and live scoring",
+  "kind": "polish",
+  "status": "ready",
+  "request": "Doug: 'start wave 2' (2026-11-09), from the approved phone polish plan (docs/plans/PHONE-POLISH-2026-11.md, Wave 2 and the Wave 0 baseline findings): schedule and live scoring on a phone. Keep the design.",
+  "trivial": false,
+  "branch": "claude/intelligent-knuth-8pjz9p",
+  "baseSha": "65fa862cc40451dc2955859e6978d6b871d7e75a",
+  "createdAt": "2026-11-09T18:23:11.570Z",
+  "criteria": [
+    {
+      "text": "Linked match: /schedule?date=<night>#match-<id> opens the time group that holds the match (TimeSlotMatchGroup reads the hash for its first open state) and scrolls to the card, also on a phone when that night is not the first in the carousel (390 px, fake data: tonight's 7:30 match). A bare /schedule still opens only the first group. Unit test added; existing TimeSlotMatchGroup tests wrapped in a MemoryRouter.",
+      "done": true,
+      "evidence": "QA browser (member, fake data, 320/390/1280, real clock and clock 2026-11-12 18:45): /schedule?date=2026-11-12#match-ID(1004) opens 6:30 + 7:30 groups only, phone carousel on Thu Nov 12 (2nd night after Nov 5), card on screen (390: top 497/bottom 783 of 844; 320: top 395 of 640, lower part below the fold). Bare /schedule: only 6:30 open. Unit: TimeSlotMatchGroup hash tests + MemoryRouter wrap pass (unit 857 files/7871 tests). Note: card lands ~200 px below centre because cards above grow after the one-time scroll. /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/p1*.png"
+    },
+    {
+      "text": "Doug's B: on a phone, picking a night on the date strip shows that night in the Upcoming or Completed cards when it has matches, chosen in the same render (no after-draw effect); a data refetch after a swipe does not jump back; desktop unchanged. Unit tests for both tabs, the refetch case and desktop.",
+      "done": true,
+      "evidence": "QA browser 390+320 phone: Completed: pick Sun May 3 on strip -> carousel 'Sunday, May 3 [2 of 11]'; no-match night -> newest (Nov 5). Upcoming: tab switch on picked Nov 5 -> Nov 5; Next -> Nov 12; Refresh button refetch (1 matches request) and offline->online refetch keep Nov 12; Prev -> Nov 5, Refresh keeps it. Desktop 1280: no carousel, every night listed; pixel diff vs main shows only label size/time-stamp changes. Unit tests (both tabs, same-render, refetch, desktop) pass. Real swipe gesture not driven (synthetic drag did not move it on any try). /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/p2*.png"
+    },
+    {
+      "text": "Doug's A: on the day of a not-yet-played match with both teams set, anyone who cannot score it (other teams, signed-out visitors) sees a full-width 'Watch live' link to /matches/<id>/live; a scorer sees only 'Live score this match'; no button on other days, for completed or postponed matches, or with a missing team; no Watch-live flash while scorer rights load. Watchers no longer see the two scorer-only lines ('your scores still save', 'Rounds send when the signal is back'). Unit tests; browser check with the browser clock on match day, signed out and as a scorer.",
+      "done": true,
+      "evidence": "QA browser, clock 2026-11-12 18:45, 320/390/1280: signed out -> 'Watch live' on all 8 tonight cards, 44 px high, full card width, href /matches/<id>/live; member (Bravo) -> 'Live score this match' on 1000 and 1004, 'Watch live' on the other 6; admin -> Live score on all, no Watch live; Nov 9 clock -> 0 Watch live; completed and other-night cards -> none; missing team -> card dropped; MutationObserver saw no Watch live on the scorer's 1000/1004 at any time. Live 1000 signed out with realtime off and offline: no 'your scores still save', no 'Rounds send when the signal is back' (scorer still sees both). Postponed/canceled: unit tests only (matches has no status column, schedule select omits it). /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/p3*.png"
+    },
+    {
+      "text": "Live scoring layout at 320 and 390 px (member and signed-out): the two team names under the game score end inside the scoreboard card with an ellipsis; every round-list row stays inside the list with '+N' visible (text still reads 'Name +3'); the scorer's 'Round N saved' and offline lines sit below the score input block, so the grids no longer jump.",
+      "done": true,
+      "evidence": "QA browser live ID(1000) member + signed out and ID(1010), 320 and 390: both scoreboard names inside the card with text-overflow ellipsis; 0 round rows outside the list, 0 hidden '+N', label reads 'Fake Team Charlie +3'; 'Round 8 saved' and offline line come after the grids in DOM and on screen; grid tops 659 before save, 659 while 'Round 8 saved' shows, 659 after it clears. Taps still move grids (older code): +20 px net preview wrap (documented), and +16 px at 320 from the 'N pts' wrap in ScoreGrid (not documented). Before/after vs main: /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/crop-live1000*.png"
+    },
+    {
+      "text": "Labels and contrast: the comment menu shows without hover and is 44x44; these are 12 px or more: date strip weekdays, prediction numbers ('100%' fits) and High/Medium/Low, 'Won', rivalry tag, 'Games', thrower headings, timeslot double-header pill and division badge; light theme: prediction orange-700, 'Live updates' green-700, comment box border-input (3:1); selected score button blue/red-600 with white text at 4.5:1 or better, with dark and winter shots.",
+      "done": true,
+      "evidence": "QA browser: comment menu on own comment (member, Nov 5, Alpha v Bravo, 3 Comments) 44x44, opacity 1 without hover (320/390/1280). 12 px: weekdays, prediction numbers, High/Medium, Won, Games, thrower headings, DH pill, rivalry tag 'Nemesis' (in-memory H2H fake). '100%' fits (35.5 in 36 px). Division badge not in fake data (class text-xs only). Light: orange-700 5.22, Live updates green-700 4.95, comment border 3.52 vs page; selected score blue-600 5.25 / red-600 4.77 in light, dark and winter (shots /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/p5-live-*.png)."
+    },
+    {
+      "text": "Docs in the same change: a-match-card.md, the-schedule-page.md, start-a-live-match.md (open questions answered), enter-a-round.md, errors-and-offline.md, saving-and-freshness.md, on-a-phone.md, the verification rows that change, the boxes in UI-UX-DESIGN-AUDIT-2026-10.md, and the plan file (Wave 2 ticked; calendar button and pager dots [-] with the reason; item 10 dropped).",
+      "done": true,
+      "evidence": "QA read the docs diff 65fa862..c814eaa: a-match-card.md, the-schedule-page.md, start-a-live-match.md (both open questions answered), enter-a-round.md, errors-and-offline.md, saving-and-freshness.md, on-a-phone.md, accessibility.md, verification rows (cross-cutting, live-scoring ROUND-36, schedule-and-scores), UI-UX audit boxes, plan file (Wave 2 ticked, calendar and pager dots [-] with reason, item 10 dropped). Measured numbers match the docs. Small gaps: the-schedule-page.md says the card is scrolled to the middle (it lands ~200 px low); the 320 px 'N pts' 16 px jump is not in the found-not-fixed note."
+    },
+    {
+      "text": "Before/after shots and measurements at 320, 390 and 1280 px; no page scrolls sideways; no new console errors; e2e/a11y.spec.ts passes; required checks pass on the final head and an independent code review approves.",
+      "done": true,
+      "evidence": "QA (independent): browser criteria 1-6 and 8 verified at 320/390/1280, a11y spec 32/32, shoot 0 console errors and 0 overflow, page heights equal to main. After the repair (3a1037b, ab10318, ab8442b, 18f1255) on head 6ff8b01: typecheck, lint, knip, integrity (now PASS: suppression removed), build and unit (857 files, 7872 tests) PASS through F check. Independent code review: CHANGES on c814eaa (B1), APPROVE on 6ff8b01."
+    },
+    {
+      "text": "Contrast pair text-primary on bg-primary/10 (12 places, 4.48:1): every place reaches 4.5:1 or better in the light, dark and winter themes, measured in a browser, with the smallest shared change that keeps the look (no global change to the brand --primary colour, so buttons and other primary fills do not change); a test pins it.",
+      "done": true,
+      "evidence": "QA browser, 390 px, light/dark/winter: schedule Live score 5.40/7.08/5.53, Watch live 5.40/7.08/5.53, home Score live 5.07/7.35/7.66, admin phone Sections active 5.40/7.35/7.66 (main: 4.49/4.21/4.49 light, 3.61 dark home/admin). Token on bg-background/bg-card/bg-muted with /10 and dark /20 tint: min 4.90 (all themes). --primary and the selected date chip fill identical to main in all 3 themes. primaryTextToken.test.ts passes. /tmp/claude-0/-home-user-717rec/eebb8a71-5c0b-524e-94bf-28a666b3278f/scratchpad/qa2/p7-*.png"
+    }
+  ],
+  "checks": {
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
+      "dirty": false,
+      "at": "2026-11-09T20:52:49.493Z",
+      "seconds": 9,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
+      "dirty": false,
+      "at": "2026-11-09T20:54:08.231Z",
+      "seconds": 79,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
+      "dirty": false,
+      "at": "2026-11-09T20:54:11.314Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/knip.log"
+    },
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
+      "dirty": false,
+      "at": "2026-11-09T20:54:11.484Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/integrity.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
+      "dirty": false,
+      "at": "2026-11-09T20:54:15.147Z",
+      "seconds": 4,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
+      "dirty": false,
+      "at": "2026-11-09T21:00:47.056Z",
+      "seconds": 392,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261109-phone-polish-wave-2-sche/unit.log"
+    }
+  },
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "APPROVE",
+      "sha": "203fa9ee5ae43e3e19969736289d4e1ed4ffcfe7",
+      "at": "2026-11-09T18:49:42.662Z",
+      "summary": "frontend-mobile-ux audit (12 items + 2 product questions) then skeptic GO WITH CHANGES, adopted: drop item 10 (game scores already shown 3 times on that page), leave item 12 (pager dots 44x24 pass WCAG 2.5.8); calendar button and LS-05 already fine; item 1 + B: carousel night chosen during render so the linked-match scroll finds the card; TimeSlotMatchGroup tests need a MemoryRouter; RoundLog '+N' keeps a real space (gap-1 + {' '}); item 5 updates four docs; item 11a also changes dark and winter (QA shots). Doug said yes to A (Watch live) and B (strip moves phone cards). Lead adds: hide the two scorer-only lines from watchers, and no Watch-live flicker while scorer rights load."
+    },
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "fef5ae2796704b278e6aaa81b9c05d37167d1384",
+      "at": "2026-11-09T20:41:36.913Z",
+      "summary": "Independent factory-reviewer on c814eaa: all parts correct except B1 (blocking): re-picking the already selected night after a swipe does not bring the phone carousel back, because ScheduleContent keys on the day text, not the Date object. Suggestions adopted: the-schedule-page.md Watch live row; state that the Undo row moves about 44 px for about 3 s after a save; the light contrast claim must match measurements. S1 (carousel keeps a position, not a night) left as before, noted."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
+      "at": "2026-11-09T21:01:08.243Z",
+      "summary": "Independent factory-reviewer re-review on 6ff8b01: B1 fixed correctly (carousel keyed on {tab, Date object}; nothing else makes a new Date for the same day; no loop; new tests can fail); real-Tabs test sound (Radix Presence draws one step late, confirmed in its source), no suppression left; ScoreGrid change harmless at 1280; docs and the CLAUDE.md rule accurate. Ran schedule, scheduling and live-scoring tests: 42 files, 371 pass."
+    }
+  ],
+  "issues": {
+    "integrity-suppression": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-09T20:41:36.949Z",
+          "summary": "QA: integrity FAIL from an eslint-disable in useScrollToLinkedMatch.test.tsx:31 (hand-made LatePanel). Builder renders the real Tabs/TabsContent instead, no suppression, and shows the test still fails without the retry."
+        }
+      ],
+      "escalated": false,
+      "resolved": "Commit 3a1037b: real Tabs/TabsContent, no suppression; fails without the retry (expected 1 call, got 0), passes with it (4/4)."
+    },
+    "review-b1-repick": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-09T20:41:36.989Z",
+          "summary": "Builder keys the carousel on the selected Date object (and tab), so re-picking the same night after a swipe brings the carousel back; refetch test passes the same Date object; new test: swipe, re-pick, back on that night."
+        }
+      ],
+      "escalated": false,
+      "resolved": "Commit ab10318: carousel keyed on {tab, date object}; new re-pick test fails on the old key; browser at 390: swipe then tap the selected chip returns the carousel (Upcoming and Completed)."
+    }
+  },
+  "interventions": [
+    {
+      "at": "2026-11-09T18:40:34.354Z",
+      "why": "Doug decided two product questions from the Wave 2 audit (2026-11-09): A) on match night everyone (other teams, signed-out visitors) sees a full-width 'Watch live' button on each match card that opens the live page view-only; scorers keep 'Live score this match'. B) on a phone, picking a night on the date strip moves the Upcoming/Completed cards to that night when it has matches; desktop unchanged."
+    },
+    {
+      "at": "2026-11-09T19:31:42.143Z",
+      "why": "Doug asked mid-build (2026-11-09): also fix the 4.48:1 contrast pair the builder flagged (text-primary on bg-primary/10, 12 places)."
+    }
+  ],
+  "notes": [
+    {
+      "at": "2026-11-09T20:41:37.035Z",
+      "text": "QA minor findings: (1) linked card lands about 200 px below centre because cards above grow after the scroll: doc wording fixed in the repair, no second scroll; (2) at 320 px the '{n} pts' span wraps beside a long name and the grids drop 16 px on the first tap: fixed in the repair (shrink-0 whitespace-nowrap); (3) a link to last week's unscored match lands on Completed with no card (useScheduleTabs.ts:59, older behaviour): carried to a later wave. Postponed/canceled cards: unit tests only (matches has no status column in the schedule select)."
+    },
+    {
+      "at": "2026-11-09T21:01:08.288Z",
+      "text": "Reviewer suggestion carried to the start of Wave 3 (a docs-only commit now would make every check stale): the-schedule-page.md:275 should say the carousel also moves when the reader taps the night that is already selected, and SCHED-43 (verification/schedule-and-scores.md:62) should get a re-tap step."
+    }
+  ],
+  "waivers": [],
+  "updatedAt": "2026-11-09T21:01:08.466Z",
+  "readySha": "18f1255f2abe1ebbb6431a6f5556a94238a5dd0a",
+  "readyAt": "2026-11-09T21:01:08.466Z"
+}

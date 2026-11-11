@@ -18,10 +18,10 @@ time.
 | [admin.md](admin.md) | `admin/*` |
 | [cross-cutting.md](cross-cutting.md) | `cross-cutting/*` |
 
-There are **1,958 items** across the nine files, **115** of them P1 rows marked
-**(suspected bug)**. `admin.md` is the largest at 386 and carries a safety warning:
-the dev server writes to the league's real database, and 70 of its items are
-marked **(destructive)**. An item is a table row whose first cell is an ID, such
+There are **1,994 items** across the nine files. **113** P1 rows and **2** P2
+rows (NAV-10 and MSG-07) are marked **(suspected bug)**. `admin.md` is the
+largest at 395 and carries a safety warning: the dev server writes to the
+league's real database, and 71 of its items are marked **(destructive)**. An item is a table row whose first cell is an ID, such
 as `ROUND-12` or `STAND-11a`, and whose second cell is a priority.
 
 Each file has one table per document. Each row is an item with a stable ID
@@ -153,6 +153,12 @@ What it covered and what it found:
 - **Nothing on a phone.**
 - **No realtime.** Two scorers on one match is the central case in live scoring
   and was not exercised at all.
+
+**Still to do after the phone polish merges (November 2026):** Doug's own-phone
+check of the P1 phone items (a `phone` condition and priority P1) on a real
+phone. Add TEAMADMIN-35: it is the first bottom sheet that holds a file picker
+(the team image), and no real phone has tried it. The phone polish itself was
+measured only in headless Chromium with fake data.
 
 One thing the pass revealed by accident and is worth a deliberate item: with the
 database unreachable, `/stats` rendered **no message at all** between the

@@ -162,3 +162,15 @@ describe('BracketCreationDialog delayed navigation', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 });
+
+// Phone polish wave 6: the shared DialogContent is a grid whose auto track grew
+// past a 320px phone. One minmax(0,1fr) column keeps the centred pop-up inside
+// the screen (it stays centred on purpose: a sheet swipe would fight the
+// drag-to-seed list).
+describe('BracketCreationDialog on a phone', () => {
+  it('gives the pop-up a single shrinkable grid column', () => {
+    renderDialog();
+
+    expect(screen.getByRole('dialog')).toHaveClass('grid-cols-1');
+  });
+});

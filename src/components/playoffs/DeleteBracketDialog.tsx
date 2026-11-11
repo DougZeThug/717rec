@@ -32,12 +32,16 @@ const DeleteBracketHeader: React.FC<{ bracketName: string }> = ({ bracketName })
       <Trash className="size-5" />
       Delete Bracket
     </AlertDialogTitle>
-    <AlertDialogDescription className="space-y-2">
-      <DeleteBracketQuestion bracketName={bracketName} />
-      <p className="font-medium text-destructive-text">
-        This action cannot be undone. All matches, scores, and game data will be permanently
-        deleted.
-      </p>
+    {/* asChild + div: the description renders a <p> of its own, and two <p>
+        inside a <p> is invalid HTML (React logged it as a console error). */}
+    <AlertDialogDescription asChild>
+      <div className="space-y-2">
+        <DeleteBracketQuestion bracketName={bracketName} />
+        <p className="font-medium text-destructive-text">
+          This action cannot be undone. All matches, scores, and game data will be permanently
+          deleted.
+        </p>
+      </div>
     </AlertDialogDescription>
   </AlertDialogHeader>
 );

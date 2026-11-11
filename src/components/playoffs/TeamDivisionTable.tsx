@@ -111,7 +111,9 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams,
       <Tabs value={effectiveTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 md:flex md:flex-wrap">
           {tabOptions.map((division) => (
-            <TabsTrigger key={division} value={division} className="capitalize">
+            // whitespace-normal: a long division name wraps inside its half of
+            // the two-column strip on a phone instead of spilling past it.
+            <TabsTrigger key={division} value={division} className="capitalize whitespace-normal">
               {division === 'all' ? 'All Teams' : division}
               {division !== 'all' && (
                 // The tab strip is already bg-muted and an unselected trigger adds no

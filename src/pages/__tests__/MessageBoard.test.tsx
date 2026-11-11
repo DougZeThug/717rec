@@ -74,7 +74,6 @@ vi.mock('@/components/message-board/MessageInput', () => ({
     <button onClick={async () => await onSend('Hello from test')}>Send Message</button>
   ),
 }));
-vi.mock('@/components/message-board/LoginPrompt', () => ({ default: () => <p>Please log in</p> }));
 
 const createTestQueryClient = () =>
   new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -162,18 +161,6 @@ describe('MessageBoard page', () => {
     expect(setFilter).toHaveBeenCalledWith('announcements');
   });
 
-  // B-16: the refresh read succeeds and returns nothing for a signed-out
-  // visitor, so a plain success toast told them messages had been loaded.
-  it('does not claim messages were loaded when nobody is signed in', async () => {
-    mockUseAuth.mockReturnValue({ user: null, authInitialized: true });
-    renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh Messages' }));
-    await waitFor(() => expect(mockToast).toHaveBeenCalled());
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Sign in to read messages' })
-    );
-  });
-
   it('confirms the refresh for a signed-in reader', async () => {
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'Refresh Messages' }));
@@ -183,13 +170,51 @@ describe('MessageBoard page', () => {
     );
   });
 
-  it('shows MessageInput only for authenticated users and LoginPrompt otherwise', () => {
-    const { unmount } = renderPage();
+  it('warns the member when the refresh fails', async () => {
+    const refreshMessages = vi.fn().mockRejectedValue(new Error('network down'));
+    mockUseMessageBoard.mockReturnValue({ ...baseMessageBoardState, refreshMessages });
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh Messages' }));
+    await waitFor(() => expect(mockToast).toHaveBeenCalled());
+    expect(refreshMessages).toHaveBeenCalledTimes(1);
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Refresh failed', variant: 'destructive' })
+    );
+    expect(mockToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Messages refreshed' })
+    );
+  });
+
+  it('shows the filter bar and MessageInput to a signed-in member', () => {
+    renderPage();
     expect(screen.getByRole('button', { name: 'Send Message' })).toBeInTheDocument();
-    unmount();
+    expect(screen.getByRole('button', { name: 'Refresh Messages' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Filter Announcements' })).toBeInTheDocument();
+  });
+
+  // Doug, 2026-11-10: a signed-out visitor cannot read posts, so they get one
+  // sign-in prompt (the feed card) and no search, refresh, filter or input.
+  it('gives a signed-out visitor only the sign-in card', () => {
     mockUseAuth.mockReturnValue({ user: null, authInitialized: true });
     renderPage();
-    expect(screen.getByText('Please log in')).toBeInTheDocument();
+    expect(screen.getByText('Sign in to read the board')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Send Message' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Refresh Messages' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Filter Announcements' })).not.toBeInTheDocument();
+  });
+
+  // A reload starts with no user until the session is restored. The member's
+  // filter bar must not blink out during that moment.
+  it('keeps the filter bar while auth is still starting', () => {
+    mockUseAuth.mockReturnValue({ user: null, authInitialized: false });
+    renderPage();
+    expect(screen.getByRole('button', { name: 'Refresh Messages' })).toBeInTheDocument();
+  });
+
+  it('keeps a 16 px side margin on the page', () => {
+    const { container } = renderPage();
+    const page = container.querySelector('.container');
+    expect(page).toHaveClass('px-4');
+    expect(page).not.toHaveClass('px-px');
   });
 });

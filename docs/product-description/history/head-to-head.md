@@ -34,7 +34,13 @@ An **Export CSV** button downloads whatever is currently on screen.
 Pressing **View Details** on a row opens a dialog headed "Head-to-Head vs
 {opponent}": four large numbers, a game record, and a list of every match the two
 teams have played, with date, location, and score. Escape or the close button
-dismisses it.
+dismisses it. While the history loads, the dialog opens at once with its title
+and "Loading matches..." (changed 2026-11-10). Before, nothing appeared until the
+history arrived, so the tap seemed to do nothing.
+
+On a phone each opponent is a card. Its wins ("3W") are green and its losses
+("2L") are red, at 4.5:1 or more in the light and dark themes (changed
+2026-11-10; the light green was under 4.5:1).
 
 ## The interaction, event by event
 
@@ -255,4 +261,6 @@ notification results from anything on this surface.
   Nothing in the interface says so, and a user could reasonably read the numbers
   on a team's page as this season's.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`. The dialog's loading view and the
+phone card colours changed in the Wave 5 phone polish (2026-11-10); they are
+pinned by tests, and the colours were measured in headless Chromium.

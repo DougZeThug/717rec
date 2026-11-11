@@ -50,6 +50,18 @@ describe('Contact page', () => {
     expect(screen.getByRole('button', { name: /pretend to send/i })).toBeInTheDocument();
   });
 
+  // jsdom does no layout, so this pins the classes. `container` alone gave 32px plus the page's
+  // 4px on a phone; px-4 makes it 20px like the other pages, and sm:px-8 keeps the desktop card
+  // 608px wide.
+  it('keeps the page margin at 16px on a phone and 32px from sm up', () => {
+    renderPage();
+
+    const wrapper = screen
+      .getByRole('heading', { name: /contact the league/i })
+      .closest('.container');
+    expect(wrapper).toHaveClass('px-4', 'sm:px-8', 'max-w-2xl');
+  });
+
   // Both forms used to tell the reader to use the other one (UX audit H-02).
   it('says where the message goes, and names one inbox', () => {
     renderPage();

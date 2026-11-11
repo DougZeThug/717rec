@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { useBracketsManagerMatch } from '@/hooks/playoffs/useBracketsManagerMatch';
 import { useToast } from '@/hooks/useToast';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { errorLog, log } from '@/utils/logger';
 
@@ -23,6 +24,8 @@ interface UseMatchEditorStateOptions {
   matchId: number | null;
   /** The bracket the grid shows, so a save can refresh it. */
   bracketId: string | null;
+  /** Whether the editor is showing. Typed scores only count as unsaved while it is. */
+  isOpen: boolean;
   onClose: () => void;
   onSaved?: () => void;
 }
@@ -30,6 +33,7 @@ interface UseMatchEditorStateOptions {
 export const useMatchEditorState = ({
   matchId,
   bracketId,
+  isOpen,
   onClose,
   onSaved,
 }: UseMatchEditorStateOptions) => {
@@ -58,6 +62,30 @@ export const useMatchEditorState = ({
 
   const baseOpponent1Score = matchData?.opponent1?.score ?? 0;
   const baseOpponent2Score = matchData?.opponent2?.score ?? 0;
+
+  // A typed score that differs from the stored one. Closing throws it away, so
+  // a tap outside, Escape or Cancel asks first (Doug, 2026-11-10).
+  const isDirty =
+    isOpen &&
+    scoreDraft?.key === matchScoreKey &&
+    (scoreDraft.opponent1Score !== baseOpponent1Score ||
+      scoreDraft.opponent2Score !== baseOpponent2Score);
+
+  const { confirmDiscard } = useUnsavedChangesGuard(
+    isDirty,
+    'This match has a score that is not saved. Close and lose it?'
+  );
+
+  // Covers Cancel, Escape and a tap on the backdrop in one place. The draft is
+  // cleared on the way out: the editor stays mounted, so without this the
+  // same match would reopen showing the scores that were thrown away. Save
+  // closes through the raw onClose and never asks.
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) return;
+    if (!confirmDiscard()) return;
+    setScoreDraft(null);
+    onClose();
+  };
 
   const setOpponent1Score = (score: number) => {
     setScoreDraft((prev) => {
@@ -249,6 +277,8 @@ export const useMatchEditorState = ({
     isSaving,
     isTogglingStatus,
     byeEligible,
+    isDirty,
+    handleOpenChange,
     handleSave,
     handleToggleByeStatus,
   };

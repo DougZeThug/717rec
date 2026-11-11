@@ -90,14 +90,12 @@ const HeroSection = () => {
       {/* Mobile: Compact card hero */}
       <section
         className={cn(
-          'md:hidden mx-3 mt-2 rounded-2xl overflow-hidden relative',
+          // pt-4, not safe-area + 16px: the navbar above already pads the notch.
+          'md:hidden mx-3 mt-2 pt-4 rounded-2xl overflow-hidden relative',
           shouldApplyWinter
             ? 'hero-winter'
             : 'bg-gradient-to-br from-[#0f2647] via-cornhole-navy to-[#1d3761]'
         )}
-        style={{
-          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
-        }}
       >
         <div className="relative z-10 flex flex-col items-center text-center px-4 pb-4 pt-2">
           <img

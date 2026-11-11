@@ -53,10 +53,22 @@ describe('OpponentHistoryModal', () => {
     vi.clearAllMocks();
   });
 
-  it('renders nothing until the history summary has loaded', () => {
+  // Changed on purpose (Wave 5): the pop-up used to show nothing at all while
+  // it loaded, so a tap seemed to do nothing. It now opens with its loading view.
+  it('opens with its title and a loading view while the history loads', () => {
     mockUseOpponentHistory.mockReturnValue({ data: undefined, isLoading: true });
+    renderModal();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Head-to-Head vs Rivals')).toBeInTheDocument();
+    expect(screen.getByText('Loading matches...')).toBeInTheDocument();
+    expect(screen.queryByText('Matches')).not.toBeInTheDocument();
+  });
+
+  it('renders nothing when loading is done and there is no history', () => {
+    mockUseOpponentHistory.mockReturnValue({ data: undefined, isLoading: false });
     const { container } = renderModal();
     expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('gives the dialog a description for screen readers', () => {
@@ -81,6 +93,27 @@ describe('OpponentHistoryModal', () => {
     expect(screen.getByText('60.0%')).toBeInTheDocument();
     expect(screen.getByText('8 - 4')).toBeInTheDocument();
     expect(screen.getByText('66.7%')).toBeInTheDocument(); // 8 of 12 games
+  });
+
+  // --primary is a fill colour. As text on a card it read under 4.5:1 in the
+  // dark theme; text-primary-text is the text shade of the same blue.
+  it('draws the matches, win rate and game win rate in the primary text colour', () => {
+    mockUseOpponentHistory.mockReturnValue({
+      data: { summary, matches: [] },
+      isLoading: false,
+    });
+    renderModal();
+
+    const values = [
+      screen.getByText('Matches').previousElementSibling,
+      screen.getByText('60.0%'),
+      screen.getByText('66.7%'),
+    ];
+    expect(values[0]).toHaveTextContent('5');
+    for (const value of values) {
+      expect(value).toHaveClass('text-primary-text');
+      expect(value).not.toHaveClass('text-primary');
+    }
   });
 
   it('falls back to 0.0% game win rate when no games were played', () => {

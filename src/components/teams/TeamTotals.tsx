@@ -271,7 +271,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground mb-3 block">
             Records by Division
           </span>
-          <div className="grid grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
             <DivisionRecordCard
               name="Competitive"
               icon={<Shield size={14} className="text-red-500" />}

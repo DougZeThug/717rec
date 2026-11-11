@@ -42,7 +42,7 @@ const PublishedRecapCard: React.FC<{ edition: RecapEditionWithVersion }> = ({ ed
 
         <Link
           to={path}
-          className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
+          className="inline-flex min-h-6 items-center gap-1 text-sm font-medium hover:underline"
         >
           Read the full recap
           <ArrowRight className="size-4" />

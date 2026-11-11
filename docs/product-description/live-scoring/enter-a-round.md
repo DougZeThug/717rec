@@ -95,7 +95,8 @@ saved.
 As soon as both sides have a number, a preview appears at the top right of the
 panel: either "*Team name* +N" or "**Wash — no points**" when the two are equal.
 This is the only place the cancellation rule is shown, and it updates on every
-tap.
+tap. The preview stays on one line: a long team name ends in "…" and "+N" stays
+whole (changed 2026-11-10).
 
 The thrower bar can be overridden. Tapping a different name changes who is
 recorded for the coming round. **The override applies to that round only** — once
@@ -119,8 +120,13 @@ disabled while the save is in flight and cleared only once it succeeds.
 
 On success the round is confirmed, the grids clear, the whole match is
 re-fetched, and the other scorer's screen receives the round over the realtime
-connection. A green **"Round 4 saved"** confirmation appears under the
-scoreboard and clears itself after about three seconds. It is a plain statement
+connection. A green **"Round 4 saved"** confirmation appears under the round
+input, above Undo, and clears itself after about three seconds. It sat above the
+grids until the 2026-11-09 phone polish; coming and going there, it moved every
+score button 44 pixels while the scorer was tapping. Now the grids stay put, and
+what moves is the row below: Undo and the sound switch drop about 44 pixels while
+the line shows, for about three seconds after each save, and come back up when it
+clears. It is a plain statement
 that the round reached the league, and it does not depend on the realtime
 channel — it shows the same whether live updates are on or off.
 
@@ -133,10 +139,12 @@ scorer's to make.
 **A round pressed with no connection is different.** It is not a failure and
 raises no toast: the round is held, shown in the log, and sent by itself when
 the signal returns. The grids clear so the next round can be entered, and a line
-under the scoreboard reads **"Offline — 1 round waiting to sync. Keep this page
-open."** No "Round N saved" appears, because it has not been. Before the first
+under the round input reads **"Offline — 1 round waiting to sync. Keep this page
+open."** (It sat above the grids until the 2026-11-09 phone polish and pushed
+them down 64 pixels when the signal dropped.) No "Round N saved" appears, because it has not been. Before the first
 round is held, the line reads **"Offline — keep this page open. Rounds send when
-the signal is back."** The held round is in memory, so while any round waits or
+the signal is back."** A spectator, who has no rounds to send, sees neither line.
+The held round is in memory, so while any round waits or
 is still sending, reloading or closing the tab on the live-scoring screen raises
 the browser's own leave warning. Links and Back inside the app are not blocked: they do not lose a
 held round. On another app page a reload gives no warning, but held rounds still
@@ -240,7 +248,13 @@ scorer who fails twice quickly sees both messages; see
 
 **URL state.** Nothing about a round is in the URL.
 
-**On a phone.** This is the screen the phone-first design exists for.
+**On a phone.** This is the screen the phone-first design exists for. A long team
+name ends in "…" inside the scoreboard and in each round history row, where the
+"+N" always stays on screen (the name gives way, never the points). At 320 and
+390 pixels both names under the big totals used to run past the screen edges
+and long-name rows ran past the list. The thrower headings are 12 pixels. The
+selected score button is blue-600 or red-600 with white text, about 5.3:1 and
+4.8:1 in every theme (it was 3.8:1).
 
 **Accessibility.** Every number is a real button. The net preview is text and is
 readable, but it is not announced when it changes, so a screen reader user must
@@ -263,6 +277,14 @@ feed per-player statistics only once the result is saved.
 - **The round number can advance under the scorer** if the other scorer saves
   first. Any scores already tapped are dropped, because they belong to the round
   that was just recorded, and a toast names the round now being entered.
+- Fixed 2026-11-10: **the net preview wrapped to a second line for a long team
+  name**, so the grids moved down 20 pixels when both scores were tapped. It now
+  stays on one line, and the grids do not move on the second tap (measured with
+  fake data at 320 pixels).
+- **The "how many bags in the hole?" prompt moves the second grid down** about
+  92 pixels when the first score is tapped (measured at 320 pixels). This is
+  older than the 2026-11-10 change. Doug (2026-11-11) chose to keep it: the
+  prompt stays next to the score that was tapped, and the grid below moves.
 - **A round that wins the game keeps the panel on screen until the save
   settles.** The win banner and the disabled grids overlap for the length of the
   request, so a failure that rolls the round back does not take the tapped
@@ -304,3 +326,9 @@ Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
 UX audit items W5 and W6 (the offline banner, the page-download recovery screen,
 and the live-scoring round queue). Those passages were written from the change
 and its tests, not from a fresh pass over the running app.
+The position of the saved and offline lines, the hidden offline line for
+spectators, the long-name layout and the score button colours came in the Wave 2
+phone polish (2026-11-09). They were measured in headless Chromium with fake data
+at 320, 390 and 1280 pixels and are pinned by tests.
+The one-line net preview came in the Wave 5 phone polish (2026-11-10), measured
+the same way at 320 pixels and pinned by a test.

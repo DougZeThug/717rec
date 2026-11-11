@@ -88,6 +88,15 @@ describe('ResetPassword', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
+  // jsdom does no layout, so this pins the classes. The link was 20px tall, under the 24px floor;
+  // the negative margin cancels the padding so the card does not grow. Same as ForgotPassword.
+  it('gives Back to login on the expired-link page a 36px tap area without moving the card', () => {
+    mockUseAuth.mockReturnValue({ user: null, authInitialized: true, isLoading: false });
+    renderPage();
+
+    expect(screen.getByRole('link', { name: 'Back to login' })).toHaveClass('py-2', '-my-2');
+  });
+
   // The recovery session means `user` is set. The page must not copy /auth's
   // "redirect away if signed in" rule, or nobody could ever set a password.
   it('shows the form to a user the recovery link signed in', () => {

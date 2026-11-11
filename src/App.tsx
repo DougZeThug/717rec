@@ -136,7 +136,9 @@ const AppShell = ({
       the box into a scroll container, and no `sticky` bar below it can
       stick to the page while that is so. */}
     <OfflineBanner />
-    <PageTransition>
+    {/* Grows to fill the frame so <main>'s own `grow` works and the footer
+        sits at the bottom of the screen on a short page. */}
+    <PageTransition className="flex grow flex-col">
       <MainRegion mainRef={mainRef} pathname={pathname} />
     </PageTransition>
     <AppNavigation />

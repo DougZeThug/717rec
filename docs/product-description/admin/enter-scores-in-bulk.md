@@ -82,9 +82,14 @@ not make it happen again.
 > **Technical note:** the date filter is *evening-aware*. A match played on
 > Sunday evening is stored with Monday's date in universal time, so the filter
 > asks for a range rather than a day. A line under the picker says "Showing
-> matches for the entire session (including evening games)".
+> matches for the entire session (including evening games)". It is plain text.
+> Until 2026-11-10 it had a tooltip about the universal-time dates, which a
+> keyboard could not reach and a phone could not open.
 
-The first date group is always open, and so is its first time group. Beyond
+The first date group is always open, and so is its first time group. This is
+true on the first load too. Before 2026-11-10 the night's group could open
+collapsed after loading, because the first list held every night and tonight
+was not first in it. Beyond
 that, date groups are collapsed unless there are three or fewer of them, and
 inside a date, time groups are open if that date has five or fewer matches. **A match
 with no date never appears** — the table groups by date and drops anything
@@ -192,7 +197,7 @@ on other rows.
 | The user's role | Admin only. The whole dashboard is gated; see [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). A visitor or player never reaches this tool. | Losing admin mid-session leaves the tool on screen and every write begins failing with the generic per-row message. |
 | The record's state | A completed match shows its recorded result selected and its switch on. It is fully editable, and re-scoring it replaces the old result. A match with no date is not shown at all. | Another admin resulting the same match does not reach this screen. The next refresh shows the new value unless the row has been edited here, in which case the local edit wins. |
 | The season's state | No effect. The tool lists matches by date and bracket, not by season, so archived seasons' matches are reachable and editable. | No effect. |
-| Viewport | Cards are one column below 840 pixels wide and two from 840. From 768 the open admin sidebar takes 240 pixels (60 when it is collapsed), so two columns any earlier left each result button 29 to 35 pixels wide, and "2–0" split onto two lines at 768 to 810 pixels. The four score buttons stay in one row of four from 342 pixels wide and sit two by two below that (each 83 pixels wide at 320, where four in a row were 38.5), 44 pixels tall at every width. Below 359 pixels wide the "Mark as final" row wraps onto a second line, so its label and the status badges stay inside the card. | No effect beyond re-flowing. |
+| Viewport | Cards are one column below 840 pixels wide and two from 840. From 768 the open admin sidebar takes 240 pixels (60 when it is collapsed), so two columns any earlier left each result button 29 to 35 pixels wide, and "2–0" split onto two lines at 768 to 810 pixels. The four score buttons stay in one row of four from 342 pixels wide and sit two by two below that (each 83 pixels wide at 320, where four in a row were 38.5), 44 pixels tall at every width. Below 359 pixels wide the "Mark as final" row wraps onto a second line, so its label and the status badges stay inside the card. Below 768 pixels the tool adds no side margin of its own, so its card lines up with the Sections bar; before 2026-11-10 it sat 16 pixels further in. | No effect beyond re-flowing. |
 | Keys the form honours | Tab reaches every score button, the switch, and the bin. Space or Enter presses the focused control. There is no keyboard shortcut for submit. | Escape closes the date picker, the bracket list, or the delete dialog. It never clears an edit. |
 
 ## Cancel and interrupt
@@ -258,6 +263,7 @@ The filters cannot: neither the date nor the bracket is in the address.
 
 **On a phone.** The admin menu becomes a grouped list at the top. Cards go to
 one column. The four score buttons stay in a row of four from 342 pixels wide and in two rows of two below that, so each is at least 44 pixels wide.
+The team names over them are 12 pixels.
 Each time-slot header is 44 pixels high, and the "Mark as final" switch has a
 44-pixel tap area around a switch that looks the same.
 
@@ -335,3 +341,4 @@ Verified against `717rec` commit `ea5c8f4`, except the team names, the "Final"
 tag and the 44-pixel tap areas above, which were changed after that commit (the
 admin phone polish).
 The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. The two-by-two score buttons under 342 pixels came later still (commit `fd6f6e5`; the tap-size fixes run from `96b6036` to `8626e6c`) and changed the Viewport row and the phone paragraph. They were measured in a real browser against fake data, not on a real phone or tablet.
+The groups that open on the first load, the plain-text date hint, the phone side margin and the 12-pixel team names over the score buttons came in the Wave 3 phone polish (2026-11-10). They were measured in headless Chromium with fake data at 320, 390, 860 and 1280 pixels, not on a real phone.

@@ -251,8 +251,9 @@ schedule still cannot be shared for review.
 into a tall column, and the Teams tab's block view needs a lot of scrolling. The
 three Match Rules switches — Avoid Rematches, Prioritize Match Quality and Dual
 Match Mode — each have a 44-pixel tap area around a switch that looks the same.
-The switches sit close together, so a tap in the gap between two of them goes
-to the lower one.
+Each sits in its own row 44 pixels tall, so the tap areas no longer overlap
+(since 2026-11-11; before, the switches sat close together and a tap in the gap
+between two of them went to the lower one).
 
 **Accessibility.** Every picker has a label tied to its match. The generated
 schedule's quality badges carry text as well as colour. The team-selection grids
@@ -340,5 +341,7 @@ which was changed after that commit — see B-03 in
 and the two navigation buttons, changed after it too; see
 [B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed). The 44-pixel
 tap areas on the Match Rules switches changed after that commit as well (the
-admin phone polish).
+admin phone polish), and again in the Wave 8 phone polish (2026-11-11): the
+44-pixel rows were measured in headless Chromium with fake data at 320 and 390
+pixels, not on a real phone.
 The narrow-width layout fixes (commits `b603506` to `6efea84`) changed the Viewport row above after that commit. They were measured in a real browser against fake data, not on a real phone or tablet.

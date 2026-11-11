@@ -145,7 +145,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
 
     if (usernameAvailable === false || isCheckingUsername || awaitingCheck) {
       toast({
-        title: 'Invalid first name',
+        title: 'Invalid display name',
         description:
           isCheckingUsername || awaitingCheck
             ? 'Please wait for the name check to complete'
@@ -195,11 +195,11 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                First Name <span className="text-destructive-text">*</span>
+                Display Name <span className="text-destructive-text">*</span>
               </FormLabel>
               <div className="relative">
                 <FormControl>
-                  <Input placeholder="Enter your first name" className="pr-10" {...field} />
+                  <Input placeholder="Enter your display name" className="pr-10" {...field} />
                 </FormControl>
                 {field.value.length >= 3 && !isCheckingUsername && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -221,7 +221,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
                 </p>
               )}
               <FormMessage />
-              <FormDescription>This is how you will be identified in the league.</FormDescription>
+              <FormDescription>
+                The name other players see. At least 3 letters or numbers.
+              </FormDescription>
             </FormItem>
           )}
         />

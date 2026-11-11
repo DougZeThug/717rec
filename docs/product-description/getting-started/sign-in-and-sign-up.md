@@ -239,9 +239,14 @@ the page's state that survives a reload. The chosen tab is not in the URL, so
 in the address are listed in
 [`foundations/navigation.md`](../foundations/navigation.md#while-editing).
 
-**On a phone.** The card fills the width. The email field asks for the email
+**On a phone.** The card fills the width, with a 20-pixel gap to each screen
+edge (since 2026-11-10; it was 4 pixels). The same holds on `/forgot-password` and
+`/reset-password`. The email field asks for the email
 keyboard. Both tab triggers are at least 44 pixels tall. The "Forgot password?" link
-has a 36-pixel tap area (it was 20). The bottom tab bar stays visible below the
+has a 36-pixel tap area (it was 20), and so does "Back to login" on the
+forgot-password page and on the "This link has expired" page (since 2026-11-10; it
+was 20). The "Don't have an account? Sign up" line under the form stays on one
+line at 320 pixels and keeps its look. The bottom tab bar stays visible below the
 card.
 
 **Accessibility.** Both fields have real labels tied to them. The failure panel is

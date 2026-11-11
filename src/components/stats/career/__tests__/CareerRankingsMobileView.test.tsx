@@ -9,7 +9,9 @@ import type { CareerSortOptions } from '@/components/stats/career/types';
 import type { CareerRanking } from '@/types/career';
 
 vi.mock('@/components/shared/TeamLogo', () => ({
-  TeamLogo: ({ teamName }: { teamName: string }) => <img alt={teamName} src="" />,
+  TeamLogo: ({ teamName, decorative }: { teamName: string; decorative?: boolean }) => (
+    <img alt={teamName} src="" aria-hidden={decorative || undefined} />
+  ),
 }));
 
 // Radix ToggleGroup drives the compact/detailed switch, and jsdom implements
@@ -181,8 +183,12 @@ describe('CareerRankingsMobileView', () => {
   it('links each team to its details page', () => {
     renderView();
 
-    const link = screen.getByRole('link', { name: /View Rail Riders team details/ });
+    const link = screen.getByRole('link', { name: /^Rail Riders/ });
     expect(link).toHaveAttribute('href', '/teams/rail-riders');
+    // The spoken name starts with the visible name and says it once (axe
+    // label-content-name-mismatch): no "View … team details", logo hidden.
+    expect(link).not.toHaveAttribute('aria-label');
+    expect(link.querySelector('img')).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('opens the team page without also triggering a click on the surrounding card', async () => {
@@ -200,7 +206,7 @@ describe('CareerRankingsMobileView', () => {
       </MemoryRouter>
     );
 
-    await user.click(screen.getByRole('link', { name: /View Rail Riders team details/ }));
+    await user.click(screen.getByRole('link', { name: /^Rail Riders/ }));
 
     expect(onOuterClick).not.toHaveBeenCalled();
   });

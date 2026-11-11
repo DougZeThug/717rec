@@ -32,7 +32,8 @@ const MatchupRow: React.FC<{ row: DivisionMatchupRecord }> = ({ row }) => {
   const share = percentage(leaderIsA ? row.winsA : row.winsB, total);
 
   return (
-    <div className="flex items-center justify-between gap-3 py-2 border-b border-border/40 last:border-b-0">
+    // flex-wrap: on a phone the record drops to its own line instead of cutting the division names.
+    <div className="flex flex-wrap items-center justify-between gap-3 gap-y-1 py-2 border-b border-border/40 last:border-b-0">
       <div className="flex items-center gap-2 text-sm font-medium min-w-0">
         <span className={cn('truncate', TIER_TEXT[row.tierA])}>{TIER_LABEL[row.tierA]}</span>
         <span className="text-muted-foreground text-xs">vs</span>

@@ -30,7 +30,6 @@ const TeamIdentityLink: React.FC<{ ranking: Ranking }> = ({ ranking }) => (
   <Link
     to={`/teams/${toTeamSlug(ranking.teamName)}`}
     state={{ from: '/stats' }}
-    aria-label={`View ${ranking.teamName} team details`}
     className="flex items-center gap-2 min-w-0 group"
   >
     <TeamLogo
@@ -38,6 +37,7 @@ const TeamIdentityLink: React.FC<{ ranking: Ranking }> = ({ ranking }) => (
       teamName={ranking.teamName}
       size="sm"
       className="shrink-0"
+      decorative
     />
     <div className="min-w-0">
       <h3 className="font-semibold text-sm transition-colors truncate text-foreground group-hover:text-primary">

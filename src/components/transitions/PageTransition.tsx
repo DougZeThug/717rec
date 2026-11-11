@@ -12,6 +12,8 @@ interface PageTransitionProps {
   animation?: 'fadeIn' | 'fadeInSlideUp' | 'fadeInSlideDown' | 'entranceLeft' | 'entranceRight';
   /** Skip animation to improve FCP for above-the-fold content */
   immediate?: boolean;
+  /** Extra classes for the wrapper, e.g. to let it fill the page frame. */
+  className?: string;
 }
 
 const delayClass = {
@@ -27,6 +29,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({
   delay = 'none',
   animation = 'fadeIn',
   immediate = false,
+  className,
 }) => {
   const location = useLocation();
   const { isNavigating } = useNavigation();
@@ -46,7 +49,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({
 
   return (
     <div
-      className={cn('relative', finalAnimationClass, delayClass[delay])}
+      className={cn('relative', finalAnimationClass, delayClass[delay], className)}
       style={
         {
           // No CSS containment — Safari has bugs with contain:paint that suppress pointer events

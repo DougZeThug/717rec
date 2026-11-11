@@ -102,3 +102,41 @@ describe('MessageFeed load more', () => {
     expect(onLoadMore).toHaveBeenCalledTimes(1);
   });
 });
+
+// Radix ScrollArea puts an inline display:table on the viewport's content div.
+// A table grows to fit its widest word, so a long URL pushed posts past the
+// right edge of the box on a phone. The feed forces that div back to block.
+describe('MessageFeed scroll box width', () => {
+  beforeEach(() => {
+    viewState.inView = false;
+    vi.stubGlobal(
+      'ResizeObserver',
+      vi.fn(function () {
+        return { observe: vi.fn(), unobserve: vi.fn(), disconnect: vi.fn() };
+      })
+    );
+  });
+
+  it('forces the scroll area content wrapper to display block', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <MessageFeed
+          messages={[{ id: 'm1' } as Message]}
+          isLoading={false}
+          error={null}
+          onDeleteMessage={vi.fn()}
+          onEditMessage={vi.fn()}
+          hasMore={false}
+          onLoadMore={vi.fn()}
+          loadingMore={false}
+        />
+      </MemoryRouter>
+    );
+
+    const viewport = container.querySelector('[data-radix-scroll-area-viewport]');
+    expect(viewport).not.toBeNull();
+    expect(viewport?.parentElement).toHaveClass('[&>[data-radix-scroll-area-viewport]>div]:block!');
+    // The table display that the class overrides is still what Radix renders.
+    expect((viewport?.firstElementChild as HTMLElement).style.display).toBe('table');
+  });
+});

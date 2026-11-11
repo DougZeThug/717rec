@@ -64,8 +64,12 @@ const PowerRankingRow: React.FC<{ team: RecapTeamGrade; blurb?: string }> = ({ t
       <td className="py-2 tabular-nums text-xs">
         <Movement team={team} />
       </td>
-      <td className="py-2">
-        <div className="font-medium">{team.teamName}</div>
+      {/* min-w-28 keeps the team column readable: on a 320px phone the table
+          scrolls sideways instead of squeezing names and blurbs to a few
+          letters. Only the name may break inside a word, for one word too long
+          for the column. */}
+      <td className="py-2 min-w-28">
+        <div className="font-medium [overflow-wrap:anywhere]">{team.teamName}</div>
         <div className="text-xs text-muted-foreground">{team.division}</div>
         {line !== '' && <p className="text-xs mt-1 max-w-prose">{line}</p>}
       </td>
@@ -77,7 +81,7 @@ const PowerRankingRow: React.FC<{ team: RecapTeamGrade; blurb?: string }> = ({ t
         {/* A team with no rating gets a dash, never a letter it has not earned. */}
         {team.grade ?? '—'}
       </td>
-      <td className="py-2 text-right tabular-nums">
+      <td className="py-2 text-right tabular-nums whitespace-nowrap">
         {team.wins}–{team.losses}
       </td>
       <td className="py-2 text-right tabular-nums">
@@ -101,7 +105,7 @@ const RankingsGrid: React.FC<PowerRankingsTableProps> = ({ teams, blurbs = NO_BL
         </th>
         <th className="pb-2">Team</th>
         <th className="pb-2 w-10 text-center">Grade</th>
-        <th className="pb-2 text-right">W–L</th>
+        <th className="pb-2 text-right whitespace-nowrap">W–L</th>
         <th className="pb-2 text-right">Power</th>
       </tr>
     </thead>
@@ -131,7 +135,17 @@ const PowerRankingsTable: React.FC<PowerRankingsTableProps> = ({ teams, blurbs =
       <h2 className="text-xl font-semibold mb-2">Power rankings</h2>
       <Card>
         <CardContent className="pt-6">
-          <RankingsGrid teams={teams} blurbs={blurbs} />
+          {/* Scrolls sideways on a narrow phone, so a keyboard user must be able
+              to reach it (axe scrollable-region-focusable). Same pattern as the
+              "Player stats" table in CompletedMatchReview. */}
+          <div
+            className="overflow-x-auto rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            tabIndex={0}
+            role="region"
+            aria-label="Power rankings table"
+          >
+            <RankingsGrid teams={teams} blurbs={blurbs} />
+          </div>
         </CardContent>
       </Card>
     </section>

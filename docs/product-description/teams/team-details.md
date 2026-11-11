@@ -88,6 +88,16 @@ as opened, and pays that cost on arrival.
 The closed section headers show a summary where they have one: Stats & Report
 Card carries the team's record beside its chevron.
 
+Inside Stats & Report Card, the Core tab's tile reads **Win %** and the Game
+tab's tile reads **Game Win %** (changed 2026-11-10; they read "Win Percentage"
+and "Game Win Percentage", which were cut off in a half-width tile on a
+320-pixel phone). Inside Career & Achievements, **Records by Division** shows
+the team's record against each division tier. Below 640 pixels the three cards
+are one per row; from 640 pixels up they sit side by side (changed 2026-11-10;
+before, three cards in one row were cut at 320 pixels). The opponent history
+dialog and the phone head-to-head cards in Matchups & Rivalries are described
+in [head-to-head](../history/head-to-head.md).
+
 Nothing is focused on arrival. The page opens at the top, whatever the scroll
 position of the page the user came from.
 
@@ -186,8 +196,11 @@ is scrolled is still not in the address.
 
 **On a phone.** A single Back button replaces the breadcrumbs. The section bar
 scrolls sideways rather than wrapping. Badges are tapped for a dialog rather than
-hovered for a tooltip. The page does not reserve space at the bottom for the
-fixed bottom bar the way the pages built on the shared layout do; see
+hovered for a tooltip. The rank pills on the Career tiles ("2nd") are 12 pixels
+and fit their tile at 320 pixels; "of N teams" is in a hover tooltip for a
+sighted reader and is read out by a screen reader. The page does not reserve
+space at the bottom for the fixed bottom bar the way the pages built on the
+shared layout do; see
 [Open questions](#open-questions-and-verification).
 
 **Accessibility.** Each section is a landmark with a heading tied to it, and the
@@ -255,6 +268,9 @@ data and writes nothing.
   is inferred.
 
 Verified against `717rec` commit `ea5c8f4`, except the failed-read behaviour
-above, which was changed after that commit.
+above, which was changed after that commit. The Win % and Game Win % labels and
+the one-column Records by Division came in the Wave 5 phone polish
+(2026-11-10). They were measured in headless Chromium with fake data at 320 and
+390 pixels.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 The restore of the scroll position on Back to `/teams` changed again on this branch (not yet live), as part of the same follow-up ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured by script only, on 2026-11-06 (fake data, headless Chromium, 390 pixels wide), and no person has run it by hand: the page came back within 1 pixel in 5 of 5 runs at an offset of 304 pixels, and the code before the change also gave 5 of 5 there. In the 2026-11-05 test it landed at the top. The script did not scroll the team page, and data that arrives late was not tried on `/teams`. Safari, iOS and real phones were not tested.

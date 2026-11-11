@@ -114,7 +114,7 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
       )}
       <span>{content.text}</span>
       {rivalryTag && (
-        <span className={cn('text-2xs font-bold px-1.5 py-0.5 rounded-full', rivalryTag.className)}>
+        <span className={cn('text-xs font-bold px-1.5 py-0.5 rounded-full', rivalryTag.className)}>
           {rivalryTag.label}
         </span>
       )}

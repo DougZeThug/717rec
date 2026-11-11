@@ -21,8 +21,10 @@ interface ScoreGridProps {
 }
 
 const accentClasses = {
-  blue: 'border-blue-500 bg-blue-500 text-white',
-  red: 'border-red-500 bg-red-500 text-white',
+  // -600, not -500: white on -500 was 3.8:1, under the 4.5:1 text needs.
+  // There is no dark: twin, so this is the same in every theme.
+  blue: 'border-blue-600 bg-blue-600 text-white',
+  red: 'border-red-600 bg-red-600 text-white',
 };
 
 /**
@@ -43,10 +45,12 @@ export const ScoreGrid: React.FC<ScoreGridProps> = ({
 
   return (
     <div>
-      <div className="mb-1.5 flex items-center justify-between">
+      <div className="mb-1.5 flex items-center justify-between gap-2">
         <span className="truncate text-xs font-semibold">{teamName}</span>
         {selectedScore !== null && (
-          <span className="text-xs tabular-nums text-muted-foreground">
+          // shrink-0 and nowrap: beside a long team name at 320 px this wrapped
+          // to two lines, so the grids dropped 16 px on the first tap.
+          <span className="shrink-0 whitespace-nowrap text-xs tabular-nums text-muted-foreground">
             {selectedScore} pts
             {isAmbiguousScore(selectedScore) && selectedBagsIn !== undefined
               ? ` · ${selectedBagsIn} in`

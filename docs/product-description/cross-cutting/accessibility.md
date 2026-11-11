@@ -194,6 +194,22 @@ them at rest is what separates them from the muted text they sit in; in the dark
 theme they also lighten, because the app's primary blue is the same value in
 both themes and sits at 3.84:1 on a near-black card.
 
+**Blue text on a pale blue tint has its own shade.** Twelve places put the
+primary blue as text on a 10 per cent primary tint: the "Live score this match"
+and "Watch live" buttons on a match card, the home page's "Score live", the
+active admin section in the sidebar and in the phone Sections menu, the admin
+help step numbers, the blind draw "signed up" count, the playoff seed badges, the
+history edit rank badges, the playoff score editor's game badges and the shared
+toggle's active pill. As text the fill colour measured 4.24 to 4.49:1 there in the
+light theme and 3.29 to 3.61:1 in the dark theme, under 4.5:1. They now use a
+text-only shade (`text-primary-text`): a slightly deeper blue in light (5.1 to
+5.4:1 on white; 4.9:1 at worst, on a light-grey surface), the lighter blue the
+dark links already use in dark (6.7:1 or better), and the winter theme's own icy
+blue, which already passed (5.5:1 or better). Buttons
+and other blue fills keep the brand blue. Measured 2026-11-09 in headless
+Chromium with fake data; three of the twelve were not on screen with that data
+and were measured by placing their markup on a real page.
+
 **Coloured figures in an opened history season were corrected.** The Win% and
 Game% figures and the champion's crown now read at 4.5:1 or better. The figures
 use four colours by value, green from 75 percent, blue from 60, orange from 40 and
@@ -201,7 +217,11 @@ red below: darker shades in the light theme, lighter shades in the dark theme. T
 crown is dark amber in the light theme and yellow in the dark theme.
 The ratios were measured when the change was made. The SOS figure and the power
 score dial in the same cards keep colours shared with other pages and were not
-part of that change. See
+part of that change. The shared SOS colours take a darker shade in the light
+theme since 2026-11-11 and reach 4.5:1 too, as do the shared Win % colours on
+the standings and team pages; see
+[`stats/standings-and-rankings.md`](../stats/standings-and-rankings.md#interactions-with-other-systems).
+See
 [`history/past-seasons.md`](../history/past-seasons.md#interactions-with-other-systems).
 
 Nothing in the product responds to a high-contrast or forced-colours setting.
@@ -386,3 +406,5 @@ over the running app.
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 The restore of the scroll position on Back changed again on this branch (not yet live), as part of the same follow-up ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). The passage on route changes and focus describes it. It was measured by script only, in headless Chromium against fake data, on 2026-11-06; no person has run it by hand. In the same run the position after a link read 900, 111, 25, 0 frame by frame, and the same with reduced motion on; the cause was not isolated. Find-in-page opened from the browser menu (Ctrl or Cmd+F is expected to send a key press, which stops the restore), a screen reader and voice control were not tried; from the code, the page can be pulled back against them while the restore runs.
 The 44-pixel touch targets in the admin console changed after that commit too (the admin phone polish). So did the 44-pixel history recap strip and the history standings colours (the History phone polish). The 44-pixel tap area of the history team-name links was added after it too. The tap-size fixes (commits `96b6036` to `8626e6c`) widened the 44-pixel list to nearly all of the admin console; they were measured in a real browser against fake data, not on a real phone (the remove-signup, hero card remove and reaction picker buttons are pinned by tests only).
+The text-only shade for blue text on a blue tint came in the Wave 2 phone polish
+(2026-11-09), measured as described in its paragraph.

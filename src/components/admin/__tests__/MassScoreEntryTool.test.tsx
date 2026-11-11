@@ -51,15 +51,24 @@ vi.mock('@/components/admin/AdminSectionWrapper', () => ({
   ),
 }));
 
-vi.mock('@/components/admin/mass-score-entry/components/ScoreEntryToolbar', () => ({
-  default: ({ onClearFilters }: { onClearFilters: () => void }) => (
-    <div data-testid="score-entry-toolbar">
-      <button data-testid="toolbar-clear" onClick={onClearFilters}>
-        Clear
-      </button>
-    </div>
-  ),
-}));
+// The real toolbar (and the FilterBar inside it) is drawn, so a test can read the filter
+// controls. The extra button reaches onClearFilters without an active filter.
+vi.mock('@/components/admin/mass-score-entry/components/ScoreEntryToolbar', async () => {
+  const actual = await vi.importActual<
+    typeof import('@/components/admin/mass-score-entry/components/ScoreEntryToolbar')
+  >('@/components/admin/mass-score-entry/components/ScoreEntryToolbar');
+  const RealToolbar = actual.default;
+  return {
+    default: (props: React.ComponentProps<typeof RealToolbar>) => (
+      <div data-testid="score-entry-toolbar">
+        <RealToolbar {...props} />
+        <button data-testid="toolbar-clear" onClick={props.onClearFilters}>
+          Clear
+        </button>
+      </div>
+    ),
+  };
+});
 
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
@@ -165,42 +174,33 @@ describe('MassScoreEntryTool', () => {
     });
   });
 
-  describe('filter tags', () => {
-    it('shows date filter tag when date filter is active', () => {
-      const filterDate = new Date('2025-01-04');
-      mockScoreEntryData = {
-        ..._defaultScoreEntryState,
-        filters: { date: filterDate, bracketId: undefined },
-      };
-
-      renderTool();
-
-      expect(screen.getByText('Date:')).toBeInTheDocument();
-      expect(screen.getByText(filterDate.toLocaleDateString())).toBeInTheDocument();
-    });
-
-    it('shows bracket filter tag when a bracket is selected', () => {
-      mockScoreEntryData = {
-        ..._defaultScoreEntryState,
-        brackets: [{ id: 'bracket-1', title: 'Spring Playoffs' }],
-        filters: { date: undefined, bracketId: 'bracket-1' },
-      };
-
-      renderTool();
-
-      expect(screen.getByText('Bracket:')).toBeInTheDocument();
-      expect(screen.getByText('Spring Playoffs')).toBeInTheDocument();
-    });
-
-    it('does not show filter tags when no filters are active', () => {
-      renderTool();
-      expect(screen.queryByText('Date:')).not.toBeInTheDocument();
-    });
-
+  describe('filters', () => {
     it('calls clearFilters when toolbar clear button is clicked', async () => {
       renderTool();
       await userEvent.click(screen.getByTestId('toolbar-clear'));
       expect(mockClearFilters).toHaveBeenCalledTimes(1);
+    });
+
+    // The "Date: …" and "Bracket: …" tags under the filters were removed because the filter
+    // controls already show the same values. This pins both halves of that reason.
+    it('shows the chosen date and bracket in the filter controls only, with no tag row', () => {
+      mockScoreEntryData = {
+        ..._defaultScoreEntryState,
+        brackets: [{ id: 'bracket-1', title: 'Spring Playoffs' }],
+        // Local midnight, so the date reads 4 January in every time zone.
+        filters: { date: new Date(2025, 0, 4), bracketId: 'bracket-1' },
+      };
+
+      renderTool();
+
+      expect(screen.getByRole('button', { name: 'Jan 4, 2025' })).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Filter by bracket' })).toHaveTextContent(
+        'Spring Playoffs'
+      );
+      // The bracket name shows once: in the picker, not again in a tag.
+      expect(screen.getAllByText('Spring Playoffs')).toHaveLength(1);
+      expect(screen.queryByText(/^Date:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/^Bracket:/)).not.toBeInTheDocument();
     });
   });
 

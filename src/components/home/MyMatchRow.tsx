@@ -58,7 +58,7 @@ const TeamColumn = ({
         )}
       />
     </div>
-    <span className={cn('text-xs font-medium text-center truncate max-w-[80px]', nameClass)}>
+    <span className={cn('text-xs font-medium text-center truncate w-full max-w-28', nameClass)}>
       {team.name}
     </span>
   </div>
@@ -138,7 +138,9 @@ const MatchTeamsRow = ({
   didLose: boolean;
   styles: RowStyleFragments;
 }) => (
-  <div className="flex items-center justify-center gap-3 flex-1">
+  // min-w-0: lets the row shrink on a 320px phone so the names truncate instead
+  // of pushing the arrow out of the card.
+  <div className="flex items-center justify-center gap-3 flex-1 min-w-0">
     <TeamColumn
       team={myTeam}
       ringClass={styles.myLogoRing}
@@ -298,7 +300,7 @@ export const MatchRow: React.FC<MatchRowProps> = ({
       {!isPrevious && canScore && (
         <Link
           to={`/matches/${match.id}/live`}
-          className="mb-2 flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg bg-primary/10 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
+          className="mb-2 flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg bg-primary/10 text-sm font-medium text-primary-text transition-colors hover:bg-primary/20"
           aria-label={`Score ${myTeam.name} vs ${opponent.name} live`}
         >
           <Radio className="size-4" aria-hidden />

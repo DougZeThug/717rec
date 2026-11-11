@@ -106,7 +106,7 @@ describe('color modules table-driven coverage', () => {
     },
     {
       score: 85,
-      color: 'text-yellow-600 dark:text-yellow-500',
+      color: 'text-yellow-700 dark:text-yellow-500',
       bg: 'bg-yellow-100 dark:bg-yellow-900/20',
       border: 'border-yellow-300 dark:border-yellow-700',
       description: 'Elite Performance',
@@ -115,12 +115,48 @@ describe('color modules table-driven coverage', () => {
     },
     {
       score: 70,
-      color: 'text-green-600 dark:text-green-500',
+      color: 'text-green-700 dark:text-green-500',
       bg: 'bg-green-100 dark:bg-green-900/20',
       border: 'border-green-300 dark:border-green-700',
       description: 'Excellent',
       formatted: '70.0',
       ring: 'stroke-green-500',
+    },
+    {
+      score: 60,
+      color: 'text-blue-600 dark:text-blue-500',
+      bg: 'bg-blue-100 dark:bg-blue-900/20',
+      border: 'border-blue-300 dark:border-blue-700',
+      description: 'Very Good',
+      formatted: '60.0',
+      ring: 'stroke-blue-500',
+    },
+    {
+      score: 50,
+      color: 'text-orange-700 dark:text-orange-400',
+      bg: 'bg-orange-100 dark:bg-orange-900/20',
+      border: 'border-orange-300 dark:border-orange-700',
+      description: 'Average',
+      formatted: '50.0',
+      ring: 'stroke-orange-500',
+    },
+    {
+      score: 40,
+      color: 'text-amber-700 dark:text-amber-500',
+      bg: 'bg-amber-100 dark:bg-amber-900/20',
+      border: 'border-amber-300 dark:border-amber-700',
+      description: 'Below Average',
+      formatted: '40.0',
+      ring: 'stroke-amber-500',
+    },
+    {
+      score: 39.9,
+      color: 'text-pink-600 dark:text-pink-500',
+      bg: 'bg-pink-100 dark:bg-pink-900/20',
+      border: 'border-pink-300 dark:border-pink-700',
+      description: 'Poor',
+      formatted: '39.9',
+      ring: 'stroke-pink-500',
     },
     {
       score: 15,
@@ -198,7 +234,7 @@ describe('color modules table-driven coverage', () => {
   it.each([
     {
       input: 0.8,
-      winColor: 'text-green-600 dark:text-green-500',
+      winColor: 'text-green-700 dark:text-green-500',
       winBg: 'bg-green-100 dark:bg-green-900/20',
     },
     {
@@ -208,12 +244,12 @@ describe('color modules table-driven coverage', () => {
     },
     {
       input: 0.45,
-      winColor: 'text-orange-500 dark:text-orange-400',
+      winColor: 'text-orange-700 dark:text-orange-400',
       winBg: 'bg-orange-100 dark:bg-orange-900/20',
     },
     {
       input: 0.2,
-      winColor: 'text-red-600 dark:text-red-500',
+      winColor: 'text-red-700 dark:text-red-500',
       winBg: 'bg-red-100 dark:bg-red-900/20',
     },
   ])('win% buckets for $input', ({ input, winColor, winBg }) => {
@@ -225,15 +261,15 @@ describe('color modules table-driven coverage', () => {
   // getWinPercentageColor runs on 0-1 and breaks at 45. Pinning both boundaries
   // is what stops the two drifting back together.
   it.each([
-    { input: 100, expected: 'text-green-600 dark:text-green-500' },
-    { input: 75, expected: 'text-green-600 dark:text-green-500' },
+    { input: 100, expected: 'text-green-700 dark:text-green-500' },
+    { input: 75, expected: 'text-green-700 dark:text-green-500' },
     { input: 74.9, expected: 'text-blue-600 dark:text-blue-500' },
     { input: 60, expected: 'text-blue-600 dark:text-blue-500' },
-    { input: 59.9, expected: 'text-orange-500 dark:text-orange-400' },
-    { input: 45, expected: 'text-orange-500 dark:text-orange-400' },
-    { input: 40, expected: 'text-orange-500 dark:text-orange-400' },
-    { input: 39.9, expected: 'text-red-600 dark:text-red-500' },
-    { input: 0, expected: 'text-red-600 dark:text-red-500' },
+    { input: 59.9, expected: 'text-orange-700 dark:text-orange-400' },
+    { input: 45, expected: 'text-orange-700 dark:text-orange-400' },
+    { input: 40, expected: 'text-orange-700 dark:text-orange-400' },
+    { input: 39.9, expected: 'text-red-700 dark:text-red-500' },
+    { input: 0, expected: 'text-red-700 dark:text-red-500' },
   ])('standings percentage buckets for $input', ({ input, expected }) => {
     expect(getStandingsPercentageColor(input)).toBe(expected);
   });

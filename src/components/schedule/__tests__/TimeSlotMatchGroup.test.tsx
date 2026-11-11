@@ -1,4 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
+import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Match } from '@/types';
@@ -22,6 +24,10 @@ const matches: Match[] = [
   { id: 'match-2', team1Id: 'c', team2Id: 'd' },
 ];
 
+// The group reads the address (a link may name one of its matches), so it needs a router.
+const renderAt = (ui: React.ReactElement, entry = '/schedule') =>
+  render(<MemoryRouter initialEntries={[entry]}>{ui}</MemoryRouter>);
+
 const lastEnabledArg = (): boolean => {
   const calls = mockUseBatchHeadToHead.mock.calls;
   return calls[calls.length - 1][1] as boolean;
@@ -37,7 +43,7 @@ describe('TimeSlotMatchGroup', () => {
   });
 
   it('renders the time-slot label, match-count badge, and a card per match when expanded', () => {
-    render(<TimeSlotMatchGroup timeSlot="10:00 AM" matches={matches} isFirstTimeSlot />);
+    renderAt(<TimeSlotMatchGroup timeSlot="10:00 AM" matches={matches} isFirstTimeSlot />);
 
     expect(screen.getByText('10:00 AM')).toBeInTheDocument();
     expect(screen.getByText('2 matches')).toBeInTheDocument();
@@ -49,7 +55,7 @@ describe('TimeSlotMatchGroup', () => {
   });
 
   it('only enables the H2H fetch while the group is expanded', async () => {
-    render(<TimeSlotMatchGroup timeSlot="10:00 AM" matches={matches} isFirstTimeSlot />);
+    renderAt(<TimeSlotMatchGroup timeSlot="10:00 AM" matches={matches} isFirstTimeSlot />);
 
     // Starts open -> fetch enabled.
     expect(lastEnabledArg()).toBe(true);
@@ -68,9 +74,31 @@ describe('TimeSlotMatchGroup', () => {
   });
 
   it('starts collapsed (no fetch) when not the first time slot', () => {
-    render(<TimeSlotMatchGroup timeSlot="2:00 PM" matches={matches} />);
+    renderAt(<TimeSlotMatchGroup timeSlot="2:00 PM" matches={matches} />);
 
     expect(screen.getByText('2:00 PM')).toBeInTheDocument();
+    expect(lastEnabledArg()).toBe(false);
+    expect(screen.queryByTestId('match-card')).not.toBeInTheDocument();
+  });
+
+  // A link to one match (Home's "my match" row) names it in the hash. A closed
+  // group renders no cards, so the scroll to the card used to find nothing.
+  it('opens a later slot when the URL hash names one of its matches', () => {
+    renderAt(
+      <TimeSlotMatchGroup timeSlot="2:00 PM" matches={matches} />,
+      '/schedule?date=2026-07-15#match-match-2'
+    );
+
+    expect(lastEnabledArg()).toBe(true);
+    expect(screen.getAllByTestId('match-card')).toHaveLength(2);
+  });
+
+  it('stays closed when the hash names a match in another slot', () => {
+    renderAt(
+      <TimeSlotMatchGroup timeSlot="2:00 PM" matches={matches} />,
+      '/schedule?date=2026-07-15#match-somewhere-else'
+    );
+
     expect(lastEnabledArg()).toBe(false);
     expect(screen.queryByTestId('match-card')).not.toBeInTheDocument();
   });

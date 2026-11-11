@@ -166,6 +166,12 @@ On failure a red panel inside the dialog names the reason, a red toast repeats
 it, and the half-made bracket row is deleted again. If that cleanup also fails
 the row survives with no matches and the admin is told creation failed.
 
+Create Bracket and Update Seeding are centred pop-ups on every screen size, and
+both fit a 320-pixel phone (since 2026-11-10). Create Bracket stays centred on a
+phone on purpose (Doug, 2026-11-10): a bottom drawer closes with a swipe, and a
+swipe would fight its drag-to-seed list. On a 320-pixel phone its Cancel and
+"Create Bracket (*N* teams)" buttons sit on two lines.
+
 **Deleting** asks first, and says exactly what it means:
 
 > Are you sure you want to delete the bracket **name**? This action cannot be
@@ -216,6 +222,18 @@ way, the toast says "Only part of this change was saved"; saving the same teams
 again finishes it, a half-done trade included, whether from the same screen or
 after opening Edit teams on that match again. Repair Bracket does not.
 
+**Match Status Control** also sits in the Edit Match Score box, for admins only,
+on a losers-bracket match with one team and a BYE. It shows the current status and
+the buttons for it: "Unlock to Ready", "Revert to Waiting", or, for a match marked
+Completed with no winner, "Reopen (Safe)" and "Reopen + Clear Downstream".
+Reopen (Safe) works only while the later matches are still empty. **Reopen + Clear
+Downstream asks first** (since 2026-11-11; Doug asked for it on 2026-11-10). The
+question is "Clear the later matches?": it says the BYE match is reopened, every
+later match it feeds is emptied and goes back to Waiting, and this cannot be
+undone. Only "Reopen and clear" does it. Cancel changes nothing. The question
+stays open, with "Clearing...", until the reset ends. Before this, one press
+cleared the later matches. The four buttons are readable in the dark theme too.
+
 ### Blind draw
 
 `/admin` → **Blind Draw** holds two things.
@@ -231,6 +249,9 @@ you sure you want to remove *name* from the signup list? This action cannot be
 undone." A **Clear All** button asks "Clear all signups? This will remove all
 *N* signups. This action cannot be undone." **Clear All removes every signup in
 the league**, not just one night's; there is no date filter anywhere on the tab.
+When the table is wider than its box (a long name on a narrow phone), it scrolls
+sideways inside the box. Until 2026-11-11 the box cut it off instead, bins
+included.
 
 ### The Challonge fallback
 
@@ -290,7 +311,10 @@ dialog and as a toast. Every other control reports only by toast.
 
 **Unsaved changes.** The Blind Draw signup message is guarded: an edit that has
 not been saved asks before another admin section is opened, and raises the
-browser's warning on leaving the site. Nothing else here is. The create form, the
+browser's warning on leaving the site. The playoff score editor is guarded too
+(since 2026-11-10): once a typed score differs from the stored one, a tap
+outside it, Escape or Cancel asks first, and Save never asks. See
+[`read-a-bracket.md`](../playoffs/read-a-bracket.md). Nothing else here is. The create form, the
 seeding order, and an unsaved Challonge row are all lost on close.
 
 **Optimistic updates and rollback.** Creating, seeding and deleting a bracket all
@@ -324,10 +348,17 @@ The tab, the blind draw, and the Challonge settings are not in the address.
 
 **On a phone.** Every bracket admin control is reachable, behind the **⋯**
 menu in the bracket header. Blind draw and the Challonge settings work at every
-width.
+width. The Update Seeding, Create Bracket, Edit Bracket and Delete pop-ups fit a
+320-pixel phone without sideways scrolling (measured 2026-11-10 with fake data).
+On the Teams tab the division tabs sit two to a row, and a long division name
+wraps inside its tab. In Create Bracket's manual seeding list at 320 pixels the
+team names shrink to nothing and "Reset to Auto" sits outside its box; see
+[Edge cases](#edge-cases).
 
 **Accessibility.** The seeding list is keyboard-reorderable. The delete
-confirmations are proper alert dialogs. The create dialog's team picker is a
+confirmations are proper alert dialogs. The Delete Bracket text is read as the
+pop-up's description. Until 2026-11-10 it put two paragraphs inside a third,
+which is invalid HTML and logged a console error. The create dialog's team picker is a
 long scroll of checkboxes with a progress bar that is not announced.
 
 **Side effects the user can notice.** Creating a bracket makes it public
@@ -362,6 +393,11 @@ sees a count.
   the moment any bracket is opened, which makes it look intermittent.
 - **On a phone the six bracket admin controls are behind a ⋯ menu**, not on
   screen as buttons.
+- **Create Bracket's manual seeding list is cramped on a 320-pixel phone.** The
+  team names shrink to nothing, and "Reset to Auto" sits outside its blue box
+  (card padding inside pop-up padding). Nothing scrolls sideways. Known and kept:
+  Create Bracket stays a centred pop-up (Doug, 2026-11-10), and this was not
+  changed in the phone polish.
 
 ## Open questions and verification
 
@@ -415,3 +451,7 @@ dialog's team list above, all changed after that commit — see
 [pull request 1559](https://github.com/DougZeThug/717rec/pull/1559) (the Edit
 teams rebuild and the division filter). The season picker is described as the
 code has it now: under the heading on every screen size.
+The question before Reopen + Clear Downstream, the dark-theme BYE buttons and
+the sideways scroll on the blind draw signups table came in the Wave 8 phone
+polish (2026-11-11). Tests pin the question (confirm and cancel); it was not
+tried on a real bracket.

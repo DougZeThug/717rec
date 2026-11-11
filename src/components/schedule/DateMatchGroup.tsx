@@ -60,8 +60,6 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
               : 'bg-green-900/20 border-green-800/30'
             : ''
         )}
-        aria-expanded={isOpen}
-        aria-controls={`content-${formattedDate}`}
       >
         <span>{formattedDate}</span>
         <ChevronDown
@@ -71,7 +69,9 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
           )}
         />
       </CollapsibleTrigger>
-      <CollapsibleContent id={`content-${formattedDate}`}>
+      {/* Radix sets aria-expanded and a valid aria-controls id itself. The
+          hand-made id had spaces from the date ("content-Thursday, Nov 5"). */}
+      <CollapsibleContent>
         <div className="p-3 space-y-3">
           {sortedTimeSlots.length > 0 ? (
             sortedTimeSlots.map((timeSlot, index) => (

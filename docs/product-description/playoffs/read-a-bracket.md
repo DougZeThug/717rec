@@ -88,7 +88,12 @@ There is no detail view, no popup, and no link out to the teams.
 
 For an admin, pressing a match card opens the score editor — unless both slots
 are still empty, in which case the press is ignored, because there is nothing yet
-to score.
+to score. The score editor is a centred pop-up on every screen size, a phone
+included (Doug, 2026-11-10: it holds two score boxes, not a long form). Once a
+score is typed that differs from the stored one, a tap outside the pop-up,
+Escape or Cancel asks "This match has a score that is not saved. Close and lose
+it?" first. Save never asks. Closing it throws the typed score away, so
+opening the same match again shows the stored scores.
 
 ### While editing
 
@@ -164,7 +169,7 @@ appears stuck.
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel here. | Closes an admin's score editor. It does not close the bracket. |
+| Escape, or a Cancel button | No effect. There is no Cancel here. | Closes an admin's score editor. If a typed score differs from the stored one, it asks first (a tap outside the pop-up does the same). It does not close the bracket. |
 | In-app navigation away, or switching tab within the page | The drawing is discarded and both subscriptions close. Nothing is recorded. | An admin switching to the Teams tab keeps the bracket mounted but hidden; coming back shows it without reloading. |
 | Browser back or forward | Back removes `?bracket=<id>` and returns to the list. | Same. Nothing about the drawn bracket is in the history, so back never steps through rounds. |
 | Reload, or the tab closed | The bracket in the address reloads from scratch, behind the "Loading bracket..." spinner. | An admin's unsaved score in the editor is lost. Everything drawn is rebuilt from the database. |
@@ -241,9 +246,11 @@ a session takes noticeably longer than the second.
 - **The seed badge and the library's own seed marker are different mechanisms.**
   Round one gets the library's; every later round gets 717rec's. They are meant
   to look the same.
-- **Long UUIDs are hidden after the fact.** The library occasionally prints an
-  internal id as text; the page finds and hides those a moment after drawing, so
-  one can flash on screen.
+- **Long UUIDs are hidden after the fact.** The library prints the stage name
+  as a heading over the bracket, and a stage is named with the bracket id. The
+  page finds and hides any id-only text as soon as the drawing finishes, and
+  again one second later. Before 2026-11-10 it waited the full second, so the
+  raw id flashed on screen as a heading (UX audit PO-04).
 - **A completed bracket with no standings row shows no Final Standings card at
   all** rather than an empty one. Only an admin sees anything is missing, via the
   "Recalculate Standings" button that appears for exactly that case.

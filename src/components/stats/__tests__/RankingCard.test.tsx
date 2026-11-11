@@ -89,6 +89,18 @@ describe('RankingCard', () => {
     vi.clearAllMocks();
   });
 
+  // axe label-content-name-mismatch: the team link's spoken name must start
+  // with the visible name. No "View … team details" label; logo hidden.
+  it.each([
+    ['detailed', false],
+    ['compact', true],
+  ])('names the %s team link with the visible team name', (_view, compactView) => {
+    renderCard({ compactView });
+    const link = screen.getByRole('link', { name: /^Team One/ });
+    expect(link).not.toHaveAttribute('aria-label');
+    expect(link.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
+  });
+
   describe('detailed (non-compact) view', () => {
     it('shows team name, division, record and power gauge', () => {
       renderCard();

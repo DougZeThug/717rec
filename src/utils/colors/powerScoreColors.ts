@@ -30,11 +30,13 @@ export const getPowerScoreColor = (score: number | null | undefined): string => 
   // - Struggling (20-29): Purple
   // - Critical (<20): Red
 
-  if (score >= 85) return 'text-yellow-600 dark:text-yellow-500'; // Elite/Championship
-  if (score >= 70) return 'text-green-600 dark:text-green-500'; // Excellent
+  // Light text is the -700 shade where -600/-500 measured under 4.5:1 on white
+  // (axe on /stats). Dark shades are unchanged.
+  if (score >= 85) return 'text-yellow-700 dark:text-yellow-500'; // Elite/Championship
+  if (score >= 70) return 'text-green-700 dark:text-green-500'; // Excellent
   if (score >= 60) return 'text-blue-600 dark:text-blue-500'; // Strong
-  if (score >= 50) return 'text-orange-500 dark:text-orange-400'; // Average
-  if (score >= 40) return 'text-amber-600 dark:text-amber-500'; // Below Average
+  if (score >= 50) return 'text-orange-700 dark:text-orange-400'; // Average
+  if (score >= 40) return 'text-amber-700 dark:text-amber-500'; // Below Average
   if (score >= 30) return 'text-pink-600 dark:text-pink-500'; // Poor
   if (score >= 20) return 'text-purple-600 dark:text-purple-500'; // Struggling
   return 'text-red-600 dark:text-red-500'; // Critical

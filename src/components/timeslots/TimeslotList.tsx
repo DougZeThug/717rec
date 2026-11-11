@@ -35,9 +35,13 @@ import { Team, TeamTimeslot } from '@/types';
 const TimeslotTableHead: React.FC = () => (
   <TableHeader>
     <TableRow>
-      <TableHead>Time</TableHead>
-      <TableHead>Team</TableHead>
-      <TableHead className="w-[100px]">Actions</TableHead>
+      <TableHead className="px-2 sm:px-4">Time</TableHead>
+      <TableHead className="px-2 sm:px-4">Team</TableHead>
+      {/* Named for screen readers only: a visible "Actions" pushed the delete
+          button off a 320px screen. `w-px` shrinks the column to the button. */}
+      <TableHead className="w-px px-2 sm:px-4">
+        <span className="sr-only">Actions</span>
+      </TableHead>
     </TableRow>
   </TableHeader>
 );
@@ -52,9 +56,11 @@ interface TimeslotRowProps {
 /** One assigned timeslot, with the control that removes it. */
 const TimeslotRow: React.FC<TimeslotRowProps> = ({ timeslot, teamName, canDelete, onRemove }) => (
   <TableRow>
-    <TableCell className="font-medium">{timeslot.timeslot}</TableCell>
-    <TableCell>{teamName}</TableCell>
-    <TableCell>
+    <TableCell className="whitespace-nowrap px-2 font-medium sm:px-4">
+      {timeslot.timeslot}
+    </TableCell>
+    <TableCell className="wrap-anywhere px-2 sm:px-4">{teamName}</TableCell>
+    <TableCell className="px-2 sm:px-4">
       <DestructiveIconButton onClick={onRemove} title="Remove timeslot" disabled={!canDelete} />
     </TableCell>
   </TableRow>

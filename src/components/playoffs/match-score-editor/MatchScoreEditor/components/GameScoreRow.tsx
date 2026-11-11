@@ -43,7 +43,7 @@ const GameScoreRow: React.FC<GameScoreRowProps> = ({
       <div
         className={cn(
           'flex-none size-8 flex items-center justify-center',
-          'bg-primary/10 text-primary rounded-lg',
+          'bg-primary/10 text-primary-text rounded-lg',
           'text-sm font-bold'
         )}
       >

@@ -49,7 +49,10 @@ const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
   const commentCount = comments.length;
 
   return (
-    <div className={cn(animations.fadeIn)}>
+    // min-w-0: this sits in a flex row beside the reactions. Without it the row
+    // grew to the long team name's full width and the card cut the comments off
+    // at 320 px.
+    <div className={cn('min-w-0', animations.fadeIn)}>
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-1.5">
         <div className="flex items-center justify-between">
           <CommentsTrigger commentCount={commentCount} />

@@ -48,4 +48,26 @@ describe('MessageHeader', () => {
 
     expect((await screen.findAllByText('Team Power Score: 72.5')).length).toBeGreaterThan(0);
   });
+
+  // On a phone a long username or team name must end in "..." and never push
+  // the post time out of the row.
+  it('lets the name shrink and keeps the time whole', () => {
+    render(
+      <MessageHeader
+        {...baseProps}
+        username="a_really_long_username_that_never_ends"
+        teamName="The Extremely Long Team Name Of Champions"
+      />
+    );
+
+    const time = screen.getByText('3 weeks ago');
+    expect(time).toHaveClass('shrink-0');
+    const row = time.parentElement as HTMLElement;
+    expect(row).toHaveClass('min-w-0');
+    // On a narrow phone the time wraps under the name instead of crushing it.
+    expect(row).toHaveClass('flex-wrap');
+    expect(row).not.toHaveClass('max-w-full');
+    // The tooltip trigger wraps the name block and must be allowed to shrink.
+    expect(row.firstElementChild).toHaveClass('min-w-0');
+  });
 });

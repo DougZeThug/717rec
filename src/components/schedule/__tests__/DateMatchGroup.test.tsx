@@ -64,6 +64,20 @@ describe('DateMatchGroup', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
+  // axe aria-valid-attr-value: the hand-made id held the date's spaces. Radix
+  // now sets both ends, so aria-controls names the real content element.
+  it('points aria-controls at the open content by a valid id', () => {
+    render(<DateMatchGroup date={date} matches={matches} isCurrentDay />);
+
+    const trigger = screen.getByRole('button', { name: new RegExp(formattedDate) });
+    const controls = trigger.getAttribute('aria-controls');
+    expect(controls).toBeTruthy();
+    expect(controls).not.toMatch(/\s/);
+    const content = document.getElementById(controls as string);
+    expect(content).not.toBeNull();
+    expect(content).toContainElement(screen.getAllByTestId('time-slot-group')[0]);
+  });
+
   it('opens as the first group even when it is not the current day', () => {
     render(<DateMatchGroup date={date} matches={matches} isCurrentDay={false} isFirstGroup />);
 

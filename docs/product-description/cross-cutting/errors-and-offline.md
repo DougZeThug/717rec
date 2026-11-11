@@ -136,7 +136,7 @@ for "definitely working", which is why nothing is blocked on it.
 
 There is **one offline write queue in the product, and it covers live scoring
 only**. A round entered at a venue with no signal is held rather than lost: it
-shows in the round log, a line under the scoreboard counts how many are waiting,
+shows in the round log, a line under the round input counts how many are waiting,
 and they are sent by themselves when the connection returns. The line says to
 keep the page open. The held round is in memory, so closing the tab loses it —
 but the tapped scores are kept on the phone for twelve hours, so a reload hands
@@ -296,3 +296,6 @@ Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
 UX audit items W5 and W6 (the offline banner, the page-download recovery screen,
 and the live-scoring round queue). Those passages were written from the change
 and its tests, not from a fresh pass over the running app.
+The offline line moved from under the scoreboard to under the round input in the
+Wave 2 phone polish (2026-11-09), so it no longer pushes the score grids down; it
+is shown to a scorer only. Measured in headless Chromium with fake data.

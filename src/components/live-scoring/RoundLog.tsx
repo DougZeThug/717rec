@@ -32,10 +32,18 @@ export const RoundLog: React.FC<RoundLogProps> = ({
   return (
     <ul className="divide-y rounded-lg border bg-card" aria-label="Round history">
       {newestFirst.map((round) => {
+        // The team name gives way, not the points: a long name used to push
+        // the row past the list edge and hide "+N". The space between stays real
+        // text, so the row still reads "Name +3".
         const netLabel =
-          round.winner_team === null
-            ? 'Wash'
-            : `${round.winner_team === 1 ? team1Name : team2Name} +${round.net_points}`;
+          round.winner_team === null ? (
+            'Wash'
+          ) : (
+            <>
+              <span className="truncate">{round.winner_team === 1 ? team1Name : team2Name}</span>{' '}
+              <span className="shrink-0">+{round.net_points}</span>
+            </>
+          );
         const thrower1 = round.team1_thrower_id ? playerNames[round.team1_thrower_id] : null;
         const thrower2 = round.team2_thrower_id ? playerNames[round.team2_thrower_id] : null;
         const bags1 = bagSummary(round.team1_bags_in, round.team1_bags_on);
@@ -53,7 +61,7 @@ export const RoundLog: React.FC<RoundLogProps> = ({
               {[thrower1, thrower2].filter(Boolean).join(' vs ')}
               {bags1 || bags2 ? ` · ${[bags1, bags2].filter(Boolean).join(' / ')}` : ''}
             </span>
-            <span className="shrink-0 text-xs font-medium">{netLabel}</span>
+            <span className="flex min-w-0 max-w-[50%] gap-1 text-xs font-medium">{netLabel}</span>
           </li>
         );
       })}

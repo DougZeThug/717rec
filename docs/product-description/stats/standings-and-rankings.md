@@ -218,7 +218,10 @@ so a particular arrangement of the table cannot be shared.
 
 **On a phone.** The table becomes cards. A "League Leaderboard" strip at the top
 shows the top three by power score with gold, silver and bronze borders — always
-by power score, whatever the sort is set to. Compact shows rank, team, record and
+by power score, whatever the sort is set to. Below 640 pixels its title is one
+line above the three cards. The Compact/Detailed switch drops under the
+Division/All switch when the two do not fit. The Power Score help scrolls inside
+when it is taller than the room under its button. Compact shows rank, team, record and
 power; detailed adds a power gauge and a four-box grid of Games, Win %, SOS and
 Game %. The choice is remembered between visits. See
 [`cross-cutting/on-a-phone.md`](../cross-cutting/on-a-phone.md).
@@ -229,6 +232,26 @@ state that a screen reader announces. Each rank cell has a spoken label
 that includes the movement — "Division rank 3, overall rank 7, moved up 2
 positions". Rows are deliberately not focusable, because they contain links.
 Trend arrows animate on every render.
+
+A team link is spoken by its visible name, then the record (changed
+2026-11-10). It used to be "View *Team* team details", which did not start with
+the name a voice-control user reads on screen. The logo inside the link is
+hidden from screen readers, so the name is read once. The same holds for the
+career rankings cards.
+
+In the light theme every Power Score band colour reaches 4.5:1 or more on the
+card (changed 2026-11-10). Gold, green, orange and amber text use a darker shade
+in light; the dark theme is unchanged. The green "moved up" arrow and number use
+a darker green in light too.
+
+The Win % and SOS figures reach 4.5:1 in the light theme too (changed
+2026-11-11). Each takes the lightest shade of its colour that passes. Win %
+(and Game %) uses a darker green, orange and red; its blue already passed. SOS
+uses a darker green (easy), orange (moderate) and red (hard), and a still deeper
+red for a very hard schedule. The band floors and the dark theme did not change.
+The same colours are used on the team pages and the home page team stats. The
+career rankings phone cards keep their own copy of the old Game Win % colours,
+so there those figures are still under 4.5:1 in light (a known gap).
 
 **Side effects the user can notice.** None. Opening the standings changes
 nothing, records nothing, and writes no snapshot.
@@ -269,6 +292,10 @@ nothing, records nothing, and writes no snapshot.
 - Assumption: "Based on opponent-weighted win percentage, strength of schedule
   (SOS), and game-level performance" is meant as an explanation of power score
   rather than of the sort order.
+- Known, kept for now: the career rankings phone cards
+  (`CareerRankingsMobileView.tsx`) colour Game Win % with their own copy of the
+  old light shades (green-600, orange-500, red-600), so they did not get the
+  2026-11-11 contrast fix.
 
 Verified against `717rec` commit `ea5c8f4`, except the sorting and keyboard
 behaviour above, which was changed after that commit — see
@@ -276,3 +303,12 @@ behaviour above, which was changed after that commit — see
 The scroll behaviour changed after that commit: a link now opens the new page at the top ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured in a real browser against fake data on 2026-11-05; see [navigation](../foundations/navigation.md#open-questions-and-verification).
 The restore of the scroll position on Back changed again on this branch (not yet live), as part of the same follow-up ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation)). It was measured by script only, on 2026-11-06 (fake data, headless Chromium, dev server), and no person has run it by hand. `/stats` came back at the saved offset in 1 of 1 run after a team link and in 3 of 3 runs after the Schedule tab of the phone's bottom tab bar. The code before the change also gave 3 of 3 for the Schedule tab, so the 2026-11-05 top-bar result (back at the top after a top-bar link, though at 300 of 300px after a team page) did not repeat with the tab bar, and this test does not show the change on `/stats`; what differed is not known, because the real top bar was not tried. Safari, iOS and real phones were not tested.
 The sort pills are 44 pixels tall (they were 36) after the public tap-size fix (commit `6e15b27`); measured in a real browser against fake data at 320, 390, 768 and 1280 pixels, not on a real phone.
+The leaderboard title, the wrapping switch row, the scrolling Power Score help
+and the 12-pixel win-loss chart labels came in the Wave 4 phone polish
+(2026-11-10). They were measured in headless Chromium with fake data at 320 and
+390 pixels and are pinned by tests.
+The team links' spoken names and the light-theme band colours came in the Wave 5
+phone polish (2026-11-10). axe found no name or contrast problem on `/stats` in
+headless Chromium with fake data at 390 pixels, and tests pin both.
+The light-theme Win % and SOS shades came in the Wave 8 phone polish
+(2026-11-11). Tests pin the new class names.

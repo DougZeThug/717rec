@@ -30,7 +30,7 @@ const formatPercentage = (value: number) => `${(value * 100).toFixed(1)}%`;
 
 const rankClasses = (rank: number) => {
   if (rank === 1) return 'text-amber-700 dark:text-amber-400';
-  if (rank <= 3) return 'text-primary';
+  if (rank <= 3) return 'text-primary-text';
   return 'text-muted-foreground';
 };
 

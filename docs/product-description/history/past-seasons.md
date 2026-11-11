@@ -245,8 +245,10 @@ link from within the app to `/history` opens on a fully collapsed page. The open
 cards and panels are kept in this tab's memory instead, and come back
 only on Back, Forward or a reload.
 
-**On a phone.** With nothing remembered, division panels start closed; one this
-tab left open stays open. Standings become stacked cards with
+**On a phone.** The "Season History" title lines up with the season cards, 20
+pixels from the screen edge (since 2026-11-10; it sat 16 pixels nearer the edge).
+On a wide screen it lines up with them too. With nothing remembered, division
+panels start closed; one this tab left open stays open. Standings become stacked cards with
 a power score dial and a four-cell grid of Win%, SOS, Games, and Game%. A team's
 name wraps onto up to two lines on its card, and its record stays on the right.
 The name is a link to the team page, and its tap area is 44 pixels high. A team

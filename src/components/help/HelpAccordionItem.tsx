@@ -17,7 +17,8 @@ const HelpAccordionTitle: React.FC<Pick<HelpAccordionItemProps, 'icon' | 'title'
     <div className="p-2 rounded-lg bg-primary/10">
       <Icon className="size-5 text-primary" />
     </div>
-    <span className="font-semibold">{title}</span>
+    {/* text-left: a title that wraps on a phone was centred (a button centres its text). */}
+    <span className="font-semibold text-left">{title}</span>
   </div>
 );
 

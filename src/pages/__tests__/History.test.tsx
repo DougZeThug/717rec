@@ -80,4 +80,15 @@ describe('History page', () => {
     renderPage();
     expect(screen.getByText('No historical data available')).toBeInTheDocument();
   });
+
+  // Phone polish wave 6: the title used to sit outside the padded container,
+  // so on a phone it started at a different edge from the cards below.
+  it('puts the page title in the same padded container as the breadcrumbs', () => {
+    mockUseIsMobile.mockReturnValue(true);
+    renderPage();
+
+    const container = screen.getByRole('heading', { name: 'Season History' }).closest('.container');
+    expect(container).toHaveClass('mx-auto', 'px-4');
+    expect(container).toContainElement(screen.getByText('Breadcrumbs'));
+  });
 });

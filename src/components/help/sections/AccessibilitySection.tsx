@@ -1,8 +1,7 @@
 import { Keyboard } from 'lucide-react';
 import React from 'react';
 
-import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Card, CardContent } from '@/components/ui/card';
+import { HelpAccordionItem } from '../HelpAccordionItem';
 
 function ShortcutRow({ label, keys, note }: { label: string; keys: string; note?: string }) {
   return (
@@ -72,7 +71,9 @@ function NeedHelp() {
       <p className="text-sm text-muted-foreground">
         If you encounter any accessibility issues or have suggestions for improvement, please
         contact us through the{' '}
-        <a href="/contact" className="text-primary hover:underline">
+        {/* Underlined, and the text shade of primary: axe flagged a link told apart by colour
+            alone, and text-primary was 3.8:1 in dark. */}
+        <a href="/contact" className="text-primary-text underline underline-offset-4">
           Contact page
         </a>
         .
@@ -81,36 +82,23 @@ function NeedHelp() {
   );
 }
 
-function AccessibilityDetailsCard() {
-  return (
-    <Card>
-      <CardContent className="pt-6 space-y-4">
-        <KeyboardShortcuts />
-        <ScreenReaderSupport />
-        <AccessibilityFeatures />
-        <NeedHelp />
-      </CardContent>
-    </Card>
-  );
-}
-
+// The same bordered box and icon chip as the other Help sections (it was a bare row with a card
+// inside it). HelpAccordionItem makes the content text-sm, so the intro matches the rest.
 export function AccessibilitySection() {
   return (
-    <AccordionItem value="accessibility">
-      <AccordionTrigger>
-        <div className="flex items-center gap-2">
-          <Keyboard className="size-5" />
-          <span>Accessibility & Keyboard Navigation</span>
-        </div>
-      </AccordionTrigger>
-      <AccordionContent className="space-y-4">
-        <p className="text-muted-foreground">
-          717REC is designed to be accessible to all users, including those using screen readers or
-          keyboard-only navigation.
-        </p>
-
-        <AccessibilityDetailsCard />
-      </AccordionContent>
-    </AccordionItem>
+    <HelpAccordionItem
+      value="accessibility"
+      icon={Keyboard}
+      title="Accessibility & Keyboard Navigation"
+    >
+      <p className="text-muted-foreground">
+        717REC is designed to be accessible to all users, including those using screen readers or
+        keyboard-only navigation.
+      </p>
+      <KeyboardShortcuts />
+      <ScreenReaderSupport />
+      <AccessibilityFeatures />
+      <NeedHelp />
+    </HelpAccordionItem>
   );
 }

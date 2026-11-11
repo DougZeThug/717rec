@@ -71,11 +71,13 @@ interface SwitchRowProps {
 }
 
 const SwitchRow: React.FC<SwitchRowProps> = ({ id, label, checked, onCheckedChange }) => (
-  <div className="flex items-center justify-between space-x-2">
+  // min-h-11: each row is a full 44px tall, so the switches' 44px tap areas
+  // no longer overlap the row above or below.
+  <div className="flex min-h-11 items-center justify-between gap-2">
     <Label htmlFor={id} className="flex-1 text-sm">
       {label}
     </Label>
-    <Switch id={id} className="hit-area-44" checked={checked} onCheckedChange={onCheckedChange} />
+    <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} />
   </div>
 );
 

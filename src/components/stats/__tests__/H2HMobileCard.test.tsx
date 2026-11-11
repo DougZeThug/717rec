@@ -42,6 +42,14 @@ describe('H2HMobileCard', () => {
     expect(screen.getByText('50.0%')).toBeInTheDocument();
   });
 
+  // emerald-600 measured under 4.5:1 on white; dark shades keep 4.5:1 on the
+  // dark card.
+  it('uses readable win and loss text colours in light and dark', () => {
+    render(<H2HMobileCard record={makeRecord()} onCardClick={onCardClick} />);
+    expect(screen.getByText('2W')).toHaveClass('text-emerald-700', 'dark:text-emerald-400');
+    expect(screen.getByText('2L')).toHaveClass('text-rose-600', 'dark:text-rose-400');
+  });
+
   it('shows the game record', () => {
     render(<H2HMobileCard record={makeRecord()} onCardClick={onCardClick} />);
     expect(screen.getByText(/Games: 6-5/)).toBeInTheDocument();

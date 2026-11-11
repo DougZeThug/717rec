@@ -106,7 +106,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({
                 <Input
                   type="number"
                   inputMode="numeric"
-                  className="w-16 text-sm"
+                  className="w-16"
                   value={weekData.week}
                   onChange={(e) => updateWeekNumber(weekIndex, parseInt(e.target.value) || 0)}
                 />
@@ -132,7 +132,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({
                   {placeLabels[winnerIndex] || `#${winner.place}`}
                 </span>
                 <Input
-                  className="text-sm flex-1"
+                  className="flex-1"
                   placeholder="Winner name(s)"
                   value={winner.names}
                   onChange={(e) => updateWinnerNames(weekIndex, winnerIndex, e.target.value)}

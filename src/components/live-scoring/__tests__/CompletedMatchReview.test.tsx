@@ -117,6 +117,16 @@ describe('CompletedMatchReview', () => {
     expect(rowFor('Doug').getByText('8.00')).toBeInTheDocument();
   });
 
+  // The table scrolls sideways on a phone; axe scrollable-region-focusable
+  // asks that a keyboard user can reach it, with a name.
+  it('puts the player table in a focusable region named Player stats', () => {
+    renderReview([round()]);
+    const region = screen.getByRole('region', { name: 'Player stats' });
+    expect(region).toHaveAttribute('tabindex', '0');
+    expect(region).toHaveClass('overflow-x-auto', 'focus-visible:ring-2');
+    expect(within(region).getByRole('table')).toBeInTheDocument();
+  });
+
   it('offers reopen to admins only', async () => {
     renderReview([round()], { isAdmin: true });
     await userEvent.click(screen.getByRole('button', { name: /reopen match/i }));

@@ -110,6 +110,41 @@ describe('SwipeableDateGroups', () => {
     expect(dots[0]).not.toHaveAttribute('aria-current');
   });
 
+  // --primary is a fill colour. As text on the page it read under 4.5:1 in the
+  // dark theme; text-primary-text is the text shade of the same blue. A button
+  // that cannot be pressed stays muted.
+  it('draws an enabled Previous or Next in the primary text colour', () => {
+    render(
+      <SwipeableDateGroups
+        groupedMatches={groups}
+        selectedDate={groups[1].date}
+        activeIndex={1}
+        onIndexChange={vi.fn()}
+      />
+    );
+
+    for (const name of ['Previous date', 'Next date']) {
+      const button = screen.getByRole('button', { name });
+      expect(button).toHaveClass('text-primary-text', 'hover:bg-primary/10');
+      expect(button).not.toHaveClass('text-primary');
+    }
+  });
+
+  it('keeps a disabled Previous muted', () => {
+    render(
+      <SwipeableDateGroups
+        groupedMatches={groups}
+        selectedDate={groups[0].date}
+        activeIndex={0}
+        onIndexChange={vi.fn()}
+      />
+    );
+
+    const previous = screen.getByRole('button', { name: 'Previous date' });
+    expect(previous).toHaveClass('text-muted-foreground/50');
+    expect(previous).not.toHaveClass('text-primary-text');
+  });
+
   it('fires onIndexChange(1) when Next is clicked', () => {
     const onIndexChange = vi.fn();
     render(

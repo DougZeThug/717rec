@@ -237,3 +237,20 @@ describe('TeamComparisonView head-to-head', () => {
     expect(screen.queryByText('Head-to-Head Unavailable')).not.toBeInTheDocument();
   });
 });
+
+describe('TeamComparisonView team names', () => {
+  // jsdom does no layout, so this pins the classes. At 320px a long name was cut
+  // to "Fake..." on one line. Two lines need min-w-0 on the block and max-w-full on
+  // the name, or one long word runs over the other team's name.
+  it('lets a long name shrink to its half of the row and wrap to two lines', () => {
+    const long = 'Fake Team Golf Supercalifragilistic Edition';
+    render(<TeamComparisonView team1={side(long)} team2={side('Beta')} headToHead={null} />);
+
+    for (const name of [long, 'Beta']) {
+      const heading = screen.getByRole('heading', { name });
+      expect(heading).toHaveClass('line-clamp-2', 'max-w-full', 'break-words');
+      expect(heading).not.toHaveClass('line-clamp-1');
+      expect(heading.parentElement).toHaveClass('min-w-0');
+    }
+  });
+});

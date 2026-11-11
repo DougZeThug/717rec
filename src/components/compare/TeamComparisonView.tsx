@@ -33,8 +33,12 @@ const TeamHeader: React.FC<{ team: TeamComparisonSide; align: 'left' | 'right' }
         {team.name.substring(0, 2).toUpperCase()}
       </AvatarFallback>
     </Avatar>
-    <div className={`flex flex-col ${align === 'right' ? 'items-end' : 'items-start'}`}>
-      <h3 className="font-bold text-lg sm:text-xl line-clamp-1">{team.name}</h3>
+    <div className={`flex min-w-0 flex-col ${align === 'right' ? 'items-end' : 'items-start'}`}>
+      {/* max-w-full + break-words: one long word ("Supercalifragilistic") breaks
+          inside the half of the row instead of running over the other team. */}
+      <h3 className="font-bold text-lg sm:text-xl line-clamp-2 max-w-full break-words">
+        {team.name}
+      </h3>
       {team.totals && (
         <span className="text-sm text-muted-foreground">
           {team.totals.career_match_wins}-{team.totals.career_match_losses}

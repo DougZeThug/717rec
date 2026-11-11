@@ -35,6 +35,15 @@ describe('Toast', () => {
     expect(screen.getByText('Season saved').closest('li')?.className).toContain('bg-destructive');
   });
 
+  it('keeps toasts below the notch on a phone, where they sit at the top', () => {
+    renderToast();
+    // The Radix viewport renders a list; the className lands on it.
+    const viewport = screen.getByRole('region').querySelector('ol');
+    // --sat is the top safe area (src/styles/base.css). From 640px up toasts sit
+    // at the bottom right, so the plain 16px comes back.
+    expect(viewport).toHaveClass('pt-[calc(1rem+var(--sat))]', 'sm:pt-4');
+  });
+
   it('always shows a close button big enough to tap', () => {
     renderToast();
     const close = screen.getByRole('button', { name: 'Close notification' });

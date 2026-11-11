@@ -164,7 +164,9 @@ switching in place.
 
 **Traffic.** A thirty-day line chart of visitors and pageviews from the app's own
 beacon, with a seven-day breakdown by platform. Only an admin can read it; a
-failure says so rather than showing an error.
+failure says so rather than showing an error. Its axis labels are 12 pixels and
+show whole on a 320-pixel phone. Before 2026-11-10 they were 10 pixels, and the
+left labels were cut off.
 
 **Unrecorded live matches.** Matches **in the active season** that live scoring
 decided — a side won two games — for which nobody ever pressed "Save official
@@ -215,7 +217,8 @@ Below them, a closed **Developer** disclosure holds the four links that open
 externally: two service status pages, the database's SQL editor, and the
 league's own operations playbook on GitHub. They are one press away rather than
 sitting in the same row as the league-night buttons, so the SQL editor is no
-longer a mis-tap next to Mass score entry.
+longer a mis-tap next to Mass score entry. The Developer button is 44 pixels
+tall (it was 36 until 2026-11-10).
 
 ## Help
 
@@ -359,3 +362,4 @@ immediately. Repairing counters rewrites the standings everybody reads.
   differ.
 
 Verified against `717rec` commit `ea5c8f4`, except the League Night card scores in the Viewport row, which changed after that commit (the tablet score-text fix, commits `d96c454` to `0ca8b0f`). It was measured in a real browser against fake data, not on a real phone or tablet.
+The traffic chart labels and the 44-pixel Developer button came in the Wave 3 phone polish (2026-11-10). They were measured in headless Chromium with fake data at 320 and 390 pixels, not on a real phone.

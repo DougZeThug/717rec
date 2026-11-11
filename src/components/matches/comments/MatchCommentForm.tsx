@@ -41,8 +41,10 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
     <form onSubmit={handleSubmit} className="relative">
       <div
         className={cn(
-          'flex items-start border rounded-md bg-background transition-all',
-          'focus-within:ring-1 focus-within:ring-ring focus-within:border-input'
+          // border-input is the 3:1 form-field border (WCAG 1.4.11); the plain
+          // border was about 1.2:1 and the box was hard to find.
+          'flex items-start border border-input rounded-md bg-background transition-all',
+          'focus-within:ring-1 focus-within:ring-ring'
         )}
       >
         <textarea
@@ -53,7 +55,7 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
           rows={1}
           className={cn(
             'flex-1 py-2 px-3 resize-none outline-hidden bg-transparent',
-            'text-sm text-foreground placeholder:text-muted-foreground',
+            'text-base md:text-sm text-foreground placeholder:text-muted-foreground',
             'focus:outline-hidden focus:border-none focus:ring-0'
           )}
           style={{ minHeight: '2.5rem', maxHeight: '8rem' }}

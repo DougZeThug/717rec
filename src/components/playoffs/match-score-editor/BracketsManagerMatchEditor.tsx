@@ -44,9 +44,13 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
     isSaving,
     isTogglingStatus,
     byeEligible,
+    handleOpenChange,
     handleSave,
     handleToggleByeStatus,
-  } = useMatchEditorState({ matchId, bracketId, onClose, onSaved });
+  } = useMatchEditorState({ matchId, bracketId, isOpen, onClose, onSaved });
+
+  // Cancel asks the same question as a tap outside or Escape.
+  const requestClose = () => handleOpenChange(false);
 
   const [isEditTeamsOpen, setIsEditTeamsOpen] = useState(false);
   const [isSwapTeamsOpen, setIsSwapTeamsOpen] = useState(false);
@@ -68,7 +72,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
 
   if (isLoading) {
     return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogContent>
           <DialogHeader className="sr-only">
             <DialogTitle>Loading match</DialogTitle>
@@ -84,7 +88,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
 
   if (error || !matchData) {
     return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Error</DialogTitle>
@@ -127,7 +131,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
   if (isBye && byeWinner) {
     return (
       <>
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
           <ByeMatchEditor
             byeWinner={byeWinner}
             hasOpponent1={Boolean(matchData.opponent1)}
@@ -139,7 +143,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
             isSaving={isSaving}
             isTogglingStatus={isTogglingStatus}
             onSave={handleSave}
-            onClose={onClose}
+            onClose={requestClose}
             onToggleByeStatus={handleToggleByeStatus}
             status={matchData.status}
             onSwapTeams={onSwapTeams}
@@ -155,7 +159,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
   // Regular match
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <RegularMatchEditor
           opponent1Name={matchData.opponent1?.name || 'Team 1'}
           opponent2Name={matchData.opponent2?.name || 'Team 2'}
@@ -166,7 +170,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
           games={matchData.games}
           isSaving={isSaving}
           onSave={handleSave}
-          onClose={onClose}
+          onClose={requestClose}
           {...editTeamsProps}
           status={matchData.status}
           onSwapTeams={onSwapTeams}

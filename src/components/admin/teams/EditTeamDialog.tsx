@@ -1,11 +1,11 @@
 import TeamForm from '@/components/teams/TeamForm';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Team } from '@/types';
 
 type EditTeamDialogProps = {
@@ -15,18 +15,21 @@ type EditTeamDialogProps = {
   onCancel: () => void;
 };
 
+// On a phone this is a bottom sheet. A swipe down cannot ask first and the form
+// is long, so a stray swipe while scrolling must not throw the edits away:
+// the sheet closes only from its own Cancel or Save.
 const EditTeamDialog = ({ team, onOpenChange, onSubmit, onCancel }: EditTeamDialogProps) => (
-  <Dialog open={Boolean(team)} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-2xl max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto">
-      <DialogHeader>
-        <DialogTitle>Edit Team: {team?.name}</DialogTitle>
-        <DialogDescription className="sr-only">
+  <ResponsiveDialog open={Boolean(team)} onOpenChange={onOpenChange} dismissible={false}>
+    <ResponsiveDialogContent className="sm:max-w-2xl">
+      <ResponsiveDialogHeader>
+        <ResponsiveDialogTitle>Edit Team: {team?.name}</ResponsiveDialogTitle>
+        <ResponsiveDialogDescription className="sr-only">
           Change the team name, logo, division and members.
-        </DialogDescription>
-      </DialogHeader>
+        </ResponsiveDialogDescription>
+      </ResponsiveDialogHeader>
       {team && <TeamForm team={team} onSubmit={onSubmit} onCancel={onCancel} />}
-    </DialogContent>
-  </Dialog>
+    </ResponsiveDialogContent>
+  </ResponsiveDialog>
 );
 
 export default EditTeamDialog;

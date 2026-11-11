@@ -39,4 +39,21 @@ describe('TeamLogo', () => {
 
     expect(container.firstElementChild).toHaveClass('size-36');
   });
+
+  // Inside a link that already shows the team name, the logo would make a
+  // screen reader say the name twice (and the link name not start with it).
+  it('hides a decorative logo from screen readers', () => {
+    const { container } = render(
+      <TeamLogo imageUrl="https://example.test/a.webp" teamName="Corn Stars" decorative />
+    );
+
+    expect(container.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.queryByRole('img', { name: 'Corn Stars' })).not.toBeInTheDocument();
+  });
+
+  it('leaves a normal logo visible to screen readers', () => {
+    const { container } = render(<TeamLogo imageUrl={null} teamName="Corn Stars" />);
+
+    expect(container.firstElementChild).not.toHaveAttribute('aria-hidden');
+  });
 });

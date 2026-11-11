@@ -37,7 +37,8 @@ const AuthContainer: React.FC<AuthContainerProps> = ({
 }) => {
   return (
     <PageTransition>
-      <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
+      {/* px-4: the card sat 4px from a phone's edge; 20px matches the other pages. */}
+      <div className="flex justify-center items-center min-h-[calc(100dvh-200px)] px-4">
         <Card className="w-full max-w-md">
           <AuthCardHeader title={title} description={description} />
           <CardContent>{children}</CardContent>

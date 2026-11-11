@@ -1,16 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import {
   Select,
   SelectContent,
@@ -316,15 +316,21 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
   );
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Edit round {round.round_number}</DialogTitle>
-          <DialogDescription>
+    // On a phone this is a bottom sheet. A swipe down cannot ask first, so it
+    // only closes the sheet while nothing is typed and nothing is saving.
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={handleOpenChange}
+      dismissible={!isDirty && !isSubmitting}
+    >
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Edit round {round.round_number}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Fix a wrong score, bag breakdown, or thrower. Leave bag counts blank to leave them
             unset.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         <div className="grid gap-6 md:grid-cols-2">
           {renderSide(side1, setSide1, team1Name, team1Players, 'team1')}
@@ -337,15 +343,15 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
           </p>
         )}
 
-        <DialogFooter>
+        <ResponsiveDialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={!validation.ok || isSubmitting}>
             {isSubmitting ? 'Saving…' : 'Save changes'}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 };

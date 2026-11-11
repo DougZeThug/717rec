@@ -139,7 +139,8 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
       <LeagueLeaderboardCarousel rankings={rankings} />
 
       {/* Controls row: ViewToggle + Compact/Detailed toggle */}
-      <div className="mb-2 flex items-center justify-between gap-2">
+      {/* flex-wrap: at 320px the two toggles did not fit and "Detailed" was cut off. */}
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         {onViewChange && <ViewToggle view={view} onViewChange={onViewChange} />}
         <ToggleGroup
           type="single"

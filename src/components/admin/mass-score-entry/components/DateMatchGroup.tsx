@@ -41,6 +41,18 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
   onDeleteMatch,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
+
+  // The list can shrink under the same key (the first render after loading can
+  // hold every night, then only tonight), so this group can mount closed and
+  // later become the open-by-default one. When the default turns true, open the
+  // group; never close it here. Set during render, the React pattern for
+  // "storing information from previous renders".
+  const [prevDefaultExpanded, setPrevDefaultExpanded] = useState(defaultExpanded);
+  if (defaultExpanded !== prevDefaultExpanded) {
+    setPrevDefaultExpanded(defaultExpanded);
+    if (defaultExpanded) setIsOpen(true);
+  }
+
   const formattedDate = format(date, 'EEEE, MMMM d, yyyy');
 
   // Group matches by time slot for this date - memoized to avoid recalculation on every render
