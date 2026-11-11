@@ -28,11 +28,11 @@ const TYPE_LABELS: Record<string, { label: string; cls: string }> = {
   },
   score: {
     label: 'Score',
-    cls: 'bg-amber-500/10 text-amber-600 dark:text-amber-300 border-amber-500/30',
+    cls: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30',
   },
   join_league: {
     label: 'Join the league',
-    cls: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border-emerald-500/30',
+    cls: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
   },
   general: {
     label: 'General',
@@ -237,7 +237,7 @@ const ContactInboxSection: React.FC = () => {
                     {item.verified && (
                       <Badge
                         variant="outline"
-                        className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
+                        className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
                       >
                         <CheckCircle2 className="mr-1 size-3" /> Verified
                       </Badge>
@@ -250,7 +250,7 @@ const ContactInboxSection: React.FC = () => {
                     <time
                       dateTime={stamp.iso}
                       title={stamp.iso}
-                      className="ml-auto text-2xs tabular-nums text-muted-foreground"
+                      className="ml-auto text-xs tabular-nums text-muted-foreground"
                     >
                       {stamp.absolute}
                     </time>
