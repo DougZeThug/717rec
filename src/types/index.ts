@@ -84,7 +84,7 @@ interface HeadToHeadEntry {
   losses: number;
 }
 
-export interface HeadToHeadMap {
+interface HeadToHeadMap {
   [teamId: string]: HeadToHeadEntry;
 }
 

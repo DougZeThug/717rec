@@ -22,12 +22,7 @@ export {
   leaveTeamMembership,
   updateMembershipApproval,
 } from './TeamMembershipService';
-export {
-  fetchAvailableTeams,
-  fetchTeamDetails,
-  fetchTeamForStats,
-  fetchTeamsWithOptions,
-} from './TeamQueryService';
+export { fetchAvailableTeams, fetchTeamDetails, fetchTeamsWithOptions } from './TeamQueryService';
 export {
   fetchAllRequests,
   fetchPendingRequestsCount,

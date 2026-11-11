@@ -394,8 +394,6 @@ global gate.
 | `src/utils/predictions`                    | 96%         | —     | 85%    | On target                                      |
 | `src/utils/playoffs`                       | 100%        | —     | 85%    | On target                                      |
 | `src/utils/matchUtils`                     | 100%        | —     | 85%    | On target                                      |
-| `src/utils/brackets/mappers`               | 100%        | —     | 85%    | On target                                      |
-| `src/utils/brackets/validators`            | 100%        | —     | 85%    | On target                                      |
 | `src/utils/auth`                           | 90%         | —     | 85%    | On target                                      |
 | `src/utils/autoSchedule`                   | 72%         | 68%   | 85%    | Complex scheduling algorithms — gradual        |
 | `src/utils/autoSchedule/dualBlock`         | 89%         | —     | 85%    | On target                                      |
@@ -404,7 +402,6 @@ global gate.
 | `src/utils/colors`                         | 90%         | —     | 60%    | On target                                      |
 | `src/utils/timezone`                       | 90%         | —     | 60%    | On target                                      |
 | `src/utils/teamDetailsUtils`               | 92%         | —     | 60%    | On target                                      |
-| `src/utils/teamStatsUtils`                 | 100%        | —     | 60%    | On target                                      |
 | `src/pages/**`                             | 73%         | 70%   | 40%    | New floor this ratchet — above target          |
 | `src/components/**` (non-UI)               | 62%         | 58%   | 40%    | New floor this ratchet; still uneven by folder |
 | `src/components/admin/**`                  | 62%         | 58%   | 40%    | Floor raised from a token 5% to match reality  |
