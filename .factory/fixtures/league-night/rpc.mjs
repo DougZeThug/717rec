@@ -1,6 +1,8 @@
 // FAKE DATA ONLY. RPC answers for the league-night mocks, by function name. Each gets (JSON body, { user }).
 // Names not listed here go on to the standings mock (get_head_to_head_records, get_batch_head_to_head,
 // get_blind_draw_signup_count), then to the tool, which aborts the call.
+// Known gap: validate_division_seeds (Create Bracket's seed check) is not answered, so a probe of Create Bracket
+// logs "Failed to validate seeds". That is a gap in this mock, not an app error.
 import { base, teams } from './data.mjs';
 
 const nameOf = (id) => teams.find((t) => t.team_id === id)?.name ?? 'Fake Team';
