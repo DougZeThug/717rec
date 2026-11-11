@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
+import type { TrendBasis, WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { pickTeamOfTheWeek } from '@/utils/powerScore/pickTeamOfTheWeek';
 
@@ -12,22 +12,6 @@ import { pickTeamOfTheWeek } from '@/utils/powerScore/pickTeamOfTheWeek';
  * saved recap edition, which must describe the week it names, in the season it
  * names, however long ago that was.
  */
-
-/**
- * How the comparison was reached. A recap edition is frozen, so a missing
- * snapshot must be recorded rather than quietly papered over — comparing week 7
- * against week 5 while labelling it "this week" would publish a falsehood
- * permanently.
- */
-export type TrendBasis =
-  /** Week N compared against week N-1, as intended. */
-  | 'compared'
-  /** Week N-1 has no snapshot; compared against the nearest earlier week. */
-  | 'gap'
-  /** Nothing earlier exists to compare against (week 1). */
-  | 'baseline'
-  /** Week N itself has no snapshot. No movement can be reported. */
-  | 'missing';
 
 export interface WeekPairTrends {
   /** Every qualifying team, unsorted and unfiltered by sign. */
