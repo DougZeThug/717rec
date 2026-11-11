@@ -1,0 +1,19 @@
+{
+  "id": "T-261111-phone-polish-wave-8-admi",
+  "title": "Phone polish wave 8: admin setup and content, then close-out",
+  "kind": "polish",
+  "status": "intake",
+  "request": "Lets go with wave 8 now",
+  "trivial": false,
+  "branch": "claude/intelligent-knuth-8pjz9p",
+  "baseSha": "d6ae02dc09006f7df247f8573c35e3fb14026857",
+  "createdAt": "2026-11-11T00:09:31.950Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-11T00:09:31.950Z"
+}
