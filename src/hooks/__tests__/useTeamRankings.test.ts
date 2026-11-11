@@ -139,6 +139,33 @@ describe('useTeamRankings', () => {
     expect(result.current.rankings[1].teamId).toBe('no-score');
   });
 
+  // Display only: the shown strength of schedule reads 0.5 when a team has
+  // none yet. League rules hold SOS between 0.1 and 1.0, so 0 never reaches
+  // this fallback.
+  it('shows a strength of schedule of 0.5 for a team that has none (null or missing)', async () => {
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [
+        makeTeam('sos-null', 90, { sos: null }),
+        makeTeam('sos-missing', 80, { sos: undefined }),
+      ],
+      isLoading: false,
+    });
+    const { result } = renderHook(() => useTeamRankings());
+    await waitFor(() => expect(result.current.rankings.length).toBe(2));
+    const sosById = Object.fromEntries(result.current.rankings.map((r) => [r.teamId, r.sos]));
+    expect(sosById).toEqual({ 'sos-null': 0.5, 'sos-missing': 0.5 });
+  });
+
+  it('keeps a real strength of schedule unchanged instead of applying the 0.5 fallback', async () => {
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [makeTeam('sos-real', 90, { sos: 0.62 })],
+      isLoading: false,
+    });
+    const { result } = renderHook(() => useTeamRankings());
+    await waitFor(() => expect(result.current.rankings.length).toBe(1));
+    expect(result.current.rankings[0].sos).toBe(0.62);
+  });
+
   it('uses provided teams prop instead of internal useTeams data', async () => {
     const customTeams = [makeTeam('custom-1', 95)];
     const { result } = renderHook(() => useTeamRankings(customTeams));
