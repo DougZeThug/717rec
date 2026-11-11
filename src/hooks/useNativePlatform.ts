@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { isNativePlatform } from '@/utils/nativeAuth';
+import { isNativePlatform } from '@/services/auth/nativeAuth';
 
 export const useNativePlatform = () => {
   const [isNative, setIsNative] = useState<boolean>(false);

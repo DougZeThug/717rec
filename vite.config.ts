@@ -75,7 +75,7 @@ export default defineConfig(({ mode }) => ({
             // same naming applies: keep it from being called `index-*.js`.
             { name: 'vendor-howler', test: /[\\/]node_modules[\\/]howler[\\/]/ },
             // Same trick for the native Google login plugin: it is only reached
-            // through a dynamic import in utils/nativeAuth.ts, so naming it keeps
+            // through a dynamic import in services/auth/nativeAuth.ts, so naming it keeps
             // its chunk from being called `index-*.js` and miscounted as main.
             {
               name: 'vendor-capgo-social-login',

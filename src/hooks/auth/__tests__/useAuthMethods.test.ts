@@ -19,7 +19,7 @@ vi.mock('@/services/auth/AuthService', () => ({
   signInWithOAuth: (...args: unknown[]) => mockSignInWithOAuth(...args),
 }));
 
-vi.mock('@/utils/nativeAuth', () => ({
+vi.mock('@/services/auth/nativeAuth', () => ({
   loginWithGoogleNative: (...args: unknown[]) => mockNativeGoogleLogin(...args),
 }));
 

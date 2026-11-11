@@ -26,7 +26,7 @@ If the code disagrees with this file, the code wins. Then fix this file.
 ## Mobile (verified)
 
 - There is **no native app project** in this repo. No `android/`, no `ios/`, no `capacitor.config.*`.
-- `@capacitor/core` and `@capgo/capacitor-social-login` exist only for native sign-in code (`src/utils/nativeAuth.ts`, `src/hooks/auth/useAuthMethods.ts`).
+- `@capacitor/core` and `@capgo/capacitor-social-login` exist only for native sign-in code (`src/services/auth/nativeAuth.ts`, `src/hooks/auth/useAuthMethods.ts`).
 - "Mobile" means the responsive web app. It has a phone tab bar below 768 px. See `docs/product-description/cross-cutting/on-a-phone.md`.
 - Do not claim Capacitor/Android behavior unless you find the project files.
 
