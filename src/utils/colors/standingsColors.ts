@@ -8,8 +8,8 @@
  * the two views could drift apart.
  */
 export const getStandingsPercentageColor = (percentage: number): string => {
-  if (percentage >= 75) return 'text-green-600 dark:text-green-500';
+  if (percentage >= 75) return 'text-green-700 dark:text-green-500';
   if (percentage >= 60) return 'text-blue-600 dark:text-blue-500';
-  if (percentage >= 40) return 'text-orange-500 dark:text-orange-400';
-  return 'text-red-600 dark:text-red-500';
+  if (percentage >= 40) return 'text-orange-700 dark:text-orange-400';
+  return 'text-red-700 dark:text-red-500';
 };

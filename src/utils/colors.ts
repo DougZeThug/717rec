@@ -17,10 +17,10 @@ export const getSosColor = (sos: number | null | undefined): string => {
   }
 
   // Higher SOS means tougher schedule (red), lower means easier (green)
-  if (sos >= 0.875) return 'text-red-700 dark:text-red-500'; // Very hard schedule
-  if (sos >= 0.75) return 'text-red-500 dark:text-red-400'; // Hard schedule
-  if (sos >= 0.55) return 'text-orange-500 dark:text-orange-400'; // Moderate schedule
-  return 'text-green-600 dark:text-green-500'; // Easy schedule
+  if (sos >= 0.875) return 'text-red-800 dark:text-red-500'; // Very hard schedule
+  if (sos >= 0.75) return 'text-red-700 dark:text-red-400'; // Hard schedule
+  if (sos >= 0.55) return 'text-orange-700 dark:text-orange-400'; // Moderate schedule
+  return 'text-green-700 dark:text-green-500'; // Easy schedule
 };
 
 // Sweep rate color mapping - higher sweep rate (more dominant) = better colors

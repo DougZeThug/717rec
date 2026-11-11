@@ -6,10 +6,10 @@ describe('src/utils/colors.ts', () => {
   it.each([
     { label: 'null value', input: null, expected: 'text-muted-foreground' },
     { label: 'undefined value', input: undefined, expected: 'text-muted-foreground' },
-    { label: 'very hard boundary', input: 0.875, expected: 'text-red-700 dark:text-red-500' },
-    { label: 'hard boundary', input: 0.75, expected: 'text-red-500 dark:text-red-400' },
-    { label: 'moderate boundary', input: 0.55, expected: 'text-orange-500 dark:text-orange-400' },
-    { label: 'easy bucket', input: 0.54, expected: 'text-green-600 dark:text-green-500' },
+    { label: 'very hard boundary', input: 0.875, expected: 'text-red-800 dark:text-red-500' },
+    { label: 'hard boundary', input: 0.75, expected: 'text-red-700 dark:text-red-400' },
+    { label: 'moderate boundary', input: 0.55, expected: 'text-orange-700 dark:text-orange-400' },
+    { label: 'easy bucket', input: 0.54, expected: 'text-green-700 dark:text-green-500' },
   ])('getSosColor: $label', ({ input, expected }) => {
     expect(getSosColor(input)).toBe(expected);
   });

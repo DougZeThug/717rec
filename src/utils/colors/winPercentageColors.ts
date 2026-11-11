@@ -5,15 +5,15 @@ import { winPercentageThresholds } from './thresholds';
  */
 export const getWinPercentageColor = (percentage: number): string => {
   if (percentage >= winPercentageThresholds.excellent) {
-    return 'text-green-600 dark:text-green-500';
+    return 'text-green-700 dark:text-green-500';
   }
   if (percentage >= winPercentageThresholds.good) {
     return 'text-blue-600 dark:text-blue-500';
   }
   if (percentage >= winPercentageThresholds.average) {
-    return 'text-orange-500 dark:text-orange-400';
+    return 'text-orange-700 dark:text-orange-400';
   }
-  return 'text-red-600 dark:text-red-500';
+  return 'text-red-700 dark:text-red-500';
 };
 
 /**
