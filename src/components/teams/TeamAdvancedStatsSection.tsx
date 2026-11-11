@@ -7,7 +7,7 @@ import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useTeamSeasonBreakdown } from '@/hooks/useTeamSeasonBreakdown';
+import { useTeamSeasonBreakdown } from '@/hooks/teams/seasonBreakdown';
 
 interface TeamAdvancedStatsSectionProps {
   teamId: string;

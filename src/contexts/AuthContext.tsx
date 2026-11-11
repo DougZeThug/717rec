@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import { useAuth as useAuthHook } from '@/hooks/useAuth';
+import { useAuth as useAuthHook } from '@/hooks/auth';
 import { AuthContextType } from '@/types/auth';
 
 import { AuthContext } from './auth-context';

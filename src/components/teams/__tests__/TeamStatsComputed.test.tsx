@@ -20,7 +20,7 @@ const mockAdvanced = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/useTeamReportCard', () => ({
   useTeamReportCard: (teamId: string, mode: 'season' | 'career') => mockReportCard(teamId, mode),
 }));
-vi.mock('@/hooks/useTeamSeasonBreakdown', () => ({
+vi.mock('@/hooks/teams/seasonBreakdown', () => ({
   useTeamSeasonBreakdown: (teamId: string) => mockAdvanced(teamId),
 }));
 const mockLeaderboard = vi.hoisted(() => vi.fn());
