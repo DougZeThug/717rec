@@ -1,6 +1,3 @@
-// The zod schema itself lives in src/components/profile/profileSchema.ts,
-// next to the only form that runs it, so zod stays out of the main bundle.
-import type { ProfileFormData } from '@/components/profile/profileSchema';
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile } from '@/types/user';
 import { handleDatabaseError } from '@/utils/errorHandler';
@@ -67,7 +64,15 @@ export const fetchAuthProfile = async (userId: string): Promise<UserProfile | nu
   return data as UserProfile;
 };
 
-export const updateProfile = async (userId: string, data: ProfileFormData): Promise<void> => {
+// The zod schema itself lives in src/components/profile/profileSchema.ts,
+// next to the only form that runs it, so zod stays out of the main bundle.
+// This service declares the fields it reads instead of importing that form type.
+interface ProfileUpdateInput {
+  username: string;
+  fullName?: string;
+}
+
+export const updateProfile = async (userId: string, data: ProfileUpdateInput): Promise<void> => {
   const { error } = await supabase.from('profiles').upsert({
     id: userId,
     username: data.username,
