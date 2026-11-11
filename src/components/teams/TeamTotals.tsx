@@ -17,8 +17,8 @@ import React from 'react';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { PercentileFromResult } from '@/components/ui/PercentileBadge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTeamTotalsComputed } from '@/hooks/career/useTeamTotalsComputed';
 import { useLeaguePercentiles } from '@/hooks/useLeaguePercentiles';
-import { useTeamTotals } from '@/hooks/useTeamTotals';
 import { getPowerScoreColor, getSosColor, getSweepRateColor } from '@/utils/colors';
 
 interface TeamTotalsProps {
@@ -94,7 +94,7 @@ const DivisionRecordCard: React.FC<DivisionRecordCardProps> = ({ name, icon, rec
 };
 
 const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) => {
-  const { totals, isLoading } = useTeamTotals(teamId);
+  const { totals, isLoading } = useTeamTotalsComputed(teamId);
   const { getTeamPercentiles } = useLeaguePercentiles();
 
   const percentiles = getTeamPercentiles(teamId);

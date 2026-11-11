@@ -2,9 +2,9 @@ import { useMemo } from 'react';
 
 import { Team } from '@/types';
 
+import { useTeamTotalsComputed } from './career/useTeamTotalsComputed';
 import { useOpponentHistory } from './useHeadToHead';
 import { TeamPercentiles, useLeaguePercentiles } from './useLeaguePercentiles';
-import { useTeamTotals } from './useTeamTotals';
 
 interface TeamTotalsData {
   career_match_wins: number;
@@ -56,8 +56,8 @@ export interface TeamComparisonData {
 }
 
 export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamComparisonData => {
-  const { totals: totals1, isLoading: loading1 } = useTeamTotals(team1?.id ?? '');
-  const { totals: totals2, isLoading: loading2 } = useTeamTotals(team2?.id ?? '');
+  const { totals: totals1, isLoading: loading1 } = useTeamTotalsComputed(team1?.id ?? '');
+  const { totals: totals2, isLoading: loading2 } = useTeamTotalsComputed(team2?.id ?? '');
   const { getTeamPercentiles, isLoading: loadingPercentiles } = useLeaguePercentiles();
   const {
     data: h2hHistory,
