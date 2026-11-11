@@ -1,7 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { createDateWithTime } from '@/components/schedule/form-utils';
 import { useToast } from '@/hooks/useToast';
 import {
   fetchActiveSeasonIdOptional,
@@ -12,6 +11,7 @@ import { ValidationError } from '@/types/errors';
 import { validateMatchSchedule } from '@/utils/autoSchedule/validation';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, scheduleLog } from '@/utils/logger';
+import { createDateWithTime } from '@/utils/timezone/createDateWithTime';
 
 import { clearAutoScheduleState } from './storage';
 

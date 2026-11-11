@@ -1,7 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { createDateWithTime } from '@/components/schedule/form-utils';
 import { useToast } from '@/hooks/useToast';
 import {
   batchCreateMatches,
@@ -13,6 +12,7 @@ import { ALL_BLOCK_TIMES } from '@/utils/autoSchedule/constants';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { nextThursday } from '@/utils/leagueNight';
 import { errorLog, matchLog, timezoneLog } from '@/utils/logger';
+import { createDateWithTime } from '@/utils/timezone/createDateWithTime';
 
 import { MatchPair } from './MatchPairsList';
 
