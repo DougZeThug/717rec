@@ -15,7 +15,7 @@ vi.mock('@/hooks/useTeamReportCard', () => ({
 }));
 // The leaderboard has its own hooks and its own tests.
 vi.mock('../ReportCardLeaderboard', () => ({ default: () => null }));
-vi.mock('@/utils/charts/chartStyleUtils', () => ({
+vi.mock('@/hooks/useChartColors', () => ({
   useChartColors: () => ({
     background: '#ffffff',
     gridColor: '#e5e7eb',

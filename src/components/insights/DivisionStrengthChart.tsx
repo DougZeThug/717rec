@@ -11,9 +11,9 @@ import {
   YAxis,
 } from 'recharts';
 
+import { useChartColors } from '@/hooks/useChartColors';
 import { DivisionStrength } from '@/hooks/useLeagueInsights';
 import { describeChart } from '@/utils/charts/chartAccessibility';
-import { useChartColors } from '@/utils/charts/chartStyleUtils';
 
 interface DivisionStrengthChartProps {
   divisions: DivisionStrength[];

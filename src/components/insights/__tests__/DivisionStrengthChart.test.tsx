@@ -5,7 +5,7 @@ import type { DivisionStrength } from '@/hooks/useLeagueInsights';
 
 const mockUseChartColors = vi.hoisted(() => vi.fn());
 
-vi.mock('@/utils/charts/chartStyleUtils', () => ({
+vi.mock('@/hooks/useChartColors', () => ({
   useChartColors: () => mockUseChartColors(),
 }));
 

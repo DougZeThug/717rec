@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { DivisionStrength } from '@/hooks/useLeagueInsights';
 
-vi.mock('@/utils/charts/chartStyleUtils', () => ({
+vi.mock('@/hooks/useChartColors', () => ({
   useChartColors: () => ({
     background: '#ffffff',
     gridColor: '#e5e7eb',
