@@ -231,6 +231,8 @@ describe('uncovered playoff hooks', () => {
         winner_id: 't1',
         loser_id: 't2',
         status: 'completed',
+        // Season stats order playoff results by this column to compute streaks.
+        updated_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       })
     );
     expect(mocks.games).toHaveBeenCalledWith('m1', [
