@@ -2,18 +2,51 @@
   "id": "T-261111-phone-polish-wave-8-admi",
   "title": "Phone polish wave 8: admin setup and content, then close-out",
   "kind": "polish",
-  "status": "intake",
+  "status": "building",
   "request": "Lets go with wave 8 now",
   "trivial": false,
   "branch": "claude/intelligent-knuth-8pjz9p",
   "baseSha": "d6ae02dc09006f7df247f8573c35e3fb14026857",
   "createdAt": "2026-11-11T00:09:31.950Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Doug: Reopen + Clear Downstream on the playoff BYE editor asks first (ConfirmDialog, closes after the action, pending state, Cancel makes no call; tests cover confirm and cancel). Its four buttons are readable in light, dark and winter (red text-destructive-text; amber/green -700; dark twins) and a tap leaves no pale fill in dark.",
+      "done": false
+    },
+    {
+      "text": "Admin setup at 320 and 390 px: Timeslots delete button visible with no sideways swipe; Timeslots date button and Participation season select full width below sm; New Division text inside its button; Team Management tabs in an even 2x2 grid; Auto Schedule switch tap areas no longer overlap; blind draw sign-ups table scrolls sideways instead of clipping. Desktop 1280 unchanged.",
+      "done": false
+    },
+    {
+      "text": "Edit Team is a bottom sheet below 768 px (ResponsiveDialog, dismissible=false so a swipe cannot throw typed edits away); centred on desktop as before; a test covers the sheet prop.",
+      "done": false
+    },
+    {
+      "text": "Footer sits at the bottom of the screen on short pages (phone and desktop): PageTransition around the routes is a growing flex column; no page layout changes otherwise.",
+      "done": false
+    },
+    {
+      "text": "Message board: on a member's own post at 320 px the time drops to its own line when the names do not fit, so the username shows more than 2 letters.",
+      "done": false
+    },
+    {
+      "text": "Contrast in light: SOS and win%/standings % helpers use the lowest passing shade (green-700, orange-700, hard red-600, very hard red-700; dark unchanged; sweep helpers untouched per Doug). Contact inbox Verified, Join and Score badges -700 in light; 11 px dates and Expires/Expired on contact inbox and notifications are 12 px. Tests updated to the new values.",
+      "done": false
+    },
+    {
+      "text": "Doug: the /setup-profile league-name field reads Display Name with the hint 'The name other players see. At least 3 letters or numbers.'; placeholder, toast and error messages match; blind draw First name untouched; tests and profile docs (set-up-your-profile, accounts-and-roles, glossary, verification) match.",
+      "done": false
+    },
+    {
+      "text": "Close-out: verification README suspected-bug count is recounted and correct; every still-open plan item (bags prompt, bell label, Create Bracket 320 list, mock POST gap, Doug's leave-colours decision, own-phone check) is recorded in its feature doc or fixture notes; docs/plans/PHONE-POLISH-2026-11.md is deleted and no doc links to it; no new console errors and no sideways scroll on touched routes.",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-11T00:09:31.950Z"
+  "updatedAt": "2026-11-11T00:38:32.479Z"
 }
