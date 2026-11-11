@@ -23,14 +23,3 @@ export interface MatchFormValues {
   team1Score?: number;
   team2Score?: number;
 }
-
-export interface ScoreSectionProps {
-  isCompleted: boolean;
-  team1Id: string;
-  team2Id: string;
-  team1Score: number | undefined;
-  team2Score: number | undefined;
-  setTeam1Score: (value: number | undefined) => void;
-  setTeam2Score: (value: number | undefined) => void;
-  teams: Team[];
-}

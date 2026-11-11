@@ -145,22 +145,3 @@ const { isWinterTheme } = useSeasonalTheme();
   isWinterTheme && "winter-card-surface frost-edge"
 )}>
 ```
-
----
-
-## List Layout Utilities
-
-Use consistent grid/stack layouts from the design system:
-
-```tsx
-import { listStyles } from "@/styles/design-system/lists";
-
-// Responsive grid
-<div className={listStyles.grid.responsive}>
-
-// Two column grid
-<div className={listStyles.grid.twoColumn}>
-
-// Vertical stack
-<div className={listStyles.stack.default}>
-```
