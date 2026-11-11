@@ -102,7 +102,7 @@ interface SeasonSelectProps {
 
 const SeasonSelect: React.FC<SeasonSelectProps> = ({ value, onValueChange, seasons }) => (
   <Select value={value} onValueChange={onValueChange}>
-    <SelectTrigger className="w-[200px]">
+    <SelectTrigger className="w-full sm:w-[200px]">
       <SelectValue placeholder="Select season" />
     </SelectTrigger>
     <SelectContent>
