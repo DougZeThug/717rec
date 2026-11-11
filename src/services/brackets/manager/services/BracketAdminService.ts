@@ -1,1 +1,0 @@
-export { BracketAdminService } from './BracketAdmin';

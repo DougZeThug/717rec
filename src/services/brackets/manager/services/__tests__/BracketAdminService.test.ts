@@ -25,7 +25,7 @@ vi.mock('@/utils/logger', () => ({
 import { BusinessLogicError } from '@/types/errors';
 
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
-import { BracketAdminService } from '../BracketAdminService';
+import { BracketAdminService } from '../BracketAdmin';
 
 const updateEqChain = (result: { error: unknown }) => ({
   update: vi.fn(() => ({

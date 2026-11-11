@@ -62,7 +62,7 @@ vi.mock('../services/BracketNormalizationService', () => ({
   }),
 }));
 
-vi.mock('../services/BracketAdminService', () => ({
+vi.mock('../services/BracketAdmin', () => ({
   BracketAdminService: vi.fn(function MockBracketAdminService() {
     return {
       checkByeEligibility: vi.fn(),

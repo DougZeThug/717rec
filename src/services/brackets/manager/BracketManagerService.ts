@@ -1,10 +1,10 @@
 import { BracketsManager } from 'brackets-manager';
 
 import { matchUpdateQueue } from './MatchUpdateQueue';
+import { BracketAdminService } from './services/BracketAdmin';
 import type { EditMatchTeamsParams } from './services/BracketAdmin/editTeams/types';
 import type { SlotAssignment } from './services/BracketAdmin/rearrange/types';
 import type { SwapLoserSlotsParams } from './services/BracketAdmin/swap';
-import { BracketAdminService } from './services/BracketAdminService';
 import { BracketCreationService } from './services/BracketCreationService';
 import { BracketNormalizationService } from './services/BracketNormalizationService';
 import type { BracketRepairSummary } from './services/BracketRepairService';
