@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockTeam, createMockTeamPairing } from '@/utils/test/autoSchedule/testHelpers';
 
 // Mocks must be declared before imports of the modules under test
-vi.mock('../../blossomPairingAlgorithm', () => ({
+vi.mock('../../blossom', () => ({
   generatePairingsWithBlossom: vi.fn(),
 }));
 vi.mock('../../matchHistoryService', () => ({
@@ -11,7 +11,7 @@ vi.mock('../../matchHistoryService', () => ({
 }));
 
 // Import mocked module to inspect calls
-import { generatePairingsWithBlossom } from '../../blossomPairingAlgorithm';
+import { generatePairingsWithBlossom } from '../../blossom';
 import { generateDualBlockPairings } from '../pairingGenerator';
 
 const p1 = createMockTeam({ id: 'p1', name: 'P1' });

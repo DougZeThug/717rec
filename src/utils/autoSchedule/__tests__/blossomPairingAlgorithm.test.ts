@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createMockTeam } from '@/utils/test/autoSchedule/testHelpers';
 
-import { generatePairingsWithBlossom } from '../blossomPairingAlgorithm';
+import { generatePairingsWithBlossom } from '../blossom';
 
 /**
  * Base config that skips the Supabase fetchSeasonHistoryForTeams call:

@@ -1,1 +1,0 @@
-export { generatePairingsWithBlossom } from './blossom';

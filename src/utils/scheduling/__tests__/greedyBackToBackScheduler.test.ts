@@ -7,7 +7,7 @@ import {
   generateScheduleGreedyWithTracking,
   GreedySchedulerInput,
   pairKey,
-} from '../greedyBackToBackScheduler';
+} from '../greedy';
 
 // Helper to create mock teams
 function createMockTeam(id: string, name: string, division: string, tier = 1): Team {

@@ -4,7 +4,7 @@ import { NotificationCallback } from '@/types/dualBlock';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
-import { generatePairingsWithBlossom } from '../blossomPairingAlgorithm';
+import { generatePairingsWithBlossom } from '../blossom';
 import { calculateConfigurableCompatibility } from '../compatibilityUtils';
 import { haveTeamsPlayedBefore } from '../matchHistoryService';
 import { findTeamsWithSameOpponent } from './opponentUtils';
