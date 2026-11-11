@@ -1,4 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
+import type {
+  OpponentRecord,
+  SeasonOpponentData,
+  TeamOpponentHistory,
+} from '@/types/seasonOpponentHistory';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
 import { assertDistinct, assertValidUuid } from '@/utils/validation';
@@ -114,35 +119,6 @@ export const haveTeamsPlayedBefore = async (team1Id: string, team2Id: string): P
   if (error) handleDatabaseError(error, 'Failed to check if teams have played');
   return (data?.length ?? 0) > 0;
 };
-
-// ---------------------------------------------------------------------------
-// Types for season opponent history — used by useSeasonOpponentHistory hook
-// ---------------------------------------------------------------------------
-
-interface OpponentRecord {
-  opponentId: string;
-  opponentName: string;
-  opponentDivision: string | null;
-  matchCount: number;
-  wins: number;
-  losses: number;
-}
-
-interface TeamOpponentHistory {
-  teamId: string;
-  teamName: string;
-  divisionId: string | null;
-  divisionName: string | null;
-  opponents: OpponentRecord[];
-  uniqueOpponentCount: number;
-  totalMatches: number;
-}
-
-export interface SeasonOpponentData {
-  seasonId: string;
-  seasonName: string;
-  teams: TeamOpponentHistory[];
-}
 
 /**
  * Fetch season opponent history for the active season.

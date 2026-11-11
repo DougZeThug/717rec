@@ -1,4 +1,4 @@
-import { SeasonOpponentData } from '@/hooks/useSeasonOpponentHistory';
+import type { SeasonOpponentData } from '@/types/seasonOpponentHistory';
 import { neutralizeFormula } from '@/utils/spreadsheetSafe';
 
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';

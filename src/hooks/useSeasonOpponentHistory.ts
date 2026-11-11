@@ -1,11 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import {
-  fetchSeasonOpponentHistory,
-  SeasonOpponentData,
-} from '@/services/matches/MatchReadService';
-
-export type { SeasonOpponentData };
+import { fetchSeasonOpponentHistory } from '@/services/matches/MatchReadService';
+import type { SeasonOpponentData } from '@/types/seasonOpponentHistory';
 
 export const useSeasonOpponentHistory = () => {
   return useQuery({

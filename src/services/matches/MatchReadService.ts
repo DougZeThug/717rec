@@ -9,7 +9,6 @@
  * - MatchScheduleAdminService: schedule & admin views
  */
 
-export type { SeasonOpponentData } from './MatchHistoryService';
 export {
   checkTeamsEverPlayed,
   countTeamMatchesInSeason,
