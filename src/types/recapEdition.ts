@@ -1,5 +1,5 @@
 import type { TeamStreakInfo, WeeklyUpset } from '@/services/weeklyRecap/types';
-import type { LetterGrade } from '@/utils/reportCardUtils';
+import type { LetterGrade } from '@/types/reportCard';
 
 import type { TrendBasis } from './powerScoreSnapshot';
 

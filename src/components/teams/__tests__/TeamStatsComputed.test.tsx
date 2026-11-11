@@ -4,7 +4,8 @@ import React, { PropsWithChildren } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { TeamAdvancedStats } from '@/hooks/teams/seasonBreakdown';
-import type { LetterGrade, TeamGrades } from '@/utils/reportCardUtils';
+import type { LetterGrade } from '@/types/reportCard';
+import type { TeamGrades } from '@/utils/reportCardUtils';
 
 vi.mock('@/components/ui/CollapsibleSection', () => ({
   CollapsibleSection: ({ children, title }: PropsWithChildren<{ title: string }>) => (

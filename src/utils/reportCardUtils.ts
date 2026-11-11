@@ -2,9 +2,8 @@
  * Report Card grade calculation utilities
  * Converts percentile rankings into letter grades for team evaluation
  */
+import type { LetterGrade } from '@/types/reportCard';
 import { calculatePercentile } from '@/utils/percentileUtils';
-
-export type LetterGrade = 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-' | 'C+' | 'C' | 'C-' | 'D' | 'F';
 
 export interface GradeCategory {
   label: string;
