@@ -170,6 +170,21 @@ describe('MessageBoard page', () => {
     );
   });
 
+  it('warns the member when the refresh fails', async () => {
+    const refreshMessages = vi.fn().mockRejectedValue(new Error('network down'));
+    mockUseMessageBoard.mockReturnValue({ ...baseMessageBoardState, refreshMessages });
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh Messages' }));
+    await waitFor(() => expect(mockToast).toHaveBeenCalled());
+    expect(refreshMessages).toHaveBeenCalledTimes(1);
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Refresh failed', variant: 'destructive' })
+    );
+    expect(mockToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Messages refreshed' })
+    );
+  });
+
   it('shows the filter bar and MessageInput to a signed-in member', () => {
     renderPage();
     expect(screen.getByRole('button', { name: 'Send Message' })).toBeInTheDocument();

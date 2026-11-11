@@ -101,4 +101,25 @@ describe('useScheduleTabs', () => {
     expect(result.current.activeTab).toBe('timeslots');
     expect(sessionStorage.getItem('scheduleActiveTab')).toBe('timeslots');
   });
+
+  // Today or a future night with no matches to play yet → the timeslots tab.
+  it('opens Timeslots for today when there are no upcoming matches', () => {
+    sessionStorage.setItem('scheduleActiveTab', 'completed');
+    const { result } = renderTabs({
+      selectedDate: new Date(2026, 10, 10),
+      upcomingMatches: [],
+      completedMatches: [],
+    });
+    expect(result.current.activeTab).toBe('timeslots');
+    expect(sessionStorage.getItem('scheduleActiveTab')).toBe('timeslots');
+  });
+
+  it('opens Timeslots for a future night before its matches exist', () => {
+    const { result } = renderTabs({
+      selectedDate: new Date(2026, 10, 19),
+      upcomingMatches: undefined,
+      completedMatches: [],
+    });
+    expect(result.current.activeTab).toBe('timeslots');
+  });
 });
