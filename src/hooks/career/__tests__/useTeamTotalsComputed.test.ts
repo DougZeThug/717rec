@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useTeamTotalsComputed } from '../useTeamTotalsComputed';
 
-// fetchCareerData is re-exported from useCareerData.ts which re-exports from CareerService
+// useTeamTotalsComputed imports fetchCareerData straight from CareerService
 vi.mock('@/services/career/CareerService', () => ({
   fetchCareerData: vi.fn(),
   fetchAllTeamsCareerData: vi.fn(),

@@ -1,3 +1,4 @@
+import { BulkTeamCareerData, fetchAllTeamsCareerData } from '@/services/career/CareerService';
 import { Team } from '@/types';
 import {
   calculateCareerClutchRate,
@@ -11,8 +12,6 @@ import {
 import { calculatePlayoffConsistency } from '@/utils/career/calculatePlayoffNarratives';
 import { PlayoffFinish, TeamTotals } from '@/utils/career/types';
 import { errorLog } from '@/utils/logger';
-
-import { BulkTeamCareerData, fetchAllTeamsCareerData } from './useCareerData';
 
 /**
  * Computes TeamTotals for a single team from pre-fetched bulk data.
