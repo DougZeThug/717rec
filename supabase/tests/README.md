@@ -147,7 +147,9 @@ so a non-zero exit code means drift was detected.
   `v_head_to_head`) and `get_batch_head_to_head`. One fixture, worked out by hand
   in the file: regular-season, playoff and archived matches all count, a match
   with the sides swapped reads from the right side, and a tie or an unfinished
-  match is left out. Also pins the win % order, the mirrored rows for
+  regular-season or archived match is left out. (Playoff matches count whenever
+  a winner and loser are set, whatever their status; that is described, not
+  pinned.) Also pins the win % order, the mirrored rows for
   `get_head_to_head_records(NULL)`, a row of zeros for a pair that never met, and
   no row for a team paired with itself.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime

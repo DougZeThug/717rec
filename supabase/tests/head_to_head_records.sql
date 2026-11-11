@@ -11,8 +11,11 @@
 --
 -- Both count three sources: regular-season matches, playoff matches and
 -- matches_archive (past seasons). A completed match with no winner (a tie) is
--- counted by neither function, and an unfinished match is not counted even if
--- a stale winner is stamped on the row.
+-- counted by neither function, and an unfinished regular-season match, or an
+-- unfinished archived one, is not counted even if a stale winner is stamped on
+-- the row. Playoff matches are different: they are counted whenever a winner
+-- and loser are set, whatever their status. This file describes that and does
+-- not pin it.
 --
 -- The fixture swaps sides on purpose (B is team1 in one of the A-B matches) so
 -- that a count taken from the wrong side reads wrong. The numbers are worked
@@ -24,6 +27,7 @@
 --                      ar  archive, A wins 2-0
 --            ignored:  m3  completed tie 1-1, no winner
 --                      m4  not completed (stale winner A, 2-0)
+--                      ao  archive, not completed (stale winner B, 0-2)
 --            A side:   played 4, wins 3 (m1, po, ar), losses 1 (m2),
 --                      game wins 2+1+2+2 = 7, game losses 0+2+1+0 = 3,
 --                      win pct 3 / 4 = 75.0
@@ -47,12 +51,13 @@ DECLARE
   v_ac_id uuid := '00000000-0000-0000-0000-0000000fc105';
   v_playoff_id uuid := '00000000-0000-0000-0000-0000000fc106';
   v_archive_id uuid := '00000000-0000-0000-0000-0000000fc107';
+  v_archive_open_id uuid := '00000000-0000-0000-0000-0000000fc108';
   v_row_count integer;
   v_order uuid[];
   v_pairs jsonb;
   r record;
 BEGIN
-  DELETE FROM public.matches_archive WHERE id = v_archive_id;
+  DELETE FROM public.matches_archive WHERE id IN (v_archive_id, v_archive_open_id);
   DELETE FROM public.playoff_matches WHERE id = v_playoff_id;
   DELETE FROM public.matches
    WHERE id IN (v_m1_id, v_m2_id, v_tie_id, v_open_id, v_ac_id);
@@ -97,7 +102,10 @@ BEGIN
     (id, team1_id, team2_id, season_id, round_number, iscompleted, date,
      team1_game_wins, team2_game_wins, winner_id, loser_id)
   VALUES
-    (v_archive_id, v_team_a, v_team_b, v_season_id, 1, true, '2025-09-01', 2, 0, v_team_a, v_team_b);
+    (v_archive_id, v_team_a, v_team_b, v_season_id, 1, true, '2025-09-01', 2, 0, v_team_a, v_team_b),
+    -- Not completed. The stale winner (B, 0-2) would change every total if it
+    -- were counted, so only the iscompleted filter keeps it out.
+    (v_archive_open_id, v_team_a, v_team_b, v_season_id, 2, false, '2025-09-08', 0, 2, v_team_b, v_team_a);
 
   -- ---------------------------------------------------------------------------
   -- get_head_to_head_records(team): A's own rows.
