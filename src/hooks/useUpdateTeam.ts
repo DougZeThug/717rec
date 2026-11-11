@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { updateTeamApi } from '@/services/TeamService';
+import { updateTeamApi } from '@/services/teams/TeamUpdateService';
 import { Team } from '@/types';
 
 export const useUpdateTeam = () => {

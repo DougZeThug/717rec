@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { toast } from '@/hooks/useToast';
-import { batchUpdateSeasonStats, type TeamUpdate } from '@/services/TeamStatsService';
+import { batchUpdateSeasonStats, type TeamUpdate } from '@/services/TeamSeasonStatsService';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { dbLog, errorLog } from '@/utils/logger';
 

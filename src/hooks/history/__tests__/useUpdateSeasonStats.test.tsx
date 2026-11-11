@@ -8,7 +8,7 @@ const { mockBatchUpdate, mockToast } = vi.hoisted(() => ({
   mockToast: vi.fn(),
 }));
 
-vi.mock('@/services/TeamStatsService', () => ({ batchUpdateSeasonStats: mockBatchUpdate }));
+vi.mock('@/services/TeamSeasonStatsService', () => ({ batchUpdateSeasonStats: mockBatchUpdate }));
 vi.mock('@/hooks/useToast', () => ({ toast: mockToast }));
 vi.mock('@/utils/logger', () => ({ dbLog: vi.fn(), errorLog: vi.fn() }));
 
