@@ -15,19 +15,23 @@
     },
     {
       "text": "Admin setup at 320 and 390 px: Timeslots delete button visible with no sideways swipe; Timeslots date button and Participation season select full width below sm; New Division text inside its button; Team Management tabs in an even 2x2 grid; Auto Schedule switch tap areas no longer overlap; blind draw sign-ups table scrolls sideways instead of clipping. Desktop 1280 unchanged.",
-      "done": false
+      "done": true,
+      "evidence": "QA browser @894b352, admin mock, 320/390 touch + 1280: Timeslots delete btn 44x44 inside table (right 262<=270 @320), table+doc scroll 0; date btn = parent width below sm (238/308), 240 @1280; Participation select full width (288/358), 200 @1280; New Division text inside button all widths; Teams tabs grid-cols-2 even 140/175 cols, inline-flex row @1280; Auto Schedule switch 44px tap areas 56px apart, no overlap; blind draw table wrapper overflow-x auto; no console errors"
     },
     {
       "text": "Edit Team is a bottom sheet below 768 px (ResponsiveDialog, dismissible=false so a swipe cannot throw typed edits away); centred on desktop as before; a test covers the sheet prop.",
-      "done": false
+      "done": true,
+      "evidence": "QA browser: 320/390 Edit Team opens as vaul drawer (bottom 800, full width); after typing, Escape, tap outside and a drag-down did not close it and the typed value stayed; control drag closes the dismissible Sections drawer; Cancel closes. 1280: centred dialog 672 wide, Cancel closes. EditTeamDialog.sheet.test.tsx passes (dismissible=false)"
     },
     {
       "text": "Footer sits at the bottom of the screen on short pages (phone and desktop): PageTransition around the routes is a growing flex column; no page layout changes otherwise.",
-      "done": false
+      "done": true,
+      "evidence": "QA browser: footer bottom = viewport bottom (gap 0) on /no-such-page 390x1100 and 1280x800 and /admin/divisions 390x1600; /schedule 390 and 1280 footer below fold after content (doc 1546/1415), no sideways scroll"
     },
     {
       "text": "Message board: on a member's own post at 320 px the time drops to its own line when the names do not fit, so the username shows more than 2 letters.",
-      "done": false
+      "done": true,
+      "evidence": "QA browser member 320: own post fake_player_1a time wraps to its own line (time top 851 vs name top 829); username shows 'fake...' (46 of 97 px visible, 4 letters) - screenshot 320-mb-own.png"
     },
     {
       "text": "Contrast in light: SOS and win%/standings % helpers use the lowest passing shade (green-700, orange-700, hard red-600, very hard red-700; dark unchanged; sweep helpers untouched per Doug). Contact inbox Verified, Join and Score badges -700 in light; 11 px dates and Expires/Expired on contact inbox and notifications are 12 px. Tests updated to the new values.",
@@ -35,11 +39,13 @@
     },
     {
       "text": "Doug: the /setup-profile league-name field reads Display Name with the hint 'The name other players see. At least 3 letters or numbers.'; placeholder, toast and error messages match; blind draw First name untouched; tests and profile docs (set-up-your-profile, accounts-and-roles, glossary, verification) match.",
-      "done": false
+      "done": true,
+      "evidence": "QA browser member /setup-profile 320 and 1280 (reached via the Edit Profile link route; form shows when signed in): label 'Display Name *', placeholder 'Enter your display name', hint 'The name other players see. At least 3 letters or numbers.', no 'First Name'; toast/schema strings in diff; docs (set-up-your-profile, accounts-and-roles, glossary, verification/getting-started PROFILE-08) updated; glossary blind draw 'first name' untouched"
     },
     {
       "text": "Close-out: verification README suspected-bug count is recounted and correct; every still-open plan item (bags prompt, bell label, Create Bracket 320 list, mock POST gap, Doug's leave-colours decision, own-phone check) is recorded in its feature doc or fixture notes; docs/plans/PHONE-POLISH-2026-11.md is deleted and no doc links to it; no new console errors and no sideways scroll on touched routes.",
-      "done": false
+      "done": true,
+      "evidence": "QA: verification README says 113 P1 + 2 P2 suspected bugs; recount of rows = 113 P1 + 2 P2 (NAV-10, MSG-07); docs/plans/PHONE-POLISH-2026-11.md gone, no .md links to it; open items found in docs/fixtures (bell, bags prompt kept, Create Bracket 320 list, validate_division_seeds mock gap, leave-colours in power-score.md, not tried on a real phone); 0 console errors and 0 doc overflow on every touched route in QA probes"
     }
   ],
   "checks": {
@@ -62,6 +68,46 @@
       "seconds": 59,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261111-phone-polish-wave-8-admi/lint.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "894b352fc1c4112b4f072c95b83617f9d58e1dd5",
+      "dirty": false,
+      "at": "2026-11-11T01:16:19.081Z",
+      "seconds": 408,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261111-phone-polish-wave-8-admi/unit.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "894b352fc1c4112b4f072c95b83617f9d58e1dd5",
+      "dirty": false,
+      "at": "2026-11-11T01:16:26.561Z",
+      "seconds": 3,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261111-phone-polish-wave-8-admi/build.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "894b352fc1c4112b4f072c95b83617f9d58e1dd5",
+      "dirty": false,
+      "at": "2026-11-11T01:16:32.212Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261111-phone-polish-wave-8-admi/knip.log"
+    },
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "894b352fc1c4112b4f072c95b83617f9d58e1dd5",
+      "dirty": false,
+      "at": "2026-11-11T01:16:34.131Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261111-phone-polish-wave-8-admi/integrity.log"
     }
   },
   "reviews": [],
@@ -69,5 +115,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-11T01:09:26.962Z"
+  "updatedAt": "2026-11-11T01:29:21.152Z"
 }
