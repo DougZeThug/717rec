@@ -103,7 +103,7 @@ documented in `docs/product-description/stats/team-and-player-stats.md`.
 - Services never import hooks or components.
 - Hooks never import components. Hook folders that sit beside their component (`components/**/hooks`) are fine.
 
-**What lint enforces today**: only the Supabase-client rule below (`eslint.config.js`). The direction rule is a convention for now. A lint rule for it is the next Slice 3 step (3B in `docs/untangle-decision-log.md`).
+**What lint enforces today**: only the Supabase-client rule below (`eslint.config.js`). The direction rule is a convention for now, and 18 known imports still break it (the `routePrefetch` page loaders, `adminTabs`, `matchHistoryService`, `compatibilityUtils`, and one type import in `useToast`). A lint rule that blocks new ones is planned as the next layer-rule step.
 
 **Supabase client**: import `supabase` only inside `src/services/`. The ban also catches relative paths, dynamic `import()` and `require()`. Lint turns it off for these files only:
 
