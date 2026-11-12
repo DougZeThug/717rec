@@ -89,7 +89,7 @@ export interface Ranking {
 }
 
 // Types for playoff brackets - Export from the centralized file
-export * from '@/utils/playoffs/playoffTypes';
+export * from './playoffTypes';
 
 // Export bracket record types
 export * from './bracketRecord';

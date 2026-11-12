@@ -1,7 +1,7 @@
 import { InMemoryDatabase } from 'brackets-memory-db';
 
+import { PlayoffBracket, PlayoffTeam } from '@/types/playoffTypes';
 import { bracketLog } from '@/utils/logger';
-import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import { transformBracket, transformGames, transformMatches } from './MatchTransformer';
 import { transformParticipants, transformStoredParticipants } from './ParticipantTransformer';

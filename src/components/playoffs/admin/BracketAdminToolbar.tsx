@@ -22,7 +22,7 @@ import { useRecalculateStandings } from '@/hooks/useRecalculateStandings';
 import { useRepairBracket } from '@/hooks/useRepairBracket';
 import { cn } from '@/lib/utils';
 import { fetchFinalStandings } from '@/services/brackets/BracketReadService';
-import { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+import { PlayoffBracket } from '@/types/playoffTypes';
 
 interface BracketAdminToolbarProps {
   bracket: PlayoffBracket;

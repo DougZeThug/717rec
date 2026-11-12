@@ -11,9 +11,9 @@ import { useDivisions } from '@/hooks/useDivisions';
 import { usePlayoffData } from '@/hooks/usePlayoffViewModel.compat';
 import { useActiveSeason, usePlayoffActiveSeason } from '@/hooks/useSeasons';
 import { deleteBracket as deleteBracketService } from '@/services/brackets/BracketWriteService';
+import { BracketFormat, BracketState, PlayoffBracket, Team } from '@/types/playoffTypes';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { bracketLog, cacheLog, errorLog, playoffLog } from '@/utils/logger';
-import { BracketFormat, BracketState, PlayoffBracket, Team } from '@/utils/playoffs/playoffTypes';
 
 type Division = ReturnType<typeof useDivisions>['divisions'][number];
 type TeamsByDivision = Record<string, Team[]>;

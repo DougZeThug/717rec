@@ -2,7 +2,7 @@ import React from 'react';
 
 import BracketDetail from '@/components/playoffs/BracketDetail';
 import BracketList from '@/components/playoffs/BracketList';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffBracket } from '@/types/playoffTypes';
 
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 import { PlayoffLoadingView } from '../layout/PlayoffLoadingView';

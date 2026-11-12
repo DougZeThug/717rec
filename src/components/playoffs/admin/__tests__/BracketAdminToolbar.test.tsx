@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import BracketAdminToolbar from '@/components/playoffs/admin/BracketAdminToolbar';
 import { openRadixTrigger } from '@/test/radix';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffBracket } from '@/types/playoffTypes';
 
 const recalculate = vi.fn();
 const repair = vi.fn();

@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import PlayoffPageLayout from '@/components/playoffs/layout/PlayoffPageLayout';
 import { fetchBmMatchWithStage } from '@/services/brackets/BracketReadService';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffBracket } from '@/types/playoffTypes';
 
 // Radix dialogs expect these browser APIs in jsdom.
 Object.defineProperty(HTMLElement.prototype, 'hasPointerCapture', {

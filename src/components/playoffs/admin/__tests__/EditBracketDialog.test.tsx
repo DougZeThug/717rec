@@ -4,7 +4,7 @@ import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import EditBracketDialog from '@/components/playoffs/admin/EditBracketDialog';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffBracket } from '@/types/playoffTypes';
 
 const mutate = vi.fn();
 vi.mock('@/hooks/playoffs/useUpdateBracket', () => ({

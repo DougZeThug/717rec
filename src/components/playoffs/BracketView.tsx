@@ -5,8 +5,8 @@ import {
   useBracketViewData,
 } from '@/hooks/brackets/useBracketViewData';
 import type { BracketViewData } from '@/types/playoff';
+import type { PlayoffTeam } from '@/types/playoffTypes';
 import { bracketLog, debugLog, errorLog, log } from '@/utils/logger';
-import type { PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import BracketErrorBoundary from './BracketErrorBoundary';
 import { resolveBracketViewState } from './bracketViewState';

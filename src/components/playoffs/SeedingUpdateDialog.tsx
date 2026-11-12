@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/useToast';
 import { bracketManagerService } from '@/services/brackets/manager';
-import type { PlayoffMatch } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffMatch } from '@/types/playoffTypes';
 import { hasPlayStarted } from '@/utils/playoffs/playoffUtils';
 
 import { DragOverlayItem } from './form/bracket-teams/components/DragOverlayItem';

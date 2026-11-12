@@ -1,4 +1,4 @@
-import { PlayoffMatch } from '@/utils/playoffs/playoffTypes';
+import { PlayoffMatch } from '@/types/playoffTypes';
 
 import { ViewerMatch } from './types';
 

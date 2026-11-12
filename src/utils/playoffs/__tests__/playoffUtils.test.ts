@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { PlayoffBracket, PlayoffMatch } from '../playoffTypes';
+import type { PlayoffBracket, PlayoffMatch } from '@/types/playoffTypes';
+
 import {
   hasPlayStarted,
   isBracketComplete,

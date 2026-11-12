@@ -135,7 +135,7 @@ vi.mock('@/components/playoffs/SeedingUpdateDialog', () => ({
     open ? <div role="dialog">Seeding dialog</div> : null,
 }));
 
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffBracket } from '@/types/playoffTypes';
 
 import BracketView from '../../BracketView';
 import AdminView from '../AdminView';

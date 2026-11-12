@@ -10,7 +10,7 @@ import AdminView from '@/components/playoffs/views/AdminView';
 import { createBracket } from '@/services/bracket-creator';
 import { fetchBmMatchWithStage } from '@/services/brackets/BracketReadService';
 import { Team } from '@/types';
-import type { PlayoffMatch } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffMatch } from '@/types/playoffTypes';
 
 const mockNavigate = vi.fn();
 const mockToast = vi.fn();

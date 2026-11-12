@@ -3,8 +3,8 @@ import type { Match, ParticipantResult } from 'brackets-model';
 import { useEffect, useRef, useState } from 'react';
 
 import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/brackets/viewer';
+import { PlayoffBracket } from '@/types/playoffTypes';
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
-import { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 import { decorateBracketDom, hideParticipantImagesFromA11y } from './bracketDecorations';
 

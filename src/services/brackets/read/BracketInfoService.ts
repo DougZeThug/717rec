@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import type { BracketState, PlayoffBracket } from '@/types/playoffTypes';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
-import type { BracketState, PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 type BracketRow = Tables<'brackets'>;
 

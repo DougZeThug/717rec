@@ -2,8 +2,8 @@ import { InMemoryDatabase } from 'brackets-memory-db';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { LoadingState } from '@/components/ui/loading-state';
+import { PlayoffBracket, PlayoffTeam } from '@/types/playoffTypes';
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
-import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import { BracketsManagerMatchEditor } from '../match-score-editor/BracketsManagerMatchEditor';
 import type { BracketsViewerMatchClick } from './useBracketsViewerRenderer';
