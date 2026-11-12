@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import type {
   RearrangeBoard as RearrangeBoardData,
   RearrangePlanResult,
-} from '@/services/brackets/manager/services/BracketAdmin/rearrange/types';
+} from '@/services/brackets/manager/services/BracketAdmin';
 
 import type { Arrangement } from './dropLogic';
 import { dropFromDragEnd } from './dropLogic';

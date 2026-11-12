@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { RearrangeBoard } from '@/services/brackets/manager/services/BracketAdmin/rearrange/types';
+import type { RearrangeBoard } from '@/services/brackets/manager/services/BracketAdmin';
 
 import { applyDrop, baselineArrangement, isDirty, toAssignments } from '../dropLogic';
 

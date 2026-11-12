@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { EditTeamsOptions } from '@/services/brackets/manager/services/BracketAdmin/editTeams/options';
+import type { EditTeamsOptions } from '@/services/brackets/manager/services/BracketAdmin';
 
 vi.mock('@/hooks/playoffs/useEditTeams', () => ({
   useEditTeamsOptions: vi.fn(),

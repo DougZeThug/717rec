@@ -35,7 +35,7 @@ import { BracketManagerService } from '@/services/brackets/manager/BracketManage
 import type {
   RearrangeBoard,
   SlotAssignment,
-} from '@/services/brackets/manager/services/BracketAdmin/rearrange/types';
+} from '@/services/brackets/manager/services/BracketAdmin';
 
 const db = (): FakeSupabaseBracketDb =>
   (globalThis as Record<string, unknown>).__fakeBracketDb as FakeSupabaseBracketDb;

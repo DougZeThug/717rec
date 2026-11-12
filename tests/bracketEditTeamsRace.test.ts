@@ -27,7 +27,7 @@ import { BracketManagerService } from '@/services/brackets/manager/BracketManage
 import type {
   EditMatchTeamsParams,
   TeamChoice,
-} from '@/services/brackets/manager/services/BracketAdmin/editTeams/types';
+} from '@/services/brackets/manager/services/BracketAdmin';
 
 const db = (): FakeSupabaseBracketDb =>
   (globalThis as Record<string, unknown>).__fakeBracketDb as FakeSupabaseBracketDb;

@@ -15,7 +15,7 @@ import {
   useLoserRearrangeBoard,
   usePlayoffApplyRearrange,
 } from '@/hooks/playoffs/usePlayoffRearrange';
-import { simulateRearrange } from '@/services/brackets/manager/services/BracketAdmin/rearrange/simulate';
+import { simulateRearrange } from '@/services/brackets/manager/services/BracketAdmin';
 
 import type { Arrangement } from './rearrange/dropLogic';
 import { applyDrop, baselineArrangement, isDirty, toAssignments } from './rearrange/dropLogic';

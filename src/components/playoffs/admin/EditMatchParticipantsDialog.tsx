@@ -22,12 +22,12 @@ import {
 } from '@/components/ui/select';
 import { useEditTeamsOptions, useEditTeamsPreview } from '@/hooks/playoffs/useEditTeams';
 import { usePlayoffEditMatchParticipants } from '@/hooks/playoffs/usePlayoffEditMatchParticipants';
-import type { EditTeamsOptions } from '@/services/brackets/manager/services/BracketAdmin/editTeams/options';
-import type { EditTeamsPreview } from '@/services/brackets/manager/services/BracketAdmin/editTeams/preview';
 import type {
   EditMatchTeamsParams,
+  EditTeamsOptions,
+  EditTeamsPreview,
   TeamChoice,
-} from '@/services/brackets/manager/services/BracketAdmin/editTeams/types';
+} from '@/services/brackets/manager/services/BracketAdmin';
 
 const BYE_VALUE = '__bye__';
 

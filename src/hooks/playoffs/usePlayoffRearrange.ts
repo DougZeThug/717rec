@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
 import { bracketManagerService } from '@/services/brackets/manager';
-import type { SlotAssignment } from '@/services/brackets/manager/services/BracketAdmin/rearrange/types';
+import type { SlotAssignment } from '@/services/brackets/manager/services/BracketAdmin';
 import { bracketLog, errorLog } from '@/utils/logger';
 
 /**

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { bracketManagerService } from '@/services/brackets/manager';
-import type { EditMatchTeamsParams } from '@/services/brackets/manager/services/BracketAdmin/editTeams/types';
+import type { EditMatchTeamsParams } from '@/services/brackets/manager/services/BracketAdmin';
 
 /** Whether Edit teams can change this match, and if not, why not. Drives the button. */
 export const useEditTeamsEligibility = (matchId: number | null) =>

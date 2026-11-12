@@ -3,7 +3,7 @@ import type { DragEndEvent } from '@dnd-kit/core';
 import type {
   RearrangeBoard,
   SlotAssignment,
-} from '@/services/brackets/manager/services/BracketAdmin/rearrange/types';
+} from '@/services/brackets/manager/services/BracketAdmin';
 
 /**
  * The screen's working arrangement: every movable spot's occupant, keyed by
