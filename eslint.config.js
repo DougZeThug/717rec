@@ -236,8 +236,8 @@ export default tseslint.config(
   { files: ['src/utils/imageUpload.ts'], ...imports(layerBan('utils')) },
   // 3. Known wrong-way imports. Each block allows exactly ONE module and still bans
   //    every other layer. These files are not exempt from the Supabase ban, so each
-  //    block lists SUPABASE_CLIENT again. A stale block does not warn: remove it
-  //    when the cleanup named above it lands.
+  //    block lists SUPABASE_CLIENT again. A stale block does not warn: remove each
+  //    block when the cleanup named in the comment above it lands.
   //    Removed by the design PR for the leftover wrong-way imports.
   {
     files: ['src/utils/adminTabs.ts'],
