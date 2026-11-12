@@ -184,7 +184,7 @@ PR C moves the files beside the Career Power Score and head-to-head code into `s
 - **Evidence (real tree):** the 7 repointed tests plus `src/components/playoffs`, `src/hooks/playoffs`, `src/hooks/brackets` and `src/services/brackets`: 120 files and 1,169 tests passed before the edit and 120 files and 1,169 tests passed after. `BracketManagerService.test.ts` (it mocks the index with a factory that returns only the class): 3 tests before and after. Typecheck, knip, `eslint` on the 17 files and `prettier --check`: exit 0. `grep -rnE "BracketAdmin/(rearrange|editTeams|swap|queries|shapes)" src tests e2e` now finds only the 5 imports in the 3 sibling services.
 - **Convention, not lint:** `ARCHITECTURE.md` → Layer rules has one new sentence: code outside a service folder imports it through its public `index.ts`. Lint does not enforce it.
 
-## Design PR D1 result (built 2026-11-12, 1 code commit + 1 docs commit)
+## Design PR D1 result (built 2026-11-12; 4 commits: code, docs, QA follow-up test, docs fixes)
 
 D1 removes the last util -> component import in `src/utils/adminTabs.ts` and, with it, the last import loop. The admin dashboard redirect behaves the same in every case. No package, database or migration change.
 
