@@ -110,7 +110,7 @@ Three known files keep a per-file exception in the config. Each one allows exact
 - `src/utils/autoSchedule/matchHistoryService.ts` and `src/utils/autoSchedule/compatibilityUtils.ts` → `services/matches/MatchReadService`
 - `src/hooks/useToast.ts` → `components/ui/toast` (types only; this one stays)
 
-Lint does **not** cover dynamic `import()` (the 14 page loaders in `src/utils/routePrefetch.ts`), `require()`, type-position `import('x').T`, or a hop through `contexts` or `lib`. Those stay a convention.
+Lint does **not** cover dynamic `import()`, `require()`, type-position `import('x').T`, or a hop through `contexts` or `lib`. Those stay a convention.
 
 Code outside a service folder (components, hooks, tests) imports that folder through its public `index.ts`, not its internal files (example: `@/services/brackets/manager/services/BracketAdmin`); this is a convention for new code, and lint does not enforce it. Some older files still reach into other service folders (for example `components/playoffs/viewer/bracketDecorations.ts` into `services/brackets/viewer/`).
 
@@ -286,7 +286,7 @@ Compare (/compare)
 
 1. Create component in `src/pages/`
 2. Add route in `src/App.tsx`
-3. Add to the nav link list in `src/components/layout/navbar/NavLinks.tsx`, or to `src/components/navigation/CommandPalette.tsx` if it is a secondary page. `src/components/navigation/__tests__/routeReachability.test.ts` fails if a new route reaches no menu at all. Add it to `src/utils/routePrefetch.ts` too, or hover-prefetch silently does nothing for it.
+3. Add to the nav link list in `src/components/layout/navbar/NavLinks.tsx`, or to `src/components/navigation/CommandPalette.tsx` if it is a secondary page. `src/components/navigation/__tests__/routeReachability.test.ts` fails if a new route reaches no menu at all. If it has a nav link, also add its loader to the map passed to `registerRoutePrefetchers` in `src/App.tsx` (`src/utils/routePrefetch.ts` holds no page imports), or hover-prefetch silently does nothing for it.
 
 **Fetch new data**:
 
