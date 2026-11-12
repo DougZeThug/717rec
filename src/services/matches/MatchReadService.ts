@@ -10,7 +10,6 @@
  */
 
 export {
-  checkTeamsEverPlayed,
   countTeamMatchesInSeason,
   fetchActiveSeasonIdStrict,
   fetchMatchPairsInSeason,

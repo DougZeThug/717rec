@@ -240,10 +240,7 @@ export default tseslint.config(
   //    block when the cleanup named in the comment above it lands.
   //    Removed by the design PR for the leftover wrong-way imports.
   {
-    files: [
-      'src/utils/autoSchedule/matchHistoryService.ts',
-      'src/utils/autoSchedule/compatibilityUtils.ts',
-    ],
+    files: ['src/utils/autoSchedule/matchHistoryService.ts'],
     ...imports(SUPABASE_CLIENT, layerBan('utils', ['services/matches/MatchReadService'])),
   },
   //    Stays: a documented type-only exception (the toast types live with the UI).

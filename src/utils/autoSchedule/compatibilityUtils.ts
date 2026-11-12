@@ -1,9 +1,6 @@
-import { checkTeamsEverPlayed } from '@/services/matches/MatchReadService';
 import { getDisplayDivision } from '@/styles/design-system/divisions';
 import { Team } from '@/types';
-import { debugLog, errorLog } from '@/utils/logger';
-
-import { getCachedMatchHistory } from './cachingUtils';
+import { debugLog } from '@/utils/logger';
 
 /**
  * Get tier distance between two teams (0 = same tier, 1 = adjacent, 2 = extreme)
@@ -84,26 +81,6 @@ export function calculateTeamCompatibility(team1: Team, team2: Team): number {
 
   // Ensure the score is within a reasonable range (0-10)
   return Math.max(0, Math.min(10, finalScore));
-}
-
-/**
- * Check if two teams have played each other before
- */
-export function haveTeamsPlayed(team1Id: string, team2Id: string): Promise<boolean> {
-  return getCachedMatchHistory(team1Id, team2Id, checkTeamsPlayedHistory);
-}
-
-/**
- * Database query to check if teams have played before — delegates to MatchReadService
- */
-async function checkTeamsPlayedHistory(team1Id: string, team2Id: string): Promise<boolean> {
-  try {
-    return await checkTeamsEverPlayed(team1Id, team2Id);
-  } catch (error) {
-    errorLog('Error in checkTeamsPlayedHistory:', error);
-    // Return false as a fallback to avoid blocking match generation
-    return false;
-  }
 }
 
 /**
