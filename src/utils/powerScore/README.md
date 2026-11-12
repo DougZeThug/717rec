@@ -138,7 +138,7 @@ afterwards — a division, a weight, a team — can move a finished season. Use
 ## Career Power Score
 
 Career score is a **different** number from the season score, and it is computed
-**twice**: client-side in `src/utils/career/calculateCareerPowerScore.ts` for
+**twice**: client-side in `src/services/career/calculateCareerPowerScore.ts` for
 everything on screen, and in SQL by `calculate_career_power_score()` for the
 badge checks, which run inside the result's own transaction. It is not the
 season formula.
@@ -147,7 +147,7 @@ season formula.
 > King Slayer badge on a number 41 points from the one on screen — see B-35 in
 > `docs/product-description/bug-triage.md`. They are now held together the same
 > way the season weights are: `supabase/tests/career_power_score_parity.sql` and
-> `src/utils/career/__tests__/calculateCareerPowerScore.test.ts` assert the same
+> `src/services/career/__tests__/calculateCareerPowerScore.test.ts` assert the same
 > three fixtures with the same expected totals, and each names the other. Change
 > one side without the other and CI fails.
 

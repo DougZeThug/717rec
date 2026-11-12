@@ -3,14 +3,14 @@
 -- Career power score: the database must agree with the app.
 --
 -- calculate_career_power_score() (20260901120000_career_power_score_match_app.sql)
--- decides the King Slayer badge. src/utils/career/calculateCareerPowerScore.ts
+-- decides the King Slayer badge. src/services/career/calculateCareerPowerScore.ts
 -- produces the number shown on screen. They have to be the same number, and
 -- they drifted apart for months without anything noticing — see B-35 in
 -- docs/product-description/bug-triage.md.
 --
 -- The four fixtures below are asserted with the SAME inputs and the SAME
 -- expected totals in
--- src/utils/career/__tests__/calculateCareerPowerScore.test.ts
+-- src/services/career/__tests__/calculateCareerPowerScore.test.ts
 -- ("shares fixtures with supabase/tests/career_power_score_parity.sql").
 -- Change one side and the other fails.
 --
@@ -173,7 +173,7 @@ BEGIN
     RAISE EXCEPTION 'Base tier word: expected 1.00, got %', v_weight;
   END IF;
 
-  -- DEFAULT_DIVISION_WEIGHT in divisionWeightsCache.ts. The old SQL used 0.25.
+  -- DEFAULT_DIVISION_WEIGHT in src/utils/rankingUtils/defaultDivisionWeight.ts. The old SQL used 0.25.
   v_weight := public.resolve_division_bonus_weight('Nothing Like A Division');
   IF v_weight <> 0.85 THEN
     RAISE EXCEPTION 'Unknown division: expected the 0.85 default, got %', v_weight;

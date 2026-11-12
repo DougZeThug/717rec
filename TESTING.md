@@ -393,7 +393,6 @@ global gate.
 | `src/utils/rankingUtils`                   | 100%        | —     | 85%    | On target                                      |
 | `src/utils/predictions`                    | 96%         | —     | 85%    | On target                                      |
 | `src/utils/playoffs`                       | 100%        | —     | 85%    | On target                                      |
-| `src/utils/matchUtils`                     | 100%        | —     | 85%    | On target                                      |
 | `src/utils/auth`                           | 90%         | —     | 85%    | On target                                      |
 | `src/utils/autoSchedule`                   | 72%         | 68%   | 85%    | Complex scheduling algorithms — gradual        |
 | `src/utils/autoSchedule/dualBlock`         | 89%         | —     | 85%    | On target                                      |
