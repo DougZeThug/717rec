@@ -3,39 +3,18 @@
  * Preloads lazy-loaded page chunks to eliminate loading delays
  */
 
-// Prefetch functions matching lazy imports in App.tsx
-const prefetchRoutes = {
-  index: () => import('../pages/Index'),
-  teams: () => import('../pages/TeamsPage'),
-  teamDetails: () => import('../pages/TeamDetails'),
-  schedule: () => import('../pages/Schedule'),
-  stats: () => import('../pages/Stats'),
-  playoffs: () => import('../pages/Playoffs'),
-  history: () => import('../pages/History'),
-  messageBoard: () => import('../pages/MessageBoard'),
-  help: () => import('../pages/Help'),
-  contact: () => import('../pages/Contact'),
-  compare: () => import('../pages/Compare'),
-  insights: () => import('../pages/Insights'),
-  admin: () => import('../pages/AdminDashboard'),
-  auth: () => import('../pages/Auth'),
-} as const;
+type RouteLoader = () => Promise<unknown>;
 
-// Map routes to prefetch functions
-const routePrefetchMap: Record<string, () => Promise<unknown>> = {
-  '/': prefetchRoutes.index,
-  '/teams': prefetchRoutes.teams,
-  '/schedule': prefetchRoutes.schedule,
-  '/stats': prefetchRoutes.stats,
-  '/playoffs': prefetchRoutes.playoffs,
-  '/history': prefetchRoutes.history,
-  '/compare': prefetchRoutes.compare,
-  '/insights': prefetchRoutes.insights,
-  '/message-board': prefetchRoutes.messageBoard,
-  '/help': prefetchRoutes.help,
-  '/contact': prefetchRoutes.contact,
-  '/admin': prefetchRoutes.admin,
-  '/auth': prefetchRoutes.auth,
+// Route path -> loader for that route's chunk. The app root hands the loaders
+// over, so this util needs no knowledge of the pages themselves.
+let routeLoaders: Record<string, RouteLoader> = {};
+
+/**
+ * Hand over the route-to-loader map. Register once, when the app module loads
+ * and before any render, so no prefetch can run before the map is in place.
+ */
+export const registerRoutePrefetchers = (loaders: Record<string, RouteLoader>): void => {
+  routeLoaders = loaders;
 };
 
 /**
@@ -50,7 +29,7 @@ const ignorePrefetchFailure = (loading: Promise<unknown>): void => {
 
 // Prefetch a route by path
 export const prefetchRoute = (path: string): void => {
-  const prefetch = routePrefetchMap[path];
+  const prefetch = routeLoaders[path];
   if (prefetch) {
     ignorePrefetchFailure(prefetch());
   }
@@ -63,9 +42,9 @@ export const preloadCoreRoutes = (): void => {
   /** Import the lightweight Teams, Schedule, and History page chunks ahead of navigation. */
   const preloadLight = () => {
     // Only preload pages with minimal dependencies
-    ignorePrefetchFailure(prefetchRoutes.teams());
-    ignorePrefetchFailure(prefetchRoutes.schedule());
-    ignorePrefetchFailure(prefetchRoutes.history());
+    prefetchRoute('/teams');
+    prefetchRoute('/schedule');
+    prefetchRoute('/history');
   };
 
   // Use requestIdleCallback to not block initial render

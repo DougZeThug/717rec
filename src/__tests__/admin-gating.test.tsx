@@ -31,6 +31,7 @@ vi.mock('@/utils/analytics', () => ({
 
 vi.mock('@/utils/routePrefetch', () => ({
   preloadCoreRoutes: vi.fn(),
+  registerRoutePrefetchers: vi.fn(),
 }));
 
 vi.mock('@/utils/logger', () => ({
