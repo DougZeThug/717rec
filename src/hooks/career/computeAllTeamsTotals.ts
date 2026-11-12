@@ -1,9 +1,9 @@
+import { calculateCareerPowerScore } from '@/services/career/calculateCareerPowerScore';
 import { BulkTeamCareerData, fetchAllTeamsCareerData } from '@/services/career/CareerService';
 import { Team } from '@/types';
 import {
   calculateCareerClutchRate,
   calculateCareerMatchStats,
-  calculateCareerPowerScore,
   calculateCareerSOS,
   calculateDivisionRecords,
   calculatePlayoffStats,

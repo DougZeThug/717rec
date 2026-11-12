@@ -1,6 +1,5 @@
 // Career calculation utilities
 export { calculateCareerMatchStats } from './calculateCareerMatchStats';
-export { calculateCareerPowerScore } from './calculateCareerPowerScore';
 export { calculateCareerSOS } from './calculateCareerSOS';
 export { calculateCareerClutchRate } from './calculateClutchRate';
 export { calculateDivisionRecords } from './calculateDivisionRecords';

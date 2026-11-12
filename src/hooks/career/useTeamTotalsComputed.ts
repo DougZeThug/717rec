@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { calculateCareerPowerScore } from '@/services/career/calculateCareerPowerScore';
 import { fetchCareerData } from '@/services/career/CareerService';
 import {
   calculateCareerClutchRate,
   calculateCareerMatchStats,
-  calculateCareerPowerScore,
   calculateCareerSOS,
   calculateDivisionRecords,
   calculatePlayoffStats,

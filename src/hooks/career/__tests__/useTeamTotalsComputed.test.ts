@@ -11,13 +11,17 @@ vi.mock('@/services/career/CareerService', () => ({
   fetchAllTeamsCareerData: vi.fn(),
 }));
 
+// The career power score reads live division weights, so it lives in services/career
+vi.mock('@/services/career/calculateCareerPowerScore', () => ({
+  calculateCareerPowerScore: vi.fn().mockResolvedValue(85.0),
+}));
+
 // Mock all career calculation utilities (they're pure functions, tested separately)
 vi.mock('@/utils/career', () => ({
   calculateCareerMatchStats: vi.fn(() => ({
     career_match_wins: 10,
     career_match_losses: 5,
   })),
-  calculateCareerPowerScore: vi.fn().mockResolvedValue(85.0),
   calculateCareerSOS: vi.fn(() => 0.55),
   calculateCareerClutchRate: vi.fn(() => ({ clutch_rate: 0.6 })),
   calculateDivisionRecords: vi.fn(() => []),

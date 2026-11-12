@@ -1,7 +1,9 @@
 import { CareerQueryService } from '@/services/career/CareerQueryService';
+import {
+  averageDivisionBonusWeight,
+  resolveDivisionBonusWeight,
+} from '@/utils/career/divisionBonusWeight';
 import { fetchDivisionWeightsByName } from '@/utils/rankingUtils/divisionWeightsCache';
-
-import { averageDivisionBonusWeight, resolveDivisionBonusWeight } from './divisionBonusWeight';
 
 interface SeasonPowerScoreData {
   power_score: number | null;
