@@ -60,7 +60,7 @@ Plan: Slice 2 splits into PR A (this), PR T (type homes), PR B (single moves tha
 - **Kept on purpose:** `TeamSeasonStatsService`, `CareerService`, `TeamFetchService` (7 production importers, 11 test mocks), `MatchReadService`, `SeasonService`, folder `index.ts` entries, `SupabaseSqlStorage.ts`, `rankingUtils/sortAndUpdateRankings.ts` with its test, and both `useUpdateTeam` and `useTeamMutations` (not duplicates: merging would double-toast; only their service import changed).
 - **Left as written (dated snapshots):** `docs/product-description/bug-triage.md` (names `rankingUtils.ts`, `colors.ts`), `docs/audits/CODE-QUALITY-AUDIT-2026-04-24.md`, `docs/quality-review-2026-07/briefs/PR-04-*.md`. `SCHEDULER_README.md` test commands still work (the two test files keep their names).
 - **Deferred from Slice 2 (need design, not a move):** `routePrefetch` (14 dynamic page imports from `utils`), `adminTabs` (lazy-only cycle with the admin sections), `matchHistoryService` (a util that acts as a service and swallows errors: Slice 6), the `useToast` type import from a shadcn component (keep as a documented exception), dead `haveTeamsPlayed`, and the dead `rankingUtils/sortAndUpdateRankings.ts` wrapper with its test. When that wrapper is deleted, first move its two unique cases ("empty array", "division tier after rounding") into `rankingUtils/__tests__/index.test.ts`.
-- **Still to do in Slice 2:** PR T is done (next section). PR B (`queryErrorToast`, `nativeAuth`, `useChartColors`, `createDateWithTime`, `teamLoaderUtils`, the `MatchScoreEditor` wrapper; maybe `playoffTypes` and the `Team` type cycle), PR C (`divisionWeightsCache`, `calculateCareerPowerScore`, `computeAllTeamsTotals`, `getMatchHeadToHead`, `fetchBatchHeadToHead`).
+- **Still to do in Slice 2:** PR T and PR B are done (next two sections). Only PR C is left: `divisionWeightsCache`, `calculateCareerPowerScore`, `computeAllTeamsTotals`, `getMatchHeadToHead`. The current deferred lists are at the end of the PR B section.
 
 ## Slice 2 PR T result (type homes, built 2026-11-11, 8 commits on the PR A branch)
 
@@ -77,6 +77,25 @@ Types are erased at build time, so nothing the league sees can change. Moved typ
 - **Stays on purpose (goes to PR B):** `types/index.ts:115` and `types/playoff.ts:5` (both import `utils/playoffs/playoffTypes`), and the `autoSchedule.ts` / `index.ts` `Team` cycle. `types/badges.ts:3` imports generated Supabase types, which is fine.
 - **New type files are not in the `types/index.ts` barrel.** Import them by direct path, like `recapEdition.ts` and `seeding.ts`.
 - **Checks so far:** after each commit, typecheck, lint on the changed files, knip and the nearby tests passed. The full suite, coverage floors, build comparison and import-graph proof are the QA step.
+
+## Slice 2 PR B result (built 2026-11-12, 8 code commits + 1 docs commit on the same branch)
+
+PR B moves single files to the layer where they belong. The code that runs does not change. Moved text is character-identical (B1, B2, B3 and B8 show R100 in `git diff -M --summary`). No alias re-exports were left behind: every importer, `vi.mock` string and dynamic `import()` was repointed in the same commit.
+
+- **B1:** `utils/queryErrorToast.ts` -> `hooks/queryErrorToast.ts`, with its test. It calls the toast store in `hooks/useToast`.
+- **B2:** `utils/charts/chartStyleUtils.ts` -> `hooks/useChartColors.ts`. The whole file moved (`getChartColors`, `ChartColors`, `useChartColors`), not a split. Its test moved to `hooks/__tests__/useChartColors.test.ts`. Three components and five `vi.mock` strings were repointed.
+- **B3:** `utils/nativeAuth.ts` -> `services/auth/nativeAuth.ts`, beside `AuthService`. The lazy `import()` in `useAuthMethods.ts` and its `vi.mock` were repointed.
+- **B4:** `createDateWithTime` (and its private helper `formatDateForInput`) moved from `components/schedule/form-utils.ts` to `utils/timezone/createDateWithTime.ts`. It is NOT in the `utils/timezone` barrel: tests mock that barrel in part. `form-utils.ts` imports it back.
+- **B5:** `utils/autoSchedule/teamLoaderUtils.ts` -> `services/timeslots/teamLoaderUtils.ts`, because it calls `TimeslotService`. Only its three import lines changed. The test moved with it.
+- **B6:** deleted the pass-through wrapper `components/playoffs/match-score-editor/MatchScoreEditor.tsx` (same name as the folder `MatchScoreEditor/`). `match-score-editor/index.ts` now points at `./MatchScoreEditor/MatchScoreEditor`.
+- **B7:** the `Team` interface moved from `types/index.ts` to new `types/team.ts`. `index.ts` re-exports it by name (`export type { Team } from './team'`): a named export wins over the `Team` in `export * from './playoffTypes'`, and `export *` would give TS2308. `types/autoSchedule.ts` now imports `./team`. The 170 files that import `Team` from `@/types` did not change.
+- **B8:** `utils/playoffs/playoffTypes.ts` -> `types/playoffTypes.ts` (pure rename). 35 importers were repointed. **`Team` rule:** the 6 files that import `Team` (the playoff team) from this file use `@/types/playoffTypes`, never the `@/types` barrel. The barrel `Team` is a different interface (20 fields). A mix-up gives a loud type error.
+- **Still deferred (current lists):**
+  - **PR C (scoring-adjacent):** `divisionWeightsCache` (split the constant `getDefaultDivisionWeight` out first, then move), `calculateCareerPowerScore`, `computeAllTeamsTotals`, `getMatchHeadToHead`. `fetchBatchHeadToHead` is DROPPED from PR C: it is already a service, so it has no wrong-direction import.
+  - **Needs its own design plan:** `routePrefetch` (14 dynamic page imports; invert it so `App.tsx` supplies the loaders), `adminTabs` (with the 9-file admin cycle), `matchHistoryService` and `compatibilityUtils` (a util that calls a service: inject the service from hooks).
+  - **Documented exception, keep:** `hooks/useToast.ts` imports the `ToastProps` type from a shadcn component.
+  - The dead-code items in the PR A "Deferred" line (`haveTeamsPlayed`, `rankingUtils/sortAndUpdateRankings.ts`) still stand.
+- **Checks so far:** after each commit, typecheck, lint on the changed files, knip and the nearby tests passed (pass counts equal before and after). The full suite, coverage floors, build comparison, import-graph counts and the throwing-mock proof for the repointed `vi.mock` strings are the QA step.
 
 ## Carry-over notes for later slices
 
