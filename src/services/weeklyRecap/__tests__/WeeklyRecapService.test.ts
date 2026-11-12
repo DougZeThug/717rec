@@ -36,7 +36,7 @@ vi.mock('@/services/TeamCareerStatsService', () => ({
   fetchBatchHeadToHead: () => Promise.resolve(new Map()),
 }));
 
-vi.mock('@/hooks/career/computeAllTeamsTotals', () => ({
+vi.mock('@/services/career/computeAllTeamsTotals', () => ({
   computeAllTeamsTotals: (teams: Array<{ id: string; career_power_score: number | null }>) =>
     Promise.resolve(
       new Map(

@@ -26,7 +26,7 @@ vi.mock('@/hooks/teams', () => ({
 // it — the rankings query stays disabled while the team list is missing — but
 // the export case below drives it to produce real rows.
 const mockComputeAllTeamsTotals = vi.fn();
-vi.mock('@/hooks/career/computeAllTeamsTotals', () => ({
+vi.mock('@/services/career/computeAllTeamsTotals', () => ({
   computeAllTeamsTotals: (teams: unknown) => mockComputeAllTeamsTotals(teams),
 }));
 

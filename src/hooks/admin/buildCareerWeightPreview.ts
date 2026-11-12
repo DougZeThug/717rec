@@ -3,10 +3,9 @@ import {
   SeasonPowerScoreComponentRow,
 } from '@/services/admin/PowerWeightSandboxService';
 import { BulkTeamCareerData } from '@/services/career/CareerService';
+import { computeTotalsFromBulkData } from '@/services/career/computeAllTeamsTotals';
 import { Team } from '@/types';
 import { powerScore100, powerScore100Career, PowerScoreWeights } from '@/utils/powerScore/weights';
-
-import { computeTotalsFromBulkData } from '../career/computeAllTeamsTotals';
 
 export interface CareerPreviewRow {
   teamId: string;
