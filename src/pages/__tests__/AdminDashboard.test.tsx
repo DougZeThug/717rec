@@ -200,6 +200,22 @@ describe('AdminDashboard page', () => {
     expect(currentPath()).toBe('/admin/timeslots');
   });
 
+  // Private mode, or a browser that blocks storage: nothing can be read back,
+  // so a bare /admin still ends on the default instead of failing.
+  it('sends a bare /admin to Timeslots when session storage cannot be read', () => {
+    asAdmin();
+    const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('private mode');
+    });
+    try {
+      renderDashboard('/admin');
+
+      expect(currentPath()).toBe('/admin/timeslots');
+    } finally {
+      getItem.mockRestore();
+    }
+  });
+
   it('calls requestAdminAccess after clicking request access', async () => {
     const requestAdminAccess = vi.fn();
     mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, authInitialized: true });

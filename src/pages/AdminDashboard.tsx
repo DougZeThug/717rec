@@ -67,7 +67,9 @@ const AdminDashboard = () => {
   // default rather than the remembered section, so a bad link always lands in
   // the same predictable place.
   if (!section) {
-    return <Navigate to={`/admin/${readRememberedAdminSection()}`} replace />;
+    const remembered = readRememberedAdminSection();
+    const target = isAdminSectionId(remembered) ? remembered : DEFAULT_ADMIN_SECTION;
+    return <Navigate to={`/admin/${target}`} replace />;
   }
   if (!openSection) {
     return <Navigate to={`/admin/${DEFAULT_ADMIN_SECTION}`} replace />;

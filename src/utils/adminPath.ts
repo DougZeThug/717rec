@@ -2,7 +2,7 @@
  * Where the admin console lives, as a question about an address.
  *
  * Deliberately its own module with no imports. It used to sit in `adminTabs`,
- * which reaches `adminSections` for the section list — and `adminSections`
+ * which then imported `adminSections` for the section list — and `adminSections`
  * declares fourteen `lazy()` components at module scope, so the bundler cannot drop
  * any of it. The header and the user menu render on every page, so importing
  * one string predicate from there pulled the whole admin section table, and its

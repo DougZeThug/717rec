@@ -1,8 +1,3 @@
-import {
-  DEFAULT_ADMIN_SECTION,
-  isAdminSectionId,
-} from '@/components/admin/dashboard/adminSections';
-
 /**
  * Moving between admin dashboard sections from inside a section.
  *
@@ -44,18 +39,18 @@ export const rememberAdminSection = (sectionId: string): void => {
 };
 
 /**
- * The section a bare `/admin` should open. Falls back to the default for a
- * first visit, for a value left behind by an older build, and for a browser
- * that refuses session storage.
+ * What was remembered for a bare `/admin`, exactly as stored. `null` for a
+ * first visit and for a browser that refuses session storage. The value is not
+ * checked here: an older build can leave an id that no longer names a section,
+ * so the dashboard checks it before it navigates.
  */
-export const readRememberedAdminSection = (): string => {
+export const readRememberedAdminSection = (): string | null => {
   try {
-    const stored = sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY);
-    if (isAdminSectionId(stored)) return stored;
+    return sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY);
   } catch {
     // ignore storage errors (private mode, etc.)
+    return null;
   }
-  return DEFAULT_ADMIN_SECTION;
 };
 
 /** What a section asks for: which section, and optionally what to open it on. */

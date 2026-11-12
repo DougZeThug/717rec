@@ -240,11 +240,6 @@ export default tseslint.config(
   //    block when the cleanup named in the comment above it lands.
   //    Removed by the design PR for the leftover wrong-way imports.
   {
-    files: ['src/utils/adminTabs.ts'],
-    ...imports(SUPABASE_CLIENT, layerBan('utils', ['components/admin/dashboard/adminSections'])),
-  },
-  //    Removed by the design PR for the leftover wrong-way imports.
-  {
     files: [
       'src/utils/autoSchedule/matchHistoryService.ts',
       'src/utils/autoSchedule/compatibilityUtils.ts',
