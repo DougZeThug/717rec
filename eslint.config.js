@@ -69,15 +69,16 @@ export default tseslint.config(
         },
       ],
 
-      // Architecture: keep the Supabase client out of components/utils.
-      // All DB access goes through src/services/. Allowed exceptions
-      // (services, realtime hooks, image uploads, tests) are re-enabled below.
+      // Architecture: keep the Supabase client out of components, hooks and utils.
+      // All DB access goes through src/services/. The allowed exceptions
+      // (services, the realtime hooks listed BY FILE, image uploads, tests) are
+      // re-enabled below. A pattern, not a path, so a relative import is caught too.
       'no-restricted-imports': [
         'error',
         {
-          paths: [
+          patterns: [
             {
-              name: '@/integrations/supabase/client',
+              group: ['**/integrations/supabase/client'],
               importNames: ['supabase'],
               message:
                 'Import the Supabase client only inside src/services/. Components and hooks should call a service function instead (see CLAUDE.md → Architecture Rules).',
@@ -112,6 +113,19 @@ export default tseslint.config(
             "TemplateElement[value.raw=/(^|\\s)(hover:|focus:|active:|group-hover:|even:|odd:)?(text|bg|border|from|via|to|divide|ring|placeholder|fill|stroke)-(gray|slate|zinc|neutral|stone)-[0-9]{2,3}(\\/[0-9]+)?(\\s|$)/][value.raw=/(^|\\s)dark:/]",
           message:
             'Use a theme token instead of a fixed grey with a `dark:` twin: text-foreground, text-muted-foreground, bg-card, bg-muted, bg-accent, border-border (see CONTRIBUTING.md → Styling). If the colour carries meaning rather than a theme role — a medal, a category badge — disable this rule on the line and say why.',
+        },
+        // The Supabase client ban above only sees static `import` statements.
+        // These two selectors cover dynamic `import('…')` and `require('…')`.
+        {
+          selector: 'ImportExpression[source.value=/integrations\\/supabase\\/client$/]',
+          message:
+            'Import the Supabase client only inside src/services/ (dynamic import and require are covered too). Components and hooks should call a service function instead (see CLAUDE.md → Architecture Rules).',
+        },
+        {
+          selector:
+            "CallExpression[callee.name='require'][arguments.0.value=/integrations\\/supabase\\/client$/]",
+          message:
+            'Import the Supabase client only inside src/services/ (dynamic import and require are covered too). Components and hooks should call a service function instead (see CLAUDE.md → Architecture Rules).',
         },
       ],
 
@@ -151,13 +165,28 @@ export default tseslint.config(
   },
   // Allowed exceptions to the Supabase client import restriction:
   // - src/services/**   → the service layer owns all database access
-  // - src/hooks/**      → realtime .channel() subscriptions live in hooks
+  // - 12 hook files     → realtime .channel() subscriptions, listed BY FILE
+  //                       (no src/hooks/** folder glob). A new realtime hook
+  //                       must be added to this list.
   // - imageUpload.ts    → uses Supabase Storage directly
+  // - src/lib/mcp/**    → builds its own clients with createClient
+  // - OAuthConsent.tsx  → auth calls
   // - test files        → import the client to mock it
   {
     files: [
       'src/services/**/*.{ts,tsx}',
-      'src/hooks/**/*.{ts,tsx}',
+      'src/hooks/brackets/useBracketsManagerRealtime.ts',
+      'src/hooks/contact/useContactRequests.ts',
+      'src/hooks/live-scoring/useLiveMatchRealtime.ts',
+      'src/hooks/matches/useMatchComments.ts',
+      'src/hooks/matches/useMatchReactions.ts',
+      'src/hooks/message-board/useMessageReactions.ts',
+      'src/hooks/message-board/useMessageRealtime.ts',
+      'src/hooks/notifications/useNotificationsRealtime.ts',
+      'src/hooks/realtime/subscribeWithRetry.ts',
+      'src/hooks/support/useSupportTickets.ts',
+      'src/hooks/useBracketCompletion.ts',
+      'src/hooks/useOpsHealth.ts',
       'src/utils/imageUpload.ts',
       'src/lib/mcp/**/*.{ts,tsx}',
       'src/pages/OAuthConsent.tsx',
