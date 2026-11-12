@@ -100,10 +100,18 @@ documented in `docs/product-description/stats/team-and-player-stats.md`.
 **Direction**: Components → Hooks → Services → Supabase. A lower layer never imports a higher one.
 
 - `types` and `utils` never import services, hooks, components or pages.
-- Services never import hooks or components.
-- Hooks never import components. Hook folders that sit beside their component (`components/**/hooks`) are fine.
+- Services never import hooks, components or pages.
+- Hooks never import components or pages. Hook folders that sit beside their component (`components/**/hooks`) are fine.
 
-**What lint enforces today**: only the Supabase-client rule below (`eslint.config.js`). The direction rule is a convention for now, and 18 known imports still break it (the `routePrefetch` page loaders, `adminTabs`, `matchHistoryService`, `compatibilityUtils`, and one type import in `useToast`). A lint rule that blocks new ones is planned as the next layer-rule step.
+**What lint enforces today** (`eslint.config.js`): the direction rule, for static imports only (`import`, `import type`, `export ... from`, `export *`) on `@/` and `../` paths in `src/types`, `src/utils`, `src/services` and `src/hooks`. Tests are exempt. The files that may use the Supabase client (the realtime hooks, `imageUpload.ts`) still obey the direction rule.
+
+Four known files keep a per-file exception in the config. Each one allows exactly one module and still bans every other layer:
+
+- `src/utils/adminTabs.ts` → `components/admin/dashboard/adminSections`
+- `src/utils/autoSchedule/matchHistoryService.ts` and `src/utils/autoSchedule/compatibilityUtils.ts` → `services/matches/MatchReadService`
+- `src/hooks/useToast.ts` → `components/ui/toast` (types only; this one stays)
+
+Lint does **not** cover dynamic `import()` (the 14 page loaders in `src/utils/routePrefetch.ts`), `require()`, type-position `import('x').T`, or a hop through `contexts` or `lib`. Those stay a convention.
 
 **Supabase client**: import `supabase` only inside `src/services/`. The ban also catches relative paths, dynamic `import()` and `require()`. Lint turns it off for these files only:
 

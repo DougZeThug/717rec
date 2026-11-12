@@ -101,6 +101,7 @@ It sits beside the specialist team above and reuses it.
 
 - **Separation of concerns**: All Supabase calls go through `src/services/` — hooks and components must **never** import the Supabase client directly
   - Only exceptions: the realtime `.channel()` hooks listed **by file** in `eslint.config.js` (a new realtime hook must be added to that list), `src/pages/OAuthConsent.tsx` (auth calls), `src/utils/imageUpload.ts` (Supabase Storage) and test files (they mock the client)
+- **Layer direction** (lint enforces it for static imports): Components → Hooks → Services → Supabase. `types` and `utils` never import services, hooks, components or pages; services never import hooks, components or pages; hooks never import components or pages. See `ARCHITECTURE.md` → Layer rules.
 - New service functions must use `handleDatabaseError()` and `ensureFound()` from `@/utils/errorHandler`
 - Services always **throw** errors — never return null/boolean for error states
 - **Never use `select('*')`** in Supabase queries — always list columns explicitly
