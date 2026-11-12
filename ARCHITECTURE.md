@@ -113,6 +113,8 @@ Four known files keep a per-file exception in the config. Each one allows exactl
 
 Lint does **not** cover dynamic `import()` (the 14 page loaders in `src/utils/routePrefetch.ts`), `require()`, type-position `import('x').T`, or a hop through `contexts` or `lib`. Those stay a convention.
 
+Code outside a service folder (components, hooks, tests) imports that folder through its public `index.ts`, not its internal files (example: `@/services/brackets/manager/services/BracketAdmin`); this is a convention, and lint does not enforce it.
+
 **Supabase client**: import `supabase` only inside `src/services/`. The ban also catches relative paths, dynamic `import()` and `require()`. Lint turns it off for these files only:
 
 - the realtime `.channel()` hooks, listed **by file** in `eslint.config.js` (the one source of truth for that list; a new realtime hook must be added there)
