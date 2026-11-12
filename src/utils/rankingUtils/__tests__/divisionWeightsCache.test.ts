@@ -10,17 +10,12 @@ import {
   clearDivisionWeightsCache,
   fetchDivisionWeights,
   fetchDivisionWeightsByName,
-  getDefaultDivisionWeight,
 } from '../divisionWeightsCache';
 
 describe('divisionWeightsCache', () => {
   beforeEach(() => {
     clearDivisionWeightsCache();
     vi.clearAllMocks();
-  });
-
-  it('getDefaultDivisionWeight returns 0.85', () => {
-    expect(getDefaultDivisionWeight()).toBe(0.85);
   });
 
   it('fetches weights from DivisionService on first call', async () => {
