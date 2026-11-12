@@ -4,7 +4,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DivisionService } from '@/services/DivisionService';
-import { clearDivisionWeightsCache } from '@/utils/rankingUtils/divisionWeightsCache';
+import { clearDivisionWeightsCache } from '@/services/divisionWeightsCache';
 
 import { useDivisionMutations } from '../useDivisionMutations';
 
@@ -17,7 +17,7 @@ vi.mock('@/services/DivisionService', () => ({
     deleteDivision: vi.fn(),
   },
 }));
-vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+vi.mock('@/services/divisionWeightsCache', () => ({
   clearDivisionWeightsCache: vi.fn(),
 }));
 

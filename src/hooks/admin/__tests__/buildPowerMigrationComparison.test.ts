@@ -6,7 +6,7 @@ import { Team } from '@/types';
 
 // Live division weights come from the divisions table — mock the cache so no
 // network call is attempted during unit tests.
-vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+vi.mock('@/services/divisionWeightsCache', () => ({
   fetchDivisionWeightsByName: vi.fn(() => Promise.resolve(new Map<string, number>())),
   fetchDivisionWeights: vi.fn(() => Promise.resolve(new Map<string, number>())),
   getDefaultDivisionWeight: () => 0.85,

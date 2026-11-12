@@ -28,7 +28,7 @@ vi.mock('@/utils/rankingUtils/calculateStreak', () => ({
 // Upset detection runs the real predictMatch model, the same one the schedule
 // page uses. Its three data sources are stubbed so the test drives the model
 // with known inputs rather than re-testing the career pipeline.
-vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+vi.mock('@/services/divisionWeightsCache', () => ({
   fetchDivisionWeights: () => Promise.resolve(new Map([['d-visible', 0.85]])),
 }));
 

@@ -17,7 +17,7 @@ const weightState = vi.hoisted(() => ({
 }));
 const DEFAULT_WEIGHTS = new Map(weightState.byName);
 
-vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+vi.mock('@/services/divisionWeightsCache', () => ({
   fetchDivisionWeightsByName: vi.fn(() => Promise.resolve(weightState.byName)),
   getDefaultDivisionWeight: () => 0.85,
 }));

@@ -14,7 +14,7 @@ vi.mock('@/services/career/CareerService', () => ({
 
 // The real calculateCareerPowerScore runs, so the failure enters where it
 // really does: the live division-weights read every team awaits.
-vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+vi.mock('@/services/divisionWeightsCache', () => ({
   fetchDivisionWeightsByName: () => mockFetchDivisionWeightsByName(),
   fetchDivisionWeights: () => mockFetchDivisionWeightsByName(),
   clearDivisionWeightsCache: vi.fn(),

@@ -1,8 +1,8 @@
 import { computeAllTeamsTotals } from '@/hooks/career/computeAllTeamsTotals';
+import { fetchDivisionWeights } from '@/services/divisionWeightsCache';
 import { fetchBatchHeadToHead, type HeadToHeadData } from '@/services/TeamCareerStatsService';
 import type { Team } from '@/types';
 import type { HeadToHeadStats, TeamStats } from '@/utils/predictions';
-import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
 
 /**
  * Gathers everything `predictMatch` needs for the teams that played in one week.
