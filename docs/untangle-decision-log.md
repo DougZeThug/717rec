@@ -101,7 +101,7 @@ PR B moves single files to the layer where they belong. The code that runs does 
 
 PR C moves the files beside the Career Power Score and head-to-head code into `services/`. Moved text is character-identical (C3, C4 and C5 show R100 in `git diff -M --summary`; C2 changes only its import block; C1 moves two statements and adds the word `export`). No scoring number, weight, tie-break or fallback changed. No alias re-exports were left behind: every importer, `vi.mock` string and dynamic `import()` was repointed in the same commit.
 
-- **C0 (test only):** pinned `fetchDivisionWeightsByName` before it moved (it was only ever mocked). +10 tests in `divisionWeightsCache.test.ts`, 12 mutations proven, plus the 2 extra cases. No production file changed.
+- **C0 (test only):** pinned `fetchDivisionWeightsByName` before it moved (it was only ever mocked). +10 tests in `divisionWeightsCache.test.ts` (two of the 10 go beyond the plan: a nameless division is skipped, and `clear` also drops an in-flight by-name fetch). 12 code changes in a throwaway copy each made at least one of them fail. No production file changed.
 - **C1:** split `utils/rankingUtils/defaultDivisionWeight.ts` out of the cache (`DEFAULT_DIVISION_WEIGHT` = 0.85 and `getDefaultDivisionWeight()`). The cache keeps all state and fetch code and imports the constant. It is not in the `rankingUtils` barrel. The getter test moved to `defaultDivisionWeight.test.ts`.
 - **C2:** `utils/career/calculateCareerPowerScore.ts` -> `services/career/calculateCareerPowerScore.ts` (+ test). The `utils/career` barrel lost that one line and keeps its other 6 functions.
 - **C3:** `utils/rankingUtils/divisionWeightsCache.ts` -> `services/divisionWeightsCache.ts` (+ its 2 tests in `services/__tests__/`).
