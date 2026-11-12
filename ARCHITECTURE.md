@@ -95,6 +95,25 @@ week's snapshot instead of today's standings, so a weekly grade and a team page
 grade cannot use different rules. They do use different populations, which is
 documented in `docs/product-description/stats/team-and-player-stats.md`.
 
+## Layer rules
+
+**Direction**: Components → Hooks → Services → Supabase. A lower layer never imports a higher one.
+
+- `types` and `utils` never import services, hooks, components or pages.
+- Services never import hooks or components.
+- Hooks never import components. Hook folders that sit beside their component (`components/**/hooks`) are fine.
+
+**What lint enforces today**: only the Supabase-client rule below (`eslint.config.js`). The direction rule is a convention for now. A lint rule for it is the next Slice 3 step (3B in `docs/untangle-decision-log.md`).
+
+**Supabase client**: import `supabase` only inside `src/services/`. The ban also catches relative paths, dynamic `import()` and `require()`. Lint turns it off for these files only:
+
+- the realtime `.channel()` hooks, listed **by file** in `eslint.config.js` (the one source of truth for that list; a new realtime hook must be added there)
+- `src/pages/OAuthConsent.tsx` (auth calls)
+- `src/utils/imageUpload.ts` (Supabase Storage)
+- test files (they mock the client)
+
+`src/lib/mcp/**` builds its own clients with `createClient`, not the app client, so it is exempt.
+
 ## Supabase Integration
 
 **Location**: `src/integrations/supabase/`

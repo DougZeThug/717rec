@@ -100,7 +100,7 @@ It sits beside the specialist team above and reuses it.
 ## Architecture Rules
 
 - **Separation of concerns**: All Supabase calls go through `src/services/` — hooks and components must **never** import the Supabase client directly
-  - Only exceptions: realtime `.channel()` subscriptions (stay in hooks) and `src/utils/imageUpload.ts` (Supabase Storage)
+  - Only exceptions: the realtime `.channel()` hooks listed **by file** in `eslint.config.js` (a new realtime hook must be added to that list), `src/pages/OAuthConsent.tsx` (auth calls), `src/utils/imageUpload.ts` (Supabase Storage) and test files (they mock the client)
 - New service functions must use `handleDatabaseError()` and `ensureFound()` from `@/utils/errorHandler`
 - Services always **throw** errors — never return null/boolean for error states
 - **Never use `select('*')`** in Supabase queries — always list columns explicitly
@@ -306,4 +306,4 @@ export const ExampleService = {
 
 ---
 
-*Last updated: 2026-11-09*
+*Last updated: 2026-11-12*

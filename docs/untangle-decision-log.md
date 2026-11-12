@@ -127,6 +127,38 @@ PR C moves the files beside the Career Power Score and head-to-head code into `s
   - **Tidy-up for Slice 8:** the dead `getDefaultDivisionWeight` key stays in 4 cache-mock factories (`buildCareerWeightPreview.test.ts`, `buildPowerMigrationComparison.test.ts`, `services/career/__tests__/computeAllTeamsTotals.test.ts`, `services/career/__tests__/calculateCareerPowerScore.test.ts`). It is harmless. `useCareerRankings.test.ts` still passes with a stale mock path because it mocks `useQuery` and has no value check.
   - **Possible league question (Slice 4):** the cache keeps a division weight of 0 (`??`), while the career fetch services turn 0 into 0.85 (`||`). Unknown whether the admin screen allows a weight of 0.
 
+## Slice 3 PR 3A result (built 2026-11-12, 1 config commit + 1 docs commit)
+
+3A makes the "no Supabase client in hooks" lint rule real and writes it down. Config and docs only: **no file under `src/` changed**, so nothing a player or admin sees can change. No database or migration change.
+
+- **The hole (found by reading `eslint.config.js`):** the ban on the Supabase client was switched off for every file in `src/hooks/**`. A hook that called `supabase.from(...)` passed lint. Nothing was broken: the 12 production hooks that import the client only call `.channel()` or `.removeChannel()` (checked by grep).
+- **3A-1, allow-list by file (commit 228de1b):** the folder glob `src/hooks/**/*.{ts,tsx}` is gone. The ban is off for 12 named hook files only: `useBracketsManagerRealtime`, `useContactRequests`, `useLiveMatchRealtime`, `useMatchComments`, `useMatchReactions`, `useMessageReactions`, `useMessageRealtime`, `useNotificationsRealtime`, `subscribeWithRetry`, `useSupportTickets`, `useBracketCompletion`, `useOpsHealth` (full paths in `eslint.config.js`). A new realtime hook must be added to that list: lint fails at once if it is not. The other exceptions are unchanged (`src/services/**`, `src/utils/imageUpload.ts`, `src/lib/mcp/**`, `src/pages/OAuthConsent.tsx`, test files).
+- **3A-1, two side doors closed:** (1) the ban used `paths`, which matched only the exact string `@/integrations/supabase/client`; a relative import (`../integrations/supabase/client`) passed. It now uses `patterns` with `**/integrations/supabase/client`, same `importNames: ['supabase']` (so `src/main.tsx`, which imports `isSupabaseConfigured`, still passes) and the same message. (2) Two `no-restricted-syntax` selectors now block dynamic `import('...supabase/client')` and `require('...supabase/client')`. No such call existed anywhere.
+- **3A-1, comments fixed:** the two comments that described the exception list wrongly now say the hooks are listed by file.
+- **3A-2, docs:** `CLAUDE.md` Architecture Rules lists the real exceptions; `ARCHITECTURE.md` has a new "Layer rules" section (direction, what lint enforces today versus convention, the exception list, `src/lib/mcp/**` exempt). This log was updated.
+- **Probe results:** the table below. Throwaway worktrees, probe files named `zzProbe*` (deleted with the worktrees), baseline = 1d6f4f4.
+
+| Probe | Baseline | After 3A-1 |
+|---|---|---|
+| (a) unlisted hook, `@/` import of the client | PASS (hole) | FAIL, once |
+| (b) unlisted hook, relative import | PASS (hole) | FAIL, once |
+| (c) new file in `src/hooks/realtime/` | PASS (hole) | FAIL |
+| (d) unlisted hook, `await import('@/integrations/supabase/client')` | PASS (hole) | FAIL (new selector) |
+| (e) component, `@/` import | FAIL | FAIL |
+| (f) hook, `import * as sb from` the client | PASS (hole) | FAIL |
+| (g) hook, `export { supabase } from` the client | PASS (hole) | FAIL |
+| (h) hook, `require('@/integrations/supabase/client')` | FAIL (only `no-require-imports`, a different rule) | FAIL (also the new selector) |
+| the 12 listed hooks, `OAuthConsent.tsx`, `imageUpload.ts`, `main.tsx`, `DivisionService.ts`, a hook test that mocks the client, `tests/bracketManagerSchema.test.ts` | PASS | PASS |
+
+- **Probe summary:** with the 12 file names deleted from the config, the 12 hooks all fail: the list is what lets them pass. Each failure is reported once. Whole-repo `npm run lint`: exit 0 before and after (86.7 s before, 85.4 s after). Typecheck and knip: exit 0.
+- **Not changed on purpose:** services keep full access to the client; `src/lib/mcp/**` stays exempt (own `createClient` clients, not the app client).
+- **Slice 3 plan (the rest of the approved list; each PR gets its own short plan and approval):**
+  - **3B:** layer-direction lint rule (utils and types must not import services, hooks, components or pages; services must not import hooks or components; hooks must not import components). The 18 wrong-direction edges that remain go on a short, commented exception list that shrinks over time: `routePrefetch` x14, `adminTabs`, `matchHistoryService`, `compatibilityUtils`, and the `useToast` type import. It must merge with the Supabase ban in `eslint.config.js`: a later config block replaces an earlier block's setting for the same rule.
+  - **3C:** expose the `BracketAdmin` index helpers (`simulateRearrange` and 6 type imports used by 3 dialogs, `RearrangeBoard.tsx` and `dropLogic.ts`). Types and one pure function.
+  - **3D:** hero-card reads into hooks (`TargetSelector`, `ChampionsEditor`, `ChampionsHeroCard`). **3E:** auth pages (`ForgotPassword`, `ResetPassword`). **3F:** `ProfileForm` and `TeamEditSection`. **3G:** playoff reads (`FinalStandings`, `BracketDetail`, `BracketAdminToolbar`; query keys unchanged).
+  - **3H-3J:** the league-night write paths: `SeedingUpdateDialog`, `BracketCreationDialog` and the `MassScoreEntryTool` delete. **Ask Doug again before starting these.** A components-to-hooks lint rule comes only after 3D-3G land.
+  - **Count correction:** the real number of components and pages that call a service with their own query or mutation is **13 files**. The earlier "~29" also counted 10 colocated hook files (allowed) and 6 pure-helper and constant files. None of the 13 can be fixed by repointing to an existing hook: each needs a new hook, so 3D-3J change code, not only paths.
+
 ## Carry-over notes for later slices
 
 - **DONE 2026-11-11 (commit 0db935f): `updated_at` on legacy playoff writes.** `uncoveredPlayoffHooks.test.tsx` now checks the ISO `updated_at` that `usePlayoffMatchUpdate.ts:170` stamps. Mutation-checked (deleting the line fails the test). `updatePlayoffMatchResult` can now be removed whenever a later slice wants.
@@ -151,6 +183,6 @@ PR C moves the files beside the Career Power Score and head-to-head code into `s
 
 ## Later slices (see the approved plan)
 
-2 import direction, shims, name twins - 3 layer rule - 4 league constants - 5 scoring-adjacent copies (pin first) -
-6 special cases - 7 comments - 8 tests - 9 re-scan and delete this file.
+2 import direction, shims, name twins (done: PR A, T, B, C; the leftovers move to the 3B exception list) - 3 layer rule (PR 3A done; 3B-3J planned in the 3A section above) -
+4 league constants - 5 scoring-adjacent copies (pin first) - 6 special cases - 7 comments - 8 tests - 9 re-scan and delete this file.
 Also pending from Slice 1: ~60 dead exports that only tests use, `rankingUtils/sortAndUpdateRankings.ts` (its sibling barrel `index.ts` went in Slice 2 PR A), `GameRules.hardCap`, the `matchesCreated` listener, unused config keys (`enableAuditLog`, `sessionTimeout` in `src/config/admin.ts`; unused tiers in `src/config/cache.ts`).
