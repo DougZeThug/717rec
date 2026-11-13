@@ -293,3 +293,118 @@ describe('bracket lookup cache', () => {
     expect(bracketIdCalls).toEqual([['b-deleted']]);
   });
 });
+
+// ─── Default division weight (0.85) ───────────────────────────────────────────
+
+// These pin the default division weight in CareerBulkFetchService.ts as it is today.
+// They describe the code as it is and claim no league rule.
+
+/** Like buildFromMock, but serves the given bracket rows (own copies, never BRACKET_ROWS). */
+function buildFromMockServingBrackets(
+  overrides: Record<string, { data: unknown; error: unknown }>,
+  bracketRows: unknown[]
+) {
+  const base = buildFromMock(overrides);
+  return (table: string) => {
+    if (table !== 'brackets') return base(table);
+    return {
+      select: () => ({
+        in: () => Promise.resolve({ data: bracketRows, error: null }),
+      }),
+    };
+  };
+}
+
+describe("team division weight default (today's behaviour)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const fetchTeamWith = async (teamRows: unknown[]) => {
+    mockFrom.mockImplementation(
+      buildFromMock({ ...successOverrides, teams: { data: teamRows, error: null } })
+    );
+    const result = await fetchAllTeamsCareerData(['t1']);
+    return result.get('t1');
+  };
+
+  // The team weight uses `||`, so a stored 0 becomes 0.85 today. This is the
+  // current code, not a decided league rule. The `||` in buildTeamDivisionMaps is
+  // masked by the two `||` where the result is assembled, so a switch to `??`
+  // shows up here only when all three places change together.
+  it.each([
+    { label: '0', divisions: { division_weight: 0 } },
+    { label: 'null', divisions: { division_weight: null } },
+    { label: 'missing', divisions: {} },
+    { label: 'absent (no division)', divisions: null },
+  ])(
+    "a team division weight of $label counts as 0.85 (today's behaviour)",
+    async ({ divisions }) => {
+      const data = await fetchTeamWith([{ id: 't1', divisions }]);
+
+      expect(data?.teamDivisionWeight).toBe(0.85);
+      expect(data?.teamData?.divisions?.division_weight).toBe(0.85);
+    }
+  );
+
+  // The existing missing-team test only checks teamDivisionWeight; this also checks teamData.
+  it("a team with no row at all counts as 0.85 in both weight fields (today's behaviour)", async () => {
+    const data = await fetchTeamWith([]);
+
+    expect(data?.teamDivisionWeight).toBe(0.85);
+    expect(data?.teamData?.divisions?.division_weight).toBe(0.85);
+  });
+
+  it("keeps a positive team division weight (today's behaviour)", async () => {
+    const data = await fetchTeamWith([{ id: 't1', divisions: { division_weight: 0.6 } }]);
+
+    expect(data?.teamDivisionWeight).toBe(0.6);
+    expect(data?.teamData?.divisions?.division_weight).toBe(0.6);
+  });
+});
+
+describe("bracket division weight default (today's behaviour)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const fetchBracketWith = async (divisions: unknown) => {
+    // Fresh module so the module-level bracket cache starts empty
+    vi.resetModules();
+    const { fetchAllTeamsCareerData: freshFetch } = await import('../CareerBulkFetchService');
+
+    const bracketRows = [{ id: 'b-x', season_id: 's-1', divisions }];
+    mockFrom.mockImplementation(
+      buildFromMockServingBrackets(
+        { ...successOverrides, playoff_matches: { data: [playoffMatchIn('b-x')], error: null } },
+        bracketRows
+      )
+    );
+    const result = await freshFetch(['t1']);
+    return result.get('t1');
+  };
+
+  // The bracket weight uses `??`, so a stored 0 stays 0 here.
+  it.each([
+    {
+      label: 'null',
+      divisions: { division_weight: null, display_division: 'Competitive' },
+      expected: 0.85,
+    },
+    { label: 'missing', divisions: { display_division: 'Competitive' }, expected: 0.85 },
+    {
+      label: '0',
+      divisions: { division_weight: 0, display_division: 'Competitive' },
+      expected: 0,
+    },
+    {
+      label: '1',
+      divisions: { division_weight: 1, display_division: 'Competitive' },
+      expected: 1,
+    },
+    { label: 'absent (no division)', divisions: null, expected: 0.85 },
+  ])(
+    "a bracket division weight of $label counts as $expected (today's behaviour)",
+    async ({ divisions, expected }) => {
+      const data = await fetchBracketWith(divisions);
+
+      expect(data?.bracketDivisionWeights).toEqual({ 'b-x': expected });
+    }
+  );
+});
