@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { TeamAdvancedStats } from '@/hooks/teams/seasonBreakdown';
 import type { LetterGrade } from '@/types/reportCard';
+import type { SeasonBreakdown } from '@/types/teamAdvancedStats';
 import type { TeamGrades } from '@/utils/reportCardUtils';
 
 vi.mock('@/components/ui/CollapsibleSection', () => ({
@@ -103,5 +104,97 @@ describe('Computed stats rendering', () => {
     });
     render(<TeamAdvancedStatsSection teamId="t1" />);
     expect(screen.getByText(/no advanced stats available/i)).toBeInTheDocument();
+  });
+
+  it("advanced section shows a loading skeleton while the stats load (today's behaviour)", () => {
+    mockAdvanced.mockReturnValue({ advancedStats: undefined, isLoading: true, error: null });
+    const { container } = render(<TeamAdvancedStatsSection teamId="t1" />);
+
+    expect(screen.getByRole('heading', { name: 'Advanced Stats' })).toBeInTheDocument();
+    // One header-sized bar and three row-sized bars.
+    expect(container.querySelectorAll('.h-8')).toHaveLength(1);
+    expect(container.querySelectorAll('.h-12')).toHaveLength(3);
+    expect(screen.queryByText(/no advanced stats available/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it("advanced section shows an error with a Retry that reloads the stats (today's behaviour)", async () => {
+    const refetch = vi.fn();
+    mockAdvanced.mockReturnValue({
+      advancedStats: undefined,
+      isLoading: false,
+      error: new Error('network'),
+      refetch,
+    });
+    render(<TeamAdvancedStatsSection teamId="t1" />);
+
+    expect(screen.getByText(/couldn't load advanced stats/i)).toBeInTheDocument();
+    // A failed load is not reported as "no stats": that would blame the team.
+    expect(screen.queryByText(/no advanced stats available/i)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /retry/i }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("advanced section lists each season and opens then closes its division records on click (today's behaviour)", async () => {
+    const season: SeasonBreakdown = {
+      seasonId: 's1',
+      seasonName: 'Spring 2025',
+      divisionName: 'Competitive',
+      matchWins: 8,
+      matchLosses: 2,
+      winPct: 80,
+      gameWins: 20,
+      gameLosses: 8,
+      gameWinPct: 71,
+      sos: 1,
+      powerScore: 1550,
+      playoffWins: 2,
+      playoffLosses: 1,
+      playoffRank: 2,
+      isChampion: false,
+      isRunnerUp: true,
+      isTop3: true,
+      sweeps: 3,
+      sweepRate: 0.3,
+      closeWins: 2,
+      closeLosses: 1,
+      clutchFactor: 0.66,
+      divisionRecords: {
+        competitive: { wins: 4, losses: 2, gameWins: 10, gameLosses: 6 },
+        intermediate: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
+        recreational: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
+      },
+    };
+    mockAdvanced.mockReturnValue({
+      advancedStats: {
+        seasons: [season],
+        bestSeason: null,
+        worstSeason: null,
+        averagePowerScore: 1550,
+        powerScoreTrend: 'stable',
+        bestDivisionTier: null,
+        worstDivisionTier: null,
+      } satisfies TeamAdvancedStats,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    render(<TeamAdvancedStatsSection teamId="t1" />);
+
+    expect(screen.getByRole('tab', { name: 'Season-by-Season' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Insights' })).toBeInTheDocument();
+    expect(screen.getByText('Spring 2025')).toBeInTheDocument();
+    expect(screen.queryByText('vs Competitive')).not.toBeInTheDocument();
+
+    // First click opens the season's division records.
+    await userEvent.click(screen.getByText('Spring 2025'));
+    expect(screen.getByText('vs Competitive')).toBeInTheDocument();
+    // Only divisions the team actually played are shown.
+    expect(screen.queryByText('vs Intermediate')).not.toBeInTheDocument();
+
+    // Second click closes them again.
+    await userEvent.click(screen.getByText('Spring 2025'));
+    expect(screen.queryByText('vs Competitive')).not.toBeInTheDocument();
   });
 });
