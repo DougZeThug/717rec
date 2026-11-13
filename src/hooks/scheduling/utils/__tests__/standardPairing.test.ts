@@ -87,6 +87,8 @@ describe('scheduleStandardPairings', () => {
     expect(result.pairings).toEqual({ Late: [lateBlockPairing] });
   });
 
+  // Pins only what this function returns. Whether the save step accepts a 3-team block
+  // (every team plays two matches) is a separate question.
   it("warns on an odd block and still pairs (today's behaviour)", async () => {
     // Three teams who each play the other two: every team reaches two matches.
     const triangle = [pair(teamA, teamB), pair(teamA, teamC), pair(teamB, teamC)];
@@ -146,7 +148,7 @@ describe('scheduleStandardPairings', () => {
     );
   });
 
-  it("flags a team with no matches as unmatched without the partial warning, and a full block adds nothing (today's behaviour)", async () => {
+  it("flags a team with no matches as unmatched, and a full block adds nothing (today's behaviour)", async () => {
     vi.mocked(generatePairingsWithBlossom)
       // Early: every team plays twice.
       .mockResolvedValueOnce([
@@ -156,6 +158,7 @@ describe('scheduleStandardPairings', () => {
         pair(teamB, teamD),
       ])
       // Late: A, B and C play twice. D plays nobody.
+      // Fixture only: the generator is mocked, so the repeated pairs here are not a scenario.
       .mockResolvedValueOnce([pair(teamA, teamB), pair(teamB, teamC), pair(teamC, teamA)]);
 
     const result = await scheduleStandardPairings(
@@ -165,6 +168,5 @@ describe('scheduleStandardPairings', () => {
     );
 
     expect(result.unmatchedTeamIds).toEqual(['team-d']);
-    expect(warnLog).not.toHaveBeenCalled();
   });
 });

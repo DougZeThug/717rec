@@ -38,6 +38,7 @@ import { useMatchPrediction } from '../useMatchPrediction';
 
 type HookParams = Parameters<typeof useMatchPrediction>[0];
 
+// Fixture values only; the real predictor uses a 0-100 Power Score scale.
 const team1 = {
   team_id: 'team-1',
   name: 'Team One',
@@ -104,6 +105,7 @@ const careerRow = (
   careerWinPercentage: number
 ) => ({ teamId, careerPowerScore, careerSos, careerWinPercentage });
 
+// Fixture values only; the real predictor uses a 0-100 Power Score scale.
 const career1 = careerRow('team-1', 0.71, 0.52, 0.66);
 const career2 = careerRow('team-2', 0.44, 0.47, 0.38);
 
@@ -355,11 +357,13 @@ describe('useMatchPrediction', () => {
 
   describe('upset flag', () => {
     it.each([
-      ['the first team', 'team-1', 0.8, true],
-      ['the second team', 'team-2', 0.2, false],
+      ['the first team', 'team-1', 0.8, false],
+      ['the second team', 'team-2', 0.2, true],
     ])(
       "asks isUpset about the probability of the winner, %s, and returns its answer (today's behaviour)",
       async (_label, winnerId, winnerProbability, answer) => {
+        // The answers are fixture values. This test pins which probability the hook
+        // hands to isUpset and that it returns the answer, not the upset rule itself.
         mockIsUpset.mockReturnValue(answer);
 
         const { result } = renderPrediction({ isCompleted: true, winnerId });

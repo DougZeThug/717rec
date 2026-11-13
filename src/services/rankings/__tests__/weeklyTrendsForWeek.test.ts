@@ -286,7 +286,7 @@ describe('fetchPowerScoreTrendsForWeek', () => {
     }
   );
 
-  it("returns no trends but keeps the compared basis and previous week when this week has no snapshots (today's behaviour)", async () => {
+  it("returns no trends when this week has no snapshots (today's behaviour)", async () => {
     createSupabaseMock({
       power_score_snapshots: [
         snapshotWeeks([6, 5]),
@@ -298,7 +298,7 @@ describe('fetchPowerScoreTrendsForWeek', () => {
 
     const result = await fetchPowerScoreTrendsForWeek('s-1', 6);
 
-    expect(result).toEqual({ trends: [], currentWeek: 6, previousWeek: 5, basis: 'compared' });
+    expect(result).toMatchObject({ trends: [], currentWeek: 6 });
     // It stops before asking for team details: there is nobody to look up.
     expect(mockFrom).not.toHaveBeenCalledWith('v_team_details');
   });

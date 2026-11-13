@@ -292,6 +292,7 @@ describe('teamLoaderUtils', () => {
   });
 
   describe('getAllBackToBackTeams', () => {
+    // The three pairs come from the mocked constants; the real list has nine.
     it("loads every pair and returns the teams keyed by pair name (today's behaviour)", async () => {
       const team3MidRows = [
         slotRow('team-3', '7:30 PM', 1, '8:00 PM'),

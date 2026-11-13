@@ -276,19 +276,21 @@ describe('useTeamOperations', () => {
 
   it("handleLoadTeams warns when no teams come back and still stores the empty result (today's behaviour)", async () => {
     const loadDate = new Date('2026-04-20T00:00:00.000Z');
-    mockGetAllBackToBackTeams.mockResolvedValueOnce({});
+    // The real loader returns every pair key, each with an empty list.
+    const noTeams = { Early: [], Late: [] };
+    mockGetAllBackToBackTeams.mockResolvedValueOnce(noTeams);
 
     const { result } = renderHook(() => useTeamOperations());
 
     await act(async () => {
       const response = await result.current.handleLoadTeams(loadDate);
-      expect(response).toEqual({});
+      expect(response).toEqual(noTeams);
     });
 
     expect(warnLog).toHaveBeenCalledTimes(1);
     expect(warnLog).toHaveBeenCalledWith(
       'WARNING: No teams loaded for date 2026-04-20. Check database and date format.'
     );
-    expect(result.current.timeBlockTeams).toEqual({});
+    expect(result.current.timeBlockTeams).toEqual(noTeams);
   });
 });
