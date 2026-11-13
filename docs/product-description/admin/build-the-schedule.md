@@ -219,6 +219,13 @@ differently by screen. Changed 2026-11-13 (QA follow-up to PR-S):
   two suggestions and a third: "Use Dual Match Mode on the Auto Schedule screen".
   Match Creation has no Dual switch, so it always shows this text.
 
+**The Match Creation preview toast.** **Preview Available Teams** raises a
+"Warning" toast when a block has an odd number of teams: "Blocks with an odd number
+of teams: Early, Late. Generate stops on a block of 3 or more teams until it is even.
+A team alone in its block is left unmatched." It names each odd block. Before
+2026-11-13 it ended "Some teams may not get matched.", which was wrong for a block of
+3 or more: Generate stops there.
+
 A time the app cannot read is now refused before the insert, with a red toast
 naming the match. It can no longer reach the database.
 
