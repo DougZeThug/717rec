@@ -1,3 +1,5 @@
+import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
+
 import type { BracketInfo, MatchRecord, PlayoffMatchRecord } from './types';
 
 export const buildTeamDivisionMap = (
@@ -31,7 +33,7 @@ export const buildBracketInfoMap = (
   for (const bracket of brackets || []) {
     bracketInfoMap[bracket.id] = {
       season_id: bracket.season_id || '',
-      division_weight: bracket.divisions?.division_weight ?? 0.85,
+      division_weight: bracket.divisions?.division_weight ?? DEFAULT_DIVISION_WEIGHT,
     };
   }
 

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
+import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
 
 import { CareerData, TeamDetailsArchive } from './CareerTypes';
 
@@ -90,7 +91,7 @@ function buildTeamDivisionMaps(
   const teamDivisionWeights = new Map<string, number>();
   for (const row of teamDivisionsData ?? []) {
     const divisions = row.divisions as { division_weight: number } | null;
-    teamDivisionWeights.set(row.id, divisions?.division_weight || 0.85);
+    teamDivisionWeights.set(row.id, divisions?.division_weight || DEFAULT_DIVISION_WEIGHT);
   }
 
   const teamDivisionMap = new Map<string, string>();
@@ -140,7 +141,7 @@ async function fetchBracketsInto(
       division_weight: number;
       display_division: string | null;
     } | null;
-    bracketDivisionWeights[bracket.id] = divisions?.division_weight ?? 0.85;
+    bracketDivisionWeights[bracket.id] = divisions?.division_weight ?? DEFAULT_DIVISION_WEIGHT;
     bracketDivisionDisplayNames[bracket.id] = divisions?.display_division ?? '';
     if (bracket.season_id) bracketSeasonMap[bracket.id] = bracket.season_id;
   }
@@ -373,7 +374,9 @@ export const fetchAllTeamsCareerData = async (
       }));
 
     result.set(teamId, {
-      teamData: { divisions: { division_weight: teamDivisionWeights.get(teamId) || 0.85 } },
+      teamData: {
+        divisions: { division_weight: teamDivisionWeights.get(teamId) || DEFAULT_DIVISION_WEIGHT },
+      },
       seasonStats,
       currentMatches: currentMatchesByTeam.get(teamId) || null,
       archivedMatches: archivedMatchesByTeam.get(teamId) || null,
@@ -382,7 +385,7 @@ export const fetchAllTeamsCareerData = async (
       bracketDivisionWeights,
       bracketDivisionDisplayNames,
       bracketSeasonMap,
-      teamDivisionWeight: teamDivisionWeights.get(teamId) || 0.85,
+      teamDivisionWeight: teamDivisionWeights.get(teamId) || DEFAULT_DIVISION_WEIGHT,
       currentSeasonId,
       seasonPowerScores,
     });

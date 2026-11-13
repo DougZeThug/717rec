@@ -2,12 +2,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
+import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
 import { assertValidUuid } from '@/utils/validation';
 
 import { CareerData, TeamData, TeamDetailsArchive } from './CareerTypes';
-
-/** Fallback weight for a division with no stored weight. */
-const DEFAULT_DIVISION_WEIGHT = 0.85;
 
 /** Runs the seven independent career queries in parallel. */
 const runCareerQueries = (teamId: string) =>

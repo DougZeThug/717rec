@@ -8,7 +8,7 @@
  * row in `divisions`.
  */
 
-import { getDefaultDivisionWeight } from '@/utils/rankingUtils/defaultDivisionWeight';
+import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
 
 /** Synthetic season labels → the real `divisions.name` they represent. */
 const DIVISION_NAME_ALIASES: Record<string, string> = {
@@ -30,7 +30,7 @@ export const resolveDivisionBonusWeight = (
   divisionName: string | null | undefined,
   weightsByName: Map<string, number>
 ): number => {
-  if (!divisionName) return getDefaultDivisionWeight();
+  if (!divisionName) return DEFAULT_DIVISION_WEIGHT;
 
   const key = normalize(divisionName);
 
@@ -50,7 +50,7 @@ export const resolveDivisionBonusWeight = (
   const baseWeight = weightsByName.get(base);
   if (baseWeight !== undefined) return baseWeight;
 
-  return getDefaultDivisionWeight();
+  return DEFAULT_DIVISION_WEIGHT;
 };
 
 /**

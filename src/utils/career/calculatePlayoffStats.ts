@@ -1,3 +1,5 @@
+import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
+
 import { PlayoffMatchData, PlayoffStatsResult } from './types';
 
 interface PlayoffStatsInput {
@@ -28,7 +30,8 @@ export const calculatePlayoffStats = ({
   }
 
   for (const match of playoffMatches) {
-    const bracketDivisionWeight = bracketDivisionWeights[match.bracket_id || ''] || 0.85;
+    const bracketDivisionWeight =
+      bracketDivisionWeights[match.bracket_id || ''] || DEFAULT_DIVISION_WEIGHT;
     const isCompetitiveDivision = bracketDivisionWeight >= 0.89;
 
     if (match.winner_id === teamId) {
