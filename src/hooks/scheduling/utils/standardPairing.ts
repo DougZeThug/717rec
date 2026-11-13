@@ -1,7 +1,9 @@
 import { fetchSeasonHistoryForTeams } from '@/services/matches/SchedulingHistoryService';
 import { AlgorithmConfig, TeamPairingMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { ValidationError } from '@/types/errors';
 import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossom';
 import { calculateDivisionOnlyCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
+import { getPairConfig } from '@/utils/autoSchedule/constants';
 import { scheduleLog, warnLog } from '@/utils/logger';
 
 /**
@@ -15,12 +17,35 @@ import { scheduleLog, warnLog } from '@/utils/logger';
  * @param config - Algorithm configuration
  * @param historyPairs - Pre-fetched season history pairs
  * @returns Pairings and unmatched team IDs
+ * @throws ValidationError when any block has an odd number of teams, 3 or more. Nothing is
+ *   generated then. A lone team is counted as unmatched and a block of 2 plays one match.
  */
 export const scheduleStandardPairings = async (
   timeBlockTeams: TimeBlockTeamsMap,
   config: AlgorithmConfig,
   historyPairs: [string, string][]
 ): Promise<{ pairings: TeamPairingMap; unmatchedTeamIds: string[] }> => {
+  // Every team plays twice in a block, one match in each of its two slots. An odd block of
+  // 3 or more teams cannot do that without booking a team twice in one slot, so Save would
+  // refuse the night. Stop before anything is generated and name every such block in one
+  // message. A block of 1 is a lone team and a block of 2 plays one match: neither stops.
+  const oddBlocks = Object.entries(timeBlockTeams)
+    .map(([block, teamsInBlock]) => ({ block, teamCount: teamsInBlock?.length ?? 0 }))
+    .filter(({ teamCount }) => teamCount >= 3 && teamCount % 2 !== 0);
+  if (oddBlocks.length > 0) {
+    const blockLines = oddBlocks
+      .map(
+        ({ block, teamCount }) =>
+          `Block ${getPairConfig(block)?.label ?? block} has ${teamCount} teams.`
+      )
+      .join(' ');
+    throw new ValidationError(
+      `${blockLines} Standard mode needs an even number of teams in a block. ` +
+        'Move a team, or use Dual Match Mode on the Auto Schedule screen.',
+      { oddBlocks }
+    );
+  }
+
   const pairings: TeamPairingMap = {};
   let allUnmatchedTeamIds: string[] = [];
 
@@ -44,13 +69,6 @@ export const scheduleStandardPairings = async (
         scheduleLog(`Skipping empty block: ${block}`);
       }
       continue;
-    }
-
-    // Skip blocks with odd number of teams (warn the user)
-    if (teamsInBlock.length % 2 !== 0) {
-      warnLog(
-        `Block ${block} has odd number of teams (${teamsInBlock.length}). One team will be unmatched.`
-      );
     }
 
     // Generate pairings for this time block

@@ -301,58 +301,58 @@ describe('scheduleStandardPairings with the real Blossom generator', () => {
     expect(matchesPerTeam(result.pairings.Early, teams)).toEqual(teams.map(() => 2));
   });
 
-  // An odd block (3 teams or more) is not stopped today. The generator is asked for two
-  // matches per team and does what it can. Whether the saved night survives is a separate
-  // question: standardPairing's own file and the apply-and-save pins in
-  // useAutoSchedule/__tests__/standardOddBlock.integration.test.ts cover that.
+  // An odd block (3 teams or more) is stopped before anything is generated, with one message
+  // that names the block. The apply-and-save side is in
+  // useAutoSchedule/__tests__/standardOddBlock.integration.test.ts.
   describe('an odd block of 3 or more teams', () => {
-    it("pairs 3 teams as a triangle and lists nobody as unmatched (today's behaviour)", async () => {
-      const teams = makeTeams('A', 3);
+    const adviceFor = (label: string, count: number) =>
+      `Block ${label} has ${count} teams. Standard mode needs an even number of teams in a block. ` +
+      'Move a team, or use Dual Match Mode on the Auto Schedule screen.';
 
-      const result = await scheduleStandardPairings({ Early: teams }, config, []);
+    it.each([3, 5, 7, 9])('stops with a clear message for %i teams', async (count) => {
+      const generate = () => scheduleStandardPairings({ Early: makeTeams('A', count) }, config, []);
 
-      expect(Object.keys(result.pairings)).toEqual(['Early']);
-      expect(describePairs(result.pairings.Early)).toEqual([
-        'A1|A3|10|false',
-        'A2|A3|10|false',
-        'A1|A2|10|false',
-      ]);
-      expect(matchesPerTeam(result.pairings.Early, teams)).toEqual([2, 2, 2]);
-      expect(result.unmatchedTeamIds).toEqual([]);
+      // Same message for every odd size, so the 5-team night that used to fail with a plain
+      // "2 teams don't have 2 matches" error now says what to do.
+      await expect(generate()).rejects.toThrow(adviceFor('Early Pair (6:30-7:00 PM)', count));
+      await expect(generate()).rejects.toBeInstanceOf(ValidationError);
     });
 
-    it("fails for 5 teams of one division with a plain error, not a message for the admin (today's behaviour)", async () => {
-      const generate = () => scheduleStandardPairings({ Early: makeTeams('A', 5) }, config, []);
-
-      await expect(generate()).rejects.toThrow("2 teams don't have 2 matches");
-      await expect(generate()).rejects.not.toBeInstanceOf(ValidationError);
+    it('stops with a clear message for an odd block of 3 beside an even block of 4', async () => {
+      // The even block is not generated: the whole night stops, so nothing partial is saved.
+      await expect(
+        scheduleStandardPairings({ Early: makeTeams('A', 4), Mid: makeTeams('B', 3) }, config, [])
+      ).rejects.toThrow(adviceFor('Mid Pair (7:30-8:00 PM)', 3));
     });
 
-    it.each([7, 9])(
-      "pairs %i teams with two matches each and lists nobody as unmatched (today's behaviour)",
-      async (count) => {
-        const teams = makeTeams('A', count);
+    it('names both odd blocks in one message when a night has two', async () => {
+      await expect(
+        scheduleStandardPairings(
+          { Early: makeTeams('A', 5), Mid: makeTeams('B', 4), Late: makeTeams('C', 3) },
+          config,
+          []
+        )
+      ).rejects.toThrow(
+        'Block Early Pair (6:30-7:00 PM) has 5 teams. Block Late Pair (8:30-9:00 PM) has 3 teams. ' +
+          'Standard mode needs an even number of teams in a block. ' +
+          'Move a team, or use Dual Match Mode on the Auto Schedule screen.'
+      );
+    });
 
-        const result = await scheduleStandardPairings({ Early: teams }, config, []);
-
-        // One pairing per team: every team plays twice, so the block holds more matches
-        // than its two slots can take without a team playing twice at once.
-        expect(result.pairings.Early).toHaveLength(count);
-        expect(matchesPerTeam(result.pairings.Early, teams)).toEqual(teams.map(() => 2));
-        expect(result.unmatchedTeamIds).toEqual([]);
-      }
-    );
-
-    it("pairs an odd block of 3 beside an even block of 4 (today's behaviour)", async () => {
+    it('does not stop for a lone team or a block of 2 beside an even block', async () => {
       const early = makeTeams('A', 4);
-      const mid = makeTeams('B', 3);
+      const mid = makeTeams('B', 2);
 
-      const result = await scheduleStandardPairings({ Early: early, Mid: mid }, config, []);
+      const result = await scheduleStandardPairings(
+        { Early: early, Mid: mid, Late: makeTeams('C', 1) },
+        config,
+        []
+      );
 
       expect(Object.keys(result.pairings)).toEqual(['Early', 'Mid']);
       expect(matchesPerTeam(result.pairings.Early, early)).toEqual([2, 2, 2, 2]);
-      expect(matchesPerTeam(result.pairings.Mid, mid)).toEqual([2, 2, 2]);
-      expect(result.unmatchedTeamIds).toEqual([]);
+      expect(matchesPerTeam(result.pairings.Mid, mid)).toEqual([1, 1]);
+      expect(result.unmatchedTeamIds).toEqual(['C1']);
     });
   });
 });

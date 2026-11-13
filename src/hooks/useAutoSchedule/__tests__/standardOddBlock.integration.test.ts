@@ -104,42 +104,60 @@ describe('standard mode: Generate, Apply and the Save check for one block', () =
     expect(validation?.errors).toEqual([]);
   });
 
-  it.each([3, 7, 9])(
-    "generates and applies %i teams, then the Save check refuses the night as a double booking (today's behaviour)",
-    async (count) => {
-      const { result, matches, validation } = await generateApplyAndValidate({
-        Early: makeTeams('A', count),
+  describe('an odd block of 3 or more teams', () => {
+    const oddBlockReason = (count: number) =>
+      `Block Early Pair (6:30-7:00 PM) has ${count} teams. ` +
+      'Standard mode needs an even number of teams in a block. ' +
+      'Move a team, or use Dual Match Mode on the Auto Schedule screen.';
+
+    it.each([3, 5, 7, 9])(
+      'stops at Generate for %i teams and shows the reason, with nothing to apply or save',
+      async (count) => {
+        const { result, matches, validation } = await generateApplyAndValidate({
+          Early: makeTeams('A', count),
+        });
+
+        // Nothing was generated, so there is nothing to apply and nothing for Save to refuse.
+        expect(result.current.generatedPairings).toEqual({});
+        expect(result.current.unmatchedTeamIds).toEqual([]);
+        expect(matches).toBeNull();
+        expect(validation).toBeNull();
+        // The admin reads the reason in the toast. getUIErrorMessage keeps the message of
+        // a ValidationError and puts the screen's own lead-in in front of it.
+        expect(mockToast).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: 'Error',
+            description: `Failed to generate match pairings: ${oddBlockReason(count)}`,
+            variant: 'destructive',
+          })
+        );
+        // And the screen adds its own generic toast. Three toasts fit at once, so both show.
+        expect(mockToast).toHaveBeenCalledWith(
+          expect.objectContaining({ title: 'Generation Failed', variant: 'destructive' })
+        );
+        expect(mockToast).not.toHaveBeenCalledWith(
+          expect.objectContaining({ title: expect.stringContaining('Schedule Generated') })
+        );
+      }
+    );
+
+    it('stops the whole night when the odd block sits beside an even block', async () => {
+      const { result, matches } = await generateApplyAndValidate({
+        Early: makeTeams('A', 4),
+        Mid: makeTeams('B', 3),
       });
 
-      // Generate and Apply raise no complaint: the admin only learns at Save.
-      expect(result.current.generatedPairings.Early).toHaveLength(count);
-      expect(matches).toHaveLength(count);
-      expect(validation?.isValid).toBe(false);
-      expect(validation?.errors.length).toBeGreaterThan(0);
-      expect(validation?.errors.every((error) => error.type === 'duplicate-team')).toBe(true);
-      expect(validation?.errors[0]?.message).toBe(
-        'Team is scheduled for multiple matches at 6:30 PM'
+      expect(result.current.generatedPairings).toEqual({});
+      expect(matches).toBeNull();
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description:
+            'Failed to generate match pairings: ' +
+            'Block Mid Pair (7:30-8:00 PM) has 3 teams. ' +
+            'Standard mode needs an even number of teams in a block. ' +
+            'Move a team, or use Dual Match Mode on the Auto Schedule screen.',
+        })
       );
-    }
-  );
-
-  it("fails at Generate for 5 teams of one division with only a vague message (today's behaviour)", async () => {
-    const { result, matches } = await generateApplyAndValidate({ Early: makeTeams('A', 5) });
-
-    // Nothing was generated, so there is nothing to apply.
-    expect(result.current.generatedPairings).toEqual({});
-    expect(matches).toBeNull();
-    // The reason is a plain error, so the toast keeps only the generic text, and the
-    // screen adds its own "Generation Failed" toast on top.
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Error',
-        description: 'Failed to generate match pairings. Please try again.',
-        variant: 'destructive',
-      })
-    );
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Generation Failed', variant: 'destructive' })
-    );
+    });
   });
 });
