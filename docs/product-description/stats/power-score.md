@@ -125,12 +125,14 @@ Three consequences follow, and all three surprise people:
   fall.
 - **Nearly half the number is the schedule.** A team with no say in who it plays
   carries 45 points of a rating decided by the fixture list.
-- **100 needs the top division.** The strength-of-schedule term is capped by the
-  strongest division's weight. The real ceiling is 100 times the top division's
-  weight, and it moves when the league re-weights a division. A live read Doug
-  shared on 2026-11-13 (not re-read by the developer) reports the top division,
-  Competitive, at 1.00. If that holds, 100 is possible only for a team that wins
-  every match and every game against Competitive opponents alone.
+- **100 is reachable.** A team scores 100 when it wins every decided match, wins
+  every game, and has a schedule strength of 1.0. Schedule strength is 1.0 only
+  when every rated opponent was in a division that weighed 1.00 on the match
+  date. With the default weights, the best possible score is 55 + 45 × schedule
+  strength. A live read Doug shared on 2026-11-13 (not re-read by the developer)
+  reports one division at 1.00, Competitive, and all others lower. If that
+  holds, only a team that played Competitive opponents alone can reach 100. A
+  team with one 2-0 win over a Competitive team does.
 
 **The three weights are not fixed.** 40/45/15 is the league's current setting,
 kept as data and changed through the admin sandbox. Changing them rewrites every
@@ -312,9 +314,10 @@ looks like a bug to anyone watching one team.
   built from different matches.
 - Not confirmed by hand: whether the weekly snapshot job actually runs at 11pm
   Eastern on Thursdays, which everything about trends depends on.
-- Not confirmed by hand: the live division weights, and therefore the real
-  ceiling of the number. They are edited through the admin screen and no
-  migration holds the current values.
+- Not confirmed by hand: the live division weights. A read Doug shared on
+  2026-11-13 (not re-read by the developer) reports Competitive at 1.00 and every
+  other division lower. That read did not cover `division_weight_history`, which
+  holds the weight used for each past match.
 
 Verified against `717rec` commit `ea5c8f4`, except the career score the King
 Slayer badge is decided by, which was changed after that commit — see
