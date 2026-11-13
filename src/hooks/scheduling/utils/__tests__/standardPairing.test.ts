@@ -169,4 +169,22 @@ describe('scheduleStandardPairings', () => {
 
     expect(result.unmatchedTeamIds).toEqual(['team-d']);
   });
+
+  it("lists a team that is short in two blocks twice (today's behaviour)", async () => {
+    // C and D reach only one match in each block, so each is short in both.
+    // Fixture only: the real generator throws instead of returning a short block, so a mock
+    // is the only way to reach this list.
+    const shortBlock = [pair(teamA, teamB), pair(teamA, teamC), pair(teamB, teamD)];
+    vi.mocked(generatePairingsWithBlossom)
+      .mockResolvedValueOnce(shortBlock)
+      .mockResolvedValueOnce(shortBlock);
+
+    const result = await scheduleStandardPairings(
+      { Early: teams, Late: teams },
+      { avoidRematches: true },
+      []
+    );
+
+    expect(result.unmatchedTeamIds).toEqual(['team-c', 'team-d', 'team-c', 'team-d']);
+  });
 });
