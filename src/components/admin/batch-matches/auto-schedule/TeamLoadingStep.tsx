@@ -114,7 +114,7 @@ export const TeamLoadingStep: React.FC<TeamLoadingStepProps> = ({
                 {blocksToFixCount > 0 && (
                   <div className="col-span-2 text-amber-600">
                     Blocks to Fix: <span className="font-semibold">{blocksToFixCount}</span>
-                    <p className="text-xs">
+                    <p className="text-xs text-amber-700 dark:text-amber-400">
                       Generate will stop until each has an even number of teams. Move a team, or use
                       Dual Match Mode on the Auto Schedule screen.
                     </p>
