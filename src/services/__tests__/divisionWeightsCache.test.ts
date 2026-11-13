@@ -54,6 +54,14 @@ describe('divisionWeightsCache', () => {
     expect(weights.get('div-1')).toBe(0.85);
   });
 
+  it("keeps a division_weight of 0 instead of replacing it with the default (today's behaviour)", async () => {
+    vi.mocked(DivisionService.fetchDivisionWeightsMap).mockResolvedValue([
+      { id: 'div-1', division_weight: 0 } as never,
+    ]);
+    const weights = await fetchDivisionWeights();
+    expect(weights.get('div-1')).toBe(0);
+  });
+
   it('does not cache empty results (retries next time)', async () => {
     vi.mocked(DivisionService.fetchDivisionWeightsMap).mockResolvedValue([]);
     await fetchDivisionWeights();
