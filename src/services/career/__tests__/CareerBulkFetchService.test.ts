@@ -293,3 +293,225 @@ describe('bracket lookup cache', () => {
     expect(bracketIdCalls).toEqual([['b-deleted']]);
   });
 });
+
+// ─── Default division weight (0.85) ───────────────────────────────────────────
+
+// These pin the default division weight in CareerBulkFetchService.ts as it is today.
+// They describe the code as it is and claim no league rule.
+
+/** Like buildFromMock, but serves the given bracket rows (own copies, never BRACKET_ROWS). */
+function buildFromMockServingBrackets(
+  overrides: Record<string, { data: unknown; error: unknown }>,
+  bracketRows: unknown[]
+) {
+  const base = buildFromMock(overrides);
+  return (table: string) => {
+    if (table !== 'brackets') return base(table);
+    return {
+      select: () => ({
+        in: () => Promise.resolve({ data: bracketRows, error: null }),
+      }),
+    };
+  };
+}
+
+describe("team division weight default (today's behaviour)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const fetchTeamWith = async (teamRows: unknown[]) => {
+    mockFrom.mockImplementation(
+      buildFromMock({ ...successOverrides, teams: { data: teamRows, error: null } })
+    );
+    const result = await fetchAllTeamsCareerData(['t1']);
+    return result.get('t1');
+  };
+
+  // The team weight uses `||`, so a stored 0 becomes 0.85 today. This is the
+  // current code, not a decided league rule. The `||` in buildTeamDivisionMaps is
+  // masked by the two `||` where the result is assembled, so a switch to `??`
+  // shows up here only when the map-building line and at least one of the two
+  // assembling lines change together (the two assembling lines alone are not
+  // caught).
+  it.each([
+    { label: '0', divisions: { division_weight: 0 } },
+    { label: 'null', divisions: { division_weight: null } },
+    { label: 'missing', divisions: {} },
+    { label: 'absent (no division)', divisions: null },
+  ])(
+    "a team division weight of $label counts as 0.85 (today's behaviour)",
+    async ({ divisions }) => {
+      const data = await fetchTeamWith([{ id: 't1', divisions }]);
+
+      expect(data?.teamDivisionWeight).toBe(0.85);
+      expect(data?.teamData?.divisions?.division_weight).toBe(0.85);
+    }
+  );
+
+  // The existing missing-team test only checks teamDivisionWeight; this also checks teamData.
+  it("a team with no row at all counts as 0.85 in both weight fields (today's behaviour)", async () => {
+    const data = await fetchTeamWith([]);
+
+    expect(data?.teamDivisionWeight).toBe(0.85);
+    expect(data?.teamData?.divisions?.division_weight).toBe(0.85);
+  });
+
+  it("keeps a positive team division weight (today's behaviour)", async () => {
+    const data = await fetchTeamWith([{ id: 't1', divisions: { division_weight: 0.6 } }]);
+
+    expect(data?.teamDivisionWeight).toBe(0.6);
+    expect(data?.teamData?.divisions?.division_weight).toBe(0.6);
+  });
+});
+
+describe("bracket division weight default (today's behaviour)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const fetchBracketWith = async (divisions: unknown) => {
+    // Fresh module so the module-level bracket cache starts empty
+    vi.resetModules();
+    const { fetchAllTeamsCareerData: freshFetch } = await import('../CareerBulkFetchService');
+
+    const bracketRows = [{ id: 'b-x', season_id: 's-1', divisions }];
+    mockFrom.mockImplementation(
+      buildFromMockServingBrackets(
+        { ...successOverrides, playoff_matches: { data: [playoffMatchIn('b-x')], error: null } },
+        bracketRows
+      )
+    );
+    const result = await freshFetch(['t1']);
+    return result.get('t1');
+  };
+
+  // The bracket weight uses `??`, so a stored 0 stays 0 here.
+  it.each([
+    {
+      label: 'null',
+      divisions: { division_weight: null, display_division: 'Competitive' },
+      expected: 0.85,
+    },
+    { label: 'missing', divisions: { display_division: 'Competitive' }, expected: 0.85 },
+    {
+      label: '0',
+      divisions: { division_weight: 0, display_division: 'Competitive' },
+      expected: 0,
+    },
+    {
+      label: '1',
+      divisions: { division_weight: 1, display_division: 'Competitive' },
+      expected: 1,
+    },
+    { label: 'absent (no division)', divisions: null, expected: 0.85 },
+  ])(
+    "a bracket division weight of $label counts as $expected (today's behaviour)",
+    async ({ divisions, expected }) => {
+      const data = await fetchBracketWith(divisions);
+
+      expect(data?.bracketDivisionWeights).toEqual({ 'b-x': expected });
+    }
+  );
+});
+
+// ─── Team2 grouping, archive division names, active-season error ──────────────
+
+// These pin CareerBulkFetchService.ts as it is today. They describe the code as it
+// is and claim no league rule. None of them reaches the bracket cache (the playoff
+// rows are empty), so they use the file's top-level import. A fresh module import
+// would also load a second copy of DatabaseError, and the instanceof check in the
+// last test would then fail.
+
+describe("team2 match grouping (today's behaviour)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("lists a match under a team that is only ever team2, in match order (today's behaviour)", async () => {
+    // t2 is team2 in both matches, so the second one adds to a list that already exists
+    const firstMatch = {
+      winner_id: 't3',
+      loser_id: 't2',
+      team1_game_wins: 2,
+      team2_game_wins: 0,
+      team1_id: 't3',
+      team2_id: 't2',
+      season_id: 's-1',
+      team1: null,
+      team2: null,
+    };
+    const secondMatch = {
+      winner_id: 't2',
+      loser_id: 't9',
+      team1_game_wins: 1,
+      team2_game_wins: 2,
+      team1_id: 't9',
+      team2_id: 't2',
+      season_id: 's-1',
+      team1: null,
+      team2: null,
+    };
+    mockFrom.mockImplementation(
+      buildFromMock({
+        ...successOverrides,
+        matches: { data: [firstMatch, secondMatch], error: null },
+      })
+    );
+
+    const result = await fetchAllTeamsCareerData(['t2', 't3']);
+
+    expect(result.get('t2')?.currentMatches).toEqual([firstMatch, secondMatch]);
+    // t3 is team1 in the first match only
+    expect(result.get('t3')?.currentMatches).toEqual([firstMatch]);
+    // t9 was not asked for, so it gets no entry
+    expect(result.has('t9')).toBe(false);
+  });
+});
+
+describe("archive division names (today's behaviour)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("maps teamId_seasonId to the archived division name and skips rows without one (today's behaviour)", async () => {
+    mockFrom.mockImplementation(
+      buildFromMock({
+        ...successOverrides,
+        team_details_archive: {
+          data: [
+            { team_id: 't1', season_id: 's-1', divisionname: 'Gold' },
+            { team_id: 't1', season_id: 's-2', divisionname: 'Silver' },
+            // An opponent that was not asked for: the archive query is not filtered by team
+            { team_id: 't-opp', season_id: 's-1', divisionname: 'Bronze' },
+            // No division name: left out of the map
+            { team_id: 't1', season_id: 's-3', divisionname: null },
+            { team_id: 't1', season_id: 's-4', divisionname: '' },
+          ],
+          error: null,
+        },
+      })
+    );
+
+    const result = await fetchAllTeamsCareerData(['t1', 't2']);
+
+    const expectedMap = new Map([
+      ['t1_s-1', 'Gold'],
+      ['t1_s-2', 'Silver'],
+      ['t-opp_s-1', 'Bronze'],
+    ]);
+    expect(result.get('t1')?.teamDivisionMap).toEqual(expectedMap);
+    // Every asked-for team gets the same map
+    expect(result.get('t2')?.teamDivisionMap).toEqual(expectedMap);
+  });
+});
+
+describe("active season lookup (today's behaviour)", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("throws a DatabaseError when the active season query fails (today's behaviour)", async () => {
+    mockFrom.mockImplementation(
+      buildFromMock({
+        ...successOverrides,
+        seasons: { data: null, error: pgError('active season failed') },
+      })
+    );
+
+    const request = fetchAllTeamsCareerData(['t1']);
+
+    await expect(request).rejects.toThrow(DatabaseError);
+    await expect(request).rejects.toThrow('Failed to fetch active season: active season failed');
+  });
+});

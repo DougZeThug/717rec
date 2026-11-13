@@ -79,9 +79,13 @@ date**, so re-weighting a division no longer rewrites finished seasons. That
 history starts at the migration that introduced it — earlier weight edits were
 never recorded.
 
-No division carries weight `1.0`, so the SOS term caps below 45 points and a
-perfect team lands short of 100. The exact ceiling is
-`100 × (top division weight)` and moves if you re-weight.
+The strength-of-schedule term is held between 0.1 and 1.0. A perfect team (every
+decided match and game won) scores win points + game points + SOS points × SOS.
+With 40/45/15 and a schedule that averages 0.925, that is
+40 + 15 + 45 × 0.925 = 96.625 (pinned in
+`supabase/tests/power_score_weighted_denominators.sql`). It reaches 100 only when
+the average opponent weight on the match dates is 1.0 or more. Read the live
+weights from `divisions`. Do not copy them here.
 
 ### Which division a team counts as
 
@@ -131,9 +135,11 @@ comparison fetch them deliberately and expect a number.
 ### Archived seasons are frozen
 
 Once `seasons.is_archived` is true, `upsert_team_season_stats()` stops updating
-that season's `power_score`, `sos` and `division_name`. Nothing you edit
-afterwards — a division, a weight, a team — can move a finished season. Use
-`admin_recompute_season_power(season_id)` for a deliberate repair.
+that season's `power_score`, `career_power_score`, `sos` and `division_name`
+(unless it is called with `p_include_archived = true`, which the weight sandbox
+does). Editing a division, a division weight or a team cannot move a finished
+season. Saving new Power Score weights, a one-off migration, or
+`admin_recompute_season_power(season_id)` can.
 
 ## Career Power Score
 

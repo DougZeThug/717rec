@@ -2,6 +2,7 @@ import type { PostgrestError } from '@supabase/supabase-js';
 
 import { SeasonBreakdown, TeamAdvancedStats } from '@/types/teamAdvancedStats';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
 
 import { buildSeasonBreakdown } from './assemblers';
 import { calculateBestWorstDivisionTiers, calculatePowerScoreTrend } from './calculations';
@@ -89,7 +90,9 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
     (brackets ?? []).map((b) => ({
       id: b.id,
       season_id: b.season_id,
-      divisions: b.divisions ? { division_weight: b.divisions.division_weight ?? 0.85 } : null,
+      divisions: b.divisions
+        ? { division_weight: b.divisions.division_weight ?? DEFAULT_DIVISION_WEIGHT }
+        : null,
     }))
   );
 
