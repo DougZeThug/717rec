@@ -21,7 +21,7 @@ import { findTeamsWithSameOpponent } from './opponentUtils';
  */
 export const generateDualBlockPairings = async (
   timeBlockTeams: Record<string, Team[]>,
-  config: DualBlockConfig = {},
+  config: DualBlockConfig,
   fetchSeasonHistoryFn: (teamIds: string[]) => Promise<Array<[string, string]>>,
   notifyCallback?: NotificationCallback
 ): Promise<PairingResult | null> => {
