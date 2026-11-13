@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchSeasonHistoryForTeams } from '@/services/matches/SchedulingHistoryService';
+import type { Team } from '@/types/team';
 import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossom';
-import { createMockTeam } from '@/utils/test/autoSchedule/testHelpers';
+import { warnLog } from '@/utils/logger';
+import { createMockTeam, createMockTeamPairing } from '@/utils/test/autoSchedule/testHelpers';
 
 import { scheduleStandardPairings } from '../standardPairing';
 
@@ -25,6 +27,10 @@ vi.mock('@/utils/logger', () => ({
 const teams = ['team-a', 'team-b', 'team-c', 'team-d'].map((id) =>
   createMockTeam({ id, name: id })
 );
+const [teamA, teamB, teamC, teamD] = teams;
+
+/** A pairing of two teams, as the Blossom generator would return it. */
+const pair = (first: Team, second: Team) => createMockTeamPairing({ team1: first, team2: second });
 
 /** The config that scheduleStandardPairings handed to the Blossom generator for the first block. */
 const firstBlockConfig = () => {
@@ -63,5 +69,102 @@ describe('scheduleStandardPairings', () => {
     await scheduleStandardPairings({ '6:30': teams }, { avoidRematches: true }, []);
 
     expect(firstBlockConfig().avoidRematches).toBe(true);
+  });
+
+  it("skips a block with fewer than two teams and still pairs the other blocks (today's behaviour)", async () => {
+    const lateBlockPairing = pair(teamA, teamB);
+    vi.mocked(generatePairingsWithBlossom).mockResolvedValueOnce([lateBlockPairing]);
+
+    const result = await scheduleStandardPairings(
+      { Early: [], Mid: [teamA], Late: teams },
+      { avoidRematches: true },
+      []
+    );
+
+    // The generator ran once, for the Late block only. The empty and one-team blocks get no entry.
+    expect(generatePairingsWithBlossom).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(generatePairingsWithBlossom).mock.calls[0]?.[0]).toEqual(teams);
+    expect(result.pairings).toEqual({ Late: [lateBlockPairing] });
+  });
+
+  it("warns on an odd block and still pairs (today's behaviour)", async () => {
+    // Three teams who each play the other two: every team reaches two matches.
+    const triangle = [pair(teamA, teamB), pair(teamA, teamC), pair(teamB, teamC)];
+    vi.mocked(generatePairingsWithBlossom).mockResolvedValueOnce(triangle);
+
+    const result = await scheduleStandardPairings(
+      { Early: [teamA, teamB, teamC] },
+      { avoidRematches: true },
+      []
+    );
+
+    expect(warnLog).toHaveBeenCalledTimes(1);
+    expect(warnLog).toHaveBeenCalledWith(
+      expect.stringContaining('Block Early has odd number of teams (3)')
+    );
+    // The block is not skipped: the generator ran and its pairings are kept.
+    expect(generatePairingsWithBlossom).toHaveBeenCalledTimes(1);
+    expect(result.pairings).toEqual({ Early: triangle });
+  });
+
+  it("records each block's pairs so the next block sees them as already played (today's behaviour)", async () => {
+    const playedPairsSeenByBlock: string[][] = [];
+    vi.mocked(generatePairingsWithBlossom).mockImplementation((_blockTeams, blockConfig) => {
+      // The set is shared and keeps growing, so copy it at the moment each block asks.
+      playedPairsSeenByBlock.push([...(blockConfig.playedPairsSet ?? [])].sort());
+      // Only the Early block makes pairings. B is listed before A to check the key is sorted.
+      return Promise.resolve(
+        playedPairsSeenByBlock.length === 1 ? [pair(teamB, teamA), pair(teamC, teamD)] : []
+      );
+    });
+
+    // All four teams sit in both blocks, like a double header.
+    await scheduleStandardPairings({ Early: teams, Late: teams }, { avoidRematches: true }, [
+      ['team-y', 'team-x'],
+    ]);
+
+    expect(playedPairsSeenByBlock).toEqual([
+      ['team-x-team-y'],
+      ['team-a-team-b', 'team-c-team-d', 'team-x-team-y'],
+    ]);
+  });
+
+  it("lists a team that reached only one match as unmatched and warns with its count (today's behaviour)", async () => {
+    // A and B play twice. C and D play once, short of the target of two.
+    vi.mocked(generatePairingsWithBlossom).mockResolvedValueOnce([
+      pair(teamA, teamB),
+      pair(teamA, teamC),
+      pair(teamB, teamD),
+    ]);
+
+    const result = await scheduleStandardPairings({ Early: teams }, { avoidRematches: true }, []);
+
+    expect(result.unmatchedTeamIds).toEqual(['team-c', 'team-d']);
+    expect(warnLog).toHaveBeenCalledTimes(1);
+    expect(warnLog).toHaveBeenCalledWith(
+      'Block Early has 2 team(s) with fewer than 2 matches: team-c (1/2), team-d (1/2)'
+    );
+  });
+
+  it("flags a team with no matches as unmatched without the partial warning, and a full block adds nothing (today's behaviour)", async () => {
+    vi.mocked(generatePairingsWithBlossom)
+      // Early: every team plays twice.
+      .mockResolvedValueOnce([
+        pair(teamA, teamB),
+        pair(teamC, teamD),
+        pair(teamA, teamC),
+        pair(teamB, teamD),
+      ])
+      // Late: A, B and C play twice. D plays nobody.
+      .mockResolvedValueOnce([pair(teamA, teamB), pair(teamB, teamC), pair(teamC, teamA)]);
+
+    const result = await scheduleStandardPairings(
+      { Early: teams, Late: teams },
+      { avoidRematches: true },
+      []
+    );
+
+    expect(result.unmatchedTeamIds).toEqual(['team-d']);
+    expect(warnLog).not.toHaveBeenCalled();
   });
 });
