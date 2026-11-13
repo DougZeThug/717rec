@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // skipcq: JS-C1003 -- vi.mocked() needs the whole module object.
 import * as teamLoaderUtils from '@/services/timeslots/teamLoaderUtils';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { scheduleLog } from '@/utils/logger';
 import { mockDate, mockTeams } from '@/utils/test/autoSchedule/mockData';
 
 import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
@@ -102,5 +103,63 @@ describe('useTeamScheduleLoader', () => {
     const status = result.current.getTeamCountStatus();
     expect(status.total).toBe(5); // 2 + 2 + 1
     expect(status.odd).toBe(1); // One block has odd number
+  });
+
+  it("builds the paired blocks in dual block mode and clears them after a normal load (today's behaviour)", async () => {
+    const earlyTeams = [mockTeams[0], mockTeams[1]];
+    const lateTeams = [mockTeams[2], mockTeams[3]];
+    const loaded = { Early: earlyTeams, Mid: [mockTeams[0]], Late: lateTeams };
+    mockTeamLoaderUtils.getAllBackToBackTeams.mockResolvedValue(loaded);
+
+    const { result } = renderHook(() => useTeamScheduleLoader());
+
+    let teamsData: TimeBlockTeamsMap | null = null;
+    await act(async () => {
+      teamsData = await result.current.loadTeamsForDate(mockDate, true, {
+        primaryBlock: 'Early',
+        secondaryBlock: 'Late',
+      });
+    });
+
+    // The normal block map is still returned and stored.
+    expect(teamsData).toEqual(loaded);
+    expect(result.current.timeBlockTeams).toEqual(loaded);
+    const expectedPairs = {
+      'Early-Late': {
+        primaryBlock: 'Early',
+        secondaryBlock: 'Late',
+        primaryTeams: earlyTeams,
+        secondaryTeams: lateTeams,
+      },
+    };
+    expect(result.current.pairedTimeBlockTeams).toEqual(expectedPairs);
+    expect(scheduleLog).toHaveBeenCalledWith('Loaded paired blocks for dual mode:', expectedPairs);
+
+    // A later load without dual block mode empties the paired blocks again.
+    await act(async () => {
+      await result.current.loadTeamsForDate(mockDate);
+    });
+    expect(result.current.pairedTimeBlockTeams).toEqual({});
+  });
+
+  it("pairs Early with Late when the dual block config names no blocks, and gives an empty side for a missing block (today's behaviour)", async () => {
+    mockTeamLoaderUtils.getAllBackToBackTeams.mockResolvedValue({
+      Early: [mockTeams[0], mockTeams[1]],
+    });
+
+    const { result } = renderHook(() => useTeamScheduleLoader());
+
+    await act(async () => {
+      await result.current.loadTeamsForDate(mockDate, true, {});
+    });
+
+    expect(result.current.pairedTimeBlockTeams).toEqual({
+      'Early-Late': {
+        primaryBlock: 'Early',
+        secondaryBlock: 'Late',
+        primaryTeams: [mockTeams[0], mockTeams[1]],
+        secondaryTeams: [],
+      },
+    });
   });
 });
