@@ -203,6 +203,22 @@ match at the next half-hour, so nobody sits out (`dualBlockScheduler.ts:87-88`,
 `scheduleOdd.ts:84`). Match Creation has no Dual Match Mode switch, so there an odd
 block means moving a team, or building that night on the Auto Schedule screen.
 
+**The amber alert under the team preview** (titled "Odd number of teams detected",
+or "Some teams will be unmatched" when a team is counted as unmatched) reads
+differently by screen. Changed 2026-11-13 (QA follow-up to PR-S):
+
+- **Auto Schedule, Teams tab, Dual Match Mode on:** "Some time blocks have an odd
+  number of teams. Dual Match Mode is on, so an odd block gets a third match slot
+  and Generate does not stop. A team alone in its block has nobody to play." It
+  lists two suggestions: add teams, or move teams. It no longer tells the admin to
+  turn Dual Match Mode on, because it is already on. (Before, it did.)
+- **Auto Schedule with Dual Match Mode off, and Match Creation:** "Some time blocks
+  have an odd number of teams. In Standard mode, Generate stops when a block of 3
+  or more teams has an odd number. Move a team, or use Dual Match Mode on the Auto
+  Schedule screen. A team alone in its block has nobody to play." It lists the same
+  two suggestions and a third: "Use Dual Match Mode on the Auto Schedule screen".
+  Match Creation has no Dual switch, so it always shows this text.
+
 A time the app cannot read is now refused before the insert, with a red toast
 naming the match. It can no longer reach the database.
 

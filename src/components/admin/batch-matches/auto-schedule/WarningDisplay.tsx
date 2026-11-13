@@ -9,18 +9,29 @@ interface WarningDisplayProps {
   insufficientBlocks?: string[];
   unmatchedTeamDetails?: Array<{ timeBlock: string; team: { id: string; name: string } }>;
   onSuggestionClick?: (blockId: string) => void;
+  /**
+   * True when Dual Match Mode is on. Auto Schedule passes it. Match Creation has no Dual
+   * switch and leaves it off, so its text still points to the Auto Schedule screen.
+   */
+  dualMatchMode?: boolean;
 }
 
 const EMPTY_INSUFFICIENT_BLOCKS: string[] = [];
 const EMPTY_UNMATCHED_DETAILS: NonNullable<WarningDisplayProps['unmatchedTeamDetails']> = [];
 
-const WarningSuggestions: React.FC = () => (
+const STANDARD_ODD_BLOCK_TEXT =
+  'Some time blocks have an odd number of teams. In Standard mode, Generate stops when a block of 3 or more teams has an odd number. Move a team, or use Dual Match Mode on the Auto Schedule screen. A team alone in its block has nobody to play.';
+
+const DUAL_ODD_BLOCK_TEXT =
+  'Some time blocks have an odd number of teams. Dual Match Mode is on, so an odd block gets a third match slot and Generate does not stop. A team alone in its block has nobody to play.';
+
+const WarningSuggestions: React.FC<{ dualMatchMode: boolean }> = ({ dualMatchMode }) => (
   <div className="text-sm font-medium mt-2">
     Suggestions:
     <ul className="list-disc pl-5 mt-1">
       <li>Add more teams to time blocks with odd numbers</li>
       <li>Move teams between time blocks to balance them</li>
-      <li>Use Dual Match Mode on the Auto Schedule screen</li>
+      {!dualMatchMode && <li>Use Dual Match Mode on the Auto Schedule screen</li>}
     </ul>
   </div>
 );
@@ -31,6 +42,7 @@ export const WarningDisplay: React.FC<WarningDisplayProps> = ({
   insufficientBlocks = EMPTY_INSUFFICIENT_BLOCKS,
   unmatchedTeamDetails = EMPTY_UNMATCHED_DETAILS,
   onSuggestionClick: _onSuggestionClick,
+  dualMatchMode = false,
 }) => {
   if (oddBlocks === 0 && unmatchedTeams === 0 && insufficientBlocks.length === 0) {
     return null;
@@ -43,11 +55,7 @@ export const WarningDisplay: React.FC<WarningDisplayProps> = ({
         {unmatchedTeams > 0 ? 'Some teams will be unmatched' : 'Odd number of teams detected'}
       </AlertTitle>
       <AlertDescription className="space-y-2">
-        <p>
-          Some time blocks have an odd number of teams. In Standard mode, Generate stops when a
-          block of 3 or more teams has an odd number. Move a team, or use Dual Match Mode on the
-          Auto Schedule screen. A team alone in its block has nobody to play.
-        </p>
+        <p>{dualMatchMode ? DUAL_ODD_BLOCK_TEXT : STANDARD_ODD_BLOCK_TEXT}</p>
         {unmatchedTeams > 0 && (
           <p>
             {unmatchedTeams} team{unmatchedTeams !== 1 ? 's' : ''} will not be paired.
@@ -79,7 +87,7 @@ export const WarningDisplay: React.FC<WarningDisplayProps> = ({
           </div>
         )}
 
-        <WarningSuggestions />
+        <WarningSuggestions dualMatchMode={dualMatchMode} />
       </AlertDescription>
     </Alert>
   );
