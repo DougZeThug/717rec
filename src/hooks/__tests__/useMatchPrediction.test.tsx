@@ -308,7 +308,7 @@ describe('useMatchPrediction', () => {
       const { result } = renderPrediction({ prefetchedH2H });
       await waitFor(() => expect(result.current.prediction).toBe(prediction));
 
-      expect(mockUseMatchHeadToHead).toHaveBeenLastCalledWith(undefined, undefined);
+      expect(mockUseMatchHeadToHead).toHaveBeenLastCalledWith(undefined, undefined); // skipcq: JS-W1042
       expect(mockPredictMatch.mock.lastCall?.[5]).toEqual({
         team1Wins: 5,
         team2Wins: 2,
