@@ -26,6 +26,30 @@ import { errorLog, scheduleLog } from '@/utils/logger';
 
 import { loadAutoScheduleState, saveAutoScheduleState } from './storage';
 
+/**
+ * The unmatched part of the "Schedule Generated" toast: "0 teams unmatched.",
+ * "1 team unmatched: Alpha." or "2 teams unmatched: Alpha, Bravo." A team whose name is not
+ * in the loaded blocks is shown by its id, so the admin still sees who it is.
+ */
+const describeUnmatchedTeams = (
+  unmatchedTeamIds: string[],
+  timeBlockTeams: TimeBlockTeamsMap
+): string => {
+  if (unmatchedTeamIds.length === 0) return '0 teams unmatched.';
+
+  const namesById = new Map(
+    Object.values(timeBlockTeams)
+      .flat()
+      .map((team) => [team.id, team.name])
+  );
+  const names = unmatchedTeamIds.map((id) => {
+    const name = namesById.get(id);
+    return name ? name : id;
+  });
+  const noun = unmatchedTeamIds.length === 1 ? 'team' : 'teams';
+  return `${unmatchedTeamIds.length} ${noun} unmatched: ${names.join(', ')}.`;
+};
+
 export const usePairingOperations = (
   setActiveTab: (tab: string) => void,
   // Maps team ID to array of block names (supports double headers in multiple blocks)
@@ -201,7 +225,7 @@ export const usePairingOperations = (
 
           toast({
             title: `Schedule Generated ${metrics.qualityRating === 'Excellent' ? '🏆' : metrics.qualityRating === 'Good' ? '✅' : metrics.qualityRating === 'Fair' ? '⚠️' : '❌'}`,
-            description: `Generated ${metrics.totalMatches} ${metrics.qualityRating.toLowerCase()} quality matches. ${result.unmatchedTeamIds.length} teams unmatched. Diversity: ${metrics.opponentDiversity.diversityScore}%`,
+            description: `Generated ${metrics.totalMatches} ${metrics.qualityRating.toLowerCase()} quality matches. ${describeUnmatchedTeams(result.unmatchedTeamIds, timeBlockTeams)} Diversity: ${metrics.opponentDiversity.diversityScore}%`,
           });
 
           // Move to matches tab to show results

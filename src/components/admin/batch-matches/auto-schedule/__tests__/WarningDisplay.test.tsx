@@ -36,6 +36,42 @@ describe('WarningDisplay', () => {
     expect(screen.getByText(/in 7:00 PM/)).toBeInTheDocument();
   });
 
+  it('says Standard mode stops on an odd block and points to Dual Match Mode', () => {
+    render(<WarningDisplay oddBlocks={1} />);
+
+    expect(
+      screen.getByText(
+        /In Standard mode, Generate stops when a block of 3 or more teams has an odd/
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Move a team, or use Dual Match Mode on the Auto Schedule screen/)
+    ).toBeInTheDocument();
+    // The old promise: the scheduler pairs as many teams as it can and leaves some out.
+    expect(screen.queryByText(/maximum number of teams/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/some teams will be unmatched/)).not.toBeInTheDocument();
+  });
+
+  it('suggests Dual Match Mode instead of continuing with unmatched teams', () => {
+    render(<WarningDisplay oddBlocks={1} />);
+
+    expect(
+      screen.getByText('Use Dual Match Mode on the Auto Schedule screen', { selector: 'li' })
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Continue with the current schedule/)).not.toBeInTheDocument();
+  });
+
+  it('counts the teams that will not be paired only when there are some', () => {
+    const { rerender } = render(<WarningDisplay oddBlocks={1} unmatchedTeams={0} />);
+    expect(screen.queryByText(/will not be paired/)).not.toBeInTheDocument();
+
+    rerender(<WarningDisplay oddBlocks={1} unmatchedTeams={1} />);
+    expect(screen.getByText('1 team will not be paired.')).toBeInTheDocument();
+
+    rerender(<WarningDisplay oddBlocks={1} unmatchedTeams={3} />);
+    expect(screen.getByText('3 teams will not be paired.')).toBeInTheDocument();
+  });
+
   it('lists the blocks that do not have enough teams', () => {
     render(<WarningDisplay oddBlocks={1} insufficientBlocks={['6:00 PM', '8:30 PM']} />);
 

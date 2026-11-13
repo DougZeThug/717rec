@@ -20,7 +20,7 @@ const WarningSuggestions: React.FC = () => (
     <ul className="list-disc pl-5 mt-1">
       <li>Add more teams to time blocks with odd numbers</li>
       <li>Move teams between time blocks to balance them</li>
-      <li>Continue with the current schedule and some teams will be unmatched</li>
+      <li>Use Dual Match Mode on the Auto Schedule screen</li>
     </ul>
   </div>
 );
@@ -44,10 +44,15 @@ export const WarningDisplay: React.FC<WarningDisplayProps> = ({
       </AlertTitle>
       <AlertDescription className="space-y-2">
         <p>
-          Some time blocks have an odd number of teams. The auto-scheduler will create matches for
-          the maximum number of teams, but {unmatchedTeams} team{unmatchedTeams !== 1 ? 's' : ''}{' '}
-          will not be paired.
+          Some time blocks have an odd number of teams. In Standard mode, Generate stops when a
+          block of 3 or more teams has an odd number. Move a team, or use Dual Match Mode on the
+          Auto Schedule screen. A team alone in its block has nobody to play.
         </p>
+        {unmatchedTeams > 0 && (
+          <p>
+            {unmatchedTeams} team{unmatchedTeams !== 1 ? 's' : ''} will not be paired.
+          </p>
+        )}
 
         {unmatchedTeamDetails.length > 0 && (
           <div className="mt-2 space-y-1">

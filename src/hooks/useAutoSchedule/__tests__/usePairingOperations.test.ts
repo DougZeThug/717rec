@@ -343,6 +343,64 @@ describe('usePairingOperations', () => {
     expect(lastGenerateCall?.[3]).toBeUndefined();
   });
 
+  describe('the unmatched part of the "Schedule Generated" toast', () => {
+    const night = new Date('2026-04-20T00:00:00.000Z');
+    const loadedTeams: TimeBlockTeamsMap = {
+      Early: [buildTeam('1'), buildTeam('2'), buildTeam('3'), buildTeam('4')],
+      Mid: [buildTeam('5')],
+    };
+
+    /** Generate a night whose result lists these unmatched ids, and read the toast text. */
+    const generatedToastDescription = async (unmatchedTeamIds: string[]) => {
+      mockGenerateMatchPairings.mockResolvedValue({
+        pairings: buildPairings(),
+        unmatchedTeamIds,
+      });
+      const { result } = renderHook(() => usePairingOperations(vi.fn()));
+
+      await act(async () => {
+        await result.current.handleGenerateClick(
+          night,
+          loadedTeams,
+          night,
+          true,
+          false,
+          false,
+          vi.fn()
+        );
+      });
+
+      const generatedToast = mockToast.mock.calls
+        .map(([toast]) => toast as { title: string; description: string })
+        .find((toast) => toast.title.startsWith('Schedule Generated'));
+      return generatedToast?.description;
+    };
+
+    it('says "0 teams unmatched." when nobody is unmatched', async () => {
+      expect(await generatedToastDescription([])).toBe(
+        'Generated 2 good quality matches. 0 teams unmatched. Diversity: 100%'
+      );
+    });
+
+    it('says "1 team" and names the unmatched team', async () => {
+      expect(await generatedToastDescription(['5'])).toBe(
+        'Generated 2 good quality matches. 1 team unmatched: Team 5. Diversity: 100%'
+      );
+    });
+
+    it('names every unmatched team, in the order given, with the plural', async () => {
+      expect(await generatedToastDescription(['5', '2', '3'])).toBe(
+        'Generated 2 good quality matches. 3 teams unmatched: Team 5, Team 2, Team 3. Diversity: 100%'
+      );
+    });
+
+    it('shows the id when the team is not in the loaded blocks', async () => {
+      expect(await generatedToastDescription(['99'])).toBe(
+        'Generated 2 good quality matches. 1 team unmatched: 99. Diversity: 100%'
+      );
+    });
+  });
+
   it('handles generation failure (null result) and thrown errors with finally cleanup', async () => {
     const setActiveTab = vi.fn();
     const setIsProcessing = vi.fn();

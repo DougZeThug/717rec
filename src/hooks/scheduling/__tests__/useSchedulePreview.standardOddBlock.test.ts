@@ -85,6 +85,36 @@ describe('Match Creation screen: Generate with the standard scheduler', () => {
     });
   });
 
+  it('says a team alone in its block was left unmatched, in the singular', async () => {
+    await previewThenGenerate({ Early: makeTeams('A', 4), Mid: makeTeams('L', 1) });
+
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Schedule Generated',
+      description:
+        '4 match pairings generated based on team compatibility. ' +
+        '1 team was left unmatched. A team alone in its time block has nobody to play.',
+    });
+    // The old wording blamed odd numbers.
+    expect(mockToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ description: expect.stringContaining('odd numbers') })
+    );
+  });
+
+  it('says several teams alone in their blocks were left unmatched, in the plural', async () => {
+    await previewThenGenerate({
+      Early: makeTeams('A', 4),
+      Mid: makeTeams('L', 1),
+      Late: makeTeams('M', 1),
+    });
+
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Schedule Generated',
+      description:
+        '4 match pairings generated based on team compatibility. ' +
+        '2 teams were left unmatched. A team alone in its time block has nobody to play.',
+    });
+  });
+
   it.each([3, 5])(
     'stops for a block of %i teams, shows the reason and stays on the team step',
     async (count) => {
