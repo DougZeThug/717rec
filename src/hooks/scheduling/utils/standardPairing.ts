@@ -72,10 +72,10 @@ export const scheduleStandardPairings = async (
       playedPairsSet.add(pairingKey);
     });
 
-    // Find unmatched teams. Blossom targets 2 matches per team; flag any team
-    // that didn't reach the target (not just zero-match teams) so partial
-    // schedules are surfaced instead of appearing complete.
-    const TARGET_MATCHES = 2;
+    // Find unmatched teams. Blossom targets 2 matches per team (1 in a block of 2, where
+    // the two teams can meet only once); flag any team that didn't reach the target (not
+    // just zero-match teams) so partial schedules are surfaced instead of appearing complete.
+    const TARGET_MATCHES = Math.min(2, teamsInBlock.length - 1);
     const matchCounts = new Map<string, number>();
     teamsInBlock.forEach((t) => matchCounts.set(t.id, 0));
     blockPairings.forEach((pair) => {

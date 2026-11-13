@@ -75,6 +75,40 @@ describe('generatePairingsWithBlossom', () => {
     expect(Array.isArray(result)).toBe(true);
   });
 
+  it('2 teams: returns exactly one pairing between them without throwing', async () => {
+    const teams = ['t1', 't2'].map((id) => createMockTeam({ id, name: id }));
+
+    const result = await generatePairingsWithBlossom(teams, baseConfig);
+
+    // Two teams can meet only once, so each plays one match.
+    expect(result).toHaveLength(1);
+    expect([result[0].team1.id, result[0].team2.id].sort()).toEqual(['t1', 't2']);
+  });
+
+  it('3 teams: every team still plays exactly two matches, against each of the others', async () => {
+    const teams = ['t1', 't2', 't3'].map((id) => createMockTeam({ id, name: id }));
+
+    const result = await generatePairingsWithBlossom(teams, baseConfig);
+
+    expect(result).toHaveLength(3);
+    const pairKeys = result.map((p) => [p.team1.id, p.team2.id].sort().join('-'));
+    expect([...pairKeys].sort()).toEqual(['t1-t2', 't1-t3', 't2-t3']);
+  });
+
+  it('4 teams: every team still plays exactly two matches', async () => {
+    const teams = ['t1', 't2', 't3', 't4'].map((id) => createMockTeam({ id, name: id }));
+
+    const result = await generatePairingsWithBlossom(teams, baseConfig);
+
+    expect(result).toHaveLength(4);
+    const counts = new Map(teams.map((team) => [team.id, 0]));
+    for (const p of result) {
+      counts.set(p.team1.id, (counts.get(p.team1.id) ?? 0) + 1);
+      counts.set(p.team2.id, (counts.get(p.team2.id) ?? 0) + 1);
+    }
+    expect([...counts.values()]).toEqual([2, 2, 2, 2]);
+  });
+
   it('marks hasPlayedBefore = false when playedPairsSet is empty', async () => {
     const teams = ['t1', 't2', 't3', 't4'].map((id) => createMockTeam({ id, name: id }));
     const config = { ...baseConfig, playedPairsSet: new Set<string>() };

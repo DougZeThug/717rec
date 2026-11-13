@@ -27,7 +27,8 @@ export async function generatePairingsWithBlossom(
   // Return empty array for insufficient teams
   if (teams.length < 2) return [];
 
-  const targetMatchesPerTeam = 2;
+  // Each team plays 2 matches. Two teams can meet only once, so a block of 2 gets 1.
+  const targetMatchesPerTeam = Math.min(2, teams.length - 1);
   const expectedMatches = teams.length; // For N teams, we need N matches (each team gets 2)
 
   scheduleLog(`Starting Blossom algorithm for ${teams.length} teams`);

@@ -203,6 +203,48 @@ describe('scheduleStandardPairings', () => {
     );
   });
 
+  it('does not list the two teams of a 2-team block as unmatched when they play their one match', async () => {
+    // Two teams can meet only once, so one match each is the target for this block.
+    vi.mocked(generatePairingsWithBlossom).mockResolvedValueOnce([pair(teamA, teamB)]);
+
+    const result = await scheduleStandardPairings(
+      { Early: [teamA, teamB] },
+      { avoidRematches: true },
+      []
+    );
+
+    expect(result.unmatchedTeamIds).toEqual([]);
+    expect(warnLog).not.toHaveBeenCalled();
+  });
+
+  it('lists both teams of a 2-team block when they get no match', async () => {
+    vi.mocked(generatePairingsWithBlossom).mockResolvedValueOnce([]);
+
+    const result = await scheduleStandardPairings(
+      { Early: [teamA, teamB] },
+      { avoidRematches: true },
+      []
+    );
+
+    expect(result.unmatchedTeamIds).toEqual(['team-a', 'team-b']);
+  });
+
+  it('still needs two matches per team in a 3-team block', async () => {
+    // A plays B and C. B and C play once each, short of the target of two.
+    vi.mocked(generatePairingsWithBlossom).mockResolvedValueOnce([
+      pair(teamA, teamB),
+      pair(teamA, teamC),
+    ]);
+
+    const result = await scheduleStandardPairings(
+      { Early: [teamA, teamB, teamC] },
+      { avoidRematches: true },
+      []
+    );
+
+    expect(result.unmatchedTeamIds).toEqual(['team-b', 'team-c']);
+  });
+
   it("flags a team with no matches as unmatched, and a full block adds nothing (today's behaviour)", async () => {
     vi.mocked(generatePairingsWithBlossom)
       // Early: every team plays twice.

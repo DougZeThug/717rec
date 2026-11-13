@@ -177,6 +177,54 @@ describe('scheduleStandardPairings with the real Blossom generator', () => {
     expect(result.unmatchedTeamIds).toEqual(['L1']);
   });
 
+  it('gives a block of 2 teams one match against each other, with nobody unmatched', async () => {
+    const teams = makeTeams('A', 2);
+
+    const result = await scheduleStandardPairings({ Early: teams }, config, []);
+
+    // Two teams can meet only once, so each plays one match instead of two.
+    expect(Object.keys(result.pairings)).toEqual(['Early']);
+    expect(result.pairings.Early).toHaveLength(1);
+    expect(pairKey((result.pairings.Early ?? [])[0])).toBe('A1-A2');
+    expect(matchesPerTeam(result.pairings.Early, teams)).toEqual([1, 1]);
+    expect(result.unmatchedTeamIds).toEqual([]);
+  });
+
+  it('pairs a block of 2 beside blocks of 4 and 6 without changing those blocks', async () => {
+    const early = makeTeams('A', 4);
+    const mid = makeTeams('B', 2);
+    const late = makeTeams('C', 6);
+
+    const result = await scheduleStandardPairings(
+      { Early: early, Mid: mid, Late: late },
+      config,
+      []
+    );
+
+    expect(Object.keys(result.pairings)).toEqual(['Early', 'Mid', 'Late']);
+    expect(describePairs(result.pairings.Early)).toEqual([
+      'A1|A4|10|false',
+      'A2|A3|10|false',
+      'A1|A3|10|false',
+      'A2|A4|10|false',
+    ]);
+    expect(matchesPerTeam(result.pairings.Mid, mid)).toEqual([1, 1]);
+    expect(matchesPerTeam(result.pairings.Late, late)).toEqual(late.map(() => 2));
+    expect(result.unmatchedTeamIds).toEqual([]);
+  });
+
+  it('still plays the one match when the two teams already met this season', async () => {
+    // With only two teams there is no other opponent, so the rematch rule gives way. The pair
+    // is flagged as a rematch so the preview can show it.
+    const teams = makeTeams('A', 2);
+
+    const result = await scheduleStandardPairings({ Early: teams }, config, [['A2', 'A1']]);
+
+    expect(result.pairings.Early).toHaveLength(1);
+    expect(result.pairings.Early?.[0]?.hasPlayedBefore).toBe(true);
+    expect(result.unmatchedTeamIds).toEqual([]);
+  });
+
   it("gives the same result when the same night is generated twice (today's behaviour)", async () => {
     const early = makeTeams('A', 6);
     const late = makeTeams('B', 8);
