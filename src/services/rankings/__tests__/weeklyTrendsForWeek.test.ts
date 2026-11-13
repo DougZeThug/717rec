@@ -22,23 +22,35 @@ import { fetchPowerScoreTrendsForWeek, pickTeamOfTheWeek } from '../weeklyTrends
 
 type QueryResult = { data: unknown; error: unknown };
 
+/** One read of a table: the week it asked for and every `.not(...)` it applied. */
+type RecordedRead = { table: string; week?: unknown; not: unknown[][] };
+
+let reads: RecordedRead[] = [];
+
 /** Queues one result per read of a table, in call order, like the sibling suites. */
 function createSupabaseMock(queuedByTable: Record<string, QueryResult[]>) {
   const eqCalls: Record<string, unknown[][]> = {};
+  reads = [];
 
   mockFrom.mockImplementation((table: string) => {
     const result = (queuedByTable[table] ?? []).shift() ?? { data: null, error: null };
+    const read: RecordedRead = { table, not: [] };
+    reads.push(read);
     const query: Record<string, unknown> = {};
     const chain = () => query;
 
     Object.assign(query, {
       eq: vi.fn((...args: unknown[]) => {
         (eqCalls[table] ??= []).push(args);
+        if (args[0] === 'week_number') read.week = args[1];
         return query;
       }),
       neq: vi.fn(chain),
       lte: vi.fn(chain),
-      not: vi.fn(chain),
+      not: vi.fn((...args: unknown[]) => {
+        read.not.push(args);
+        return query;
+      }),
       in: vi.fn(chain),
       order: vi.fn(() => Promise.resolve(result)),
       then: (resolve: (value: QueryResult) => unknown) => Promise.resolve(result).then(resolve),
@@ -49,6 +61,12 @@ function createSupabaseMock(queuedByTable: Record<string, QueryResult[]>) {
 
   return eqCalls;
 }
+
+/** The `.not(...)` filters applied to the snapshot read for one week. */
+const notFiltersForWeek = (week: number) =>
+  reads
+    .filter((read) => read.table === 'power_score_snapshots' && read.week === week)
+    .flatMap((read) => read.not);
 
 const snapshotWeeks = (weeks: number[]): QueryResult => ({
   data: weeks.map((week_number) => ({ week_number })),
@@ -286,7 +304,10 @@ describe('fetchPowerScoreTrendsForWeek', () => {
     }
   );
 
-  it("returns no trends when this week has no snapshots (today's behaviour)", async () => {
+  // Changed on purpose (Doug, 2026-11-13). Week 6 has rows, but none of them has
+  // a power score, so the database filter returns nothing. That used to report
+  // 'compared' with no trends and publish with no warning. It is 'missing' now.
+  it('calls a week missing when its rows have no scored team', async () => {
     createSupabaseMock({
       power_score_snapshots: [
         snapshotWeeks([6, 5]),
@@ -299,8 +320,83 @@ describe('fetchPowerScoreTrendsForWeek', () => {
     const result = await fetchPowerScoreTrendsForWeek('s-1', 6);
 
     expect(result).toMatchObject({ trends: [], currentWeek: 6 });
+    // 'missing' has no comparison week, the same as a week with no snapshot.
+    expect(result).toMatchObject({ basis: 'missing', previousWeek: null });
     // It stops before asking for team details: there is nobody to look up.
     expect(mockFrom).not.toHaveBeenCalledWith('v_team_details');
+    // The unscored rows were left out by this filter on the week-6 read.
+    expect(notFiltersForWeek(6)).toEqual([['power_score', 'is', null]]);
+  });
+
+  it('calls a week missing, not a gap, when its rows have no scored team and week 5 has no snapshot', async () => {
+    createSupabaseMock({
+      power_score_snapshots: [
+        snapshotWeeks([6, 4]),
+        { data: [], error: null },
+        { data: [{ team_id: 't-1', power_score: 60 }], error: null },
+      ],
+      divisions: [visibleDivisions],
+    });
+
+    const result = await fetchPowerScoreTrendsForWeek('s-1', 6);
+
+    expect(result).toEqual({ trends: [], currentWeek: 6, previousWeek: null, basis: 'missing' });
+    expect(mockFrom).not.toHaveBeenCalledWith('v_team_details');
+  });
+
+  it("asks only for scored rows, for this week and the week before (today's behaviour)", async () => {
+    createSupabaseMock({
+      power_score_snapshots: [
+        snapshotWeeks([6, 5]),
+        { data: [{ team_id: 't-1', power_score: 64 }], error: null },
+        { data: [{ team_id: 't-1', power_score: 60 }], error: null },
+      ],
+      divisions: [visibleDivisions],
+      v_team_details: [teamRows],
+    });
+
+    await fetchPowerScoreTrendsForWeek('s-1', 6);
+
+    // Rows with no power score are filtered out by the database, not in code.
+    expect(notFiltersForWeek(6)).toEqual([['power_score', 'is', null]]);
+    expect(notFiltersForWeek(5)).toEqual([['power_score', 'is', null]]);
+  });
+
+  it("stays 'compared' with no trends when every scored team is new this week (today's behaviour)", async () => {
+    createSupabaseMock({
+      power_score_snapshots: [
+        snapshotWeeks([6, 5]),
+        // t-1 is scored this week. Week 5 scored only t-2, so no team is in both.
+        { data: [{ team_id: 't-1', power_score: 64 }], error: null },
+        { data: [{ team_id: 't-2', power_score: 50 }], error: null },
+      ],
+      divisions: [visibleDivisions],
+      v_team_details: [teamRows],
+    });
+
+    const result = await fetchPowerScoreTrendsForWeek('s-1', 6);
+
+    expect(result).toEqual({ trends: [], currentWeek: 6, previousWeek: 5, basis: 'compared' });
+    // This week HAS a scored team, so the code went on to look the teams up.
+    expect(mockFrom).toHaveBeenCalledWith('v_team_details');
+  });
+
+  it("stays 'compared' with no trends when the only scored team is in a Hidden division (today's behaviour)", async () => {
+    createSupabaseMock({
+      power_score_snapshots: [
+        snapshotWeeks([6, 5]),
+        // t-hidden is scored in both weeks, but its division is Hidden.
+        { data: [{ team_id: 't-hidden', power_score: 80 }], error: null },
+        { data: [{ team_id: 't-hidden', power_score: 70 }], error: null },
+      ],
+      divisions: [visibleDivisions],
+      v_team_details: [teamRows],
+    });
+
+    const result = await fetchPowerScoreTrendsForWeek('s-1', 6);
+
+    expect(result).toEqual({ trends: [], currentWeek: 6, previousWeek: 5, basis: 'compared' });
+    expect(mockFrom).toHaveBeenCalledWith('v_team_details');
   });
 });
 

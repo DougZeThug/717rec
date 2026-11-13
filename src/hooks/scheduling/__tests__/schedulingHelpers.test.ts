@@ -32,6 +32,25 @@ describe('schedule validation', () => {
     );
   });
 
+  it('says Generate stops on an odd block and names every odd block, not the even ones', () => {
+    const { result } = renderHook(() => useScheduleValidation());
+    const blocks = {
+      Early: [team('a'), team('b'), team('c')],
+      Mid: [team('d'), team('e')],
+      Late: [team('f'), team('g'), team('h'), team('i'), team('j')],
+    };
+
+    expect(result.current.validateAndNotify(blocks)).toEqual(['Early', 'Late']);
+
+    expect(toast).toHaveBeenCalledTimes(1);
+    expect(toast).toHaveBeenCalledWith({
+      title: 'Warning',
+      description:
+        'Blocks with an odd number of teams: Early, Late. Generate stops on a block of 3 or more teams until it is even. A team alone in its block is left unmatched.',
+      variant: 'default',
+    });
+  });
+
   it('does not show warnings for matchable blocks', () => {
     const { result } = renderHook(() => useScheduleValidation());
     expect(result.current.validateAndNotify({ Early: [team('a'), team('b')] })).toEqual([]);

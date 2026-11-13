@@ -138,6 +138,17 @@ describe('Edge Case Utils', () => {
       expect(result.warnings.some((w) => w.toLowerCase().includes('odd'))).toBe(true);
     });
 
+    it('does not promise that one team will be unmatched for an odd block', () => {
+      const timeBlocks = { Mid: createMockTimeBlockTeams({ Mid: 3 }).Mid };
+
+      const result = validateBackToBackPairAssignments(timeBlocks);
+
+      const oddWarning = result.warnings.find((w) => w.toLowerCase().includes('odd'));
+      expect(oddWarning).toContain('(3)');
+      expect(oddWarning).toContain('standard mode stops on an odd block of 3 or more');
+      expect(oddWarning).not.toContain('one team will be unmatched');
+    });
+
     it('errors on duplicate teams within a block', () => {
       const t1 = createMockTeam({ id: 't1' });
       const t2 = createMockTeam({ id: 't2' });

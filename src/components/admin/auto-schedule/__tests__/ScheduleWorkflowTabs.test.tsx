@@ -6,7 +6,9 @@ import { describe, expect, it, vi } from 'vitest';
 import ScheduleWorkflowTabs from '../ScheduleWorkflowTabs';
 
 vi.mock('@/components/admin/auto-schedule/tabs/TeamsTab', () => ({
-  default: () => <div data-testid="teams-tab-panel">Teams Panel</div>,
+  default: ({ dualMatchMode }: { dualMatchMode?: boolean }) => (
+    <div data-testid="teams-tab-panel">Teams Panel dual:{String(dualMatchMode)}</div>
+  ),
 }));
 
 vi.mock('@/components/admin/auto-schedule/tabs/MatchesTab', () => ({
@@ -51,6 +53,15 @@ describe('ScheduleWorkflowTabs', () => {
     render(<ScheduleWorkflowTabs {...baseProps} activeTab={activeTab} />);
 
     expect(screen.getByTestId(testId)).toBeInTheDocument();
+  });
+
+  it.each([
+    { label: 'on', props: { dualMatchMode: true }, expected: 'dual:true' },
+    { label: 'off', props: { dualMatchMode: false }, expected: 'dual:false' },
+  ])('hands Dual Match Mode ($label) to the Teams tab', ({ props, expected }) => {
+    render(<ScheduleWorkflowTabs {...baseProps} {...props} activeTab="teams" />);
+
+    expect(screen.getByTestId('teams-tab-panel')).toHaveTextContent(expected);
   });
 
   it('triggers active tab updates when users navigate workflow steps', async () => {

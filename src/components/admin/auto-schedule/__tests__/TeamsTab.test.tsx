@@ -29,12 +29,19 @@ type WarningDisplayProps = {
   oddBlocks?: number;
   unmatchedTeams?: number;
   insufficientBlocks?: string[];
+  dualMatchMode?: boolean;
 };
 
 vi.mock('@/components/admin/batch-matches/auto-schedule/WarningDisplay', () => ({
-  WarningDisplay: ({ oddBlocks, unmatchedTeams, insufficientBlocks = [] }: WarningDisplayProps) => (
+  WarningDisplay: ({
+    oddBlocks,
+    unmatchedTeams,
+    insufficientBlocks = [],
+    dualMatchMode,
+  }: WarningDisplayProps) => (
     <div data-testid="warning-display">
-      odd:{oddBlocks}|unmatched:{unmatchedTeams}|insufficient:{insufficientBlocks.length}
+      odd:{oddBlocks}|unmatched:{unmatchedTeams}|insufficient:{insufficientBlocks.length}|dual:
+      {String(dualMatchMode)}
     </div>
   ),
 }));
@@ -91,6 +98,24 @@ describe('TeamsTab', () => {
     } else {
       expect(screen.queryByTestId('warning-display')).toBeNull();
     }
+  });
+
+  it.each([
+    { label: 'on', props: { dualMatchMode: true }, expected: 'dual:true' },
+    { label: 'off', props: { dualMatchMode: false }, expected: 'dual:false' },
+    { label: 'not given', props: {}, expected: 'dual:undefined' },
+  ])('hands Dual Match Mode ($label) to the odd-block alert', ({ props, expected }) => {
+    vi.mocked(validateTeamCounts).mockReturnValue({
+      isValid: true,
+      insufficientBlocks: [],
+      hasOddBlocks: true,
+      oddBlocks: ['Early'],
+      totalTeams: 3,
+    });
+
+    render(<TeamsTab {...baseProps} {...props} />);
+
+    expect(screen.getByTestId('warning-display')).toHaveTextContent(expected);
   });
 
   it('switches between preview and edit rendering modes', async () => {
