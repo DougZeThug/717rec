@@ -17,13 +17,13 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { NavigationProvider } from '@/contexts/NavigationContext';
+import { handleMutationError, handleQueryError } from '@/hooks/queryErrorToast';
 import { useFirstPartyPageview } from '@/hooks/useFirstPartyPageview';
 import { useLazyRef } from '@/hooks/useLazyRef';
 import { initAnalytics, trackPageView } from '@/utils/analytics';
 import { routeLog } from '@/utils/logger';
-import { handleMutationError, handleQueryError } from '@/utils/queryErrorToast';
 import { getPageViewTitle } from '@/utils/routeName';
-import { preloadCoreRoutes } from '@/utils/routePrefetch';
+import { preloadCoreRoutes, registerRoutePrefetchers } from '@/utils/routePrefetch';
 import { metrics } from '@/utils/sentry';
 
 import { RouteAnnouncer } from './components/a11y/RouteAnnouncer';
@@ -42,31 +42,64 @@ import PageTransition from './components/transitions/PageTransition';
 // Initialize Analytics on app load (Sentry already initialized in main.tsx)
 initAnalytics();
 
+// One loader per page that has a nav link. The lazy line below and the prefetch
+// map further down share it, so both ask for the same chunk.
+const loadIndex = () => import('./pages/Index');
+const loadTeamsPage = () => import('./pages/TeamsPage');
+const loadSchedule = () => import('./pages/Schedule');
+const loadStats = () => import('./pages/Stats');
+const loadPlayoffs = () => import('./pages/Playoffs');
+const loadHistory = () => import('./pages/History');
+const loadCompare = () => import('./pages/Compare');
+const loadInsights = () => import('./pages/Insights');
+const loadMessageBoard = () => import('./pages/MessageBoard');
+const loadHelp = () => import('./pages/Help');
+const loadContact = () => import('./pages/Contact');
+const loadAdminDashboard = () => import('./pages/AdminDashboard');
+const loadAuth = () => import('./pages/Auth');
+
 // Lazy load all page components
-const Index = lazy(() => import('./pages/Index'));
-const Help = lazy(() => import('./pages/Help'));
-const TeamsPage = lazy(() => import('./pages/TeamsPage'));
+const Index = lazy(loadIndex);
+const Help = lazy(loadHelp);
+const TeamsPage = lazy(loadTeamsPage);
 const TeamDetails = lazy(() => import('./pages/TeamDetails'));
 const RecapEdition = lazy(() => import('./pages/RecapEdition'));
-const Schedule = lazy(() => import('./pages/Schedule'));
-const Stats = lazy(() => import('./pages/Stats'));
-const Playoffs = lazy(() => import('./pages/Playoffs'));
-const History = lazy(() => import('./pages/History'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const Auth = lazy(() => import('./pages/Auth'));
+const Schedule = lazy(loadSchedule);
+const Stats = lazy(loadStats);
+const Playoffs = lazy(loadPlayoffs);
+const History = lazy(loadHistory);
+const AdminDashboard = lazy(loadAdminDashboard);
+const Auth = lazy(loadAuth);
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const ProfileSetup = lazy(() => import('./pages/ProfileSetup'));
-const MessageBoard = lazy(() => import('./pages/MessageBoard'));
+const MessageBoard = lazy(loadMessageBoard);
 const MyTeam = lazy(() => import('./pages/MyTeam'));
 const NotFound = lazy(() => import('./pages/NotFound'));
-const Contact = lazy(() => import('./pages/Contact'));
+const Contact = lazy(loadContact);
 const Join = lazy(() => import('./pages/Join'));
-const Compare = lazy(() => import('./pages/Compare'));
-const Insights = lazy(() => import('./pages/Insights'));
+const Compare = lazy(loadCompare);
+const Insights = lazy(loadInsights);
 const PlayoffBracketE2EProof = lazy(() => import('./components/playoffs/PlayoffBracketE2EProof'));
 const LiveScoring = lazy(() => import('./pages/LiveScoring'));
 const OAuthConsent = lazy(() => import('./pages/OAuthConsent'));
+
+// Hand the nav-link routes to the prefetch util, once, before the first render.
+registerRoutePrefetchers({
+  '/': loadIndex,
+  '/teams': loadTeamsPage,
+  '/schedule': loadSchedule,
+  '/stats': loadStats,
+  '/playoffs': loadPlayoffs,
+  '/history': loadHistory,
+  '/compare': loadCompare,
+  '/insights': loadInsights,
+  '/message-board': loadMessageBoard,
+  '/help': loadHelp,
+  '/contact': loadContact,
+  '/admin': loadAdminDashboard,
+  '/auth': loadAuth,
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {

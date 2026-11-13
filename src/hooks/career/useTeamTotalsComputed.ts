@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { calculateCareerPowerScore } from '@/services/career/calculateCareerPowerScore';
+import { fetchCareerData } from '@/services/career/CareerService';
 import {
   calculateCareerClutchRate,
   calculateCareerMatchStats,
-  calculateCareerPowerScore,
   calculateCareerSOS,
   calculateDivisionRecords,
   calculatePlayoffStats,
@@ -11,8 +12,6 @@ import {
 } from '@/utils/career';
 import { calculatePlayoffConsistency } from '@/utils/career/calculatePlayoffNarratives';
 import { PlayoffFinish, TeamTotals } from '@/utils/career/types';
-
-import { fetchCareerData } from './useCareerData';
 
 /**
  * Computes team career totals from raw career data.

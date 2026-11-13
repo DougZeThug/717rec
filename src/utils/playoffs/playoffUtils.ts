@@ -1,4 +1,4 @@
-import { PlayoffBracket, PlayoffMatch } from './playoffTypes';
+import { PlayoffBracket, PlayoffMatch } from '@/types/playoffTypes';
 
 // UUID validation utility
 export const isValidUuidSafe = (str: string): boolean => {

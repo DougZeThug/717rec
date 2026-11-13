@@ -19,7 +19,7 @@ vi.mock('@/services/matches/MatchWriteService', () => ({
   fetchActiveSeason: mockFetchActiveSeason,
 }));
 
-vi.mock('@/components/schedule/form-utils', () => ({
+vi.mock('@/utils/timezone/createDateWithTime', () => ({
   createDateWithTime: mockCreateDateWithTime,
 }));
 

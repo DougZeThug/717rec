@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 
 import { BRACKET_FORMATS, BRACKET_STATES } from '@/constants/brackets';
-import type { SimpleBracketData } from '@/hooks/brackets/useBracketData';
+import type { SimpleBracketData } from '@/hooks/brackets/transformBracketData';
 import { useBracketData } from '@/hooks/brackets/useBracketData';
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
@@ -11,9 +11,9 @@ import { useDivisions } from '@/hooks/useDivisions';
 import { usePlayoffData } from '@/hooks/usePlayoffViewModel.compat';
 import { useActiveSeason, usePlayoffActiveSeason } from '@/hooks/useSeasons';
 import { deleteBracket as deleteBracketService } from '@/services/brackets/BracketWriteService';
+import { BracketFormat, BracketState, PlayoffBracket, Team } from '@/types/playoffTypes';
 import { convertErrorToString, getUIErrorMessage, logError } from '@/utils/errorHandler';
 import { bracketLog, cacheLog, errorLog, playoffLog } from '@/utils/logger';
-import { BracketFormat, BracketState, PlayoffBracket, Team } from '@/utils/playoffs/playoffTypes';
 
 type Division = ReturnType<typeof useDivisions>['divisions'][number];
 type TeamsByDivision = Record<string, Team[]>;

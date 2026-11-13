@@ -13,9 +13,9 @@ import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useChartColors } from '@/hooks/useChartColors';
 import { ReportCardMode, useTeamReportCard } from '@/hooks/useTeamReportCard';
 import { cn } from '@/lib/utils';
-import { useChartColors } from '@/utils/charts/chartStyleUtils';
 import {
   getGradeBgColor,
   getGradeChartColor,

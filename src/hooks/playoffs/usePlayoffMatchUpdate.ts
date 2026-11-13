@@ -14,8 +14,8 @@ import {
 } from '@/services/brackets/BracketWriteService';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { DatabaseError, ValidationError } from '@/types/errors';
+import type { PlayoffBracket } from '@/types/playoffTypes';
 import { scoreLog } from '@/utils/logger';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 /**
  * A tied game (the 0-0 placeholder row the score editor allows) has no winner.

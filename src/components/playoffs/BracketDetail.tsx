@@ -10,8 +10,8 @@ import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { cn } from '@/lib/utils';
 import { fetchBracketParticipants } from '@/services/brackets/BracketReadService';
 import { blueAmber } from '@/styles/design-system';
+import { PlayoffBracket, Team } from '@/types/playoffTypes';
 import { getDivisionSoftClasses } from '@/utils/colors/divisionColors';
-import { PlayoffBracket, Team } from '@/utils/playoffs/playoffTypes';
 
 import BracketAdminToolbar from './admin/BracketAdminToolbar';
 import EditBracketDialog from './admin/EditBracketDialog';

@@ -70,7 +70,7 @@ Components → Hooks → Services → Supabase → PostgreSQL
 **Example**: Displaying teams
 
 ```
-TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.from('v_team_details')
+TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeamsWithOptions() → supabase.from('v_team_details')
 ```
 
 ### Pure decision modules
@@ -94,6 +94,33 @@ published page. The weekly recap is the clearest case:
 week's snapshot instead of today's standings, so a weekly grade and a team page
 grade cannot use different rules. They do use different populations, which is
 documented in `docs/product-description/stats/team-and-player-stats.md`.
+
+## Layer rules
+
+**Direction**: Components → Hooks → Services → Supabase. A lower layer never imports a higher one.
+
+- `types` and `utils` never import services, hooks, components or pages.
+- Services never import hooks, components or pages.
+- Hooks never import components or pages. Hook folders that sit beside their component (`components/**/hooks`) are fine.
+
+**What lint enforces today** (`eslint.config.js`): the direction rule, for static imports only (`import`, `import type`, `export ... from`, `export *`) on `@/` and `../` paths in `src/types`, `src/utils`, `src/services` and `src/hooks`. Tests are exempt. The files that may use the Supabase client (the realtime hooks, `imageUpload.ts`) still obey the direction rule.
+
+One known file keeps a per-file exception in the config. It allows exactly one module and still bans every other layer:
+
+- `src/hooks/useToast.ts` → `components/ui/toast` (types only; this one stays)
+
+Lint does **not** cover dynamic `import()`, `require()`, type-position `import('x').T`, or a hop through `contexts` or `lib`. Those stay a convention.
+
+Code outside a service folder (components, hooks, tests) imports that folder through its public `index.ts`, not its internal files (example: `@/services/brackets/manager/services/BracketAdmin`); this is a convention for new code, and lint does not enforce it. Some older files still reach into other service folders (for example `components/playoffs/viewer/bracketDecorations.ts` into `services/brackets/viewer/`).
+
+**Supabase client**: import `supabase` only inside `src/services/`. The ban also catches relative paths, dynamic `import()` and `require()`. Lint turns it off for these files only:
+
+- the realtime `.channel()` hooks, listed **by file** in `eslint.config.js` (the one source of truth for that list; a new realtime hook must be added there)
+- `src/pages/OAuthConsent.tsx` (auth calls)
+- `src/utils/imageUpload.ts` (Supabase Storage)
+- test files (they mock the client)
+
+`src/lib/mcp/**` builds its own clients with `createClient`, not the app client, so it is exempt.
 
 ## Supabase Integration
 
@@ -258,7 +285,7 @@ Compare (/compare)
 
 1. Create component in `src/pages/`
 2. Add route in `src/App.tsx`
-3. Add to the nav link list in `src/components/layout/navbar/NavLinks.tsx`, or to `src/components/navigation/CommandPalette.tsx` if it is a secondary page. `src/components/navigation/__tests__/routeReachability.test.ts` fails if a new route reaches no menu at all. Add it to `src/utils/routePrefetch.ts` too, or hover-prefetch silently does nothing for it.
+3. Add to the nav link list in `src/components/layout/navbar/NavLinks.tsx`, or to `src/components/navigation/CommandPalette.tsx` if it is a secondary page. `src/components/navigation/__tests__/routeReachability.test.ts` fails if a new route reaches no menu at all. If it has a nav link, also add its loader to the map passed to `registerRoutePrefetchers` in `src/App.tsx` (`src/utils/routePrefetch.ts` holds no page imports), or hover-prefetch silently does nothing for it.
 
 **Fetch new data**:
 

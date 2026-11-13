@@ -5,8 +5,8 @@ import { useTeamsArray } from '@/hooks/teams';
 import { useDivisions } from '@/hooks/useDivisions';
 import type { BracketsOverviewRow } from '@/services/brackets/BracketReadService';
 import { fetchBracketsOverview } from '@/services/brackets/BracketReadService';
+import type { PlayoffBracket } from '@/types/playoffTypes';
 import { bracketLog } from '@/utils/logger';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */

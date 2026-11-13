@@ -3,8 +3,8 @@ import React from 'react';
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
 import { useSeedValidation } from '@/hooks/playoffs/useSeedValidation';
 import { Division } from '@/types';
+import type { Team as PlayoffTeam } from '@/types/playoffTypes';
 import { errorLog } from '@/utils/logger';
-import type { Team as PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import { BracketFormDataResult, ProcessedTeam, SeedValidationState } from '../types';
 import { assignMixedSeeds } from '../utils/seedAssignment';

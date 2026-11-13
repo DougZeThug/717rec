@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { useSeasonOpponentHistory } from '@/hooks/useSeasonOpponentHistory';
 import { cn } from '@/lib/utils';
-import type { SeasonOpponentData } from '@/services/matches/MatchHistoryService';
+import type { SeasonOpponentData } from '@/types/seasonOpponentHistory';
 
 type TeamOpponentRow = SeasonOpponentData['teams'][number];
 

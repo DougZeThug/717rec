@@ -2,9 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import type { HeadToHeadData } from '@/hooks/useBatchHeadToHead';
+import { fetchDivisionWeights } from '@/services/divisionWeightsCache';
 import type { HeadToHeadStats, PredictionResult, TeamStats } from '@/utils/predictions';
 import { isUpset, predictMatch } from '@/utils/predictions';
-import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
 
 import { useCareerRankings } from './useCareerRankings';
 import { useMatchHeadToHead } from './useMatchHeadToHead';

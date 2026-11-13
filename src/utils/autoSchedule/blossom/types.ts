@@ -2,7 +2,7 @@ import { Team } from '@/types';
 
 export type TeamPairingConfig = {
   avoidRematches?: boolean;
-  haveTeamsPlayedFn: (team1Id: string, team2Id: string) => Promise<boolean>;
+  fetchSeasonHistoryFn: (teamIds: string[]) => Promise<Array<[string, string]>>;
   getCompatibilityScoreFn: (team1: Team, team2: Team) => number;
   maxScore?: number;
   weights?: {

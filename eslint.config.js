@@ -8,6 +8,72 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import vitest from '@vitest/eslint-plugin';
 
+// Import rules, built from the pieces below (see ARCHITECTURE.md → Layer rules).
+// A later config block REPLACES the earlier `no-restricted-imports` options for
+// the files it matches (flat config does not merge them), so every block below
+// lists its full set of patterns.
+
+// Supabase client ban. A pattern, not a path, so a relative import is caught too.
+// Only the `supabase` export is banned, so src/main.tsx may still import
+// `isSupabaseConfigured` from the same module.
+const SUPABASE_CLIENT = {
+  group: ['**/integrations/supabase/client'],
+  importNames: ['supabase'],
+  message:
+    'Import the Supabase client only inside src/services/. Components and hooks should call a service function instead (see CLAUDE.md → Architecture Rules).',
+};
+
+// The realtime .channel() hooks may import the Supabase client. Listed BY FILE
+// (no src/hooks/** folder glob). A new realtime hook must be added to this list.
+const REALTIME_HOOKS = [
+  'src/hooks/brackets/useBracketsManagerRealtime.ts',
+  'src/hooks/contact/useContactRequests.ts',
+  'src/hooks/live-scoring/useLiveMatchRealtime.ts',
+  'src/hooks/matches/useMatchComments.ts',
+  'src/hooks/matches/useMatchReactions.ts',
+  'src/hooks/message-board/useMessageReactions.ts',
+  'src/hooks/message-board/useMessageRealtime.ts',
+  'src/hooks/notifications/useNotificationsRealtime.ts',
+  'src/hooks/realtime/subscribeWithRetry.ts',
+  'src/hooks/support/useSupportTickets.ts',
+  'src/hooks/useBracketCompletion.ts',
+  'src/hooks/useOpsHealth.ts',
+];
+
+// Layer direction: Components → Hooks → Services → Supabase. A lower layer never
+// imports a higher one. BANNED lists, per zone, the layers that zone must not import.
+// Only static imports of `@/...` and `../...` paths are checked: dynamic `import()`,
+// `require()` and a hop through contexts or lib are not.
+const LAYERS = ['services', 'hooks', 'components', 'pages'];
+const BANNED = {
+  types: LAYERS,
+  utils: LAYERS,
+  services: ['hooks', 'components', 'pages'],
+  hooks: ['components', 'pages'],
+};
+const WHY = {
+  types:
+    'src/types sits at the bottom of the app and must not import services, hooks, components or pages. Move the shared piece down into types or utils, or move this file up to the layer that needs it (see ARCHITECTURE.md → Layer rules).',
+  utils:
+    'src/utils sits at the bottom of the app and must not import services, hooks, components or pages. Pass the data in as an argument, or move the shared code down into utils or types (see ARCHITECTURE.md → Layer rules).',
+  services:
+    'Services must not import hooks, components or pages (Components → Hooks → Services → Supabase). Take what you need as an argument, or move the shared code down into utils or types (see ARCHITECTURE.md → Layer rules).',
+  hooks:
+    "Hooks must not import components or pages (Components → Hooks → Services → Supabase). Move the shared piece down into a service, util or type. A hook used by one component can live in that component's own hooks folder (see ARCHITECTURE.md → Layer rules).",
+};
+// Matches `@/` and any run of `../`. Dots are written as [.] on purpose: in a plain
+// string '\.' loses its backslash and would also match scoped packages like '@x/hooks'.
+const FROM = String.raw`(?:@/|(?:[.][.]/)+)`;
+// Bans every layer listed for the zone. `allow` names whole modules (alias form)
+// that one file may still import; the lookahead lets exactly those through.
+const layerBan = (zone, allow = []) => ({
+  regex: `^${allow.length ? `(?!${FROM}(?:${allow.join('|')})$)` : ''}${FROM}(?:${BANNED[zone].join('|')})(?:/|$)`,
+  caseSensitive: true,
+  message: WHY[zone],
+});
+const imports = (...patterns) => ({ rules: { 'no-restricted-imports': ['error', { patterns }] } });
+const inZone = (zone) => `src/${zone}/**/*.{ts,tsx}`;
+
 export default tseslint.config(
   {
     ignores: [
@@ -69,22 +135,12 @@ export default tseslint.config(
         },
       ],
 
-      // Architecture: keep the Supabase client out of components/utils.
-      // All DB access goes through src/services/. Allowed exceptions
-      // (services, realtime hooks, image uploads, tests) are re-enabled below.
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            {
-              name: '@/integrations/supabase/client',
-              importNames: ['supabase'],
-              message:
-                'Import the Supabase client only inside src/services/. Components and hooks should call a service function instead (see CLAUDE.md → Architecture Rules).',
-            },
-          ],
-        },
-      ],
+      // Architecture: keep the Supabase client out of components, hooks and utils.
+      // All DB access goes through src/services/. This is the default for every
+      // file (components and pages get the Supabase ban only). The blocks below
+      // add the layer-direction ban per folder and switch the Supabase ban off
+      // for the files that may use the client.
+      'no-restricted-imports': ['error', { patterns: [SUPABASE_CLIENT] }],
 
       // Never use select('*') — list columns explicitly (see CLAUDE.md).
       'no-restricted-syntax': [
@@ -112,6 +168,19 @@ export default tseslint.config(
             "TemplateElement[value.raw=/(^|\\s)(hover:|focus:|active:|group-hover:|even:|odd:)?(text|bg|border|from|via|to|divide|ring|placeholder|fill|stroke)-(gray|slate|zinc|neutral|stone)-[0-9]{2,3}(\\/[0-9]+)?(\\s|$)/][value.raw=/(^|\\s)dark:/]",
           message:
             'Use a theme token instead of a fixed grey with a `dark:` twin: text-foreground, text-muted-foreground, bg-card, bg-muted, bg-accent, border-border (see CONTRIBUTING.md → Styling). If the colour carries meaning rather than a theme role — a medal, a category badge — disable this rule on the line and say why.',
+        },
+        // The Supabase client ban above only sees static `import` statements.
+        // These two selectors cover dynamic `import('…')` and `require('…')`.
+        {
+          selector: 'ImportExpression[source.value=/integrations\\/supabase\\/client$/]',
+          message:
+            'Import the Supabase client only inside src/services/ (dynamic import and require are covered too). Components and hooks should call a service function instead (see CLAUDE.md → Architecture Rules).',
+        },
+        {
+          selector:
+            "CallExpression[callee.name='require'][arguments.0.value=/integrations\\/supabase\\/client$/]",
+          message:
+            'Import the Supabase client only inside src/services/ (dynamic import and require are covered too). Components and hooks should call a service function instead (see CLAUDE.md → Architecture Rules).',
         },
       ],
 
@@ -149,16 +218,37 @@ export default tseslint.config(
       ],
     },
   },
-  // Allowed exceptions to the Supabase client import restriction:
-  // - src/services/**   → the service layer owns all database access
-  // - src/hooks/**      → realtime .channel() subscriptions live in hooks
-  // - imageUpload.ts    → uses Supabase Storage directly
-  // - test files        → import the client to mock it
+  // Import rules per folder. The order matters: a later block replaces the earlier
+  // options for the files it matches, so zones come first, then the files that are
+  // exempt from the Supabase ban, then the per-file layer exceptions, then "off".
+  //
+  // 1. Zones. types, utils and hooks get the Supabase ban plus the layer ban.
+  //    Services own the Supabase client, so they get the layer ban only.
+  { files: [inZone('types')], ...imports(SUPABASE_CLIENT, layerBan('types')) },
+  { files: [inZone('utils')], ...imports(SUPABASE_CLIENT, layerBan('utils')) },
+  { files: [inZone('services')], ...imports(layerBan('services')) },
+  { files: [inZone('hooks')], ...imports(SUPABASE_CLIENT, layerBan('hooks')) },
+  // 2. Files that may use the Supabase client but still sit in a zone: they obey
+  //    the layer ban only.
+  //    - the 12 realtime .channel() hooks (see REALTIME_HOOKS)
+  //    - imageUpload.ts: uses Supabase Storage directly
+  { files: REALTIME_HOOKS, ...imports(layerBan('hooks')) },
+  { files: ['src/utils/imageUpload.ts'], ...imports(layerBan('utils')) },
+  // 3. Known wrong-way imports. Each block allows exactly ONE module and still bans
+  //    every other layer. These files are not exempt from the Supabase ban, so each
+  //    block lists SUPABASE_CLIENT again. A stale block does not warn: remove each
+  //    block when the cleanup named in the comment above it lands.
+  //    Stays: a documented type-only exception (the toast types live with the UI).
+  {
+    files: ['src/hooks/useToast.ts'],
+    ...imports(SUPABASE_CLIENT, layerBan('hooks', ['components/ui/toast'])),
+  },
+  // 4. Last: files exempt from both rules.
+  //    - src/lib/mcp/**    → builds its own clients with createClient
+  //    - OAuthConsent.tsx  → auth calls
+  //    - test files        → import the client to mock it
   {
     files: [
-      'src/services/**/*.{ts,tsx}',
-      'src/hooks/**/*.{ts,tsx}',
-      'src/utils/imageUpload.ts',
       'src/lib/mcp/**/*.{ts,tsx}',
       'src/pages/OAuthConsent.tsx',
       '**/__tests__/**/*.{ts,tsx}',

@@ -1,15 +1,15 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 // skipcq: JS-C1003 -- vi.mocked() needs the whole module object.
-import * as teamLoaderUtils from '@/utils/autoSchedule/teamLoaderUtils';
+import * as teamLoaderUtils from '@/services/timeslots/teamLoaderUtils';
+import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { mockDate, mockTeams } from '@/utils/test/autoSchedule/mockData';
 
 import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
 
 // Mock dependencies
-vi.mock('@/utils/autoSchedule/teamLoaderUtils');
+vi.mock('@/services/timeslots/teamLoaderUtils');
 
 // Mock logger (used by hook)
 vi.mock('@/utils/logger', () => ({

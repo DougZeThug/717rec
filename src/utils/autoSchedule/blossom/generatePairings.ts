@@ -3,7 +3,6 @@ import { TeamPairing } from '@/types/autoSchedule';
 import { debugLog, errorLog, scheduleLog, warnLog } from '@/utils/logger';
 import { withTiming } from '@/utils/performance';
 
-import { fetchSeasonHistoryForTeams } from '../matchHistoryService';
 import { analyzeGraphFeasibility } from './feasibility';
 import {
   buildWeightedGraph,
@@ -41,7 +40,7 @@ export async function generatePairingsWithBlossom(
         if (!config.playedPairsSet && config.avoidRematches) {
           scheduleLog('Pre-fetching season history for all teams...');
           const teamIds = teams.map((team) => team.id);
-          const historyPairs = await fetchSeasonHistoryForTeams(teamIds);
+          const historyPairs = await config.fetchSeasonHistoryFn(teamIds);
 
           // Build Set for O(1) lookup
           config.playedPairsSet = new Set<string>();

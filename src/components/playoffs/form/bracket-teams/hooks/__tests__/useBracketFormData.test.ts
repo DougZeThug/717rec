@@ -5,7 +5,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Division } from '@/types';
-import type { Team } from '@/utils/playoffs/playoffTypes';
+import type { Team } from '@/types/playoffTypes';
 
 import { useBracketFormData } from '../useBracketFormData';
 

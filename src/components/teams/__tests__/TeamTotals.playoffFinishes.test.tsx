@@ -4,8 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import TeamTotals from '../TeamTotals';
 
-vi.mock('@/hooks/useTeamTotals', () => ({
-  useTeamTotals: () => ({
+vi.mock('@/hooks/career/useTeamTotalsComputed', () => ({
+  useTeamTotalsComputed: () => ({
     isLoading: false,
     totals: {
       career_match_wins: 0,

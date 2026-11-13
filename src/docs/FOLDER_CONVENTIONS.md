@@ -11,7 +11,7 @@ Quick reference for folder and file naming conventions in this project.
 | Hook folders | kebab-case (no "use" prefix) | `hooks/auto-schedule/` |
 | Component files | PascalCase | `TeamCard.tsx` |
 | Hook files | camelCase + use | `useTeams.ts` |
-| Service files | PascalCase + Service | `TeamService.ts` |
+| Service files | PascalCase + Service | `TeamSeasonStatsService.ts` |
 | Type files | camelCase | `match.ts` |
 | Util files | camelCase | `dateUtils.ts` |
 

@@ -1,6 +1,7 @@
-import type { TrendBasis } from '@/services/rankings/weeklyTrendsForWeek';
-import type { TeamStreakInfo, WeeklyUpset } from '@/services/weeklyRecap/types';
-import type { LetterGrade } from '@/utils/reportCardUtils';
+import type { LetterGrade } from '@/types/reportCard';
+import type { TeamStreakInfo, WeeklyUpset } from '@/types/weeklyRecap';
+
+import type { TrendBasis } from './powerScoreSnapshot';
 
 /**
  * The frozen contents of one recap edition.
@@ -92,7 +93,7 @@ export interface RecapDivisionFact {
 }
 
 interface RecapMoversFact {
-  /** How the comparison was reached. See services/rankings/weeklyTrendsForWeek. */
+  /** How the comparison was reached. See TrendBasis in types/powerScoreSnapshot. */
   basis: TrendBasis;
   currentWeek: number;
   /** The week actually compared against — not always currentWeek - 1. */

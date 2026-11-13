@@ -7,7 +7,7 @@ import type {
   RearrangeBoard,
   RearrangeSlotView,
   SnapshotSlot,
-} from '@/services/brackets/manager/services/BracketAdmin/rearrange/types';
+} from '@/services/brackets/manager/services/BracketAdmin';
 
 vi.mock('@/hooks/playoffs/usePlayoffRearrange', () => ({
   useLoserRearrangeBoard: vi.fn(),

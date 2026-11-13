@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import PowerScoreChart from '../PowerScoreChart';
 
 vi.mock('@/hooks/useMobile', () => ({ useIsMobile: () => false }));
-vi.mock('@/utils/charts/chartStyleUtils', () => ({
+vi.mock('@/hooks/useChartColors', () => ({
   useChartColors: () => ({
     background: '#ffffff',
     gridColor: '#e5e7eb',

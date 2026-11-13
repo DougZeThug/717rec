@@ -21,7 +21,7 @@ vi.mock('@/hooks/useMatchCreation', () => ({
   })),
 }));
 
-vi.mock('@/hooks/useMatchUpdates', () => ({
+vi.mock('@/hooks/matches/updates', () => ({
   useMatchUpdates: vi.fn(() => ({
     editingMatch: null,
     deleteMatchId: null,
@@ -34,8 +34,8 @@ vi.mock('@/hooks/useMatchUpdates', () => ({
   })),
 }));
 
+import { useMatchUpdates } from '@/hooks/matches/updates';
 import { useMatchCreation } from '@/hooks/useMatchCreation';
-import { useMatchUpdates } from '@/hooks/useMatchUpdates';
 
 const makeMatch = (id: string) =>
   ({

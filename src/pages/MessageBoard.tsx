@@ -9,7 +9,7 @@ import MessageInput from '@/components/message-board/MessageInput';
 import SeoHead from '@/components/seo/SeoHead';
 import PageTransition from '@/components/transitions/PageTransition';
 import { useAuth } from '@/contexts/auth-context';
-import { useMessageBoard } from '@/hooks/useMessageBoard';
+import { useMessageBoard } from '@/hooks/message-board';
 import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 import { animations, gradients } from '@/styles/design-system';

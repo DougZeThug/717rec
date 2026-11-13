@@ -1,7 +1,7 @@
 import ExcelJS from 'exceljs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { SeasonOpponentData } from '@/hooks/useSeasonOpponentHistory';
+import type { SeasonOpponentData } from '@/types/seasonOpponentHistory';
 import { exportMatchupsToExcel } from '@/utils/exportMatchupsToExcel';
 
 const data = {

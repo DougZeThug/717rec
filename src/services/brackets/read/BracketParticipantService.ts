@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Team } from '@/types/playoffTypes';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import type { Team } from '@/utils/playoffs/playoffTypes';
 
 /**
  * Validate seeds for a division using RPC

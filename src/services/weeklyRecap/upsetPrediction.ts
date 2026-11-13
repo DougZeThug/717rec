@@ -1,8 +1,8 @@
-import { computeAllTeamsTotals } from '@/hooks/career/computeAllTeamsTotals';
+import { computeAllTeamsTotals } from '@/services/career/computeAllTeamsTotals';
+import { fetchDivisionWeights } from '@/services/divisionWeightsCache';
 import { fetchBatchHeadToHead, type HeadToHeadData } from '@/services/TeamCareerStatsService';
 import type { Team } from '@/types';
 import type { HeadToHeadStats, TeamStats } from '@/utils/predictions';
-import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache';
 
 /**
  * Gathers everything `predictMatch` needs for the teams that played in one week.
@@ -13,7 +13,7 @@ import { fetchDivisionWeights } from '@/utils/rankingUtils/divisionWeightsCache'
  * match. This module feeds the recap the same inputs the schedule uses, from the
  * same sources, so they cannot.
  *
- * `computeAllTeamsTotals` lives under `hooks/career/` but is a plain async
+ * `computeAllTeamsTotals` lives in `services/career/` and is a plain async
  * function, not a hook. It is imported here rather than reimplemented so the
  * career numbers stay identical to the ones `useMatchPrediction` reads.
  */

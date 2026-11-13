@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const { fetchSeasonBreakdown } = vi.hoisted(() => ({ fetchSeasonBreakdown: vi.fn() }));
-vi.mock('@/services/TeamStatsService', () => ({ fetchSeasonBreakdown }));
+vi.mock('@/services/TeamSeasonStatsService', () => ({ fetchSeasonBreakdown }));
 
 import { fetchTeamSeasonBreakdown } from '../fetchTeamSeasonBreakdown';
 

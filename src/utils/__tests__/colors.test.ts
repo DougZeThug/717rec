@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { getSosColor, getSweepRateColor } from '../colors';
 
-describe('src/utils/colors.ts', () => {
+describe('src/utils/colors/index.ts', () => {
   it.each([
     { label: 'null value', input: null, expected: 'text-muted-foreground' },
     { label: 'undefined value', input: undefined, expected: 'text-muted-foreground' },

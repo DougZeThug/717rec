@@ -4,10 +4,7 @@ import type { Team } from '@/types';
 import { getBackToBackPair, getPairConfig } from '@/utils/autoSchedule/constants';
 import { errorLog } from '@/utils/logger';
 import type { GreedySchedulerInput, ScheduledMatch } from '@/utils/scheduling/greedy';
-import {
-  generateScheduleGreedyWithTracking,
-  pairKey,
-} from '@/utils/scheduling/greedyBackToBackScheduler';
+import { generateScheduleGreedyWithTracking, pairKey } from '@/utils/scheduling/greedy';
 
 import { scheduleDualBlockPairings } from '../dualBlockScheduler';
 
@@ -16,7 +13,7 @@ vi.mock('@/utils/autoSchedule/constants', () => ({
   getBackToBackPair: vi.fn(),
 }));
 
-vi.mock('@/utils/scheduling/greedyBackToBackScheduler', () => ({
+vi.mock('@/utils/scheduling/greedy', () => ({
   generateScheduleGreedyWithTracking: vi.fn(),
   pairKey: vi.fn(),
 }));

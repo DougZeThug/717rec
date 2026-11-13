@@ -4,8 +4,8 @@ import { Link } from 'react-router';
 import { TeamLogo } from '@/components/shared/TeamLogo';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { WeeklyUpset } from '@/services/weeklyRecap/WeeklyRecapService';
 import { typeScale } from '@/styles/design-system';
+import type { WeeklyUpset } from '@/types/weeklyRecap';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 import MobileSectionShell from './WeeklyRecapMobileSectionShell';

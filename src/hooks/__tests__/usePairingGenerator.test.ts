@@ -4,8 +4,8 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useToast } from '@/hooks/useToast';
-import { PairingResult, TimeBlockTeamsMap } from '@/types/autoSchedule';
-import { fetchSeasonHistoryForTeams } from '@/utils/autoSchedule/matchHistoryService';
+import { fetchSeasonHistoryForTeams } from '@/services/matches/SchedulingHistoryService';
+import { AlgorithmConfig, PairingResult, TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { mockDate, mockPairings, mockTimeBlockTeams } from '@/utils/test/autoSchedule/mockData';
 
 import { usePairingGenerator } from '../scheduling/usePairingGenerator';
@@ -21,7 +21,7 @@ vi.mock('../teams', () => ({
 }));
 
 // Mock match history service
-vi.mock('@/utils/autoSchedule/matchHistoryService', () => ({
+vi.mock('@/services/matches/SchedulingHistoryService', () => ({
   fetchSeasonHistoryForTeams: vi.fn().mockResolvedValue([]),
 }));
 
@@ -30,9 +30,9 @@ const mockScheduleStandardPairings = vi.hoisted(() => vi.fn());
 vi.mock('../scheduling/utils/standardPairing', () => ({
   scheduleStandardPairings: (
     timeBlockTeams: TimeBlockTeamsMap,
-    avoidRematches: boolean,
-    seasonId?: string
-  ) => mockScheduleStandardPairings(timeBlockTeams, avoidRematches, seasonId),
+    config: AlgorithmConfig,
+    historyPairs: [string, string][]
+  ) => mockScheduleStandardPairings(timeBlockTeams, config, historyPairs),
 }));
 
 vi.mock('../scheduling/utils/dualBlockScheduler', () => ({
@@ -160,6 +160,27 @@ describe('usePairingGenerator', () => {
       expect(pairings.pairings['6:30'].length).toBe(1); // Can only pair 2 of the 3 teams
       expect(pairings.pairings['7:30'].length).toBe(1); // Still pairs the 2 teams in this block
     }
+  });
+
+  it('hands the season history it fetched to the standard pairing step', async () => {
+    const history: [string, string][] = [
+      ['team1', 'team2'],
+      ['team4', 'team3'],
+    ];
+    vi.mocked(fetchSeasonHistoryForTeams).mockResolvedValue(history);
+
+    const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams);
+    });
+
+    // Asked once, for every team in every block.
+    expect(fetchSeasonHistoryForTeams).toHaveBeenCalledTimes(1);
+    expect(fetchSeasonHistoryForTeams).toHaveBeenCalledWith(['team1', 'team2', 'team3', 'team4']);
+    // The same pairs come out as the third argument, with no change.
+    expect(mockScheduleStandardPairings).toHaveBeenCalledTimes(1);
+    expect(mockScheduleStandardPairings).toHaveBeenCalledWith(mockTimeBlockTeams, {}, history);
   });
 
   it('should handle errors during pairing generation', async () => {

@@ -200,6 +200,38 @@ describe('AdminDashboard page', () => {
     expect(currentPath()).toBe('/admin/timeslots');
   });
 
+  // The remembered value is read back exactly as stored, so it can be anything
+  // at all: blank, a real id with a query string stuck on, or a real id in the
+  // wrong case. None of these names a section, so each one ends on the default
+  // and never on a blank `/admin/` or on the section it resembles.
+  it.each([
+    ['an empty string', ''],
+    ['an id with a query string stuck on', 'divisions?x=1'],
+    ['an id in the wrong case', 'Divisions'],
+  ])('sends a bare /admin to Timeslots when the remembered section is %s', (_label, stored) => {
+    asAdmin();
+    sessionStorage.setItem(ADMIN_TAB_STORAGE_KEY, stored);
+    renderDashboard('/admin');
+
+    expect(currentPath()).toBe('/admin/timeslots');
+  });
+
+  // Private mode, or a browser that blocks storage: nothing can be read back,
+  // so a bare /admin still ends on the default instead of failing.
+  it('sends a bare /admin to Timeslots when session storage cannot be read', () => {
+    asAdmin();
+    const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('private mode');
+    });
+    try {
+      renderDashboard('/admin');
+
+      expect(currentPath()).toBe('/admin/timeslots');
+    } finally {
+      getItem.mockRestore();
+    }
+  });
+
   it('calls requestAdminAccess after clicking request access', async () => {
     const requestAdminAccess = vi.fn();
     mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, authInitialized: true });

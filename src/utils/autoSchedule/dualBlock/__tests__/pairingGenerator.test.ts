@@ -3,16 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockTeam, createMockTeamPairing } from '@/utils/test/autoSchedule/testHelpers';
 
 // Mocks must be declared before imports of the modules under test
-vi.mock('../../blossomPairingAlgorithm', () => ({
+vi.mock('../../blossom', () => ({
   generatePairingsWithBlossom: vi.fn(),
-}));
-vi.mock('../../matchHistoryService', () => ({
-  haveTeamsPlayedBefore: vi.fn().mockResolvedValue(false),
 }));
 
 // Import mocked module to inspect calls
-import { generatePairingsWithBlossom } from '../../blossomPairingAlgorithm';
+import { generatePairingsWithBlossom } from '../../blossom';
 import { generateDualBlockPairings } from '../pairingGenerator';
+
+// The season-history lookup is handed in as an argument, so each call passes a stub.
+const fetchSeasonHistoryFn = vi.fn().mockResolvedValue([]);
 
 const p1 = createMockTeam({ id: 'p1', name: 'P1' });
 const p2 = createMockTeam({ id: 'p2', name: 'P2' });
@@ -34,7 +34,8 @@ describe('generateDualBlockPairings', () => {
   it('returns null when primary block is missing (edge)', async () => {
     const result = await generateDualBlockPairings(
       { Late: [s1, s2] },
-      { primaryBlock: 'Early', secondaryBlock: 'Late' }
+      { primaryBlock: 'Early', secondaryBlock: 'Late' },
+      fetchSeasonHistoryFn
     );
 
     expect(result).toBeNull();
@@ -43,7 +44,8 @@ describe('generateDualBlockPairings', () => {
   it('returns null when secondary block is missing (edge)', async () => {
     const result = await generateDualBlockPairings(
       { Early: [p1, p2] },
-      { primaryBlock: 'Early', secondaryBlock: 'Late' }
+      { primaryBlock: 'Early', secondaryBlock: 'Late' },
+      fetchSeasonHistoryFn
     );
 
     expect(result).toBeNull();
@@ -52,7 +54,8 @@ describe('generateDualBlockPairings', () => {
   it('returns null when both blocks are missing', async () => {
     const result = await generateDualBlockPairings(
       { Other: [] },
-      { primaryBlock: 'Early', secondaryBlock: 'Late' }
+      { primaryBlock: 'Early', secondaryBlock: 'Late' },
+      fetchSeasonHistoryFn
     );
 
     expect(result).toBeNull();
@@ -61,7 +64,8 @@ describe('generateDualBlockPairings', () => {
   it('returns PairingResult with both block keys in pairings map (happy path)', async () => {
     const result = await generateDualBlockPairings(
       { Early: [p1, p2], Late: [s1, s2] },
-      { primaryBlock: 'Early', secondaryBlock: 'Late' }
+      { primaryBlock: 'Early', secondaryBlock: 'Late' },
+      fetchSeasonHistoryFn
     );
 
     if (!result) throw new Error('Expected non-null result');
@@ -72,7 +76,8 @@ describe('generateDualBlockPairings', () => {
   it('calls generatePairingsWithBlossom exactly twice', async () => {
     await generateDualBlockPairings(
       { Early: [p1, p2], Late: [s1, s2] },
-      { primaryBlock: 'Early', secondaryBlock: 'Late' }
+      { primaryBlock: 'Early', secondaryBlock: 'Late' },
+      fetchSeasonHistoryFn
     );
 
     expect(vi.mocked(generatePairingsWithBlossom)).toHaveBeenCalledTimes(2);
@@ -81,7 +86,8 @@ describe('generateDualBlockPairings', () => {
   it('secondary block call receives a playedPairsSet containing the primary pairing key', async () => {
     await generateDualBlockPairings(
       { Early: [p1, p2], Late: [s1, s2] },
-      { primaryBlock: 'Early', secondaryBlock: 'Late' }
+      { primaryBlock: 'Early', secondaryBlock: 'Late' },
+      fetchSeasonHistoryFn
     );
 
     const secondCallConfig = vi.mocked(generatePairingsWithBlossom).mock.calls[1][1];
@@ -104,7 +110,8 @@ describe('generateDualBlockPairings', () => {
 
     const result = await generateDualBlockPairings(
       { Early: [p1, p2, p3], Late: [s1, s2] },
-      { primaryBlock: 'Early', secondaryBlock: 'Late' }
+      { primaryBlock: 'Early', secondaryBlock: 'Late' },
+      fetchSeasonHistoryFn
     );
 
     if (!result) throw new Error('Expected non-null result');
@@ -117,6 +124,7 @@ describe('generateDualBlockPairings', () => {
     await generateDualBlockPairings(
       { Late: [s1, s2] },
       { primaryBlock: 'Early', secondaryBlock: 'Late' },
+      fetchSeasonHistoryFn,
       callback
     );
 
@@ -131,6 +139,7 @@ describe('generateDualBlockPairings', () => {
     const result = await generateDualBlockPairings(
       { Early: [p1, p2], Late: [s1, s2] },
       { primaryBlock: 'Early', secondaryBlock: 'Late' },
+      fetchSeasonHistoryFn,
       callback
     );
 

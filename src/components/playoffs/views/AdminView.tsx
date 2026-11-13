@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffBracket } from '@/types/playoffTypes';
 
 import BracketDetail from '../BracketDetail';
 import BracketList from '../BracketList';

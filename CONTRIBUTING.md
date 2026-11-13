@@ -70,10 +70,10 @@ src/
 | Type | Convention | Example |
 |------|------------|---------|
 | Components | PascalCase | `TeamCard.tsx`, `MessageBoard.tsx` |
-| Hooks | camelCase with `use` prefix | `useTeams.ts`, `useAuth.ts` |
+| Hooks | camelCase with `use` prefix | `useTeams.ts`, `useToast.ts` |
 | Utils | camelCase | `dateUtils.ts`, `validation.ts` |
 | Types | camelCase | `match.ts`, `team.ts` |
-| Services | PascalCase with `Service` suffix | `TeamService.ts`, `RankingsService.ts` |
+| Services | PascalCase with `Service` suffix | `TeamSeasonStatsService.ts`, `RankingsService.ts` |
 | Constants | camelCase for files | `divisionColors.ts` |
 
 ### Constants Values

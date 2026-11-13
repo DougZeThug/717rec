@@ -6,6 +6,7 @@
 
 import { DivisionService } from '@/services/DivisionService';
 import { cacheLog } from '@/utils/logger';
+import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
 
 type DivisionWeightsMap = Map<string, number>;
 
@@ -13,8 +14,6 @@ let cachedWeights: DivisionWeightsMap | null = null;
 let cachePromise: Promise<DivisionWeightsMap> | null = null;
 let cachedWeightsByName: DivisionWeightsMap | null = null;
 let namePromise: Promise<DivisionWeightsMap> | null = null;
-
-const DEFAULT_DIVISION_WEIGHT = 0.85;
 
 /**
  * Fetch division weights from database (with in-memory caching)
@@ -110,8 +109,3 @@ export const fetchDivisionWeightsByName = (): Promise<DivisionWeightsMap> => {
 
   return namePromise;
 };
-
-/**
- * Get default division weight for cases where division is not found
- */
-export const getDefaultDivisionWeight = () => DEFAULT_DIVISION_WEIGHT;

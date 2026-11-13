@@ -10,7 +10,7 @@ const mockUseMessageBoard = vi.fn();
 const mockUseAuth = vi.fn();
 const mockToast = vi.fn();
 
-vi.mock('@/hooks/useMessageBoard', () => ({ useMessageBoard: () => mockUseMessageBoard() }));
+vi.mock('@/hooks/message-board', () => ({ useMessageBoard: () => mockUseMessageBoard() }));
 vi.mock('@/contexts/auth-context', () => ({ useAuth: () => mockUseAuth() }));
 vi.mock('@/hooks/useToast', () => ({ toast: (...args: unknown[]) => mockToast(...args) }));
 

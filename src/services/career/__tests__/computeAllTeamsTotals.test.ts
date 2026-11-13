@@ -1,21 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { BulkTeamCareerData } from '@/services/career/CareerService';
 import type { Team } from '@/types';
-
-import type { BulkTeamCareerData } from '../useCareerData';
 
 const { mockFetchAllTeamsCareerData, mockFetchDivisionWeightsByName } = vi.hoisted(() => ({
   mockFetchAllTeamsCareerData: vi.fn(),
   mockFetchDivisionWeightsByName: vi.fn(),
 }));
 
-vi.mock('../useCareerData', () => ({
+vi.mock('@/services/career/CareerService', () => ({
   fetchAllTeamsCareerData: (...args: unknown[]) => mockFetchAllTeamsCareerData(...args),
 }));
 
 // The real calculateCareerPowerScore runs, so the failure enters where it
 // really does: the live division-weights read every team awaits.
-vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+vi.mock('@/services/divisionWeightsCache', () => ({
   fetchDivisionWeightsByName: () => mockFetchDivisionWeightsByName(),
   fetchDivisionWeights: () => mockFetchDivisionWeightsByName(),
   clearDivisionWeightsCache: vi.fn(),

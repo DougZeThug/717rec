@@ -9,8 +9,8 @@ vi.mock('@/hooks/useHeadToHead', () => ({
   useOpponentHistory: (...args: unknown[]) => mockUseOpponentHistory(...args),
 }));
 
-vi.mock('@/hooks/useTeamTotals', () => ({
-  useTeamTotals: () => ({ totals: null, isLoading: false }),
+vi.mock('@/hooks/career/useTeamTotalsComputed', () => ({
+  useTeamTotalsComputed: () => ({ totals: null, isLoading: false }),
 }));
 
 vi.mock('@/hooks/useLeaguePercentiles', () => ({

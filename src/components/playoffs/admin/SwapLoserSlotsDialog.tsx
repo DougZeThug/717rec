@@ -22,7 +22,7 @@ import {
   useLoserSwapEligibility,
   usePlayoffSwapLoserSlots,
 } from '@/hooks/playoffs/usePlayoffLoserSwap';
-import type { LoserSwapSlot } from '@/services/brackets/manager/services/BracketAdmin/swap';
+import type { LoserSwapSlot } from '@/services/brackets/manager/services/BracketAdmin';
 
 interface SwapLoserSlotsDialogProps {
   open: boolean;

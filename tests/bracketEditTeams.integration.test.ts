@@ -28,7 +28,7 @@ import { BracketManagerService } from '@/services/brackets/manager/BracketManage
 import type {
   EditMatchTeamsParams,
   TeamChoice,
-} from '@/services/brackets/manager/services/BracketAdmin/editTeams/types';
+} from '@/services/brackets/manager/services/BracketAdmin';
 import { computeLbFeederMarkers } from '@/services/brackets/manager/utils/lbFeederMarkers';
 
 const db = (): FakeSupabaseBracketDb =>

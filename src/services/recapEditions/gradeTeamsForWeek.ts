@@ -3,14 +3,10 @@ import type {
   RecapGradeCategoryKey,
   RecapTeamGrade,
 } from '@/types/recapEdition';
+import type { LetterGrade } from '@/types/reportCard';
 import type { GradeableSeasonTeam } from '@/utils/reportCardPopulations';
 import { collectSeasonPopulations, isGradeable } from '@/utils/reportCardPopulations';
-import {
-  calculateGPA,
-  GRADE_WEIGHTS,
-  gradeCategoryAgainst,
-  type LetterGrade,
-} from '@/utils/reportCardUtils';
+import { calculateGPA, GRADE_WEIGHTS, gradeCategoryAgainst } from '@/utils/reportCardUtils';
 import type { LeagueTeamMatchStats } from '@/utils/teamDetailsUtils/leagueMatchStats';
 import { EMPTY_LEAGUE_MATCH_STATS } from '@/utils/teamDetailsUtils/leagueMatchStats';
 

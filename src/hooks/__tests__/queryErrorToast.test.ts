@@ -1,8 +1,8 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { handleMutationError, handleQueryError } from '@/hooks/queryErrorToast';
 import { NotFoundError } from '@/types/errors';
-import { handleMutationError, handleQueryError } from '@/utils/queryErrorToast';
 
 const mockToast = vi.fn();
 vi.mock('@/hooks/useToast', () => ({

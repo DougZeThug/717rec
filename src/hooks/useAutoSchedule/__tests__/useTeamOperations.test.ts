@@ -22,7 +22,7 @@ vi.mock('@/utils/autoSchedule/dateUtils', () => ({
   normalizeScheduleDate: (...args: unknown[]) => mockNormalizeScheduleDate(...args),
 }));
 
-vi.mock('@/utils/autoSchedule/teamLoaderUtils', () => ({
+vi.mock('@/services/timeslots/teamLoaderUtils', () => ({
   getAllBackToBackTeams: () => mockGetAllBackToBackTeams(),
 }));
 

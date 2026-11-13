@@ -9,7 +9,7 @@ import { Team } from '@/types';
 
 // The career pipeline resolves live division weights for playoff bonuses;
 // none of these fixtures earn bonuses, and tests must not hit the network.
-vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+vi.mock('@/services/divisionWeightsCache', () => ({
   fetchDivisionWeightsByName: vi.fn(() => Promise.resolve(new Map<string, number>())),
   getDefaultDivisionWeight: () => 0.85,
 }));

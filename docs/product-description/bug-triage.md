@@ -311,7 +311,7 @@ entry's *Corrected on review* note.
   (`utils/dualBlockScheduler.ts:191-192`), so it was always correct. Standard
   mode passed the block key straight through (`utils/standardPairing.ts:61`), and
   those keys come from `getAllBackToBackTeams`, which is keyed by pair *name*
-  (`src/utils/autoSchedule/teamLoaderUtils.ts:194`). `usePairingOperations.ts`
+  (`src/services/timeslots/teamLoaderUtils.ts:194`). `usePairingOperations.ts`
   then set `timeslot: timeBlock` with no lookup, and `parseTimeString`
   (`src/utils/timezone/parsers.ts:7-38`) returns its `hours = 0, minutes = 0`
   defaults whenever its regex finds no digits, which a block name never has.
@@ -2757,7 +2757,7 @@ finding read a superseded migration.
 - **Decision needed:** `fix`.
 - **Raised by:** a code reading, not a feature document.
 - **Status:** **fixed.** The toast now comes from the QueryCache
-  (`src/utils/queryErrorToast.ts`, wired in `App.tsx`), which runs **once per
+  (`src/hooks/queryErrorToast.ts`, wired in `App.tsx`), which runs **once per
   query failure after retries are exhausted**. Queries opt in with
   `meta.errorToast`, which supplies the fallback wording only — the server's own
   message still wins through `getUIErrorMessage`.

@@ -3,13 +3,14 @@ import { useMemo } from 'react';
 import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useCareerRankings } from '@/hooks/useCareerRankings';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
+import type { LetterGrade } from '@/types/reportCard';
 import {
   collectCareerPopulations,
   collectSeasonPopulations,
   isCareerGradeable,
   isGradeable,
 } from '@/utils/reportCardPopulations';
-import { calculateGPA, GRADE_WEIGHTS, gradeAgainst, LetterGrade } from '@/utils/reportCardUtils';
+import { calculateGPA, GRADE_WEIGHTS, gradeAgainst } from '@/utils/reportCardUtils';
 import {
   calculateLeagueMatchStats,
   EMPTY_LEAGUE_MATCH_STATS,

@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
+import type { LetterGrade } from '@/types/reportCard';
+
 import {
   calculateGPA,
   calculateGrade,
   getGradeBgColor,
   getGradeChartColor,
   getGradeColor,
-  type LetterGrade,
 } from '../reportCardUtils';
 
 describe('reportCardUtils', () => {

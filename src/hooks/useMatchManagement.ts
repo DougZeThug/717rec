@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Match, Team } from '@/types';
 
+import { useMatchUpdates } from './matches/updates';
 import { useMatchCreation } from './useMatchCreation';
-import { useMatchUpdates } from './useMatchUpdates';
 
 export const useMatchManagement = (initialMatches: Match[]) => {
   const [matches, setMatches] = useState<Match[]>(initialMatches);

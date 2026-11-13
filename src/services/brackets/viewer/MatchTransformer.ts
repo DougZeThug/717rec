@@ -1,4 +1,4 @@
-import { PlayoffBracket, PlayoffMatch } from '@/utils/playoffs/playoffTypes';
+import { PlayoffBracket, PlayoffMatch } from '@/types/playoffTypes';
 
 import { calculateBracketSize } from './bracketViewerUtils';
 import { ViewerMatch, ViewerMatchGame, ViewerStage } from './types';

@@ -10,7 +10,7 @@ The auto-scheduler system supports two scheduling modes to accommodate different
 
 **When to use:** League nights where each team plays TWO consecutive matches in back-to-back timeslots.
 
-**Algorithm:** Greedy Back-to-Back Scheduler (`src/utils/scheduling/greedyBackToBackScheduler.ts`)
+**Algorithm:** Greedy Back-to-Back Scheduler (`src/utils/scheduling/greedy/`)
 
 **Features:**
 - Each team gets exactly 2 matches in consecutive slots (S1 and S2)
@@ -46,7 +46,7 @@ When there's an odd number of teams:
 
 **When to use:** Single time block scheduling where teams play once per night.
 
-**Algorithm:** Edmonds' Blossom Algorithm (`src/utils/autoSchedule/blossomPairingAlgorithm.ts`)
+**Algorithm:** Edmonds' Blossom Algorithm (`src/utils/autoSchedule/blossom/`)
 
 **Features:**
 - Optimal maximum weight matching
@@ -101,11 +101,11 @@ When "Prioritize Match Quality" is enabled:
 ### Core Files
 
 **Greedy Scheduler:**
-- `src/utils/scheduling/greedyBackToBackScheduler.ts` - Main algorithm
+- `src/utils/scheduling/greedy/` - Main algorithm
 - `src/utils/scheduling/__tests__/greedyBackToBackScheduler.test.ts` - Unit tests
 
 **Blossom Scheduler:**
-- `src/utils/autoSchedule/blossomPairingAlgorithm.ts` - Main algorithm
+- `src/utils/autoSchedule/blossom/` - Main algorithm
 
 **Integration:**
 - `src/hooks/scheduling/usePairingGenerator.ts` - Hook that switches between algorithms

@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
+import { fetchSeasonHistoryForTeams } from '@/services/matches/SchedulingHistoryService';
 import {
   AlgorithmConfig,
   PairingResult,
@@ -8,7 +9,6 @@ import {
   TeamPairingMap,
   TimeBlockTeamsMap,
 } from '@/types/autoSchedule';
-import { fetchSeasonHistoryForTeams } from '@/utils/autoSchedule/matchHistoryService';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, scheduleLog } from '@/utils/logger';

@@ -2,7 +2,7 @@ import React from 'react';
 
 import BracketView from '@/components/playoffs/BracketView';
 import { Button } from '@/components/ui/button';
-import type { PlayoffBracket, PlayoffMatch, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffBracket, PlayoffMatch, PlayoffTeam } from '@/types/playoffTypes';
 
 const BRACKET_ID = 'e2e-playoff-bracket-proof';
 

@@ -1,8 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
-
-vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
-  getDefaultDivisionWeight: () => 0.85,
-}));
+import { describe, expect, it } from 'vitest';
 
 import { averageDivisionBonusWeight, resolveDivisionBonusWeight } from '../divisionBonusWeight';
 

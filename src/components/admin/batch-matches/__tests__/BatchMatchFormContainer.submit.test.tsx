@@ -45,13 +45,9 @@ vi.mock('@/services/matches/MatchWriteService', async (importOriginal) => {
   };
 });
 
-vi.mock('@/components/schedule/form-utils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components/schedule/form-utils')>();
-  return {
-    ...actual,
-    createDateWithTime: vi.fn(() => new Date('2026-01-08T23:30:00.000Z')),
-  };
-});
+vi.mock('@/utils/timezone/createDateWithTime', () => ({
+  createDateWithTime: vi.fn(() => new Date('2026-01-08T23:30:00.000Z')),
+}));
 
 vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({ toast: mockToast }),

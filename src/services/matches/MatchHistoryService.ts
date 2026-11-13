@@ -1,4 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
+import type {
+  OpponentRecord,
+  SeasonOpponentData,
+  TeamOpponentHistory,
+} from '@/types/seasonOpponentHistory';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
 import { assertDistinct, assertValidUuid } from '@/utils/validation';
@@ -8,11 +13,12 @@ import { assertDistinct, assertValidUuid } from '@/utils/validation';
  */
 
 // ---------------------------------------------------------------------------
-// Functions added for Batch 11 refactor — moved from utils/autoSchedule
+// Scheduling history lookups, moved here from utils/autoSchedule in the Batch 11
+// refactor. SchedulingHistoryService calls the first three through MatchReadService.
 // ---------------------------------------------------------------------------
 
 /**
- * Fetch active season ID using .single() — used by matchHistoryService util.
+ * Fetch active season ID using .single() — used by SchedulingHistoryService.
  * Throws on database error or when no active season found (PGRST116).
  * Callers should catch and handle as appropriate.
  * @throws {DatabaseError} When database operations fail
@@ -96,8 +102,10 @@ export const checkTeamsEverPlayed = async (team1Id: string, team2Id: string): Pr
 };
 
 /**
- * Check if two teams have ever played each other.
- * Used by autoScheduleUtils.
+ * Check if two teams have ever played each other (any season). Throws on a bad id
+ * or a database error. The auto-scheduler does not call this one: it uses the
+ * same-named function in SchedulingHistoryService, which checks the current
+ * season only and returns false on an error.
  */
 export const haveTeamsPlayedBefore = async (team1Id: string, team2Id: string): Promise<boolean> => {
   assertValidUuid(team1Id, 'team1Id');
@@ -114,35 +122,6 @@ export const haveTeamsPlayedBefore = async (team1Id: string, team2Id: string): P
   if (error) handleDatabaseError(error, 'Failed to check if teams have played');
   return (data?.length ?? 0) > 0;
 };
-
-// ---------------------------------------------------------------------------
-// Types for season opponent history — used by useSeasonOpponentHistory hook
-// ---------------------------------------------------------------------------
-
-interface OpponentRecord {
-  opponentId: string;
-  opponentName: string;
-  opponentDivision: string | null;
-  matchCount: number;
-  wins: number;
-  losses: number;
-}
-
-interface TeamOpponentHistory {
-  teamId: string;
-  teamName: string;
-  divisionId: string | null;
-  divisionName: string | null;
-  opponents: OpponentRecord[];
-  uniqueOpponentCount: number;
-  totalMatches: number;
-}
-
-export interface SeasonOpponentData {
-  seasonId: string;
-  seasonName: string;
-  teams: TeamOpponentHistory[];
-}
 
 /**
  * Fetch season opponent history for the active season.

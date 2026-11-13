@@ -5,14 +5,14 @@ import {
   fetchBmMatchWithStage,
   fetchPlayoffMatchWithBracket,
 } from '@/services/brackets/BracketReadService';
-import type { AsyncVoidCallback } from '@/types/callbacks';
 import type {
-  Phase3BracketManagerMatchWithStage as BracketManagerMatchWithStage,
-  Phase3LegacyPlayoffMatchWithGames as LegacyPlayoffMatchWithGames,
-} from '@/types/phase3';
+  BracketManagerMatchWithStage,
+  LegacyPlayoffMatchWithGames,
+} from '@/services/brackets/read/types';
+import type { AsyncVoidCallback } from '@/types/callbacks';
+import type { PlayoffBracket, PlayoffMatch } from '@/types/playoffTypes';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, playoffLog } from '@/utils/logger';
-import type { PlayoffBracket, PlayoffMatch } from '@/utils/playoffs/playoffTypes';
 
 import { useOptimisticScoreMutation } from './useOptimisticScoreMutation';
 import { usePlayoffMatchUpdate } from './usePlayoffMatchUpdate';

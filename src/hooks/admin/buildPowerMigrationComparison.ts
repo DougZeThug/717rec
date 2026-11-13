@@ -1,9 +1,8 @@
 import { BackupSeasonStatsRow, BackupTeamPowerRow } from '@/services/admin/PowerMigrationService';
 import { BulkTeamCareerData } from '@/services/career/CareerService';
+import { computeTotalsFromBulkData } from '@/services/career/computeAllTeamsTotals';
 import { Team } from '@/types';
 import { SeasonStats } from '@/utils/career/types';
-
-import { computeTotalsFromBulkData } from '../career/computeAllTeamsTotals';
 
 export interface PerSeasonComparison {
   seasonId: string;

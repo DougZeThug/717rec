@@ -1,9 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../matchHistoryService', () => ({
-  haveTeamsPlayedBefore: vi.fn().mockResolvedValue(false),
-}));
-
 import { AutoScheduleMatch } from '@/types/autoSchedule';
 
 import {
@@ -13,6 +9,9 @@ import {
   validateMatchSchedule,
   ValidationResult,
 } from '../validation';
+
+// The season-history lookup is handed in as an argument, so each test passes a stub.
+const haveTeamsPlayedFn = vi.fn<(team1Id: string, team2Id: string) => Promise<boolean>>();
 
 function makeMatch(overrides: Partial<AutoScheduleMatch> = {}): AutoScheduleMatch {
   return {
@@ -86,64 +85,67 @@ describe('getValidationSummary', () => {
 });
 
 describe('validateMatchSchedule', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    haveTeamsPlayedFn.mockResolvedValue(false);
+  });
 
   it('returns isValid true for a clean schedule', async () => {
     const matches = [makeMatch({ id: '1', team1Id: 'a', team2Id: 'b', timeslot: '6:30 PM' })];
-    const result = await validateMatchSchedule(matches);
+    const result = await validateMatchSchedule(matches, haveTeamsPlayedFn);
     expect(result.isValid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
 
   it('detects same-team error', async () => {
     const matches = [makeMatch({ id: '1', team1Id: 'a', team2Id: 'a', timeslot: '6:30 PM' })];
-    const result = await validateMatchSchedule(matches);
+    const result = await validateMatchSchedule(matches, haveTeamsPlayedFn);
     expect(result.errors.some((e) => e.type === 'same-team')).toBe(true);
     expect(result.isValid).toBe(false);
   });
 
   it('detects invalid-timeslot error', async () => {
     const matches = [makeMatch({ id: '1', team1Id: 'a', team2Id: 'b', timeslot: '' })];
-    const result = await validateMatchSchedule(matches);
+    const result = await validateMatchSchedule(matches, haveTeamsPlayedFn);
     expect(result.errors.some((e) => e.type === 'invalid-timeslot')).toBe(true);
   });
 
   it('rejects a timeslot that is not a readable time, such as a block name', async () => {
     const matches = [makeMatch({ id: '1', team1Id: 'a', team2Id: 'b', timeslot: 'SuperLate' })];
-    const result = await validateMatchSchedule(matches);
+    const result = await validateMatchSchedule(matches, haveTeamsPlayedFn);
     expect(result.errors.some((e) => e.type === 'invalid-timeslot')).toBe(true);
     expect(result.isValid).toBe(false);
   });
 
   it('adds rematch warning when haveTeamsPlayedBefore returns true', async () => {
-    const { haveTeamsPlayedBefore } = await import('../matchHistoryService');
-    vi.mocked(haveTeamsPlayedBefore).mockResolvedValue(true);
+    haveTeamsPlayedFn.mockResolvedValue(true);
     const matches = [makeMatch({ id: '1', team1Id: 'a', team2Id: 'b', timeslot: '6:30 PM' })];
-    const result = await validateMatchSchedule(matches);
+    const result = await validateMatchSchedule(matches, haveTeamsPlayedFn);
     expect(result.warnings.some((w) => w.type === 'rematch')).toBe(true);
+    // The warning comes from the function that was handed in, called with the pair's ids.
+    expect(haveTeamsPlayedFn).toHaveBeenCalledWith('a', 'b');
   });
 });
 
 describe('calculateScheduleHealth', () => {
-  beforeEach(async () => {
-    const { haveTeamsPlayedBefore } = await import('../matchHistoryService');
-    vi.mocked(haveTeamsPlayedBefore).mockResolvedValue(false);
+  beforeEach(() => {
+    haveTeamsPlayedFn.mockResolvedValue(false);
   });
 
   it('returns 0 for empty match list', async () => {
-    expect(await calculateScheduleHealth([])).toBe(0);
+    expect(await calculateScheduleHealth([], haveTeamsPlayedFn)).toBe(0);
   });
 
   it('returns 100 for a clean schedule', async () => {
     const matches = [makeMatch({ id: '1', team1Id: 'a', team2Id: 'b', timeslot: '6:30 PM' })];
-    expect(await calculateScheduleHealth(matches)).toBe(100);
+    expect(await calculateScheduleHealth(matches, haveTeamsPlayedFn)).toBe(100);
   });
 
   it('deducts 20 per error', async () => {
     const matches = [
       makeMatch({ id: '1', team1Id: 'a', team2Id: 'a', timeslot: '6:30 PM' }), // same-team error
     ];
-    const health = await calculateScheduleHealth(matches);
+    const health = await calculateScheduleHealth(matches, haveTeamsPlayedFn);
     expect(health).toBeLessThanOrEqual(80);
   });
 });

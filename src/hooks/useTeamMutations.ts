@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import { createTeamApi, deleteTeamApi, updateTeamApi } from '@/services/TeamService';
+import { createTeamApi } from '@/services/teams/TeamCreateService';
+import { deleteTeamApi } from '@/services/teams/TeamDeleteService';
+import { updateTeamApi } from '@/services/teams/TeamUpdateService';
 import { Team } from '@/types';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';

@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { computeAllTeamsTotals } from '@/services/career/computeAllTeamsTotals';
 import { CareerRanking } from '@/types/career';
 import { warnLog } from '@/utils/logger';
 
-import { computeAllTeamsTotals } from './career/computeAllTeamsTotals';
 import { useTeamsQuery } from './teams';
 
 interface CareerRankingsOptions {

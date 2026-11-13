@@ -5,7 +5,7 @@ import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SeedingUpdateDialog } from '@/components/playoffs/SeedingUpdateDialog';
-import type { PlayoffBracket, PlayoffMatch } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffBracket, PlayoffMatch } from '@/types/playoffTypes';
 
 const updateSeeding = vi.fn();
 vi.mock('@/services/brackets/manager', () => ({

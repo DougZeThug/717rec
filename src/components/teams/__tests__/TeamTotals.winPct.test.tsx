@@ -7,7 +7,9 @@ import TeamTotals from '../TeamTotals';
 
 const { mockUseTeamTotals } = vi.hoisted(() => ({ mockUseTeamTotals: vi.fn() }));
 
-vi.mock('@/hooks/useTeamTotals', () => ({ useTeamTotals: () => mockUseTeamTotals() }));
+vi.mock('@/hooks/career/useTeamTotalsComputed', () => ({
+  useTeamTotalsComputed: () => mockUseTeamTotals(),
+}));
 vi.mock('@/hooks/useLeaguePercentiles', () => ({
   useLeaguePercentiles: () => ({ getTeamPercentiles: () => null }),
 }));

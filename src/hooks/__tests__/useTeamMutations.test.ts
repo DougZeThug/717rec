@@ -7,9 +7,15 @@ import type { Team } from '@/types';
 
 const mockToast = vi.fn();
 
-vi.mock('@/services/TeamService', () => ({
+vi.mock('@/services/teams/TeamCreateService', () => ({
   createTeamApi: vi.fn(),
+}));
+
+vi.mock('@/services/teams/TeamUpdateService', () => ({
   updateTeamApi: vi.fn(),
+}));
+
+vi.mock('@/services/teams/TeamDeleteService', () => ({
   deleteTeamApi: vi.fn(),
 }));
 
@@ -21,7 +27,9 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
-import { createTeamApi, deleteTeamApi, updateTeamApi } from '@/services/TeamService';
+import { createTeamApi } from '@/services/teams/TeamCreateService';
+import { deleteTeamApi } from '@/services/teams/TeamDeleteService';
+import { updateTeamApi } from '@/services/teams/TeamUpdateService';
 
 import { useTeamMutations } from '../useTeamMutations';
 

@@ -1,28 +1,10 @@
 // Team related types
-export interface Team {
-  id: string;
-  name: string;
-  wins?: number;
-  losses?: number;
-  game_wins?: number;
-  game_losses?: number;
-  divisionName?: string | null;
-  division_id?: string | null;
-  division?: string | null;
-  imageUrl?: string | null;
-  logoUrl?: string | null;
-  players?: string[];
-  seed?: number;
 
-  power_score?: number | null;
-  /** Floored (earned-schedule) rating used by Career rankings only. */
-  career_power_score?: number | null;
-  sos?: number | null;
-  win_percentage?: number;
-  game_win_percentage?: number;
-  created_at?: string;
-  close_match_losses?: number | null;
-}
+// skipcq: JS-E1004 -- an explicit named export wins over a star export (ES spec), so
+// `Team` from this barrel is the full interface in ./team. playoffTypes also exports a
+// `Team` alias. That overlap already existed before design PRs D1-D3: main had
+// `export interface Team` plus `export * from '@/utils/playoffs/playoffTypes'`.
+export type { Team } from './team';
 
 // Match related types
 export interface Match {
@@ -112,7 +94,11 @@ export interface Ranking {
 }
 
 // Types for playoff brackets - Export from the centralized file
-export * from '@/utils/playoffs/playoffTypes';
+
+// skipcq: JS-E1004 -- this star export carries playoffTypes' `Team` alias, but the
+// explicit `export type { Team }` at the top of this file wins over it (ES spec).
+// Same overlap as before design PRs D1-D3, so `Team` here stays the ./team interface.
+export * from './playoffTypes';
 
 // Export bracket record types
 export * from './bracketRecord';
@@ -165,6 +151,3 @@ export * from './user';
 
 // Team career power score types
 export * from './teamCareerPowerScore';
-
-// Phase 3 contract-alignment exports
-export * from './phase3';

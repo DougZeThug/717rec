@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { useUpdateBracket } from '@/hooks/playoffs/useUpdateBracket';
 import { useDivisions } from '@/hooks/useDivisions';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+import type { PlayoffBracket } from '@/types/playoffTypes';
 import { hasPlayStarted } from '@/utils/playoffs/playoffUtils';
 
 interface EditBracketDialogProps {

@@ -7,7 +7,7 @@ import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useTeamSeasonBreakdown } from '@/hooks/useTeamSeasonBreakdown';
+import { useTeamSeasonBreakdown } from '@/hooks/teams/seasonBreakdown';
 
 interface TeamAdvancedStatsSectionProps {
   teamId: string;
@@ -59,6 +59,7 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
           variant="inline"
           error="We couldn't load advanced stats. Please try again."
           onRetry={() => {
+            // skipcq: JS-0098 -- `void` marks the promise from refetch() as deliberately not awaited.
             void refetch();
           }}
         />

@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { useTheme } from 'next-themes';
 import { describe, expect, it, vi } from 'vitest';
 
-import { getChartColors, useChartColors } from '../chartStyleUtils';
+import { getChartColors, useChartColors } from '../useChartColors';
 
 vi.mock('next-themes', () => ({ useTheme: vi.fn() }));
 

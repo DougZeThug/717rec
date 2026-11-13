@@ -58,11 +58,12 @@ describe('adminTabs', () => {
     expect(readRememberedAdminSection()).toBe('auto-schedule');
   });
 
-  it('falls back to the default when nothing usable was remembered', () => {
-    expect(readRememberedAdminSection()).toBe('timeslots');
+  // The dashboard checks the value, so a stale id is handed back unchanged here.
+  it('returns null when nothing was remembered, and the stored text as it is otherwise', () => {
+    expect(readRememberedAdminSection()).toBeNull();
 
     sessionStorage.setItem(ADMIN_TAB_STORAGE_KEY, 'a-section-from-an-older-build');
-    expect(readRememberedAdminSection()).toBe('timeslots');
+    expect(readRememberedAdminSection()).toBe('a-section-from-an-older-build');
   });
 
   it('stops telling a listener once it unsubscribes', () => {
@@ -88,7 +89,7 @@ describe('adminTabs', () => {
     expect(() => switchAdminTab('teams')).not.toThrow();
     expect(onRequest.mock.calls[0]).toEqual(['teams', undefined]);
     expect(() => rememberAdminSection('teams')).not.toThrow();
-    expect(readRememberedAdminSection()).toBe('timeslots');
+    expect(readRememberedAdminSection()).toBeNull();
 
     unsubscribe();
     setItem.mockRestore();

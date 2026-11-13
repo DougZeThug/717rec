@@ -16,7 +16,7 @@ vi.mock('@tanstack/react-query', () => ({
 // never runs. This keeps the real module — and the Supabase client it imports —
 // out of the file. The path must be the alias; a relative one resolves against
 // this test's own directory and silently matches nothing.
-vi.mock('@/hooks/career/computeAllTeamsTotals', () => ({
+vi.mock('@/services/career/computeAllTeamsTotals', () => ({
   computeAllTeamsTotals: vi.fn(),
 }));
 

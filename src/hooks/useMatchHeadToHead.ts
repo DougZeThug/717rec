@@ -1,9 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import {
-  getMatchHeadToHead,
-  type MatchHeadToHeadResult,
-} from '@/utils/matchUtils/getMatchHeadToHead';
+import { getMatchHeadToHead, type MatchHeadToHeadResult } from '@/services/getMatchHeadToHead';
 
 interface UseMatchHeadToHeadResult {
   data: MatchHeadToHeadResult | null;

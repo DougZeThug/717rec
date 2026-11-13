@@ -102,8 +102,8 @@ vi.mock('@/components/ui/loading-state', () => ({
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
+import { PlayoffBracket, PlayoffTeam } from '@/types/playoffTypes';
 import { errorLog, warnLog } from '@/utils/logger';
-import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import { BracketsViewerComponent } from '../BracketsViewerComponent';
 

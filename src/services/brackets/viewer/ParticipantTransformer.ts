@@ -1,4 +1,4 @@
-import { PlayoffTeam } from '@/utils/playoffs/playoffTypes';
+import { PlayoffTeam } from '@/types/playoffTypes';
 
 import { ViewerParticipant } from './types';
 

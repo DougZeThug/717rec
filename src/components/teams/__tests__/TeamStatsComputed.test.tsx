@@ -4,7 +4,8 @@ import React, { PropsWithChildren } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { TeamAdvancedStats } from '@/hooks/teams/seasonBreakdown';
-import type { LetterGrade, TeamGrades } from '@/utils/reportCardUtils';
+import type { LetterGrade } from '@/types/reportCard';
+import type { TeamGrades } from '@/utils/reportCardUtils';
 
 vi.mock('@/components/ui/CollapsibleSection', () => ({
   CollapsibleSection: ({ children, title }: PropsWithChildren<{ title: string }>) => (
@@ -20,7 +21,7 @@ const mockAdvanced = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/useTeamReportCard', () => ({
   useTeamReportCard: (teamId: string, mode: 'season' | 'career') => mockReportCard(teamId, mode),
 }));
-vi.mock('@/hooks/useTeamSeasonBreakdown', () => ({
+vi.mock('@/hooks/teams/seasonBreakdown', () => ({
   useTeamSeasonBreakdown: (teamId: string) => mockAdvanced(teamId),
 }));
 const mockLeaderboard = vi.hoisted(() => vi.fn());

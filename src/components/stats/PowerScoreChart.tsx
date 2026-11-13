@@ -11,10 +11,10 @@ import {
   YAxis,
 } from 'recharts';
 
+import { useChartColors } from '@/hooks/useChartColors';
 import { useIsMobile } from '@/hooks/useMobile';
 import { PowerScoreDataItem } from '@/types/chart';
 import { describeChart } from '@/utils/charts/chartAccessibility';
-import { useChartColors } from '@/utils/charts/chartStyleUtils';
 import { formatPowerScore } from '@/utils/colors/powerScoreColors';
 
 import ChartEmptyState from './ChartEmptyState';

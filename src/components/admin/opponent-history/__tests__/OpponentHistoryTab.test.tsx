@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { SeasonOpponentData } from '@/services/matches/MatchHistoryService';
+import type { SeasonOpponentData } from '@/types/seasonOpponentHistory';
 
 const mockUseSeasonOpponentHistory = vi.fn();
 let mockIsMobile = false;

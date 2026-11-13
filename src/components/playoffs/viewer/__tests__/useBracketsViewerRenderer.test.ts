@@ -21,8 +21,8 @@ vi.mock('@/utils/logger', () => ({
 
 import type { ViewerDataWithMapping, ViewerMatch } from '@/services/brackets/viewer';
 import { BracketsViewerAdapter } from '@/services/brackets/viewer';
+import type { PlayoffBracket } from '@/types/playoffTypes';
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
-import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 import type { BracketsViewerMatchClick } from '../useBracketsViewerRenderer';
 import { useBracketsViewerRenderer } from '../useBracketsViewerRenderer';

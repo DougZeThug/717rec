@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { LoserSwapSlot } from '@/services/brackets/manager/services/BracketAdmin/swap';
+import type { LoserSwapSlot } from '@/services/brackets/manager/services/BracketAdmin';
 
 vi.mock('@/hooks/playoffs/usePlayoffLoserSwap', () => ({
   useLoserSwapEligibility: vi.fn(),

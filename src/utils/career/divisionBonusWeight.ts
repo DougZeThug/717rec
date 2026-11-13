@@ -8,7 +8,7 @@
  * row in `divisions`.
  */
 
-import { getDefaultDivisionWeight } from '@/utils/rankingUtils/divisionWeightsCache';
+import { getDefaultDivisionWeight } from '@/utils/rankingUtils/defaultDivisionWeight';
 
 /** Synthetic season labels → the real `divisions.name` they represent. */
 const DIVISION_NAME_ALIASES: Record<string, string> = {

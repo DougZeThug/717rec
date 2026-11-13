@@ -13,7 +13,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 // Mock BACK_TO_BACK_PAIRS
-vi.mock('../constants', () => ({
+vi.mock('@/utils/autoSchedule/constants', () => ({
   BACK_TO_BACK_PAIRS: {
     Early: { primary: '6:30 PM', secondary: '7:00 PM' },
     Mid: { primary: '7:30 PM', secondary: '8:00 PM' },

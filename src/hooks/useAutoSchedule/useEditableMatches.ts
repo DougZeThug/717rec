@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { haveTeamsPlayedBefore } from '@/services/matches/SchedulingHistoryService';
 import { AutoScheduleMatch } from '@/types/autoSchedule';
 import { validateMatchSchedule, ValidationResult } from '@/utils/autoSchedule/validation';
 
@@ -12,7 +13,7 @@ export const useEditableMatches = (
   // Validate whenever editable matches change and we're in edit mode
   useEffect(() => {
     if (currentIsEditMode && currentEditableMatches.length > 0) {
-      validateMatchSchedule(currentEditableMatches).then((newValidation) => {
+      validateMatchSchedule(currentEditableMatches, haveTeamsPlayedBefore).then((newValidation) => {
         setValidation(newValidation);
       });
     } else {
@@ -119,7 +120,10 @@ export const useEditableMatches = (
    * Manually trigger validation
    */
   const validateMatches = useCallback(async () => {
-    const newValidation = await validateMatchSchedule(currentEditableMatches);
+    const newValidation = await validateMatchSchedule(
+      currentEditableMatches,
+      haveTeamsPlayedBefore
+    );
     setValidation(newValidation);
     return newValidation;
   }, [currentEditableMatches]);
