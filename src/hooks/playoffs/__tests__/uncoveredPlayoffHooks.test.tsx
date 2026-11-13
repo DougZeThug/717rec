@@ -190,6 +190,43 @@ describe('uncovered playoff hooks', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['brackets-manager-match', 1] });
     expect(mocks.toast).toHaveBeenCalledWith({ title: 'Teams moved', description: 'Done' });
   });
+  it("refreshes the open bracket after a loser swap when a bracket id is given (today's behaviour)", async () => {
+    mocks.swap.mockResolvedValue({ message: 'Done' });
+    const { client, wrapper } = setup();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const refetch = vi.spyOn(client, 'refetchQueries');
+    const { result } = renderHook(() => usePlayoffSwapLoserSlots('b1'), { wrapper });
+    const params = { sourceMatchId: 1, targetMatchId: 2, sourcePosition: 1, targetPosition: 2 };
+    await act(async () => {
+      await result.current.mutateAsync(params as never);
+    });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['bracket-data', 'b1'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['bracket-info', 'b1'] });
+    expect(refetch).toHaveBeenCalledWith({ queryKey: ['bracket-data', 'b1'] });
+    expect(mocks.toast).toHaveBeenCalledWith({ title: 'Teams moved', description: 'Done' });
+  });
+  it("leaves the single-bracket caches alone after a loser swap without a bracket id (today's behaviour)", async () => {
+    mocks.swap.mockResolvedValue({ message: 'Done' });
+    const { client, wrapper } = setup();
+    const invalidate = vi.spyOn(client, 'invalidateQueries');
+    const refetch = vi.spyOn(client, 'refetchQueries');
+    const { result } = renderHook(() => usePlayoffSwapLoserSlots(null), { wrapper });
+    await act(async () => {
+      await result.current.mutateAsync({
+        sourceMatchId: 1,
+        targetMatchId: 2,
+        sourcePosition: 1,
+        targetPosition: 2,
+      } as never);
+    });
+    // invalidateQueries re-reads active queries through refetchQueries, so only
+    // the bracket keys are checked here.
+    const invalidatedKeys = invalidate.mock.calls.map(([filters]) => filters?.queryKey?.[0]);
+    const refetchedKeys = refetch.mock.calls.map(([filters]) => filters?.queryKey?.[0]);
+    expect(invalidatedKeys).not.toContain('bracket-data');
+    expect(invalidatedKeys).not.toContain('bracket-info');
+    expect(refetchedKeys).not.toContain('bracket-data');
+  });
   it('applies a rearrangement and shows service errors', async () => {
     mocks.rearrange
       .mockResolvedValueOnce({ message: 'Saved' })
