@@ -2,7 +2,8 @@
 
 Every specialist agent reads this file first.
 It holds **verified facts** and the **corrections log**.
-Facts here were checked against the repo on 2026-10-06.
+Facts here were checked against the repo on 2026-10-06, and the 2026-11-13 corrections.
+The live division weights come from a read Doug shared. The developer did not re-read them.
 If the code disagrees with this file, the code wins. Then fix this file.
 
 ## What the product is
@@ -65,6 +66,7 @@ If the code disagrees with this file, the code wins. Then fix this file.
   - **Reported live weights** (from a live read Doug shared 2026-11-13; not re-read by the developer): Competitive 1.00, Competitive Low 0.95, Cuspers 0.90, Intermediate High 0.80, Intermediate 0.70, Intermediate Low 0.60, Recreational High 0.60, Recreational 0.35, Hidden 0.60, Hidden2 0.35. That is 10 divisions. **Competitive IS 1.00. No division is 0.85.** None of the 10 has a NULL or zero weight.
   - The same read reports that 0 of 51 teams, 0 of 34 brackets and 0 of 575 completed playoff results lack a valid division link. All 292 `team_season_stats` division names matched a real division, directly or through an existing translation rule.
   - **Hidden is not negative live.** Older notes said Hidden is -1.0 (from migration comments). Do not rely on "negative weight = hidden". `division_is_hidden()` (`20260812171421_0b0efe39-6446-4180-b1a9-1a13d036652f.sql`) is also true for a name or display name that starts with `hidden`.
+  - **Hidden and Hidden2 weights (0.60, 0.35) are never used to rate an opponent:** `v_division_rateable` skips any Hidden division (same migration, lines 153-163).
   - The old remembered values (Competitive 1.00, Intermediate 0.75, Recreational 0.35) match the reported read except Intermediate, which reads 0.70.
   - **0.85 in code is a temporary fallback** for a missing weight, not a league-strength value (`src/utils/rankingUtils/defaultDivisionWeight.ts`). Doug decided on 2026-11-13 that an unknown division must be treated as unrated. That is DECIDED, NOT BUILT (see the corrections log).
 - Read these before touching scoring: `docs/product-description/stats/power-score.md`, `docs/POWER_SCORE_ROLLOUT.md`, `docs/OPERATIONS.md` sections 6a and 6b.
