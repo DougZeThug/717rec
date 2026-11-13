@@ -29,7 +29,9 @@ with time blocks and the teams assigned to each, and the panel reports "Teams:
 
 They press **Generate Schedule**. A toast reports the quality rating and the
 count — "Generated 12 excellent quality matches. 0 teams unmatched." — and the
-Matches tab opens showing the proposed pairings.
+Matches tab opens showing the proposed pairings. When a team is left unmatched the
+toast names it, for example "1 team unmatched: Alpha." (the singular is correct
+since 2026-11-13; before, it read "1 teams unmatched" and named nobody).
 
 They press **Save Matches**. A toast says "Saved 12 matches to the database", the
 working state is cleared, and the schedule pages re-fetch.
@@ -176,6 +178,31 @@ before the pairing becomes a match.
 With Dual Match Mode on, the standalone tool never sees a block name at all: its
 scheduler already keys each pairing by the clock time it assigned.
 
+### Block sizes with Dual Match Mode off
+
+Both tools run the same standard pairing step, so both follow the same rules for
+a block. **Built 2026-11-13 (PR-S).** Doug uses Dual Match Mode, so standard mode
+got no new engine for odd blocks: it stops early and says why.
+
+| Teams in a block | What Generate does |
+| --- | --- |
+| 0 | Nothing. The block is skipped. |
+| 1 | The team has nobody to play. It is counted as unmatched, named in the toast, and shown with an "Unmatched" badge on the Teams tab. |
+| 2 | One match between the two. Neither team is unmatched. (Before, Generate failed for the whole night.) |
+| 4, 6, 8 and so on (even) | Every team plays twice, once in each of the block's two times. Nothing changed here. |
+| 3, 5, 7 and so on (odd, 3 or more) | **Generate stops before it makes anything.** A red toast names every odd block by its time and team count, then says to move a team or use Dual Match Mode. Nothing is generated and nothing can reach Save. |
+
+The message reads like this: "Block Early Pair (6:30-7:00 PM) has 5 teams. Standard
+mode needs an even number of teams in a block. Move a team, or use Dual Match Mode
+on the Auto Schedule screen." Two odd blocks give one message that names both.
+On Auto Schedule a second, generic "Generation Failed" toast shows beside it; both
+stay on screen.
+
+Dual Match Mode is on by default and is not changed: it gives an odd block a third
+match at the next half-hour, so nobody sits out (`dualBlockScheduler.ts:87-88`,
+`scheduleOdd.ts:84`). Match Creation has no Dual Match Mode switch, so there an odd
+block means moving a team, or building that night on the Auto Schedule screen.
+
 A time the app cannot read is now refused before the insert, with a red toast
 naming the match. It can no longer reach the database.
 
@@ -275,8 +302,19 @@ notification is sent to any team.
 - **Court numbers do not know the venue.** Both Match Creation and Auto Schedule
   number courts per timeslot, so the two agree, but neither knows how many courts
   the venue actually has.
-- **A block with an odd number of teams leaves one team unmatched**, counted in
-  the panel and in the generation toast, and then silently dropped.
+- **A block with an odd number of teams (3 or more) stops Generate when Dual Match
+  Mode is off.** Changed 2026-11-13 (PR-S). Before, the night reached Save and
+  failed there with "Team is scheduled for multiple matches at 6:30 PM" (3, 7 and 9
+  teams), or failed at Generate with only "Failed to generate match pairings"
+  (5 teams of one division). Now the toast names each odd block and says to move a
+  team or use Dual Match Mode; nothing is generated. **A block with one team is not
+  an error:** that team is counted as unmatched and named in the toast. A block of 2
+  plays one match. With Dual Match Mode on, an odd block gets a third match at the
+  next half-hour.
+- **A normal block of 6 teams can still make Generate fail.** Found 2026-11-13 and
+  **not fixed**: with some rematch histories the matcher cannot give every team two
+  matches and Generate throws "1 teams don't have 2 matches". It is an old bug, the
+  same before and after PR-S. See the decision log, "PR-S result", open item 1.
 - **"Open Full Auto Schedule" changes tab in place.** It does not reload the
   page. Auto Schedule's own Export step no longer offers a way out to Match
   Creation: the two tools keep separate state, so that button always landed on
