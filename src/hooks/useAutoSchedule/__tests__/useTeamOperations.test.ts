@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Team } from '@/types';
+import { scheduleLog, warnLog } from '@/utils/logger';
 
 import { useTeamOperations } from '../useTeamOperations';
 
@@ -241,5 +242,54 @@ describe('useTeamOperations', () => {
         })
       );
     });
+  });
+
+  it("handleLoadTeams logs a team that sits in two blocks and still returns both blocks (today's behaviour)", async () => {
+    const loadedTeams = {
+      Early: [buildTeam('1'), buildTeam('2')],
+      Late: [buildTeam('2'), buildTeam('3')],
+    };
+    mockGetAllBackToBackTeams.mockResolvedValueOnce(loadedTeams);
+
+    const { result } = renderHook(() => useTeamOperations());
+
+    await act(async () => {
+      const response = await result.current.handleLoadTeams(new Date('2026-04-20T00:00:00.000Z'));
+      expect(response).toEqual(loadedTeams);
+    });
+
+    // Only team 2 is a double header, so the notice appears exactly once.
+    const doubleHeaderLogs = vi
+      .mocked(scheduleLog)
+      .mock.calls.filter(
+        ([message]) => typeof message === 'string' && message.startsWith('Double header detected')
+      );
+    expect(doubleHeaderLogs).toEqual([
+      ['Double header detected: Team "Team 2" is in blocks: Early, Late'],
+    ]);
+    expect(result.current.teamBlockMap).toEqual({
+      '1': ['Early'],
+      '2': ['Early', 'Late'],
+      '3': ['Late'],
+    });
+  });
+
+  it("handleLoadTeams warns when no teams come back and still stores the empty result (today's behaviour)", async () => {
+    const loadDate = new Date('2026-04-20T00:00:00.000Z');
+    mockGetAllBackToBackTeams.mockResolvedValueOnce({});
+
+    const { result } = renderHook(() => useTeamOperations());
+
+    await act(async () => {
+      const response = await result.current.handleLoadTeams(loadDate);
+      expect(response).toEqual({});
+    });
+
+    expect(warnLog).toHaveBeenCalledTimes(1);
+    expect(warnLog).toHaveBeenCalledWith(
+      'WARNING: No teams loaded for date 2026-04-20. Check database and date format.'
+    );
+    expect(result.current.timeBlockTeams).toEqual({});
+    expect(result.current.teamsLoadedDate).toEqual(loadDate);
   });
 });
