@@ -620,9 +620,9 @@ Plain-language runbook for **Admin → Weekly Content Pack**. Full behaviour:
 1. Open **Admin → Weekly Content Pack**.
 2. Pick the season and the week that just finished. Press **Generate draft**.
 3. **Read the warnings.** They are specific on purpose:
-   - _No power score snapshot for week N_ — publishing is blocked. The weekly
-     snapshot job did not run. Run the `capture-power-snapshots` edge function,
-     then generate again.
+   - _No power score snapshot for week N_ — publishing is blocked. Either the
+     week has no snapshot, or no team in it has a power score. Run the
+     `capture-power-snapshots` edge function, then generate again.
    - _Compared against week M_ — a snapshot is missing, so the movement covers
      more than one week. Fine to publish; the page says which week it used.
    - _N matches still have no result_ — enter the missing scores first if you
@@ -655,7 +655,7 @@ to its live recap card and nothing is deleted.
 
 | Symptom                                     | Cause                                                      | Fix                                                                                                            |
 | ------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Publish is greyed out                       | No snapshot for that week, or nothing happened that week   | Run `capture-power-snapshots`, then generate again                                                             |
+| Publish is greyed out                       | No snapshot, no scored team, or nothing happened that week | Run `capture-power-snapshots`, then generate again                                                             |
 | "AI captions are not set up"                | `ANTHROPIC_API_KEY` is not set                             | Add it in Supabase → Edge Functions → Secrets, or write the caption by hand                                    |
 | "AI blurbs are not set up"                  | The same key is not set                                    | As above. The plain lines built from the results are used until then, and you can edit any of them             |
 | A team's blurb is missing after generating  | The writer skipped it, or named a team that does not exist | Unknown teams are dropped on purpose. That team keeps whatever line it had; write one yourself                 |
