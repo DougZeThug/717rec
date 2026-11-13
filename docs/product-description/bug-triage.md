@@ -3738,6 +3738,15 @@ statements were uncovered on `main`, and `main` was green for this status. So
 file is **UNKNOWN**. This note claims no cause. Check the run page at the status
 `target_url` (publicly readable, see above) before guessing.
 
+*Passed with listed lines left, measured 2026-11-13 on #1739.* That PR added
+tests only. DeepSource had listed 132 lines; 88 are covered and 44 were left
+uncovered on purpose. The coverage status turned **success**, and overall line
+coverage read 89.7% (up 0.4% from `main`). So the status can pass while listed
+uncovered lines remain, and the rule is still **UNKNOWN**. Separately,
+`DeepSource: JavaScript` first failed on #1739 with one `JS-W1042` (a redundant
+`undefined` argument in a new test assertion). It passed after the repo's
+`// skipcq: JS-W1042` pattern. This note claims no cause beyond that.
+
 **The gate that does bind this repo is `vitest.config.ts`**, which enforces
 per-area coverage floors — `src/components/**` and `src/pages/**` have their own
 — and CI runs it. `coverage-baseline.txt` is a manual snapshot, promoted with
