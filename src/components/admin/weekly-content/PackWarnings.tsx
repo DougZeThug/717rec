@@ -18,7 +18,7 @@ const PackWarnings: React.FC<{ facts: RecapFactsV1 }> = ({ facts }) => {
     warnings.push({
       blocking: true,
       title: `No power score snapshot for week ${facts.weekNumber}`,
-      body: 'The weekly snapshot job has not run for this week, so movers, Team of the Week and the standings columns cannot be trusted. Run the capture-power-snapshots function, then generate again.',
+      body: 'This week has no power score snapshot, or none of its rows has a power score. Movers, Team of the Week and the standings columns cannot be trusted. Run the capture-power-snapshots function, then generate again.',
     });
   }
 
