@@ -374,6 +374,8 @@ This PR adds tests only. It changes no source line, no package, no database and 
 4. **Recap for a week with no scored teams.** Today it reports basis `'compared'` with no trends (`weeklyTrendsForWeek.ts:110-112`). It publishes with no warning: `canPublishFacts` blocks only on `'missing'` (`buildRecapFacts.ts:162-168`), and `PackWarnings.tsx:17-39` has no case for `'compared'`. Should this week count as `'missing'`? **Recommend yes, as a separate change.**
 5. **The 65/25/10 prediction split and the 30% upset line.** Both are product choices (`predictionConstants.ts:1-3`, `predictionConstants.ts:25`). `docs/agents/LEAGUE_CONTEXT.md` does not list them as confirmed. This change pins neither. **Recommend leave them**, unless Doug wants them in the corrections log.
 
+**Answered by Doug, 2026-11-13: he went with every recommendation.** Item 1 = (b), item 2 = (b), item 3 = (a), item 4 = yes, item 5 = leave. Nothing was built here. Items 1, 2 and 4 are queued as separate small PRs, each with tests first (they change league-night behaviour). The answers are in the corrections log in `docs/agents/LEAGUE_CONTEXT.md`, marked DECIDED, NOT BUILT where code must change.
+
 ## Carry-over notes for later slices
 
 - **Follow-ups from the tests-only DeepSource PR (2026-11-13):** the "Looks wrong, NOT fixed here" list (6 items, 2 need Doug first: scheduling skip in item 1, head-to-head weighting in item 4) and the uncovered dead-code lines are recorded in the section "Tests-only PR for the DeepSource coverage lines" above.
