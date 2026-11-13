@@ -238,11 +238,6 @@ export default tseslint.config(
   //    every other layer. These files are not exempt from the Supabase ban, so each
   //    block lists SUPABASE_CLIENT again. A stale block does not warn: remove each
   //    block when the cleanup named in the comment above it lands.
-  //    Removed by the design PR for the leftover wrong-way imports.
-  {
-    files: ['src/utils/autoSchedule/matchHistoryService.ts'],
-    ...imports(SUPABASE_CLIENT, layerBan('utils', ['services/matches/MatchReadService'])),
-  },
   //    Stays: a documented type-only exception (the toast types live with the UI).
   {
     files: ['src/hooks/useToast.ts'],

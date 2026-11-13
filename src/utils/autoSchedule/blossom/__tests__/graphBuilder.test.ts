@@ -18,7 +18,7 @@ const teams = [
 ];
 const config: TeamPairingConfig = {
   avoidRematches: true,
-  haveTeamsPlayedFn: vi.fn(),
+  fetchSeasonHistoryFn: vi.fn(),
   getCompatibilityScoreFn: () => 10,
   playedPairsSet: new Set(['comp-mid']),
 };

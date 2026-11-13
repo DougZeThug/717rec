@@ -1,7 +1,7 @@
+import { fetchSeasonHistoryForTeams } from '@/services/matches/SchedulingHistoryService';
 import { AlgorithmConfig, TeamPairingMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossom';
 import { calculateDivisionOnlyCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
-import { haveTeamsPlayedBefore } from '@/utils/autoSchedule/matchHistoryService';
 import { scheduleLog, warnLog } from '@/utils/logger';
 
 /**
@@ -51,7 +51,7 @@ export const scheduleStandardPairings = async (
     scheduleLog(`Generating pairings for ${block} block with ${teamsInBlock.length} teams`);
     const blockPairings = await generatePairingsWithBlossom(teamsInBlock, {
       avoidRematches: config.avoidRematches,
-      haveTeamsPlayedFn: haveTeamsPlayedBefore,
+      fetchSeasonHistoryFn: fetchSeasonHistoryForTeams,
       getCompatibilityScoreFn: calculateDivisionOnlyCompatibility,
       weights: config.weights,
       playedPairsSet,

@@ -15,7 +15,8 @@ import type { PairingResult, TeamPairingMap, TimeBlockTeamsMap } from '@/types/a
  * rematch history lookup). The pieces under test stay REAL:
  *   - useAutoSchedule (orchestrator)
  *   - useEditableMatches (edit ops + async validation effect)
- *   - validateMatchSchedule / findTeamConflicts
+ *   - validateMatchSchedule / findTeamConflicts (validateMatchSchedule is wrapped in a
+ *     spy that still runs the real code, so the test can see what it was called with)
  *
  * The loop exercised end-to-end:
  *   1. load teams (mocked loader) -> generate (mocked algorithm) -> apply (REAL conversion)
@@ -57,10 +58,16 @@ const GENERATED_PAIRINGS: TeamPairingMap = {
 // ---- External seam mocks (must precede import of the hook under test) ----------
 
 // Rematch async check: deterministic, never hits Supabase.
-vi.mock('@/utils/autoSchedule/matchHistoryService', () => ({
+vi.mock('@/services/matches/SchedulingHistoryService', () => ({
   haveTeamsPlayedBefore: vi.fn().mockResolvedValue(false),
   fetchSeasonHistoryForTeams: vi.fn().mockResolvedValue([]),
 }));
+
+// Real validation, wrapped so the tests can read the arguments it receives.
+vi.mock('@/utils/autoSchedule/validation', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utils/autoSchedule/validation')>();
+  return { ...actual, validateMatchSchedule: vi.fn(actual.validateMatchSchedule) };
+});
 
 // sessionStorage persistence: no-ops / passthrough (mirrors useAutoScheduleState.test.ts).
 vi.mock('../storage', () => ({
@@ -124,7 +131,9 @@ vi.mock('@/utils/logger', async (importOriginal) => {
   };
 });
 
+import { haveTeamsPlayedBefore } from '@/services/matches/SchedulingHistoryService';
 import { getAllBackToBackTeams } from '@/services/timeslots/teamLoaderUtils';
+import { validateMatchSchedule } from '@/utils/autoSchedule/validation';
 
 import { useAutoSchedule } from '../index';
 
@@ -256,6 +265,47 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
       (result.current.validation?.errors ?? []).filter((e) => e.type === 'duplicate-team')
     ).toHaveLength(0);
   });
+  // The rematch check reads this season's history through the function the hook
+  // hands to validateMatchSchedule. MatchHistoryService has a same-named function
+  // with the same signature (any season, and it throws), so only these identity
+  // checks catch a wrong import. One test per call site in useEditableMatches.
+  describe('rematch history function', () => {
+    it('the edit-mode validation effect passes the SchedulingHistoryService lookup', async () => {
+      const result = await renderReadyToEdit();
+      await waitFor(() => {
+        expect(result.current.validation?.isValid).toBe(true);
+      });
+
+      expect(validateMatchSchedule).toHaveBeenCalledWith(
+        result.current.editableMatches,
+        haveTeamsPlayedBefore
+      );
+      // And the real validation used it for each pairing.
+      expect(haveTeamsPlayedBefore).toHaveBeenCalledWith('team-a', 'team-b');
+      expect(haveTeamsPlayedBefore).toHaveBeenCalledWith('team-c', 'team-d');
+    });
+
+    it('the check before an edit-mode save passes the SchedulingHistoryService lookup', async () => {
+      mockSaveMatches.mockResolvedValue(true);
+      const result = await renderReadyToEdit();
+      await waitFor(() => {
+        expect(result.current.validation?.isValid).toBe(true);
+      });
+      // Forget the effect's call: the first call after this is the save's own check.
+      vi.mocked(validateMatchSchedule).mockClear();
+
+      await act(async () => {
+        await result.current.handleSaveSchedule();
+      });
+
+      expect(validateMatchSchedule).toHaveBeenNthCalledWith(
+        1,
+        result.current.editableMatches,
+        haveTeamsPlayedBefore
+      );
+    });
+  });
+
   it("a block's two rounds spread over its two slots and validate clean", async () => {
     vi.mocked(getAllBackToBackTeams).mockResolvedValue(LOADED_TEAMS);
     // What blossom really returns for one block: two rounds, so every team plays twice.

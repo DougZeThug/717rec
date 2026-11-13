@@ -13,11 +13,12 @@ import { assertDistinct, assertValidUuid } from '@/utils/validation';
  */
 
 // ---------------------------------------------------------------------------
-// Functions added for Batch 11 refactor — moved from utils/autoSchedule
+// Scheduling history lookups, moved here from utils/autoSchedule in the Batch 11
+// refactor. SchedulingHistoryService calls the first three through MatchReadService.
 // ---------------------------------------------------------------------------
 
 /**
- * Fetch active season ID using .single() — used by matchHistoryService util.
+ * Fetch active season ID using .single() — used by SchedulingHistoryService.
  * Throws on database error or when no active season found (PGRST116).
  * Callers should catch and handle as appropriate.
  * @throws {DatabaseError} When database operations fail
@@ -101,8 +102,10 @@ export const checkTeamsEverPlayed = async (team1Id: string, team2Id: string): Pr
 };
 
 /**
- * Check if two teams have ever played each other.
- * Used by autoScheduleUtils.
+ * Check if two teams have ever played each other (any season). Throws on a bad id
+ * or a database error. The auto-scheduler does not call this one: it uses the
+ * same-named function in SchedulingHistoryService, which checks the current
+ * season only and returns false on an error.
  */
 export const haveTeamsPlayedBefore = async (team1Id: string, team2Id: string): Promise<boolean> => {
   assertValidUuid(team1Id, 'team1Id');

@@ -18,6 +18,12 @@ vi.mock('@/utils/autoSchedule/validation', () => ({
   validateMatchSchedule: vi.fn(),
 }));
 
+// A stand-in with its own identity, so the test can tell it from the other,
+// same-named haveTeamsPlayedBefore in MatchHistoryService.
+vi.mock('@/services/matches/SchedulingHistoryService', () => ({
+  haveTeamsPlayedBefore: vi.fn(),
+}));
+
 vi.mock('../storage', () => ({
   clearAutoScheduleState: vi.fn(),
 }));
@@ -36,6 +42,7 @@ import {
   fetchActiveSeasonIdOptional,
   saveAutoScheduleMatches,
 } from '@/services/matches/MatchWriteService';
+import { haveTeamsPlayedBefore } from '@/services/matches/SchedulingHistoryService';
 import { validateMatchSchedule } from '@/utils/autoSchedule/validation';
 
 import { clearAutoScheduleState } from '../storage';
@@ -224,6 +231,20 @@ describe('useAutoScheduleSave', () => {
         description: 'Failed to save matches to the database. Please try again.',
       })
     );
+  });
+
+  // The same-named haveTeamsPlayedBefore in MatchHistoryService has the same
+  // signature, so the compiler cannot catch a wrong import. This can.
+  it('validates with the current-season rematch lookup from SchedulingHistoryService', async () => {
+    const matches = [makeMatch()];
+    const { result } = renderSaveHook();
+
+    await act(async () => {
+      await result.current.saveMatches(matches, new Date('2026-07-01'));
+    });
+
+    expect(validateMatchSchedule).toHaveBeenCalledTimes(1);
+    expect(validateMatchSchedule).toHaveBeenCalledWith(matches, haveTeamsPlayedBefore);
   });
 
   it('skips fetchActiveSeasonIdOptional when seasonId is provided', async () => {

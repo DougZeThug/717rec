@@ -6,7 +6,6 @@ import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
 import { generatePairingsWithBlossom } from '../blossom';
 import { calculateConfigurableCompatibility } from '../compatibilityUtils';
-import { haveTeamsPlayedBefore } from '../matchHistoryService';
 import { findTeamsWithSameOpponent } from './opponentUtils';
 
 /**
@@ -16,12 +15,14 @@ import { findTeamsWithSameOpponent } from './opponentUtils';
  *
  * @param timeBlockTeams - Map of time blocks to teams
  * @param config - Configuration for the dual block pairing
+ * @param fetchSeasonHistoryFn - Loads the season's played pairs when rematches are avoided
  * @param notifyCallback - Optional callback for notifications
  * @returns Pairings result or null if generation failed
  */
 export const generateDualBlockPairings = async (
   timeBlockTeams: Record<string, Team[]>,
   config: DualBlockConfig = {},
+  fetchSeasonHistoryFn: (teamIds: string[]) => Promise<Array<[string, string]>>,
   notifyCallback?: NotificationCallback
 ): Promise<PairingResult | null> => {
   try {
@@ -52,7 +53,7 @@ export const generateDualBlockPairings = async (
     scheduleLog(`Generating primary block pairings for ${primaryTeams.length} teams`);
     const primaryPairings = await generatePairingsWithBlossom(primaryTeams, {
       avoidRematches: config.avoidRematches,
-      haveTeamsPlayedFn: haveTeamsPlayedBefore,
+      fetchSeasonHistoryFn,
       getCompatibilityScoreFn: (team1, team2) =>
         calculateConfigurableCompatibility(team1, team2, {
           ...config.weights,
@@ -85,7 +86,7 @@ export const generateDualBlockPairings = async (
     // Create constraints for secondary block to ensure teams have different opponents
     const secondaryConstraints = {
       avoidRematches: true, // Always avoid rematches against primary block opponents
-      haveTeamsPlayedFn: haveTeamsPlayedBefore,
+      fetchSeasonHistoryFn,
       getCompatibilityScoreFn: (team1: Team, team2: Team) => {
         // Base compatibility score with division weighting
         return calculateConfigurableCompatibility(team1, team2, {

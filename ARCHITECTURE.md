@@ -105,9 +105,8 @@ documented in `docs/product-description/stats/team-and-player-stats.md`.
 
 **What lint enforces today** (`eslint.config.js`): the direction rule, for static imports only (`import`, `import type`, `export ... from`, `export *`) on `@/` and `../` paths in `src/types`, `src/utils`, `src/services` and `src/hooks`. Tests are exempt. The files that may use the Supabase client (the realtime hooks, `imageUpload.ts`) still obey the direction rule.
 
-Three known files keep a per-file exception in the config. Each one allows exactly one module and still bans every other layer:
+One known file keeps a per-file exception in the config. It allows exactly one module and still bans every other layer:
 
-- `src/utils/autoSchedule/matchHistoryService.ts` and `src/utils/autoSchedule/compatibilityUtils.ts` → `services/matches/MatchReadService`
 - `src/hooks/useToast.ts` → `components/ui/toast` (types only; this one stays)
 
 Lint does **not** cover dynamic `import()`, `require()`, type-position `import('x').T`, or a hop through `contexts` or `lib`. Those stay a convention.

@@ -1,7 +1,8 @@
 import { AutoScheduleMatch } from '@/types';
 import { warnLog } from '@/utils/logger';
 
-import { haveTeamsPlayedBefore } from './matchHistoryService';
+/** Tells whether two teams already played each other this season. */
+type HaveTeamsPlayedFn = (team1Id: string, team2Id: string) => Promise<boolean>;
 
 export interface ValidationResult {
   isValid: boolean;
@@ -39,7 +40,8 @@ const READABLE_TIME_PATTERN = /\d+:\d+/;
  * Validate match schedule for conflicts and errors
  */
 export async function validateMatchSchedule(
-  matches: AutoScheduleMatch[]
+  matches: AutoScheduleMatch[],
+  haveTeamsPlayedFn: HaveTeamsPlayedFn
 ): Promise<ValidationResult> {
   const errors: ValidationError[] = [];
   const warnings: ValidationWarning[] = [];
@@ -98,7 +100,7 @@ export async function validateMatchSchedule(
   });
 
   // Check for rematches (teams that have already played each other)
-  await checkForRematches(matches, warnings);
+  await checkForRematches(matches, warnings, haveTeamsPlayedFn);
 
   return {
     isValid: errors.length === 0,
@@ -112,13 +114,14 @@ export async function validateMatchSchedule(
  */
 async function checkForRematches(
   matches: AutoScheduleMatch[],
-  warnings: ValidationWarning[]
+  warnings: ValidationWarning[],
+  haveTeamsPlayedFn: HaveTeamsPlayedFn
 ): Promise<void> {
   const rematchChecks = matches.map(async (match) => {
     if (!match.team1Id || !match.team2Id) return;
 
     try {
-      const hasPlayed = await haveTeamsPlayedBefore(match.team1Id, match.team2Id);
+      const hasPlayed = await haveTeamsPlayedFn(match.team1Id, match.team2Id);
 
       if (hasPlayed) {
         warnings.push({
@@ -176,10 +179,13 @@ export function findTeamConflicts(matches: AutoScheduleMatch[]): TeamConflict[] 
 /**
  * Calculate overall schedule health score (0-100)
  */
-export async function calculateScheduleHealth(matches: AutoScheduleMatch[]): Promise<number> {
+export async function calculateScheduleHealth(
+  matches: AutoScheduleMatch[],
+  haveTeamsPlayedFn: HaveTeamsPlayedFn
+): Promise<number> {
   if (matches.length === 0) return 0;
 
-  const validation = await validateMatchSchedule(matches);
+  const validation = await validateMatchSchedule(matches, haveTeamsPlayedFn);
 
   // Deduct points for errors and warnings
   const errorPenalty = validation.errors.length * 20;

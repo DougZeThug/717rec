@@ -6,6 +6,7 @@ import {
   fetchActiveSeasonIdOptional,
   saveAutoScheduleMatches,
 } from '@/services/matches/MatchWriteService';
+import { haveTeamsPlayedBefore } from '@/services/matches/SchedulingHistoryService';
 import { AutoScheduleMatch } from '@/types/autoSchedule';
 import { ValidationError } from '@/types/errors';
 import { validateMatchSchedule } from '@/utils/autoSchedule/validation';
@@ -47,7 +48,7 @@ export function useAutoScheduleSave() {
       }
 
       // Validate matches using central validation utility
-      const validation = await validateMatchSchedule(matches);
+      const validation = await validateMatchSchedule(matches, haveTeamsPlayedBefore);
       if (!validation.isValid) {
         const errorMessages = validation.errors.map((e) => e.message).join('; ');
         // Typed so the reason reaches the user: getUIErrorMessage keeps the

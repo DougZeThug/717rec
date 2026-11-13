@@ -21,7 +21,7 @@ vi.mock('@/utils/logger', () => ({
 // Import after mocks
 import { errorLog } from '@/utils/logger';
 
-import { fetchSeasonHistoryForTeams, haveTeamsPlayedBefore } from '../matchHistoryService';
+import { fetchSeasonHistoryForTeams, haveTeamsPlayedBefore } from '../SchedulingHistoryService';
 
 const SEASON = 'season-1';
 
