@@ -227,6 +227,81 @@ describe('fetchPowerScoreTrendsForWeek', () => {
     await expect(fetchPowerScoreTrendsForWeek('s-1', 6)).rejects.toThrow();
     expect(mockHandleDatabaseError).toHaveBeenCalled();
   });
+
+  // Four more reads can fail. Each case lets the reads before it succeed, so the
+  // code reaches the one under test.
+  it.each([
+    {
+      failing: 'the visible divisions read',
+      queue: () => ({
+        power_score_snapshots: [snapshotWeeks([6, 5])],
+        divisions: [{ data: null, error: { message: 'divisions down' } }],
+      }),
+      message: 'Failed to fetch visible divisions for the recap',
+    },
+    {
+      failing: "this week's snapshots read",
+      queue: () => ({
+        power_score_snapshots: [
+          snapshotWeeks([6, 5]),
+          { data: null, error: { message: 'current down' } },
+          { data: [{ team_id: 't-1', power_score: 60 }], error: null },
+        ],
+        divisions: [visibleDivisions],
+      }),
+      message: 'Failed to fetch this week\u2019s snapshots',
+    },
+    {
+      failing: "the comparison week's snapshots read",
+      queue: () => ({
+        power_score_snapshots: [
+          snapshotWeeks([6, 5]),
+          { data: [{ team_id: 't-1', power_score: 64 }], error: null },
+          { data: null, error: { message: 'previous down' } },
+        ],
+        divisions: [visibleDivisions],
+      }),
+      message: 'Failed to fetch the comparison week\u2019s snapshots',
+    },
+    {
+      failing: 'the team details read',
+      queue: () => ({
+        power_score_snapshots: [
+          snapshotWeeks([6, 5]),
+          { data: [{ team_id: 't-1', power_score: 64 }], error: null },
+          { data: [{ team_id: 't-1', power_score: 60 }], error: null },
+        ],
+        divisions: [visibleDivisions],
+        v_team_details: [{ data: null, error: { message: 'details down' } }],
+      }),
+      message: 'Failed to fetch team details for the recap',
+    },
+  ])(
+    "throws instead of reporting an empty week when $failing fails (today's behaviour)",
+    async ({ queue, message }) => {
+      createSupabaseMock(queue());
+
+      await expect(fetchPowerScoreTrendsForWeek('s-1', 6)).rejects.toThrow(message);
+      expect(mockHandleDatabaseError).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it("returns no trends when this week has no snapshots (today's behaviour)", async () => {
+    createSupabaseMock({
+      power_score_snapshots: [
+        snapshotWeeks([6, 5]),
+        { data: [], error: null },
+        { data: [{ team_id: 't-1', power_score: 60 }], error: null },
+      ],
+      divisions: [visibleDivisions],
+    });
+
+    const result = await fetchPowerScoreTrendsForWeek('s-1', 6);
+
+    expect(result).toMatchObject({ trends: [], currentWeek: 6 });
+    // It stops before asking for team details: there is nobody to look up.
+    expect(mockFrom).not.toHaveBeenCalledWith('v_team_details');
+  });
 });
 
 describe('pickTeamOfTheWeek', () => {

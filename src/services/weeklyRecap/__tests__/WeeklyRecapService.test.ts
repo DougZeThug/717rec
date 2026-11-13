@@ -1204,6 +1204,64 @@ describe('WeeklyRecapService.fetchRecapForWeek', () => {
     expect(streakSpy.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("surfaces a visible-divisions failure from the hot streaks query (today's behaviour)", async () => {
+    const divisionsError = { message: 'streak divisions query failed' };
+
+    createSupabaseMock({
+      // First read is the upset query (no matches, so it stops early and never
+      // asks for divisions). Second read is the streak query.
+      matches: [
+        { data: [], error: null },
+        {
+          data: [
+            {
+              id: 'm-1',
+              team1_id: 't-1',
+              team2_id: 't-2',
+              winner_id: 't-1',
+              loser_id: 't-2',
+              date: '2026-09-10T10:00:00Z',
+              iscompleted: true,
+              round_number: 1,
+            },
+          ],
+          error: null,
+        },
+      ],
+      v_team_details: [
+        {
+          data: [
+            {
+              team_id: 't-1',
+              name: 'Alpha',
+              image_url: null,
+              logo_url: null,
+              divisionname: 'Premier',
+              division_id: 'd-visible',
+            },
+          ],
+          error: null,
+        },
+      ],
+      divisions: [{ data: null, error: divisionsError }],
+    });
+
+    await expect(
+      WeeklyRecapService.fetchRecapForWeek({
+        seasonId: 's-1',
+        weekNumber: 2,
+        seasonStartDate: '2026-09-04',
+      })
+    ).rejects.toThrow('Failed to fetch visible divisions for hot streaks');
+
+    expect(mockHandleDatabaseError).toHaveBeenCalledWith(
+      divisionsError,
+      'Failed to fetch visible divisions for hot streaks'
+    );
+    // The error stops the streak build: no streak is computed from a half-loaded recap.
+    expect(mockCalculateStreak).not.toHaveBeenCalled();
+  });
+
   // The whole point of the split: the same failure that the home page hides
   // must be visible to an admin about to publish it as fact.
   it('throws where fetchWeeklyRecap swallows, given the same failure', async () => {

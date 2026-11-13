@@ -3727,6 +3727,17 @@ Failure. #1315 contradicts the conclusion. That branch cannot be re-run, so
 whether DeepSource changed, or something else there was uncovered, is unknown.
 **Trust the table above; it is the more recent measurement.**
 
+*Incomplete too, measured 2026-11-13 on #1738.* The coverage status failed
+although new-code line coverage read 100% (new branch 82.8%, new composite
+93.7%, every threshold `N/A`). DeepSource listed 132 uncovered lines in 13
+files: 71 in two files that moved (a diff without rename detection shows a moved
+file as a whole-file add) and 61 old lines in files where the PR changed one
+import line. Local coverage showed the PR made no file worse: the same
+statements were uncovered on `main`, and `main` was green for this status. So
+"keys on new-code line coverage" is **incomplete**, and the rule that flags a
+file is **UNKNOWN**. This note claims no cause. Check the run page at the status
+`target_url` (publicly readable, see above) before guessing.
+
 **The gate that does bind this repo is `vitest.config.ts`**, which enforces
 per-area coverage floors — `src/components/**` and `src/pages/**` have their own
 — and CI runs it. `coverage-baseline.txt` is a manual snapshot, promoted with

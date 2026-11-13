@@ -292,7 +292,93 @@ D3 removes the last util -> service imports in `src/utils/autoSchedule/`. The Au
 - **Interruption:** the container restarted during D3-2. The work was finished from the saved working tree: audited line by line against the plan, gates and wiring proof re-run, then committed.
 - **Remaining Slice 2/3 list is now:** 3D-3J (optional). `hooks/useToast.ts` stays as the documented type-only exception.
 
+## Tests-only PR for the DeepSource coverage lines (follow-up to #1738), built 2026-11-13
+
+This PR adds tests only. It changes no source line, no package, no database and no migration. Nothing to hand-apply.
+
+- **Why:** the `DeepSource: Test coverage` status was red on #1738. QA proved #1738 made no file worse. The same statements were uncovered on `main` in all 13 files, and overall line coverage went from 89.01% to 89.32%. `main` was green for that status. The status is a legacy commit status, not a required check, so #1738 merged.
+- **What DeepSource listed:** 132 lines in 13 files.
+  - 71 lines are in two files that #1738 moved: `nativeAuth.ts` (26) and `teamLoaderUtils.ts` (45). A diff without rename detection shows a moved file as a whole-file add.
+  - 61 lines are old code in files where #1738 changed one import line.
+  - Why DeepSource flags these 13 files and not the other 35 touched files that also have gaps: **UNKNOWN**.
+- **Doug's decisions (2026-11-13):** "merge now, tests later", then "tests PR". Dead code is **not tested and not deleted** in this PR.
+- **Commits:** 13 test commits on top of `main` `d16f9ba` (`78845b3` to `a70f2db`), one review-fix test commit ("Test: tighten wording and drop two soft pins found in review", see "Scoring review" below), and two docs commits (one holds this section). 12 test files changed: 10 edited, 2 new (`nativeAuth.test.ts`, `useMatchPrediction.test.tsx`). The only removed lines are 3 import lines that were rewritten. No `expect` was removed.
+- **Rule for every new test:** it pins today's behaviour and its name says so. None of them states a league rule. None asserts the Power Score weights, the 0.85 default or the `sos: 0.5` / `power_score: 0` defaults. The stat numbers in the tests are made-up inputs.
+
+| File | DeepSource lines | Tests added (names shortened) | Result |
+|---|---|---|---|
+| `services/brackets/viewer/MatchTransformer.ts` | 3 (103, 107, 111) | orders several matches of one type by round, then position | covered |
+| `services/weeklyRecap/streaks.ts` | 1 (92) | surfaces a visible-divisions failure from the hot streaks query (in `WeeklyRecapService.test.ts`) | covered |
+| `hooks/usePlayoffViewModel.compat.ts` | 2 (105, 117) | handleBracketCreated waits for the bracket list to reload | 105 covered; 117 left on purpose |
+| `hooks/useAutoSchedule/useTeamOperations.ts` | 2 (105, 136) | handleLoadTeams logs a team that sits in two blocks and still returns both blocks; handleLoadTeams warns when no teams come back and still stores the empty result | covered |
+| `services/rankings/weeklyTrendsForWeek.ts` | 5 (57, 96, 99, 111, 123) | throws when the visible divisions, this week's snapshots, the comparison week's snapshots or the team details read fails (4 rows); returns no trends when this week has no snapshots | covered |
+| `hooks/playoffs/usePlayoffLoserSwap.ts` | 3 (48-50) | refreshes the open bracket after a loser swap when a bracket id is given; leaves the single-bracket caches alone without a bracket id (in `uncoveredPlayoffHooks.test.tsx`) | covered |
+| `hooks/useTeamScheduleLoader.ts` | 8 (50-51, 54-55, 57-58, 67, 69) | builds the paired blocks in dual block mode and clears them after a normal load; pairs Early with Late when the config names no blocks, and gives an empty side for a missing block | covered |
+| `components/teams/TeamAdvancedStatsSection.tsx` | 11 (21-24, 26, 28, 33, 43, 51, 63, 89) | shows a loading skeleton; shows an error with a Retry that reloads; lists each season and opens then closes its division records on click (in `TeamStatsComputed.test.tsx`) | covered |
+| `hooks/scheduling/utils/standardPairing.ts` | 9 (39-40, 45, 65-66, 76-77, 89-90) | skips a block with fewer than two teams and still pairs the other blocks; warns on an odd block and still pairs; records each block's pairs so the next block sees them as played; lists a team that reached only one match as unmatched and warns with its count; flags a team with no matches as unmatched | covered |
+| `utils/autoSchedule/dualBlock/pairingGenerator.ts` | 1 (58) | none | left on purpose |
+| `services/timeslots/teamLoaderUtils.ts` | 45 | no teams and no query for an invalid date; same for an unknown pair name; keeps the valid team and logs a row in a slot outside the pair; leaves out a team with only one of its two slots; leaves out a team whose two slots do not point at each other (2 rows); leaves out a team whose data is gone on the second read (contrived); returns no teams and logs when a row throws (contrived); `getAllBackToBackTeams` loads every pair and keys the teams by pair name | 23 covered; 22 left on purpose |
+| `services/auth/nativeAuth.ts` | 26 | NEW file: `isNativePlatform` returns what Capacitor reports (2 rows); on a web page `loginWithGoogleNative` returns a failed result that says the method is native-only; on a web page it does not load the Google plugin or sign in | 6 covered (10, 29-30, 33-35); 20 left on purpose |
+| `hooks/useMatchPrediction.ts` | 16 | NEW file, 16 runs in 4 groups: data missing (4), what it hands to the predictor (5), `isLoading` (3 rows), upset flag (4 rows). It tests the wiring only. | covered |
+
+- **Left uncovered ON PURPOSE (dead or native-only code; Doug's decision):**
+  - `teamLoaderUtils.ts`, 22 listed lines in three unused functions: 163-180 `getTeamsByTimeBlock`, 214-234 `validateTeamBackToBackAssignment`, 244-253 `createBackToBackAvailabilityMap`. Nothing in `src` calls them. A namespace import in `useTeamScheduleLoader.test.ts` keeps knip quiet.
+  - `nativeAuth.ts`, 20 lines that run only in a native shell: 11-12, 14-15, 18-19, 23, 26 (the token fallbacks in `extractIdToken`) and 41, 44-45, 51, 53, 55-56, 60, 62, 64-66 (the native sign-in path). The repo has no native project (`docs/agents/LEAGUE_CONTEXT.md:28-31`).
+  - `usePlayoffViewModel.compat.ts:117`: `handleTeamDivisionChange` is a no-op placeholder.
+  - `dualBlock/pairingGenerator.ts:58`: `generateDualBlockPairings` has no production caller (see "Left over" in the D3 result above).
+  - `usePlayoffLoserSwap.ts:59-60`: the `onError` log and toast. DeepSource did not list them.
+- **Lines DeepSource did NOT list, but local coverage showed:**
+  - `usePlayoffLoserSwap.ts` 59-60: still uncovered (above).
+  - `standardPairing.ts` 92: uncovered on `main`, now covered. The file is now 38 of 38 lines.
+  - `useMatchPrediction.ts` 71, 125, 126, 132: uncovered on `main`, now covered. The file is now 20 of 20 lines.
+  - `pairingGenerator.ts`: its own tests leave 11 lines uncovered (58, 92, 145, 150-152, 155-157, 160-161). DeepSource listed only 58. The other 10 are left alone too.
+- **Proof (batch deliberate breaks, one throwaway copy of the repo per run):** one single-line change in the source file at a time; only the new test file ran; the source file was restored from git after each break; no break was applied in the real checkout. A break that no test noticed would have been a weak test and would have been strengthened.
+
+| Run | New test files | Breaks | Result |
+|---|---|---|---|
+| 1 | `MatchTransformer.test.ts`, `WeeklyRecapService.test.ts`, `usePlayoffViewModel.compat.test.ts`, `useTeamOperations.test.ts`, `weeklyTrendsForWeek.test.ts`, `uncoveredPlayoffHooks.test.tsx`, `useTeamScheduleLoader.test.ts`, `TeamStatsComputed.test.tsx` | 19 | 18 of 19 breaks caught at HEAD (all 19 were caught before the scoring review); break 5e (weeklyTrendsForWeek previousWeek) is deliberately no longer pinned after it. A control run of the same 8 files with no break passed. |
+| 2 | `standardPairing.test.ts`, `teamLoaderUtils.test.ts` | 17 | 16 of 17 breaks caught; break S5 (standardPairing `count > 0`: does a team with no matches also get the partial warning?) is deliberately no longer pinned after the scoring review |
+| 3 | `nativeAuth.test.ts`, `useMatchPrediction.test.tsx` | 29 numbered breaks (31 runs: two of them have an `a` and a `b` run) | 29 of 29 caught |
+
+- **Looks wrong, NOT fixed here, needs a later decision.** Each item is VERIFIED by the implementer who found it (items 1, 2: Run 2; items 3, 4: Run 3; items 4b, 5, 6: Run 1). No test pins any of them as a rule. None needs a league-rule answer except where marked.
+  1. `standardPairing.ts:38-41` skips a block with one team using `continue`. That lone team is never added to `unmatchedTeamIds`, so it is silently left out. The odd-block warning (line 45) says "One team will be unmatched", but a 3-team block can reach 2 matches for every team, so nobody is unmatched. The comment at line 43 says "Skip blocks with odd number", but the code only warns. This is the league-night scheduling path: **ask Doug before any change.**
+  2. `teamLoaderUtils.ts:152-155` catches any error and returns `[]`, so one bad row drops the whole pair's load. Lines 18-19 (bad date), 24-25 (bad pair name) and 44-47 (fetch error) also return `[]`: callers see "no teams", not an error. CLAUDE.md says services throw. Lines 126-129 cannot run with real rows, because line 78 already drops rows without `teams`.
+  3. `nativeAuth.ts:18-26` falls back to `serverAuthCode`, then `accessToken`, then `token`, and sends the value to `signInWithIdToken`. `nativeAuth.ts:51` logs `JSON.stringify(response)`, the whole Google response, which may put tokens in the console. This matters only if a native app ever ships (the repo has none).
+  4. `useMatchPrediction.ts:128` treats any `winnerId` that is not team 1 as team 2 (it uses `probB`). `useMatchPrediction.ts:64` counts an explicit `null` prefetched head-to-head as "provided", so the hook skips the per-card lookup and passes no head-to-head to the predictor. `TimeSlotMatchGroup.tsx:84` passes `getHeadToHead(...)`, which can return `null` (INFERRED: while the batch loads, or when there is no record). A prediction card may then show without head-to-head weighting on league night. This is scoring-adjacent: **ask Doug.** When the weights query fails, the hook returns `prediction: null` with `isLoading` false and no error. The doc comment above the hook still says "65% Career + 25% Current Season + 10% H2H", while `docs/agents/LEAGUE_CONTEXT.md` does not list the 65/25/10 prediction split at all (its lines 63-64 say the division weights are unconfirmed).
+  - 4b. `useTeamOperations.handleLoadTeams`: after a load that returns no teams, it still stores the empty map and sets `teamsLoadedDate`. Nobody is sure that is intended. The new test pins the warning and the empty map, but not `teamsLoadedDate`.
+  5. `usePlayoffLoserSwap.ts:50` calls `refetchQueries` after `invalidateQueries`, which may be redundant. The `useMemo` in `usePlayoffViewModel.compat.ts` carries an `eslint-disable` for its dependencies (line 124) and captures the first `refetchBrackets` (stable today).
+  6. `useTeamScheduleLoader.loadTeamsForDate(date, true)` with no dual-block config behaves like normal mode and resets the paired map. Not pinned.
+- **Follow-ups:** the "Looks wrong" list above, the dead-code lines, and `usePlayoffLoserSwap.ts:59-60` are all open. They are also listed in the carry-over notes below so they are not lost.
+- **Honest limit:** DeepSource may stay red. Its rule is unknown. The dead-code lines are the reason it may stay red. A later dead-code PR in the Slice 1 style can remove them. Deleting tests there needs Doug's waiver. Watch both DeepSource statuses after the push.
+
+### Scoring review (read-only specialist, 2026-11-13)
+
+- **Result:** no new test freezes a scoring rule; nothing reverted. The review asked for small fixes. Every fix touches a test that this unpushed branch added, so no test in `main` is weakened. One test commit holds them. No source line changed.
+- **Fixes made (tests only):**
+  - `useMatchPrediction.test.tsx`: the mocked `isUpset` said "upset" for the 80% favourite and "no upset" for the 20% underdog. That was backwards. The answers are swapped. The test still proves that the hook asks `isUpset` about the winner's probability (team 1, then team 2) and returns the answer. It does not assert the real upset rule. Two comments say the fixtures are made-up values and the real predictor uses a 0-100 Power Score scale.
+  - `weeklyTrendsForWeek.test.ts`: the empty-week test no longer pins `basis: 'compared'` and `previousWeek: 5`. That result is doubtful (open question 4). It still pins the empty trends, the week number, and that team details are never read. Source line 111 stays covered.
+  - `standardPairing.test.ts`: the check "no warning for a team with no matches" is gone, and the test title no longer says it. The unmatched list stays. Two comments say that the odd-block test pins only what the function returns, and that the repeated pairs in the zero-match test are mock fixtures.
+  - `teamLoaderUtils.test.ts`: a comment says the three pairs come from the mocked constants and the real list has nine.
+  - `useTeamOperations.test.ts`: the mocked loader returns every pair key with an empty list, like the real loader.
+- **Net effect on `main`:** no `expect` is removed from `main`. One `expect` that this branch itself added is gone (`standardPairing.test.ts`). The factory integrity scan, run against `main`, finds no weakened test.
+- **Break re-check after the fixes:** the implementer re-ran the deliberate breaks that touch the edited tests against the edited tests: `weeklyTrendsForWeek` (5a-5e), `standardPairing` (S1-S5), `useTeamOperations` (4a, 4b), `teamLoaderUtils` (T8a, T8b), and the `useMatchPrediction` missing-data and upset-flag breaks (B3, B18-B21). All were caught except 5e and S5. Those two are not pinned on purpose: each can only be caught by pinning a doubtful result.
+- **Two INFERRED points (read from code, not run on a real league night):**
+  - In standard mode, an odd block builds a 3-team triangle (the generator targets 2 matches per team, `generatePairings.ts:30-31`). A triangle cannot sit in two slots, because every pair of its matches shares a team. The save step puts the third match back in slot 0 and double-books a team (`usePairingOperations.ts:294-300`). The code comment above it says validation refuses a double-booked team (`usePairingOperations.ts:285-288`). So the save step is expected to refuse an odd block.
+  - `docs/product-description/admin/build-the-schedule.md:278-279` says an odd block "leaves one team unmatched". That matches dual mode, where `handleOddTeamCount` removes one team (`dualBlockUtils.ts:66`). It does not match the standard path, where `standardPairing.ts:44-48` only warns.
+
+### Open league-night questions for Doug (none changed here; each has a recommendation)
+
+1. **Odd block in standard auto-schedule.** Today it warns in the console (`standardPairing.ts:44-48`) and builds a triangle. The save step is expected to refuse it (see the INFERRED point above). Options: (a) keep; (b) one team sits out and the app lists it as unmatched; (c) stop and ask the admin. **Recommend (b).** It matches dual mode and the product docs. See also "Looks wrong" item 1.
+2. **A one-team block.** Today the lone team is skipped without a word (`standardPairing.ts:38-41`) and is not counted as unmatched. So the "N teams unmatched" message (`usePairingOperations.ts:204`) does not count it. Options: (a) keep it silent; (b) count it as unmatched; (c) block generation. **Recommend (b).**
+3. **Prediction card while the head-to-head batch loads.** The caller passes `null` (`useBatchHeadToHead.ts:93`). The hook reads `null` as "prefetched, no data" (`useMatchPrediction.ts:64`). The card shows a prediction with no head-to-head and no loading state. INFERRED: it may shift when the batch arrives. Head-to-head is 10% of the model and counts only with 2 or more past meetings (`predictionConstants.ts:3-5`, `predictMatch.ts:103`). Options: (a) keep; (b) show loading until the batch lands; (c) fall back to the per-card lookup. **Recommend (a) for now.** Do not pin it in a test. Revisit if cards visibly jump. See also "Looks wrong" item 4.
+4. **Recap for a week with no scored teams.** Today it reports basis `'compared'` with no trends (`weeklyTrendsForWeek.ts:110-112`). It publishes with no warning: `canPublishFacts` blocks only on `'missing'` (`buildRecapFacts.ts:162-168`), and `PackWarnings.tsx:17-39` has no case for `'compared'`. Should this week count as `'missing'`? **Recommend yes, as a separate change.**
+5. **The 65/25/10 prediction split and the 30% upset line.** Both are product choices (`predictionConstants.ts:1-3`, `predictionConstants.ts:25`). `docs/agents/LEAGUE_CONTEXT.md` does not list them as confirmed. This change pins neither. **Recommend leave them**, unless Doug wants them in the corrections log.
+
+**Answered by Doug, 2026-11-13: he went with every recommendation.** Item 1 = (b), item 2 = (b), item 3 = (a), item 4 = yes, item 5 = leave. Nothing was built here. Items 1, 2 and 4 are queued as separate small PRs, each with tests first (they change league-night behaviour). The answers are in the corrections log in `docs/agents/LEAGUE_CONTEXT.md`, marked DECIDED, NOT BUILT where code must change.
+
 ## Carry-over notes for later slices
+
+- **Follow-ups from the tests-only DeepSource PR (2026-11-13):** the "Looks wrong, NOT fixed here" list (6 items, 2 need Doug first: scheduling skip in item 1, head-to-head weighting in item 4) and the uncovered dead-code lines are recorded in the section "Tests-only PR for the DeepSource coverage lines" above.
 
 - **DONE 2026-11-11 (commit 0db935f): `updated_at` on legacy playoff writes.** `uncoveredPlayoffHooks.test.tsx` now checks the ISO `updated_at` that `usePlayoffMatchUpdate.ts:170` stamps. Mutation-checked (deleting the line fails the test). `updatePlayoffMatchResult` can now be removed whenever a later slice wants.
 - **DONE 2026-11-11 (commit ed9e86b): `sos || 0.5` fallback** (`hooks/useTeamRankings.ts:88`, display only). Two cases in `useTeamRankings.test.ts`: a missing SOS reads 0.5; a real 0.62 stays 0.62. Mutation-checked. A SOS of exactly 0 is not tested on purpose (league rules hold SOS between 0.1 and 1.0).

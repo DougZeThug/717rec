@@ -76,6 +76,50 @@ describe('MatchTransformer', () => {
     expect(reverse.get(3)).toBe('f1');
   });
 
+  it("orders several matches of one type by round, then position (today's behaviour)", () => {
+    const forward = new Map<string, number>();
+    const reverse = new Map<number, string>();
+    // Each type is fed out of order: round 2 first, then position 2, then position 1.
+    const result = transformMatches(
+      [
+        match({ id: 'w-r2p1', matchType: 'winners', round: 2, position: 1 }),
+        match({ id: 'l-r2p1', matchType: 'losers', round: 2, position: 1 }),
+        match({ id: 'f-r2p1', matchType: 'finals', round: 2, position: 1 }),
+        match({ id: 'w-r1p2', matchType: 'winners', round: 1, position: 2 }),
+        match({ id: 'l-r1p2', matchType: 'losers', round: 1, position: 2 }),
+        match({ id: 'f-r1p2', matchType: 'finals', round: 1, position: 2 }),
+        match({ id: 'w-r1p1', matchType: 'winners', round: 1, position: 1 }),
+        match({ id: 'l-r1p1', matchType: 'losers', round: 1, position: 1 }),
+        match({ id: 'f-r1p1', matchType: 'finals', round: 1, position: 1 }),
+      ],
+      forward,
+      reverse,
+      new Map([
+        ['a', 7],
+        ['b', 8],
+      ])
+    );
+
+    // Viewer numbers run 1..9: winners first, then losers, then finals.
+    expect(result.map(({ number }) => number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(result.map(({ group_id }) => group_id)).toEqual([1, 1, 1, 2, 2, 2, 3, 3, 3]);
+    // Inside each group the order is round first, then position.
+    expect([...reverse.entries()]).toEqual([
+      [1, 'w-r1p1'],
+      [2, 'w-r1p2'],
+      [3, 'w-r2p1'],
+      [4, 'l-r1p1'],
+      [5, 'l-r1p2'],
+      [6, 'l-r2p1'],
+      [7, 'f-r1p1'],
+      [8, 'f-r1p2'],
+      [9, 'f-r2p1'],
+    ]);
+    expect(forward.get('w-r2p1')).toBe(3);
+    expect(forward.get('l-r1p1')).toBe(4);
+    expect(forward.get('f-r2p1')).toBe(9);
+  });
+
   it('creates games and skips matches without a viewer id', () => {
     const result = transformGames(
       [match(), match({ id: 'missing' })],
