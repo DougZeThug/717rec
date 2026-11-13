@@ -125,10 +125,12 @@ Three consequences follow, and all three surprise people:
   fall.
 - **Nearly half the number is the schedule.** A team with no say in who it plays
   carries 45 points of a rating decided by the fixture list.
-- **100 is unreachable.** The strength-of-schedule term is capped by the
-  strongest division's weight, and no division carries a weight of 1.0. The real
-  ceiling is 100 times the top division's weight, and it moves when the league
-  re-weights a division.
+- **100 needs the top division.** The strength-of-schedule term is capped by the
+  strongest division's weight. The real ceiling is 100 times the top division's
+  weight, and it moves when the league re-weights a division. A live read Doug
+  shared on 2026-11-13 (not re-read by the developer) reports the top division,
+  Competitive, at 1.00. If that holds, 100 is possible only for a team that wins
+  every match and every game against Competitive opponents alone.
 
 **The three weights are not fixed.** 40/45/15 is the league's current setting,
 kept as data and changed through the admin sandbox. Changing them rewrites every
