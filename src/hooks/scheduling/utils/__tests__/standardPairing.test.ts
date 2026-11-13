@@ -115,7 +115,8 @@ describe('scheduleStandardPairings', () => {
   });
 
   it('counts the team in a one-team block as unmatched and leaves a full block alone', async () => {
-    const loneTeam = createMockTeam({ id: 'team-lone', name: 'team-lone' });
+    // The name differs from the id on purpose: the list must hold the id, not the name.
+    const loneTeam = createMockTeam({ id: 'team-lone', name: 'Lone Team' });
     const fullBlock = [
       pair(teamA, teamB),
       pair(teamC, teamD),
