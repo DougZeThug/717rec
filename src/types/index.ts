@@ -1,4 +1,9 @@
 // Team related types
+
+// skipcq: JS-E1004 -- an explicit named export wins over a star export (ES spec), so
+// `Team` from this barrel is the full interface in ./team. playoffTypes also exports a
+// `Team` alias. That overlap already existed before design PRs D1-D3: main had
+// `export interface Team` plus `export * from '@/utils/playoffs/playoffTypes'`.
 export type { Team } from './team';
 
 // Match related types
@@ -89,6 +94,10 @@ export interface Ranking {
 }
 
 // Types for playoff brackets - Export from the centralized file
+
+// skipcq: JS-E1004 -- this star export carries playoffTypes' `Team` alias, but the
+// explicit `export type { Team }` at the top of this file wins over it (ES spec).
+// Same overlap as before design PRs D1-D3, so `Team` here stays the ./team interface.
 export * from './playoffTypes';
 
 // Export bracket record types

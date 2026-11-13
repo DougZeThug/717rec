@@ -59,6 +59,7 @@ const TeamAdvancedStatsSection: React.FC<TeamAdvancedStatsSectionProps> = ({ tea
           variant="inline"
           error="We couldn't load advanced stats. Please try again."
           onRetry={() => {
+            // skipcq: JS-0098 -- `void` marks the promise from refetch() as deliberately not awaited.
             void refetch();
           }}
         />

@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 // `routeName.test.ts` does: a static import needs no working directory, so the
 // test does not care where vitest was started from.
 import appSource from '@/App.tsx?raw';
+// skipcq: JS-W1028 -- `?raw` resolves to a string, so the module's own exports
+// are irrelevant. routePrefetch.ts has named exports and no default.
 import routePrefetchSource from '@/utils/routePrefetch.ts?raw';
 
 /**
