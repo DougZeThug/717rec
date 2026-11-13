@@ -329,7 +329,9 @@ describe("team division weight default (today's behaviour)", () => {
   // The team weight uses `||`, so a stored 0 becomes 0.85 today. This is the
   // current code, not a decided league rule. The `||` in buildTeamDivisionMaps is
   // masked by the two `||` where the result is assembled, so a switch to `??`
-  // shows up here only when all three places change together.
+  // shows up here only when the map-building line and at least one of the two
+  // assembling lines change together (the two assembling lines alone are not
+  // caught).
   it.each([
     { label: '0', divisions: { division_weight: 0 } },
     { label: 'null', divisions: { division_weight: null } },

@@ -126,9 +126,9 @@ Three consequences follow, and all three surprise people:
 - **Nearly half the number is the schedule.** A team with no say in who it plays
   carries 45 points of a rating decided by the fixture list.
 - **100 is reachable.** A team scores 100 when it wins every decided match, wins
-  every game, and has a schedule strength of 1.0. Schedule strength is 1.0 only
-  when every rated opponent was in a division that weighed 1.00 on the match
-  date. With the default weights, the best possible score is 55 + 45 × schedule
+  every game, and has a schedule strength of 1.0. Schedule strength reaches 1.0
+  only when the average weight of the rated opponents' divisions on the match
+  dates is 1.0 or more. With the default weights, the best possible score is 55 + 45 × schedule
   strength. A live read Doug shared on 2026-11-13 (not re-read by the developer)
   reports one division at 1.00, Competitive, and all others lower. If that
   holds, only a team that played Competitive opponents alone can reach 100. A
