@@ -304,7 +304,10 @@ describe('fetchPowerScoreTrendsForWeek', () => {
     }
   );
 
-  it("returns no trends when this week has no snapshots (today's behaviour)", async () => {
+  // Changed on purpose (Doug, 2026-11-13). Week 6 has rows, but none of them has
+  // a power score, so the database filter returns nothing. That used to report
+  // 'compared' with no trends and publish with no warning. It is 'missing' now.
+  it('calls a week missing when its rows have no scored team', async () => {
     createSupabaseMock({
       power_score_snapshots: [
         snapshotWeeks([6, 5]),
@@ -317,7 +320,27 @@ describe('fetchPowerScoreTrendsForWeek', () => {
     const result = await fetchPowerScoreTrendsForWeek('s-1', 6);
 
     expect(result).toMatchObject({ trends: [], currentWeek: 6 });
+    // 'missing' has no comparison week, the same as a week with no snapshot.
+    expect(result).toMatchObject({ basis: 'missing', previousWeek: null });
     // It stops before asking for team details: there is nobody to look up.
+    expect(mockFrom).not.toHaveBeenCalledWith('v_team_details');
+    // The unscored rows were left out by this filter on the week-6 read.
+    expect(notFiltersForWeek(6)).toEqual([['power_score', 'is', null]]);
+  });
+
+  it('calls a week missing, not a gap, when its rows have no scored team and week 5 has no snapshot', async () => {
+    createSupabaseMock({
+      power_score_snapshots: [
+        snapshotWeeks([6, 4]),
+        { data: [], error: null },
+        { data: [{ team_id: 't-1', power_score: 60 }], error: null },
+      ],
+      divisions: [visibleDivisions],
+    });
+
+    const result = await fetchPowerScoreTrendsForWeek('s-1', 6);
+
+    expect(result).toEqual({ trends: [], currentWeek: 6, previousWeek: null, basis: 'missing' });
     expect(mockFrom).not.toHaveBeenCalledWith('v_team_details');
   });
 

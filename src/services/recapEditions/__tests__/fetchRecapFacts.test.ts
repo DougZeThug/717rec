@@ -17,6 +17,7 @@ vi.mock('@/services/rankings/weeklyTrendsForWeek', () => ({
   fetchPowerScoreTrendsForWeek: mockFetchTrends,
 }));
 
+import { canPublishFacts } from '../buildRecapFacts';
 import { fetchRecapFacts } from '../fetchRecapFacts';
 
 /** Every filter each table saw, so the test can assert on the bounds used. */
@@ -225,6 +226,51 @@ describe('fetchRecapFacts', () => {
 
     expect(calls.filter((c) => c.table === 'power_score_snapshots')).toHaveLength(1);
     expect(facts.powerRankings?.every((t) => t.previousRank === null)).toBe(true);
+  });
+
+  it("keeps a 'missing' week in the facts, reads no previous standings and blocks publishing", async () => {
+    // Week 6 has snapshot rows, but none has a power score. The trends read calls
+    // that week 'missing' and gives no comparison week.
+    mockFetchTrends.mockResolvedValue({
+      trends: [],
+      currentWeek: 6,
+      previousWeek: null,
+      basis: 'missing',
+    });
+
+    setupSupabase({
+      seasons: [season],
+      power_score_snapshots: [
+        { data: [{ ...snapshotRow('t-1', 6), power_score: null }], error: null },
+      ],
+      v_team_details: [
+        {
+          data: [
+            { team_id: 't-1', name: 'A', logo_url: null, image_url: null, division_id: 'd-1' },
+          ],
+          error: null,
+        },
+      ],
+      divisions: [
+        {
+          data: [{ id: 'd-1', name: 'Competitive', display_division: 'Competitive' }],
+          error: null,
+        },
+      ],
+      matches: [
+        { count: 0, error: null },
+        { data: [], error: null },
+      ],
+    });
+
+    const facts = await fetchRecapFacts('s-1', 6);
+
+    expect(facts.movers).toMatchObject({ basis: 'missing', previousWeek: null });
+    // Only the week-6 standings read: there is no earlier week to read.
+    expect(calls.filter((c) => c.table === 'power_score_snapshots')).toHaveLength(1);
+    // The standings rows exist, but the admin must not be able to publish them.
+    expect(facts.divisions.length).toBeGreaterThan(0);
+    expect(canPublishFacts(facts)).toBe(false);
   });
 
   // One visibility rule for the whole edition. weeklyTrendsForWeek gates on the
