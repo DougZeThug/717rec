@@ -90,6 +90,10 @@ When Doug corrects a rule, workflow, scoring assumption, or league behavior:
 - Never run a plain `bun install` — it would write `node_modules` from bun's
   resolution instead of npm's. `bun install --lockfile-only` only refreshes the
   lockfile, which is all the deploy needs.
+- `knip.json` `ignoreDependencies` lists Lovable platform-injected dev plugins
+  that no project file imports. The platform's build loads them, so keep them in
+  `package.json` and both lockfiles. Do not delete them to silence knip, and do
+  not remove them from `ignoreDependencies`.
 
 ## Running tests
 

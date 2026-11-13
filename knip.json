@@ -3,7 +3,11 @@
   "entry": ["index.html", "e2e/**/*.spec.ts", "src/lib/mcp/**/*.ts"],
   "project": ["src/**/*.{ts,tsx,css}"],
   "ignore": ["src/integrations/supabase/types.ts"],
-  "ignoreDependencies": ["events"],
+  "ignoreDependencies": [
+    "events",
+    "@lovable.dev/vite-plugin-dev-server-bridge",
+    "@lovable.dev/vite-plugin-hmr-gate"
+  ],
   "rules": {
     "exports": "error",
     "types": "error",
