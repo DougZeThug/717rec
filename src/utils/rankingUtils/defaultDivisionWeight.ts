@@ -1,7 +1,10 @@
 /**
  * TEMPORARY FALLBACK. The career code and the Team page code use this value
- * only when a division weight is missing. It is not an endorsed league-strength
- * value.
+ * when a division weight is missing. The career `||` sites (CareerFetchService,
+ * CareerBulkFetchService, calculatePlayoffStats) also use it for a stored
+ * weight of 0 (and NaN). `resolveDivisionBonusWeight` (divisionBonusWeight.ts)
+ * uses it for an unknown or empty division name. It is not an endorsed
+ * league-strength value.
  *
  * Per a live read Doug shared on 2026-11-13, no live division weight is 0.85.
  * Doug also decided on 2026-11-13 that a genuinely unknown division must be
@@ -17,8 +20,8 @@
  *   `resolve_division_bonus_weight()` and `calculate_career_power_score()`.
  *   supabase/tests/career_power_score_parity.sql pins it. TypeScript and SQL
  *   must change together.
- * - An applied migration has a stale path comment for this constant. A migration
- *   that has run cannot be edited.
+ * - Two applied migrations have a stale path comment for this constant. A
+ *   migration that has run cannot be edited.
  * - The match predictions keep their own copy in
  *   src/utils/predictions/predictionConstants.ts. That is on purpose.
  */
