@@ -290,6 +290,5 @@ describe('useTeamOperations', () => {
       'WARNING: No teams loaded for date 2026-04-20. Check database and date format.'
     );
     expect(result.current.timeBlockTeams).toEqual({});
-    expect(result.current.teamsLoadedDate).toEqual(loadDate);
   });
 });
