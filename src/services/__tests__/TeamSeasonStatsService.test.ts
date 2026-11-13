@@ -65,6 +65,8 @@ vi.mock('@/services/teamSeasonStats/calculations', () => ({
   })),
 }));
 
+import { processSeasonMatches } from '@/services/teamSeasonStats/calculations';
+
 import { batchUpdateSeasonStats, fetchSeasonBreakdown } from '../TeamSeasonStatsService';
 
 const createSeasonStatsQuery = <TData>(result: QueryResult<TData>, selects: string[]) => ({
@@ -317,6 +319,48 @@ describe('fetchSeasonBreakdown', () => {
     expect(selectCalls.matches[0]).toContain('winner_id');
     expect(selectCalls.playoff_matches[0]).toContain('bracket_id');
     expect(selectCalls.brackets[0]).toContain('divisions(division_weight)');
+  });
+
+  // These pin the default division weight (0.85) in fetchSeasonBreakdown.ts as it is today.
+  // They read the bracket info that the (mocked) season maths receives for a playoff game.
+  // They claim no league rule.
+  describe("default division weight for a playoff bracket (today's behaviour)", () => {
+    const bracketInfoPassedFor = (seasonId: string) => {
+      const call = vi.mocked(processSeasonMatches).mock.calls.find(([, id]) => id === seasonId);
+      return call?.[3].map((match) => match.bracketInfo);
+    };
+
+    // The type says the weight is optional, but the database can also send null.
+    it.each([
+      { label: 'null', divisions: { division_weight: null }, expected: 0.85 },
+      { label: 'missing', divisions: {}, expected: 0.85 },
+      { label: '0', divisions: { division_weight: 0 }, expected: 0 },
+      { label: '1', divisions: { division_weight: 1 }, expected: 1 },
+    ])(
+      "division weight $label reaches the season maths as $expected (today's behaviour)",
+      async ({ divisions, expected }) => {
+        setupQueries({
+          brackets: { data: [{ id: 'b1', season_id: 's1', divisions }], error: null },
+        });
+
+        await fetchSeasonBreakdown(TEAM_ID);
+
+        expect(bracketInfoPassedFor('s1')).toEqual([
+          { season_id: 's1', division_weight: expected },
+        ]);
+      }
+    );
+
+    // Here the inner default is skipped; the default in mappers.ts gives the 0.85.
+    it("a bracket with no division reaches the season maths as 0.85 (today's behaviour)", async () => {
+      setupQueries({
+        brackets: { data: [{ id: 'b1', season_id: 's1', divisions: null }], error: null },
+      });
+
+      await fetchSeasonBreakdown(TEAM_ID);
+
+      expect(bracketInfoPassedFor('s1')).toEqual([{ season_id: 's1', division_weight: 0.85 }]);
+    });
   });
 });
 
