@@ -34,9 +34,15 @@ export const scheduleStandardPairings = async (
   });
 
   for (const [block, teamsInBlock] of Object.entries(timeBlockTeams)) {
-    // Skip empty blocks
+    // Skip blocks with fewer than two teams. A lone team has nobody to play, so it is
+    // counted as unmatched. An empty block adds nothing.
     if (!teamsInBlock || teamsInBlock.length < 2) {
-      scheduleLog(`Skipping empty block: ${block}`);
+      if (teamsInBlock?.length === 1) {
+        allUnmatchedTeamIds = [...allUnmatchedTeamIds, teamsInBlock[0].id];
+        scheduleLog(`Block ${block} has one team: counting it as unmatched`);
+      } else {
+        scheduleLog(`Skipping empty block: ${block}`);
+      }
       continue;
     }
 
@@ -99,6 +105,8 @@ export const scheduleStandardPairings = async (
 
   return {
     pairings,
-    unmatchedTeamIds: allUnmatchedTeamIds,
+    // A team can be short in more than one block (a double header): list it once, in the
+    // order it was first seen.
+    unmatchedTeamIds: [...new Set(allUnmatchedTeamIds)],
   };
 };

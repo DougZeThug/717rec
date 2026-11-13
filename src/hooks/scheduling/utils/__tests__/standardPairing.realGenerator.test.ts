@@ -139,6 +139,44 @@ describe('scheduleStandardPairings with the real Blossom generator', () => {
     expect(emptyNight.unmatchedTeamIds).toEqual([]);
   });
 
+  it('counts a lone team as unmatched and leaves the 4-team block exactly as it was', async () => {
+    const lone = makeTeams('L', 1);
+
+    const result = await scheduleStandardPairings(
+      { Early: makeTeams('A', 4), Mid: lone },
+      config,
+      []
+    );
+
+    // The one-team block gets no entry and no pairing. Its team is named as unmatched.
+    expect(Object.keys(result.pairings)).toEqual(['Early']);
+    expect(result.unmatchedTeamIds).toEqual(['L1']);
+    // The 4-team block is the same list as the 4-team pin below.
+    expect(describePairs(result.pairings.Early)).toEqual([
+      'A1|A4|10|false',
+      'A2|A3|10|false',
+      'A1|A3|10|false',
+      'A2|A4|10|false',
+    ]);
+  });
+
+  it('counts only the lone team when 9 block keys are present and 7 are empty', async () => {
+    const nineBlocks: Record<string, Team[]> = Object.fromEntries(
+      Object.keys(BACK_TO_BACK_PAIRS).map((block) => [block, []])
+    );
+    const early = makeTeams('A', 6);
+
+    const result = await scheduleStandardPairings(
+      { ...nineBlocks, Early: early, Late: makeTeams('L', 1) },
+      config,
+      []
+    );
+
+    expect(Object.keys(result.pairings)).toEqual(['Early']);
+    expect(matchesPerTeam(result.pairings.Early, early)).toEqual(early.map(() => 2));
+    expect(result.unmatchedTeamIds).toEqual(['L1']);
+  });
+
   it("gives the same result when the same night is generated twice (today's behaviour)", async () => {
     const early = makeTeams('A', 6);
     const late = makeTeams('B', 8);

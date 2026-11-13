@@ -71,7 +71,7 @@ describe('scheduleStandardPairings', () => {
     expect(firstBlockConfig().avoidRematches).toBe(true);
   });
 
-  it("skips a block with fewer than two teams and still pairs the other blocks (today's behaviour)", async () => {
+  it('skips a block with fewer than two teams, counts a lone team as unmatched, and still pairs the other blocks', async () => {
     const lateBlockPairing = pair(teamA, teamB);
     vi.mocked(generatePairingsWithBlossom).mockResolvedValueOnce([lateBlockPairing]);
 
@@ -85,6 +85,61 @@ describe('scheduleStandardPairings', () => {
     expect(generatePairingsWithBlossom).toHaveBeenCalledTimes(1);
     expect(vi.mocked(generatePairingsWithBlossom).mock.calls[0]?.[0]).toEqual(teams);
     expect(result.pairings).toEqual({ Late: [lateBlockPairing] });
+    // A is the lone team in Mid and is also short in Late (one match): it is listed once.
+    // The empty Early block adds nothing. B, C and D are short in Late.
+    expect(result.unmatchedTeamIds).toEqual(['team-a', 'team-b', 'team-c', 'team-d']);
+    expect(new Set(result.unmatchedTeamIds).size).toBe(result.unmatchedTeamIds.length);
+  });
+
+  it('counts the team in a one-team block as unmatched and leaves a full block alone', async () => {
+    const loneTeam = createMockTeam({ id: 'team-lone', name: 'team-lone' });
+    const fullBlock = [
+      pair(teamA, teamB),
+      pair(teamC, teamD),
+      pair(teamA, teamC),
+      pair(teamB, teamD),
+    ];
+    vi.mocked(generatePairingsWithBlossom).mockResolvedValueOnce(fullBlock);
+
+    const result = await scheduleStandardPairings(
+      { Early: [], Mid: [loneTeam], Late: teams },
+      { avoidRematches: true },
+      []
+    );
+
+    // Only the lone team is unmatched. The full block (every team plays twice) adds nobody.
+    expect(result.unmatchedTeamIds).toEqual(['team-lone']);
+    expect(result.pairings).toEqual({ Late: fullBlock });
+    expect(generatePairingsWithBlossom).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds nobody to the unmatched list for blocks that are all empty', async () => {
+    const result = await scheduleStandardPairings(
+      { Early: [], Mid: [], Late: [] },
+      { avoidRematches: true },
+      []
+    );
+
+    expect(generatePairingsWithBlossom).not.toHaveBeenCalled();
+    expect(result).toEqual({ pairings: {}, unmatchedTeamIds: [] });
+  });
+
+  it('lists a lone team once when it is also short in another block', async () => {
+    // C sits alone in Mid, and is also one match short in Late (C and D each reach one match).
+    vi.mocked(generatePairingsWithBlossom).mockResolvedValueOnce([
+      pair(teamA, teamB),
+      pair(teamA, teamC),
+      pair(teamB, teamD),
+    ]);
+
+    const result = await scheduleStandardPairings(
+      { Mid: [teamC], Late: teams },
+      { avoidRematches: true },
+      []
+    );
+
+    // First seen order: C from Mid, then D from Late.
+    expect(result.unmatchedTeamIds).toEqual(['team-c', 'team-d']);
   });
 
   // Pins only what this function returns. Whether the save step accepts a 3-team block
@@ -170,7 +225,7 @@ describe('scheduleStandardPairings', () => {
     expect(result.unmatchedTeamIds).toEqual(['team-d']);
   });
 
-  it("lists a team that is short in two blocks twice (today's behaviour)", async () => {
+  it('lists a team that is short in two blocks once', async () => {
     // C and D reach only one match in each block, so each is short in both.
     // Fixture only: the real generator throws instead of returning a short block, so a mock
     // is the only way to reach this list.
@@ -185,6 +240,6 @@ describe('scheduleStandardPairings', () => {
       []
     );
 
-    expect(result.unmatchedTeamIds).toEqual(['team-c', 'team-d', 'team-c', 'team-d']);
+    expect(result.unmatchedTeamIds).toEqual(['team-c', 'team-d']);
   });
 });
