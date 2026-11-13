@@ -215,9 +215,7 @@ describe('scheduleStandardPairings', () => {
     // The whole message, so an even block or the lone team cannot slip in unnoticed.
     expect(error).toHaveProperty(
       'message',
-      'Block Early Pair (6:30-7:00 PM) has 5 teams. ' +
-        'Block Late Mid Pair (8:00-8:30 PM) has 3 teams. ' +
-        STANDARD_MODE_ADVICE
+      `Block Early Pair (6:30-7:00 PM) has 5 teams. Block Late Mid Pair (8:00-8:30 PM) has 3 teams. ${STANDARD_MODE_ADVICE}`
     );
     expect(generatePairingsWithBlossom).not.toHaveBeenCalled();
   });
