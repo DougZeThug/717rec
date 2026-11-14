@@ -36,5 +36,13 @@ const describePairs = (pairings: ReturnType<typeof runBlossomMatching>) =>
 describe('runBlossomMatching on a path A-B-C-D with weights 1, 100, 1', () => {
   it('keeps the single heaviest pair by default and leaves two teams out', () => {
     expect(describePairs(runBlossomMatching(pathTeams, pathEdges, 1))).toEqual(['B-C']);
+    expect(describePairs(runBlossomMatching(pathTeams, pathEdges, 1, false))).toEqual(['B-C']);
+  });
+
+  it('pairs all four teams when it must match as many teams as it can', () => {
+    expect(describePairs(runBlossomMatching(pathTeams, pathEdges, 1, true))).toEqual([
+      'A-B',
+      'C-D',
+    ]);
   });
 });

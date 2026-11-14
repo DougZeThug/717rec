@@ -70,6 +70,19 @@ export function validatePairings(
 }
 
 /**
+ * True when every pairing follows the strict rules: no Competitive team against a Recreational
+ * team (Tier 1 vs Tier 3), and no rematch unless both teams are Recreational. A list that
+ * needed a relaxed rule returns false.
+ */
+export function usesOnlyAllowedEdges(pairings: TeamPairing[]): boolean {
+  return pairings.every(
+    (pairing) =>
+      !isExtremeTierDifference(pairing.team1, pairing.team2) &&
+      (!pairing.hasPlayedBefore || isBothRecreational(pairing.team1, pairing.team2))
+  );
+}
+
+/**
  * Enhanced validation with detailed feedback about why teams are unmatched
  */
 export function validatePairingsWithDetails(

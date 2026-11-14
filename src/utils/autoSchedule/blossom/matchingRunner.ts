@@ -8,9 +8,17 @@ import { createEdgeMap } from './graphBuilder';
 import { Edge } from './types';
 
 /**
- * Run Edmonds' Blossom algorithm for maximum weight matching
+ * Run Edmonds' Blossom algorithm for maximum weight matching.
+ * By default a heavy pair can beat two lighter pairs, so some teams may be left out of the
+ * round. With `maxCardinality` the round matches as many teams as it can first, and only
+ * then picks the heaviest such matching.
  */
-export function runBlossomMatching(teams: Team[], edges: Edge[], round: number): TeamPairing[] {
+export function runBlossomMatching(
+  teams: Team[],
+  edges: Edge[],
+  round: number,
+  maxCardinality = false
+): TeamPairing[] {
   debugLog(`Running Blossom matching round ${round} with ${edges.length} edges`);
 
   if (edges.length === 0) {
@@ -54,7 +62,7 @@ export function runBlossomMatching(teams: Team[], edges: Edge[], round: number):
 
   try {
     // Run Blossom algorithm with edge list format
-    const matching = edmondsBlossom(edgeList);
+    const matching = edmondsBlossom(edgeList, maxCardinality);
 
     // Convert matching result back to TeamPairing objects
     const pairings: TeamPairing[] = [];

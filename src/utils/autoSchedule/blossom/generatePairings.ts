@@ -13,16 +13,16 @@ import { countTeamMatches, runBlossomMatching } from './matchingRunner';
 import { findGuaranteedSolution, repairUnmatchedTeams } from './repair';
 import { logFinalStatistics } from './statistics';
 import { Edge, RelaxationLevel, TeamPairingConfig } from './types';
-import { validatePairings, validatePairingsWithDetails } from './validation';
+import { usesOnlyAllowedEdges, validatePairings, validatePairingsWithDetails } from './validation';
 
 /**
- * Generate team pairings using Edmonds' Blossom algorithm for optimal maximum weight matching
- * Enhanced with pre-validation, constraint relaxation, and repair mechanisms to ensure
- * every team gets exactly 2 matches.
+ * One run of the generator: Blossom rounds, relaxation, repair and the fallback.
+ * With `maxCardinality` each round matches as many teams as it can before it looks at weight.
  */
-export async function generatePairingsWithBlossom(
+async function generateOnce(
   teams: Team[],
-  config: TeamPairingConfig
+  config: TeamPairingConfig,
+  maxCardinality: boolean
 ): Promise<TeamPairing[]> {
   // Return empty array for insufficient teams
   if (teams.length < 2) return [];
@@ -79,11 +79,11 @@ export async function generatePairingsWithBlossom(
         debugLog(`Built graph with ${edges.length} valid edges`);
 
         // STEP 2: Run Blossom algorithm for Round 1
-        const round1Pairings = runBlossomMatching(teams, edges, 1);
+        const round1Pairings = runBlossomMatching(teams, edges, 1, maxCardinality);
 
         // STEP 3: Filter edges and run Round 2
         const round2Edges = filterUsedEdges(edges, round1Pairings);
-        const round2Pairings = runBlossomMatching(teams, round2Edges, 2);
+        const round2Pairings = runBlossomMatching(teams, round2Edges, 2, maxCardinality);
 
         // Combine results
         let allPairings = [...round1Pairings, ...round2Pairings];
@@ -165,5 +165,44 @@ export async function generatePairingsWithBlossom(
     // generation failure instead of silently producing teams with < target matches.
     validatePairingsWithDetails(teams, fallbackPairings, targetMatchesPerTeam, config);
     return fallbackPairings;
+  }
+}
+
+/**
+ * Generate team pairings using Edmonds' Blossom algorithm for optimal maximum weight matching
+ * Enhanced with pre-validation, constraint relaxation, and repair mechanisms to ensure
+ * every team gets exactly 2 matches.
+ *
+ * A round that picks the heaviest matching can leave a team out and leave the other round
+ * without a partner for it. When the first run throws for an even block of 4 or more teams,
+ * the generator runs once more with perfect matchings (every team paired in each round).
+ * That second list is used only when no pairing in it breaks a rule (see
+ * `usesOnlyAllowedEdges`). Otherwise the first error is thrown unchanged.
+ */
+export async function generatePairingsWithBlossom(
+  teams: Team[],
+  config: TeamPairingConfig
+): Promise<TeamPairing[]> {
+  // A perfect matching needs an even block of at least 4 teams. Everything else keeps the
+  // first run exactly as it was.
+  if (teams.length < 4 || teams.length % 2 !== 0) {
+    return generateOnce(teams, config, false);
+  }
+
+  try {
+    return await generateOnce(teams, config, false);
+  } catch (baselineError) {
+    try {
+      const retry = await generateOnce(teams, config, true);
+      if (usesOnlyAllowedEdges(retry)) {
+        warnLog(
+          `Block of ${teams.length} teams: used perfect matchings after the first run failed`
+        );
+        return retry;
+      }
+    } catch {
+      // The retry failed too: report the first error below.
+    }
+    throw baselineError;
   }
 }

@@ -2,9 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { TeamPairing } from '@/types/autoSchedule';
 import { calculateDivisionOnlyCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
+import { scheduleLog, warnLog } from '@/utils/logger';
 import { createMockTeam } from '@/utils/test/autoSchedule/testHelpers';
 
 import { generatePairingsWithBlossom } from '../generatePairings';
+import { usesOnlyAllowedEdges } from '../validation';
 
 // Real Blossom. Only the network and the logger are faked. The config is the one
 // standardPairing.ts builds for each block.
@@ -30,11 +32,11 @@ const buildTeams = (entries: string[]) =>
   });
 
 /** Generate one block the way standardPairing.ts does, with the block's history as played pairs. */
-const generate = (block: Block) =>
+const generate = (block: Block, getCompatibilityScoreFn = calculateDivisionOnlyCompatibility) =>
   generatePairingsWithBlossom(buildTeams(block.teams), {
     avoidRematches: true,
     fetchSeasonHistoryFn: vi.fn().mockResolvedValue([]),
-    getCompatibilityScoreFn: calculateDivisionOnlyCompatibility,
+    getCompatibilityScoreFn,
     playedPairsSet: new Set(block.history.map((pair) => pair.split('-').sort().join('-'))),
   });
 
@@ -44,6 +46,18 @@ const describePairs = (pairings: TeamPairing[]) =>
     (pairing) =>
       `${pairing.team1.id}-${pairing.team2.id}|${pairing.compatibilityScore}|${pairing.hasPlayedBefore}`
   );
+
+/** How many matches each team of the block plays, in the block's list order. */
+const matchesPerTeam = (block: Block, pairings: TeamPairing[]) =>
+  block.teams.map(
+    (entry) =>
+      pairings.filter(({ team1, team2 }) => [team1.id, team2.id].includes(entry.split(':')[0]))
+        .length
+  );
+
+/** The pairs as sorted keys, so A-B and B-A are the same pair. */
+const pairKeys = (pairings: TeamPairing[]) =>
+  new Set(pairings.map(({ team1, team2 }) => [team1.id, team2.id].sort().join('-')));
 
 /**
  * A local copy of Apply's rule (usePairingOperations.ts): 2 slots, list order, each pair goes
@@ -104,8 +118,10 @@ const cleanN6x177: Block = {
   ],
   history: [],
 };
-// No schedule that follows the rules exists for these two blocks. n6-424 needs a rematch
+// No schedule that follows the rules exists for these three blocks. n6-424 needs a rematch
 // between two Competitive teams. n6-426 needs a Competitive team to play a Recreational team.
+// For n6-424 and n6-426 the second run returns a list that breaks one of those rules, and the
+// generator must not use it. For n6-394 the second run throws as well.
 const mixedN6x424: Block = {
   teams: [
     'A6:Competitive',
@@ -128,6 +144,29 @@ const mixedN6x426: Block = {
   ],
   history: ['A1-A3'],
 };
+const mixedN6x394: Block = {
+  teams: [
+    'A1:Competitive',
+    'A2:Competitive',
+    'A6:Competitive',
+    'A5:Recreational',
+    'A4:Intermediate',
+    'A3:Recreational High',
+  ],
+  history: ['A5-A6', 'A1-A6', 'A5-A1', 'A1-A3'],
+};
+// A night that works today (6 teams, mixed divisions, two rematches to avoid).
+const mixedN6x4: Block = {
+  teams: [
+    'A6:Intermediate',
+    'A2',
+    'A3:Recreational High',
+    'A5:Recreational',
+    'A4:Cuspers',
+    'A1:Recreational',
+  ],
+  history: ['A4-A2', 'A2-A6'],
+};
 // Lists that work today but Apply cannot split into the block's 2 slots.
 const mixedN6x3: Block = {
   teams: [
@@ -145,34 +184,64 @@ const mixedN6x1: Block = {
   history: ['A5-A3', 'A1-A2'],
 };
 
-describe('generatePairingsWithBlossom: blocks that throw today', () => {
+describe('generatePairingsWithBlossom: blocks that threw before the fix', () => {
   it.each([
     {
       name: 'the 6-team case from QA (A1-A2 and A3-A4 played)',
       block: qaSixTeams,
-      message:
-        "1 teams don't have 2 matches. Details: A2 (T2): 0/2 matches. Available opponents: 4, blocked by tier: 0, blocked by rematch: 1",
+      pairs: [
+        'A6-A1|0|false',
+        'A4-A2|5|false',
+        'A3-A5|10|false',
+        'A6-A3|10|false',
+        'A4-A1|0|false',
+        'A2-A5|5|false',
+      ],
     },
     {
       name: 'n6-15, no history',
       block: cleanN6x15,
-      message:
-        "1 teams don't have 2 matches. Details: A3 (T2): 0/2 matches. Available opponents: 5, blocked by tier: 0, blocked by rematch: 0",
+      pairs: [
+        'A6-A3|10|false',
+        'A1-A5|10|false',
+        'A4-A2|10|false',
+        'A6-A2|10|false',
+        'A1-A4|5|false',
+        'A5-A3|5|false',
+      ],
     },
     {
       name: 'n6-14, no history',
       block: cleanN6x14,
-      message:
-        "1 teams don't have 2 matches. Details: A4 (T2): 0/2 matches. Available opponents: 5, blocked by tier: 0, blocked by rematch: 0",
+      pairs: [
+        'A2-A3|5|false',
+        'A5-A6|10|false',
+        'A1-A4|10|false',
+        'A2-A1|5|false',
+        'A3-A5|5|false',
+        'A4-A6|5|false',
+      ],
     },
     {
       name: 'n6-177, no history',
       block: cleanN6x177,
-      message:
-        "1 teams don't have 2 matches. Details: A5 (T2): 0/2 matches. Available opponents: 5, blocked by tier: 0, blocked by rematch: 0",
+      pairs: [
+        'A2-A1|5|false',
+        'A4-A5|10|false',
+        'A6-A3|10|false',
+        'A2-A6|5|false',
+        'A1-A4|5|false',
+        'A3-A5|5|false',
+      ],
     },
-  ])('rejects for $name', async ({ block, message }) => {
-    await expect(generate(block)).rejects.toThrowError(new Error(message));
+  ])('now returns a rule-following list for $name', async ({ block, pairs }) => {
+    const pairings = await generate(block);
+
+    expect(describePairs(pairings)).toEqual(pairs);
+    expect(matchesPerTeam(block, pairings)).toEqual(block.teams.map(() => 2));
+    expect(pairKeys(pairings).size).toBe(pairings.length);
+    expect(usesOnlyAllowedEdges(pairings)).toBe(true);
+    expect(firstFitSplits(pairings)).toBe(true);
   });
 
   it.each([
@@ -188,7 +257,13 @@ describe('generatePairingsWithBlossom: blocks that throw today', () => {
       message:
         "2 teams don't have 2 matches. Details: A2 (T1): 1/2 matches. Available opponents: 1, blocked by tier: 4, blocked by rematch: 0; A4 (T2): 1/2 matches. Available opponents: 5, blocked by tier: 0, blocked by rematch: 0",
     },
-  ])('rejects for $name, and must keep rejecting', async ({ block, message }) => {
+    {
+      name: 'n6-394 (no rule-following list, and the second run fails too)',
+      block: mixedN6x394,
+      message:
+        "2 teams don't have 2 matches. Details: A5 (T3): 1/2 matches. Available opponents: 2, blocked by tier: 3, blocked by rematch: 0; A3 (T3): 1/2 matches. Available opponents: 2, blocked by tier: 3, blocked by rematch: 0",
+    },
+  ])('still rejects with the first error for $name', async ({ block, message }) => {
     await expect(generate(block)).rejects.toThrowError(new Error(message));
   });
 });
@@ -370,5 +445,106 @@ describe('generatePairingsWithBlossom: blocks of 0, 1, 2, 3 and 5 teams today', 
     },
   ])('rejects for $name', async ({ block, message }) => {
     await expect(generate(block)).rejects.toThrowError(new Error(message));
+  });
+});
+
+describe('generatePairingsWithBlossom: when the second run happens', () => {
+  const retryNote = 'Block of 6 teams: used perfect matchings after the first run failed';
+
+  /** How many times the generator started a run for a block of this size. */
+  const runsStarted = (teamCount: number) =>
+    vi
+      .mocked(scheduleLog)
+      .mock.calls.filter(
+        ([message]) => message === `Starting Blossom algorithm for ${teamCount} teams`
+      ).length;
+
+  it('runs once on a night that works, and says nothing about a second run', async () => {
+    await generate(mixedN6x4);
+
+    expect(runsStarted(6)).toBe(1);
+    expect(warnLog).not.toHaveBeenCalledWith(retryNote);
+  });
+
+  it('runs twice when the first run throws and the second list follows the rules', async () => {
+    await generate(qaSixTeams);
+
+    expect(runsStarted(6)).toBe(2);
+    expect(warnLog).toHaveBeenCalledWith(retryNote);
+  });
+
+  it('runs twice when the second list breaks a rule, and does not use it', async () => {
+    await expect(generate(mixedN6x424)).rejects.toThrowError();
+
+    expect(runsStarted(6)).toBe(2);
+    expect(warnLog).not.toHaveBeenCalledWith(retryNote);
+  });
+
+  it('throws the first error when the second run throws a different error', async () => {
+    const failsOnSecondRun: typeof calculateDivisionOnlyCompatibility = (first, second) => {
+      if (runsStarted(6) > 1) throw new Error('the second run failed');
+      return calculateDivisionOnlyCompatibility(first, second);
+    };
+
+    await expect(generate(qaSixTeams, failsOnSecondRun)).rejects.toThrowError(
+      new Error(
+        "1 teams don't have 2 matches. Details: A2 (T2): 0/2 matches. Available opponents: 4, blocked by tier: 0, blocked by rematch: 1"
+      )
+    );
+    expect(runsStarted(6)).toBe(2);
+  });
+
+  it('runs once on an odd block that throws', async () => {
+    await expect(
+      generate({ teams: ['A1', 'A2', 'A3', 'A4', 'A5'], history: [] })
+    ).rejects.toThrowError();
+
+    expect(runsStarted(5)).toBe(1);
+  });
+
+  it.each([2, 3])('runs once on a block of %i teams', async (teamCount) => {
+    await generate({ teams: ['A1', 'A2', 'A3'].slice(0, teamCount), history: [] });
+
+    expect(runsStarted(teamCount)).toBe(1);
+  });
+});
+
+describe('usesOnlyAllowedEdges', () => {
+  const pair = (first: string, second: string, hasPlayedBefore = false): TeamPairing => {
+    const [team1, team2] = buildTeams([first, second]);
+    return { team1, team2, compatibilityScore: 5, hasPlayedBefore };
+  };
+
+  it('accepts a list with no rematch and no Competitive-vs-Recreational pair', () => {
+    expect(
+      usesOnlyAllowedEdges([
+        pair('A1:Competitive', 'A2:Intermediate'),
+        pair('A3:Recreational', 'A4:Intermediate'),
+      ])
+    ).toBe(true);
+  });
+
+  it('accepts a rematch between two Recreational teams', () => {
+    expect(usesOnlyAllowedEdges([pair('A1:Recreational', 'A2:Recreational High', true)])).toBe(
+      true
+    );
+  });
+
+  it('rejects a Competitive team against a Recreational team', () => {
+    expect(usesOnlyAllowedEdges([pair('A1:Competitive', 'A2:Recreational')])).toBe(false);
+  });
+
+  it('rejects a rematch that is not between two Recreational teams', () => {
+    expect(usesOnlyAllowedEdges([pair('A1:Competitive', 'A2:Competitive', true)])).toBe(false);
+    expect(usesOnlyAllowedEdges([pair('A1:Intermediate', 'A2:Recreational', true)])).toBe(false);
+  });
+
+  it('rejects the list when one pair in it breaks a rule', () => {
+    expect(
+      usesOnlyAllowedEdges([
+        pair('A1:Competitive', 'A2:Intermediate'),
+        pair('A3:Competitive', 'A4:Recreational'),
+      ])
+    ).toBe(false);
   });
 });
