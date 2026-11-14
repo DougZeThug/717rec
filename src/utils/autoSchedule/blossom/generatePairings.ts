@@ -13,7 +13,12 @@ import { countTeamMatches, runBlossomMatching } from './matchingRunner';
 import { findGuaranteedSolution, repairUnmatchedTeams } from './repair';
 import { logFinalStatistics } from './statistics';
 import { Edge, RelaxationLevel, TeamPairingConfig } from './types';
-import { usesOnlyAllowedEdges, validatePairings, validatePairingsWithDetails } from './validation';
+import {
+  splitsIntoTwoSlots,
+  usesOnlyAllowedEdges,
+  validatePairings,
+  validatePairingsWithDetails,
+} from './validation';
 
 /**
  * One run of the generator: Blossom rounds, relaxation, repair and the fallback.
@@ -169,15 +174,36 @@ async function generateOnce(
 }
 
 /**
+ * Run the generator again with perfect matchings. Returns the list only when it resolves and
+ * `isAcceptable` agrees. A retry that throws or is not acceptable returns null.
+ */
+async function retryWithPerfectMatchings(
+  teams: Team[],
+  config: TeamPairingConfig,
+  isAcceptable: (pairings: TeamPairing[]) => boolean
+): Promise<TeamPairing[] | null> {
+  try {
+    const retry = await generateOnce(teams, config, true);
+    return isAcceptable(retry) ? retry : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Generate team pairings using Edmonds' Blossom algorithm for optimal maximum weight matching
  * Enhanced with pre-validation, constraint relaxation, and repair mechanisms to ensure
  * every team gets exactly 2 matches.
  *
  * A round that picks the heaviest matching can leave a team out and leave the other round
- * without a partner for it. When the first run throws for an even block of 4 or more teams,
- * the generator runs once more with perfect matchings (every team paired in each round).
- * That second list is used only when no pairing in it breaks a rule (see
- * `usesOnlyAllowedEdges`). Otherwise the first error is thrown unchanged.
+ * without a partner for it. For an even block of 4 or more teams the generator runs once more
+ * with perfect matchings (every team paired in each round) in two cases:
+ * - the first run throws, or
+ * - the first run returns a list that Apply cannot split into the block's 2 slots
+ *   (`splitsIntoTwoSlots`).
+ * The second list is used only when no pairing in it breaks a rule (`usesOnlyAllowedEdges`),
+ * and, for the second case, only when it splits too. Otherwise the first error is thrown
+ * unchanged, or the first list is returned unchanged.
  */
 export async function generatePairingsWithBlossom(
   teams: Team[],
@@ -189,20 +215,29 @@ export async function generatePairingsWithBlossom(
     return generateOnce(teams, config, false);
   }
 
+  let baseline: TeamPairing[];
   try {
-    return await generateOnce(teams, config, false);
+    baseline = await generateOnce(teams, config, false);
   } catch (baselineError) {
-    try {
-      const retry = await generateOnce(teams, config, true);
-      if (usesOnlyAllowedEdges(retry)) {
-        warnLog(
-          `Block of ${teams.length} teams: used perfect matchings after the first run failed`
-        );
-        return retry;
-      }
-    } catch {
-      // The retry failed too: report the first error below.
-    }
-    throw baselineError;
+    const retry = await retryWithPerfectMatchings(teams, config, usesOnlyAllowedEdges);
+    if (!retry) throw baselineError;
+    warnLog(`Block of ${teams.length} teams: used perfect matchings after the first run failed`);
+    return retry;
   }
+
+  if (splitsIntoTwoSlots(baseline)) return baseline;
+
+  const splittableRetry = await retryWithPerfectMatchings(
+    teams,
+    config,
+    (pairings) => usesOnlyAllowedEdges(pairings) && splitsIntoTwoSlots(pairings)
+  );
+  if (splittableRetry) {
+    warnLog(`Block of ${teams.length} teams: replaced a list that cannot be split into 2 slots`);
+    return splittableRetry;
+  }
+  warnLog(
+    `Block of ${teams.length} teams: pairings cannot be split into 2 slots and no rule-following alternative was found`
+  );
+  return baseline;
 }

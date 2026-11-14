@@ -83,6 +83,22 @@ export function usesOnlyAllowedEdges(pairings: TeamPairing[]): boolean {
 }
 
 /**
+ * True when Apply can put the list into the block's 2 time slots without booking a team twice
+ * in one slot. This mirrors `handleApplySchedule` in
+ * `src/hooks/useAutoSchedule/usePairingOperations.ts`: two slots, pairings taken in list order,
+ * each one goes to the first slot where neither team is booked yet. A pairing with no free
+ * slot means Apply would book a team twice, so the list cannot be split.
+ */
+export function splitsIntoTwoSlots(pairings: TeamPairing[]): boolean {
+  const slots = [new Set<string>(), new Set<string>()];
+  return pairings.every(({ team1, team2 }) => {
+    const slot = slots.find((booked) => !booked.has(team1.id) && !booked.has(team2.id));
+    slot?.add(team1.id).add(team2.id);
+    return slot !== undefined;
+  });
+}
+
+/**
  * Enhanced validation with detailed feedback about why teams are unmatched
  */
 export function validatePairingsWithDetails(

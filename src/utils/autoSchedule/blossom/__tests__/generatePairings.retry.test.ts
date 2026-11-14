@@ -6,7 +6,7 @@ import { scheduleLog, warnLog } from '@/utils/logger';
 import { createMockTeam } from '@/utils/test/autoSchedule/testHelpers';
 
 import { generatePairingsWithBlossom } from '../generatePairings';
-import { usesOnlyAllowedEdges } from '../validation';
+import { splitsIntoTwoSlots, usesOnlyAllowedEdges } from '../validation';
 
 // Real Blossom. Only the network and the logger are faked. The config is the one
 // standardPairing.ts builds for each block.
@@ -70,6 +70,26 @@ const firstFitSplits = (pairings: TeamPairing[]): boolean => {
     slot?.add(team1.id).add(team2.id);
     return slot !== undefined;
   });
+};
+
+/** How many times the generator started a run for a block of this size. */
+const runsStarted = (teamCount: number) =>
+  vi
+    .mocked(scheduleLog)
+    .mock.calls.filter(
+      ([message]) => message === `Starting Blossom algorithm for ${teamCount} teams`
+    ).length;
+
+/** What the generator says when it replaces a list Apply cannot split, or keeps it. */
+const replacedNote = (teamCount: number) =>
+  `Block of ${teamCount} teams: replaced a list that cannot be split into 2 slots`;
+const keptNote = (teamCount: number) =>
+  `Block of ${teamCount} teams: pairings cannot be split into 2 slots and no rule-following alternative was found`;
+
+/** One pairing between two teams written as "A1:Competitive". */
+const pair = (first: string, second: string, hasPlayedBefore = false): TeamPairing => {
+  const [team1, team2] = buildTeams([first, second]);
+  return { team1, team2, compatibilityScore: 5, hasPlayedBefore };
 };
 
 // Scenarios come from the QA grids (seeded, saved). "clean" = Competitive, Intermediate and
@@ -184,6 +204,87 @@ const mixedN6x1: Block = {
   history: ['A5-A3', 'A1-A2'],
 };
 
+// More lists that Apply cannot split. The second run fixes n8-17 and n10-2. For n6-1030,
+// n6-1124 and n6-1286 the second run follows the rules but gives the same list (a 6-cycle
+// in the wrong order). For n6-781 it splits but puts a Competitive team against a Recreational
+// team. For n6-52 it splits but needs a rematch between a Competitive and a Cuspers team.
+const mixedN8x17: Block = {
+  teams: [
+    'A3:Competitive',
+    'A2',
+    'A7',
+    'A4:Cuspers',
+    'A6:Cuspers',
+    'A5',
+    'A8:Recreational High',
+    'A1:Competitive',
+  ],
+  history: [],
+};
+const mixedN10x2: Block = {
+  teams: [
+    'A10:Recreational',
+    'A6',
+    'A8:Recreational High',
+    'A3',
+    'A2',
+    'A1:Recreational High',
+    'A7:Recreational High',
+    'A9:Intermediate',
+    'A4:Intermediate',
+    'A5:Recreational High',
+  ],
+  history: [],
+};
+const mixedN6x1030: Block = {
+  teams: [
+    'A6:Competitive',
+    'A4:Recreational',
+    'A1:Cuspers',
+    'A3:Competitive',
+    'A5',
+    'A2:Recreational High',
+  ],
+  history: [],
+};
+const mixedN6x1124: Block = {
+  teams: [
+    'A6:Recreational High',
+    'A2:Competitive',
+    'A4:Competitive',
+    'A3',
+    'A5:Cuspers',
+    'A1:Recreational',
+  ],
+  history: [],
+};
+const mixedN6x1286: Block = {
+  teams: ['A3:Recreational', 'A2', 'A4', 'A6:Competitive', 'A1:Recreational', 'A5:Competitive'],
+  history: [],
+};
+const mixedN6x781: Block = {
+  teams: [
+    'A6:Intermediate',
+    'A3:Competitive',
+    'A1:Recreational',
+    'A4:Recreational',
+    'A2:Recreational High',
+    'A5:Recreational',
+  ],
+  history: [],
+};
+const mixedN6x52: Block = {
+  teams: [
+    'A5:Intermediate',
+    'A3:Recreational',
+    'A2:Competitive',
+    'A6:Recreational',
+    'A4:Cuspers',
+    'A1:Recreational',
+  ],
+  history: ['A4-A2'],
+};
+
 describe('generatePairingsWithBlossom: blocks that threw before the fix', () => {
   it.each([
     {
@@ -268,33 +369,145 @@ describe('generatePairingsWithBlossom: blocks that threw before the fix', () => 
   });
 });
 
-describe('generatePairingsWithBlossom: lists Apply cannot split today', () => {
-  it('returns two triangles for n6-3 (A3-A2-A4 and A5-A6-A1)', async () => {
-    const pairings = await generate(mixedN6x3);
+describe('generatePairingsWithBlossom: lists Apply could not split before the fix', () => {
+  it.each([
+    {
+      name: 'n6-3 (two triangles A3-A2-A4 and A5-A6-A1)',
+      block: mixedN6x3,
+      pairs: [
+        'A3-A2|0|false',
+        'A4-A1|10|false',
+        'A5-A6|10|false',
+        'A3-A5|10|false',
+        'A2-A4|0|false',
+        'A6-A1|10|true',
+      ],
+    },
+    {
+      name: 'n6-1 (the right pairs in an order Apply cannot split)',
+      block: mixedN6x1,
+      pairs: [
+        'A2-A5|10|false',
+        'A1-A3|10|false',
+        'A6-A4|10|false',
+        'A2-A6|0|false',
+        'A1-A5|0|false',
+        'A4-A3|10|false',
+      ],
+    },
+    {
+      name: 'n8-17 (8 teams)',
+      block: mixedN8x17,
+      pairs: [
+        'A3-A1|10|false',
+        'A2-A8|10|false',
+        'A7-A5|10|false',
+        'A4-A6|10|false',
+        'A3-A2|0|false',
+        'A7-A4|10|false',
+        'A6-A8|10|false',
+        'A5-A1|0|false',
+      ],
+    },
+    {
+      name: 'n10-2 (10 teams)',
+      block: mixedN10x2,
+      pairs: [
+        'A10-A5|10|false',
+        'A6-A7|10|false',
+        'A8-A1|10|false',
+        'A3-A2|10|false',
+        'A9-A4|10|false',
+        'A10-A7|10|false',
+        'A6-A9|5|false',
+        'A8-A2|10|false',
+        'A3-A1|10|false',
+        'A4-A5|5|false',
+      ],
+    },
+  ])('now returns a list Apply can split for $name', async ({ block, pairs }) => {
+    const pairings = await generate(block);
 
-    expect(describePairs(pairings)).toEqual([
-      'A3-A2|0|false',
-      'A2-A4|0|false',
-      'A3-A4|10|false',
-      'A5-A6|10|false',
-      'A6-A1|10|true',
-      'A5-A1|10|false',
-    ]);
-    expect(firstFitSplits(pairings)).toBe(false);
+    expect(describePairs(pairings)).toEqual(pairs);
+    expect(matchesPerTeam(block, pairings)).toEqual(block.teams.map(() => 2));
+    expect(pairKeys(pairings).size).toBe(pairings.length);
+    expect(usesOnlyAllowedEdges(pairings)).toBe(true);
+    expect(firstFitSplits(pairings)).toBe(true);
+    expect(splitsIntoTwoSlots(pairings)).toBe(true);
+    expect(runsStarted(block.teams.length)).toBe(2);
+    expect(warnLog).toHaveBeenCalledWith(replacedNote(block.teams.length));
+    expect(warnLog).not.toHaveBeenCalledWith(keptNote(block.teams.length));
   });
 
-  it('returns the right pairs in an order Apply cannot split for n6-1', async () => {
-    const pairings = await generate(mixedN6x1);
+  it.each([
+    {
+      name: 'n6-1030 (a 6-cycle in the wrong order; the second run gives the same list)',
+      block: mixedN6x1030,
+      pairs: [
+        'A6-A3|10|false',
+        'A6-A1|0|false',
+        'A4-A2|10|false',
+        'A4-A1|10|false',
+        'A3-A5|0|false',
+        'A5-A2|10|false',
+      ],
+    },
+    {
+      name: 'n6-1124 (a 6-cycle in the wrong order; the second run gives the same list)',
+      block: mixedN6x1124,
+      pairs: [
+        'A6-A1|10|false',
+        'A6-A3|10|false',
+        'A2-A4|10|false',
+        'A2-A3|0|false',
+        'A4-A5|0|false',
+        'A5-A1|10|false',
+      ],
+    },
+    {
+      name: 'n6-1286 (a 6-cycle in the wrong order; the second run gives the same list)',
+      block: mixedN6x1286,
+      pairs: [
+        'A3-A1|10|false',
+        'A3-A2|10|false',
+        'A6-A5|10|false',
+        'A2-A6|0|false',
+        'A4-A1|10|false',
+        'A4-A5|0|false',
+      ],
+    },
+    {
+      name: 'n6-781 (the second list splits but puts a Competitive team against a Recreational team)',
+      block: mixedN6x781,
+      pairs: [
+        'A6-A3|5|false',
+        'A1-A4|10|false',
+        'A1-A2|10|false',
+        'A4-A2|10|false',
+        'A6-A5|5|false',
+        'A3-A5|0|false',
+      ],
+    },
+    {
+      name: 'n6-52 (the second list splits but needs a rematch between a Competitive and a Cuspers team)',
+      block: mixedN6x52,
+      pairs: [
+        'A5-A2|5|false',
+        'A3-A6|10|false',
+        'A3-A4|10|false',
+        'A6-A4|10|false',
+        'A5-A1|5|false',
+        'A2-A1|0|false',
+      ],
+    },
+  ])('keeps the first list, unchanged, for $name', async ({ block, pairs }) => {
+    const pairings = await generate(block);
 
-    expect(describePairs(pairings)).toEqual([
-      'A2-A5|10|false',
-      'A2-A6|0|false',
-      'A1-A3|10|false',
-      'A6-A3|10|false',
-      'A1-A4|10|false',
-      'A5-A4|0|false',
-    ]);
+    expect(describePairs(pairings)).toEqual(pairs);
     expect(firstFitSplits(pairings)).toBe(false);
+    expect(runsStarted(block.teams.length)).toBe(2);
+    expect(warnLog).toHaveBeenCalledWith(keptNote(block.teams.length));
+    expect(warnLog).not.toHaveBeenCalledWith(replacedNote(block.teams.length));
   });
 });
 
@@ -451,19 +664,13 @@ describe('generatePairingsWithBlossom: blocks of 0, 1, 2, 3 and 5 teams today', 
 describe('generatePairingsWithBlossom: when the second run happens', () => {
   const retryNote = 'Block of 6 teams: used perfect matchings after the first run failed';
 
-  /** How many times the generator started a run for a block of this size. */
-  const runsStarted = (teamCount: number) =>
-    vi
-      .mocked(scheduleLog)
-      .mock.calls.filter(
-        ([message]) => message === `Starting Blossom algorithm for ${teamCount} teams`
-      ).length;
-
   it('runs once on a night that works, and says nothing about a second run', async () => {
     await generate(mixedN6x4);
 
     expect(runsStarted(6)).toBe(1);
     expect(warnLog).not.toHaveBeenCalledWith(retryNote);
+    expect(warnLog).not.toHaveBeenCalledWith(replacedNote(6));
+    expect(warnLog).not.toHaveBeenCalledWith(keptNote(6));
   });
 
   it('runs twice when the first run throws and the second list follows the rules', async () => {
@@ -510,11 +717,6 @@ describe('generatePairingsWithBlossom: when the second run happens', () => {
 });
 
 describe('usesOnlyAllowedEdges', () => {
-  const pair = (first: string, second: string, hasPlayedBefore = false): TeamPairing => {
-    const [team1, team2] = buildTeams([first, second]);
-    return { team1, team2, compatibilityScore: 5, hasPlayedBefore };
-  };
-
   it('accepts a list with no rematch and no Competitive-vs-Recreational pair', () => {
     expect(
       usesOnlyAllowedEdges([
@@ -546,5 +748,49 @@ describe('usesOnlyAllowedEdges', () => {
         pair('A3:Competitive', 'A4:Recreational'),
       ])
     ).toBe(false);
+  });
+});
+
+describe('splitsIntoTwoSlots', () => {
+  const list = (...pairs: string[]) =>
+    pairs.map((text) => pair(...(text.split('-') as [string, string])));
+
+  it('accepts an empty list and a single pair', () => {
+    expect(splitsIntoTwoSlots([])).toBe(true);
+    expect(splitsIntoTwoSlots(list('A-B'))).toBe(true);
+  });
+
+  it('accepts one full round followed by a second round (6 teams)', () => {
+    expect(splitsIntoTwoSlots(list('A-B', 'C-D', 'E-F', 'B-C', 'D-E', 'F-A'))).toBe(true);
+  });
+
+  it('accepts the same pairs in a different order when each pair still finds a free slot', () => {
+    expect(splitsIntoTwoSlots(list('A-B', 'B-C', 'C-D', 'D-E', 'E-F', 'F-A'))).toBe(true);
+  });
+
+  it('rejects the right pairs in a bad order (a 6-cycle: A-B, D-E, B-C, E-F, C-D, F-A)', () => {
+    expect(splitsIntoTwoSlots(list('A-B', 'D-E', 'B-C', 'E-F', 'C-D', 'F-A'))).toBe(false);
+  });
+
+  it('rejects two triangles', () => {
+    expect(splitsIntoTwoSlots(list('A-B', 'B-C', 'A-C', 'D-E', 'E-F', 'D-F'))).toBe(false);
+  });
+
+  it('accepts a pair twice but rejects it a third time', () => {
+    expect(splitsIntoTwoSlots(list('A-B', 'A-B'))).toBe(true);
+    expect(splitsIntoTwoSlots(list('A-B', 'A-B', 'A-B'))).toBe(false);
+  });
+
+  it('rejects a pair that finds one of its teams booked in each slot', () => {
+    // A-B takes slot 1, A-C takes slot 2 (A is booked in slot 1), so B-C has B in slot 1 and C in slot 2.
+    expect(splitsIntoTwoSlots(list('A-B', 'A-C', 'B-C'))).toBe(false);
+  });
+
+  it('accepts a pair that has exactly one free slot left', () => {
+    expect(splitsIntoTwoSlots(list('A-B', 'A-C', 'B-D'))).toBe(true);
+  });
+
+  it('rejects a third match for one team', () => {
+    expect(splitsIntoTwoSlots(list('A-B', 'A-C', 'A-D'))).toBe(false);
   });
 });
