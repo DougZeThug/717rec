@@ -2,6 +2,7 @@ import edmondsBlossom from 'edmonds-blossom';
 
 import { Team } from '@/types';
 import { TeamPairing } from '@/types/autoSchedule';
+import edmondsBlossomStrict from '@/utils/autoSchedule/blossom/vendor/edmondsBlossomStrict';
 import { debugLog, errorLog, warnLog } from '@/utils/logger';
 
 import { createEdgeMap } from './graphBuilder';
@@ -61,8 +62,13 @@ export function runBlossomMatching(
   }
 
   try {
-    // Run Blossom algorithm with edge list format
-    const matching = edmondsBlossom(edgeList, maxCardinality);
+    // The first run keeps the original library so working nights stay byte-identical, even in
+    // browsers where it crashes on contractions. The retry needs a copy that runs in browsers.
+    // Fixing it for every night would change about 2 of 3 nights: Doug's call (decision log).
+    const matching = (maxCardinality ? edmondsBlossomStrict : edmondsBlossom)(
+      edgeList,
+      maxCardinality
+    );
 
     // Convert matching result back to TeamPairing objects
     const pairings: TeamPairing[] = [];
