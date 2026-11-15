@@ -69,7 +69,11 @@ A team with no completed match has **no** power score. The column shows "—", t
 gauge shows neutral grey, and the team sorts to the bottom. This is different
 from a score of 0, which is a real rating a very poor team can reach.
 
-A team in the **Hidden** division also has no power score, by design.
+A team in the **Hidden** division is scored like any team with completed matches.
+Hidden teams are left out of the standings, the rankings and the weekly recap, so
+the number mostly shows only on the team's own page, if someone opens it by
+direct link. A Hidden team with no matches this season has no score, as any team
+without matches.
 
 ### Leave without changing anything
 
@@ -210,7 +214,7 @@ they are too.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role | No effect. Everyone sees the same number. Only an admin can change anything that feeds it. | No effect. |
-| The record's state | A team with no completed match has no score and shows "—". A hidden team has no score. A completed match feeds the score; a pending score submission does not, until it is approved. | A match being reopened reverses everything the original result contributed. |
+| The record's state | A team with no completed match has no score and shows "—". A hidden team keeps the score it earned. A completed match feeds the score; a pending score submission does not, until it is approved. | A match being reopened reverses everything the original result contributed. |
 | The season's state | An active season's scores move. **An archived season's scores are frozen** against a formula change or a re-tiering. **A Power Score weight change is the exception:** saving new weights in the sandbox recomputes every season, archived included. | Archiving a season freezes it at that moment. Saving new weights, an admin's deliberate recompute of an archived season, or a one-off rule change shipped as a migration (such as the 2026-10 rule that ties leave the match term) are the only ways a frozen number changes. |
 | Viewport | On a wide screen the score is a coloured number in a table cell. On a phone it is a number in a card, and in detailed view an animated circular gauge. | No effect. |
 | Keys the app honours | None. A power score is text, not a control. | None. |

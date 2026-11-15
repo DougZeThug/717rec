@@ -56,7 +56,7 @@ If the code disagrees with this file, the code wins. Then fix this file.
 - Default weights today: **40 match win rate, 45 strength of schedule, 15 game win rate**.
 - The live weights are the newest row of `power_score_weight_history`. An admin changes them in the Power Score Sandbox. The SQL functions `power_score_100()` and `power_score_100_career()` are regenerated from that row.
 - `src/utils/powerScore/weights.ts` mirrors the SQL for previews. SQL is the source of truth.
-- Stored on a 0-1 scale. Shown on a 0-100 scale. `NULL` for a team with no matches and for Hidden teams.
+- Stored on a 0-1 scale. Shown on a 0-100 scale. `NULL` for a team with no matches. A Hidden team with matches has a score; the read layer only hides it from lists (CI test `supabase/tests/power_score_weighted_denominators.sql:172-180`).
 - Career score applies a 0.30 performance floor to the SOS term.
 - Strength of schedule = average division weight of opponents (held between 0.1 and 1.0). It is **not** the average opponent power score.
 - Opponents are rated by the division they were in **on the match date** (`division_weight_history`).

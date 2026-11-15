@@ -15,8 +15,7 @@ single 0-100 number.
 The `normalizePowerScore()` utility handles conversion between these scales.
 
 `power_score` is **nullable**. The view returns `NULL` for a team that has not
-played a match, and for teams in the Hidden division. Always handle null —
-`formatPowerScore()` renders `—` for it.
+played a match. Always handle null — `formatPowerScore()` renders `—` for it.
 
 ## Calculation Formula
 
