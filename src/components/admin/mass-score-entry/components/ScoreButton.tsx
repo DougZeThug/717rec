@@ -1,5 +1,5 @@
 import { m } from 'framer-motion';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { cn } from '@/lib/utils';
 import { scoreLog } from '@/utils/logger';
@@ -25,6 +25,17 @@ const ScoreButton = ({
   matchId = 'unknown', // Default value for debugging
   matchDate = 'unknown', // Default value for debugging
 }: ScoreButtonProps) => {
+  // The after-click log timers that have not fired yet. They are cleared when the button
+  // unmounts, so no timer fires after the screen is gone.
+  const pendingTimers = useRef(new Set<ReturnType<typeof setTimeout>>());
+  useEffect(() => {
+    const timers = pendingTimers.current;
+    return () => {
+      timers.forEach((timerId) => clearTimeout(timerId));
+      timers.clear();
+    };
+  }, []);
+
   // Handle click event with detailed logging
   const handleClick = () => {
     if (!disabled) {
@@ -43,7 +54,8 @@ const ScoreButton = ({
       onClick();
 
       // Log state after a small delay to see if it updated correctly
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
+        pendingTimers.current.delete(timerId);
         scoreLog('ScoreButton after click:', {
           matchId,
           matchDate,
@@ -54,6 +66,7 @@ const ScoreButton = ({
           label: option.label,
         });
       }, 100);
+      pendingTimers.current.add(timerId);
     }
   };
 
