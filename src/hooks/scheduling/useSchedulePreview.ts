@@ -203,7 +203,10 @@ export const useSchedulePreview = () => {
       let toastMessage = `${totalMatches} match pairings generated based on team compatibility.`;
 
       if (unmatchedTeamIds.length > 0) {
-        toastMessage += ` ${unmatchedTeamIds.length} teams were left unmatched due to odd numbers.`;
+        // In standard mode an odd block of 3 or more stops Generate before this point, so a
+        // team left unmatched is one alone in its block: it has nobody to play.
+        const noun = unmatchedTeamIds.length === 1 ? 'team was' : 'teams were';
+        toastMessage += ` ${unmatchedTeamIds.length} ${noun} left unmatched. A team alone in its time block has nobody to play.`;
       }
 
       if (rematchCount > 0) {

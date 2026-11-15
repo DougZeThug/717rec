@@ -67,6 +67,26 @@ describe('PackWarnings', () => {
     expect(screen.getByText(/capture-power-snapshots/)).toBeInTheDocument();
   });
 
+  it('says a missing week can also mean no row has a power score', () => {
+    render(
+      <PackWarnings
+        facts={facts({
+          movers: {
+            basis: 'missing',
+            currentWeek: 6,
+            previousWeek: null,
+            risers: [],
+            faller: null,
+          },
+        })}
+      />
+    );
+
+    // The old text said the job "has not run". That is wrong when the rows exist.
+    expect(screen.getByText(/or none of its rows has a power score/)).toBeInTheDocument();
+    expect(screen.queryByText(/has not run/)).not.toBeInTheDocument();
+  });
+
   it('names the week actually compared against when one is missing', () => {
     render(
       <PackWarnings

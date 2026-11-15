@@ -29,7 +29,7 @@ export const useScheduleValidation = () => {
     if (unmatchableBlocks.length > 0) {
       toast({
         title: 'Warning',
-        description: `Blocks with odd number of teams: ${unmatchableBlocks.join(', ')}. Some teams may not get matched.`,
+        description: `Blocks with an odd number of teams: ${unmatchableBlocks.join(', ')}. Generate stops on a block of 3 or more teams until it is even. A team alone in its block is left unmatched.`,
         variant: 'default',
       });
     }

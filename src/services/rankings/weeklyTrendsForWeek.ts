@@ -65,6 +65,7 @@ export async function fetchPowerScoreTrendsForWeek(
   if (!availableWeeks.includes(weekNumber)) {
     // The weekly snapshot job did not run for this week. Movers cannot be
     // reported at all, and the caller must say so rather than show nothing.
+    // A week whose rows have no scored team is 'missing' too (see below).
     return empty(weekNumber, 'missing');
   }
 
@@ -108,7 +109,10 @@ export async function fetchPowerScoreTrendsForWeek(
   );
 
   if (currentSnapshots.length === 0) {
-    return { ...empty(weekNumber, basis), previousWeek };
+    // The week has rows, but none has a power score. That is as unusable as no
+    // snapshot, so say 'missing' (previousWeek stays null, as above). A scored
+    // team that simply has no earlier score is NOT this case: it stays below.
+    return empty(weekNumber, 'missing');
   }
 
   const { data: teamDetails, error: teamDetailsError } = await supabase

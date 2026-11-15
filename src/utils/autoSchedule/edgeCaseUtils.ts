@@ -5,6 +5,10 @@ import { BACK_TO_BACK_PAIRS } from './constants';
 /**
  * Handle odd team counts in back-to-back pairs
  * Since teams always play back-to-back, we need even numbers in each pair
+ *
+ * This only shows who would be left over: one team per odd block. The standard scheduler
+ * does not drop a team from a block of 3 or more. It stops and asks the admin to fix the
+ * block. Only a block with one team really ends up with an unmatched team.
  */
 export function handleOddTeams(timeBlockTeams: TimeBlockTeamsMap): {
   adjustedTeams: TimeBlockTeamsMap;
@@ -130,7 +134,9 @@ export function generateTeamDistributionSummary(timeBlockTeams: TimeBlockTeamsMa
     totalMatches += matchCount;
 
     if (hasOddTeams) {
-      unpairedTeams += 1; // One unpaired team per odd pair
+      // Counts every odd block, one per block. It does not say who sits out: the standard
+      // scheduler stops on a block of 3 or more instead of leaving a team out.
+      unpairedTeams += 1;
     }
 
     pairSummary.push({
@@ -183,7 +189,7 @@ export function validateBackToBackPairAssignments(timeBlockTeams: TimeBlockTeams
     // Check for odd team counts
     if (teams.length % 2 !== 0) {
       warnings.push(
-        `${pairName} pair has odd number of teams (${teams.length}) - one team will be unmatched`
+        `${pairName} pair has odd number of teams (${teams.length}) - standard mode stops on an odd block of 3 or more, and leaves a lone team unmatched`
       );
     }
 

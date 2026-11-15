@@ -18,6 +18,8 @@ interface TeamsTabProps {
   totalTeams: number;
   onManualTeamAssign?: (updatedTeams: TimeBlockTeamsMap) => void;
   originalTimeBlockTeams?: TimeBlockTeamsMap; // Store original loaded teams
+  /** True when Dual Match Mode is on, so the odd-block alert does not tell the admin to turn it on. */
+  dualMatchMode?: boolean;
 }
 
 const TeamsHeading: React.FC = () => (
@@ -90,6 +92,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
   totalTeams,
   onManualTeamAssign,
   originalTimeBlockTeams = EMPTY_TIME_BLOCK_TEAMS,
+  dualMatchMode,
 }) => {
   const [activeTab, setActiveTab] = useState<string>('auto');
   const [isEditMode, setIsEditMode] = useState(false);
@@ -190,6 +193,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
               oddBlocks={oddBlocks}
               unmatchedTeams={unmatchedTeamIds?.length || 0}
               insufficientBlocks={insufficientBlocks}
+              dualMatchMode={dualMatchMode}
             />
           )}
         </TabsContent>

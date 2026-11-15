@@ -24,5 +24,5 @@ export type TrendBasis =
   | 'gap'
   /** Nothing earlier exists to compare against (week 1). */
   | 'baseline'
-  /** Week N itself has no snapshot. No movement can be reported. */
+  /** Week N has no snapshot, or none of its rows has a power score. No movement can be reported. */
   | 'missing';

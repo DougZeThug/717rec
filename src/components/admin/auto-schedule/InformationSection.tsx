@@ -16,7 +16,10 @@ const InformationSection: React.FC = () => {
         <li>Teams are matched based on skill levels using power scores and win records</li>
         <li>Algorithm avoids pairing teams that have already played against each other</li>
         <li>Matches are optimized to be as competitive and fair as possible</li>
-        <li>Time blocks with odd numbers will have some teams unmatched</li>
+        <li>
+          Standard mode stops on a time block with an odd number of teams (3 or more): move a team,
+          or use Dual Match Mode. A team alone in its block is shown as unmatched
+        </li>
         <li>Match quality scores help identify the most balanced pairings</li>
       </ul>
     </div>

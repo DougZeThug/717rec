@@ -94,6 +94,7 @@ const ScheduleWorkflowCard: React.FC<ScheduleWorkflowTabsProps> = ({
             totalTeams={totalTeams}
             onManualTeamAssign={onManualTeamAssign}
             originalTimeBlockTeams={originalTimeBlockTeams}
+            dualMatchMode={dualMatchMode}
           />
         </TabsContent>
 

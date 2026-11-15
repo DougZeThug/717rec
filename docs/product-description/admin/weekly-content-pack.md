@@ -70,7 +70,7 @@ because a published edition is frozen and a wrong number stays wrong:
 
 | Warning                            | Means                                                                                                                      | Blocks publishing |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| No power score snapshot for week N | The weekly snapshot job did not run. Movers, Team of the Week and the standings columns cannot be trusted.                 | **Yes**           |
+| No power score snapshot for week N | No snapshot, or no team in it has a power score. Movers, Team of the Week and the standings columns cannot be trusted.     | **Yes**           |
 | Compared against week M            | Week N-1 has no snapshot, so movement is measured from an earlier week. The numbers are real but cover more than one week. | No                |
 | Nothing to compare against yet     | First week with a snapshot. No movers, no Team of the Week.                                                                | No                |
 | N matches still have no result     | Publishing describes the week as finished.                                                                                 | No                |
@@ -185,7 +185,8 @@ per address so two people in the same room do not throttle each other.
 "the current one".
 
 **Validation and error display.** Publishing is disabled, with the reason on
-screen, when there is nothing to show or no snapshot to trust.
+screen, when there is nothing to show or no snapshot to trust (no snapshot, or
+no team in it has a power score).
 
 **Unsaved changes.** Guarded. Leaving with an unsaved draft asks first.
 
@@ -221,7 +222,10 @@ visitor, and uploads the wrap graphic so shared links preview with it.
 
 - **A week with no snapshot cannot be published at all.** Movers, Team of the
   Week and the standings all come from that snapshot; without it the edition
-  would be a guess.
+  would be a guess. The same holds when the snapshot has rows but no team in it
+  has a power score. The weekly job does not write such rows, so this covers an
+  odd or hand-written row only. The block is in the screen: the Publish button
+  is off. The publish step itself does not check.
 - **A "gap" comparison is published with the real week named**, not silently
   labelled as this week's movement.
 - **Team of the Week can differ between an edition and the live home page.**
@@ -248,6 +252,8 @@ visitor, and uploads the wrap graphic so shared links preview with it.
 - Not confirmed by hand: the Cloudflare worker against the Facebook Sharing
   Debugger, which needs the worker deployed first.
 - Not confirmed by hand: what the section does when a season has no snapshots at
-  all, which is the state a brand-new season starts in.
+  all, which is the state a brand-new season starts in. The code treats that as
+  "no snapshot, or no team in it has a power score": the warning shows and
+  Publish is off (covered by unit tests, not run on the live app).
 
 Written from the code and its tests, not from a pass over the running app.

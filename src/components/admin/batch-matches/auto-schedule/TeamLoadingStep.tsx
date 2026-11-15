@@ -43,17 +43,25 @@ export const TeamLoadingStep: React.FC<TeamLoadingStepProps> = ({
     ? handleOddTeams(timeBlockTeams)
     : { unmatchedTeamDetails: [] };
 
-  // Transform unmatchedTeamDetails to match expected format
-  const unmatchedTeamDetails = rawUnmatchedTeamDetails.map((detail) => ({
-    timeBlock: detail.block,
-    team: {
-      id: detail.teamId,
-      name: detail.teamName,
-    },
-  }));
+  // Transform unmatchedTeamDetails to match expected format. Only a block with ONE team
+  // really leaves its team unmatched. An odd block of 3 or more stops Generate instead, so
+  // no team is named for it here.
+  const unmatchedTeamDetails = rawUnmatchedTeamDetails
+    .filter((detail) => timeBlockTeams[detail.block]?.length === 1)
+    .map((detail) => ({
+      timeBlock: detail.block,
+      team: {
+        id: detail.teamId,
+        name: detail.teamName,
+      },
+    }));
 
   // Generate distribution summary
   const distribution = generateTeamDistributionSummary(timeBlockTeams);
+  const loneTeamCount = distribution.pairSummary.filter((block) => block.teamCount === 1).length;
+  const blocksToFixCount = distribution.pairSummary.filter(
+    (block) => block.hasOddTeams && block.teamCount >= 3
+  ).length;
 
   const hasTeamsLoaded = Object.keys(timeBlockTeams).length > 0;
 
@@ -98,10 +106,18 @@ export const TeamLoadingStep: React.FC<TeamLoadingStepProps> = ({
                   Potential Matches:{' '}
                   <span className="font-semibold">{distribution.totalMatches}</span>
                 </div>
-                {distribution.unpairedTeams > 0 && (
+                {loneTeamCount > 0 && (
                   <div className="col-span-2 text-amber-600">
-                    Unmatched Teams:{' '}
-                    <span className="font-semibold">{distribution.unpairedTeams}</span>
+                    Unmatched Teams: <span className="font-semibold">{loneTeamCount}</span>
+                  </div>
+                )}
+                {blocksToFixCount > 0 && (
+                  <div className="col-span-2 text-amber-600">
+                    Blocks to Fix: <span className="font-semibold">{blocksToFixCount}</span>
+                    <p className="text-xs text-amber-700 dark:text-amber-400">
+                      Generate will stop until each has an even number of teams. Move a team, or use
+                      Dual Match Mode on the Auto Schedule screen.
+                    </p>
                   </div>
                 )}
               </div>

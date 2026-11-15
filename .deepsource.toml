@@ -1,5 +1,10 @@
 version = 1
 
+# Third-party code copied into the repo (a strict-mode copy of edmonds-blossom, see
+# src/utils/autoSchedule/blossom/vendor/). It keeps its original style, so the analyzers
+# skip it. Our own code stays checked.
+exclude_patterns = ["src/utils/autoSchedule/blossom/vendor/**"]
+
 [[analyzers]]
 name = "javascript"
 enabled = true
