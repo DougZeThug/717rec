@@ -335,8 +335,10 @@ notification is sent to any team.
   plays one match. With Dual Match Mode on, an odd block gets a third match at the
   next half-hour.
 - **A normal block of 6 teams used to make Generate fail; it now retries.** Found
-  2026-11-13: about 1 block in 10 of 6, 8 or 10 teams made Generate fail, with or
-  without rematch history. The admin saw only the red toasts "Failed to generate
+  2026-11-13: about 1 block in 10 of 6, 8 or 10 teams made Generate fail in the
+  Node tests, and about 1 in 5 in a real browser (the matching library also crashes
+  there; see the decision log, "Browser finding"), with or without rematch history.
+  The admin saw only the red toasts "Failed to generate
   match pairings. Please try again." and "Generation Failed"; the cause ("1 teams
   don't have 2 matches") was in the console. Fixed 2026-11-14 (PR #1741,
   part 3): when the first try throws, or gives a list that cannot be split into the
