@@ -21,11 +21,19 @@ type Matcher = (edges: number[][], maxCardinality?: boolean) => number[];
 
 const copyOf = (edges: number[][]) => edges.map((edge) => [...edge]);
 
-/** The original library source, run as strict code the way a browser bundle runs it. */
+const originalSource = readFileSync(
+  createRequire(import.meta.url).resolve('edmonds-blossom'),
+  'utf8'
+);
+
+/**
+ * The original library source, run as strict code the way a browser bundle runs it. Every call
+ * builds a fresh sandbox and evaluates the source again. A sandbox that is reused can stop
+ * throwing after a few calls when the tests run under coverage, so never share one.
+ */
 const loadOriginalInStrictMode = (): Matcher => {
-  const source = readFileSync(createRequire(import.meta.url).resolve('edmonds-blossom'), 'utf8');
   const moduleShim = { exports: edmondsBlossom };
-  runInNewContext(`"use strict";${source}`, { module: moduleShim });
+  runInNewContext(`"use strict";${originalSource}`, { module: moduleShim });
   return moduleShim.exports;
 };
 
@@ -130,7 +138,6 @@ describe('the strict-mode copy and the original library on random graphs', () =>
 
   it('returns the same matching on 400 seeded graphs, with and without maxCardinality', () => {
     const random = makeRandom(717);
-    const originalInStrictMode = loadOriginalInStrictMode();
     const differences: string[] = [];
     let crashesInStrictMode = 0;
 
@@ -143,7 +150,7 @@ describe('the strict-mode copy and the original library on random graphs', () =>
         differences.push(`graph ${index}: ${JSON.stringify(edges)}`);
       }
       try {
-        originalInStrictMode(copyOf(edges), maxCardinality);
+        loadOriginalInStrictMode()(copyOf(edges), maxCardinality);
       } catch {
         crashesInStrictMode++;
       }
