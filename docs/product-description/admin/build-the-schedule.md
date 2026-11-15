@@ -189,7 +189,7 @@ got no new engine for odd blocks: it stops early and says why.
 | 0 | Nothing. The block is skipped. |
 | 1 | The team has nobody to play. It is counted as unmatched, named in the toast, and shown with an "Unmatched" badge on the Teams tab. |
 | 2 | One match between the two. Neither team is unmatched. (Before, Generate failed for the whole night.) |
-| 4, 6, 8 and so on (even) | Every team plays twice, once in each of the block's two times. If the first try cannot do that, or gives a list that cannot be split into the block's two times, Generate tries once more with perfect matchings and uses that result only when it breaks no rule (no Competitive team against a Recreational team, no rematch except between two Recreational teams). A block whose first try throws and that has no rule-following schedule still stops with "N teams don't have 2 matches". |
+| 4, 6, 8 and so on (even) | Every team plays twice, once in each of the block's two times. If the first try cannot do that, or gives a list that cannot be split into the block's two times, Generate tries once more with perfect matchings and uses that result only when it breaks no rule (no Competitive team against a Recreational team, no rematch except between two Recreational teams). A block whose first try throws and that has no rule-following schedule still stops: the admin sees the red toasts "Failed to generate match pairings. Please try again." and "Generation Failed", and the console holds the cause ("N teams don't have 2 matches"). |
 | 3, 5, 7 and so on (odd, 3 or more) | **Generate stops before it makes anything.** A red toast names every odd block by its time and team count, then says to move a team or use Dual Match Mode. Nothing is generated and nothing can reach Save. |
 
 The message reads like this: "Block Early Pair (6:30-7:00 PM) has 5 teams. Standard
@@ -335,13 +335,15 @@ notification is sent to any team.
   plays one match. With Dual Match Mode on, an odd block gets a third match at the
   next half-hour.
 - **A normal block of 6 teams used to make Generate fail; it now retries.** Found
-  2026-11-13: about 1 block in 10 of 6, 8 or 10 teams made Generate throw "1 teams
-  don't have 2 matches", with or without rematch history. Fixed 2026-11-14 (PR #1741,
+  2026-11-13: about 1 block in 10 of 6, 8 or 10 teams made Generate fail, with or
+  without rematch history. The admin saw only the red toasts "Failed to generate
+  match pairings. Please try again." and "Generation Failed"; the cause ("1 teams
+  don't have 2 matches") was in the console. Fixed 2026-11-14 (PR #1741,
   part 3): when the first try throws, or gives a list that cannot be split into the
   block's two times, Generate runs once more with perfect matchings and uses that
   result only if no pair breaks a rule. **A block whose first try throws and that has
-  no rule-following schedule still stops with the same error** (11 of 1,501 six-team
-  blocks in the QA grid). If the first try gives a list, that list is kept even when
+  no rule-following schedule still stops with the same error and the same red toasts**
+  (11 of 1,501 six-team blocks in the QA grid). If the first try gives a list, that list is kept even when
   it bends a rule. No rule was relaxed. Dual Match Mode is not affected. See the decision log, "Pairing
   retry result".
 - **"Open Full Auto Schedule" changes tab in place.** It does not reload the
