@@ -450,7 +450,7 @@ Slice 4 (lite) puts the default division weight 0.85 in one place. **Every `??` 
 
 ## Unrated division result (career bonus), built 2026-11-16 (migration file `20261117120000`)
 
-An unknown division is **unrated** in the career bonus: it adds 0 instead of counting as 0.85. TypeScript and SQL give the same number. **The SQL was applied to the live database by Doug on 2026-11-16, before PR #1744 was merged** (`docs/OPERATIONS.md` section 6f). The fingerprint (count and md5 of `calculate_career_power_score` over all teams) was **identical before and after**: count 51, md5 `c4d29aa83f550d893309275afc806e5f` (Doug's screenshots; the SQL Editor reported "Success. No rows returned"). The resolver check gave 1.00 for `Competitive` and NULL for `zzz`. The optional `has_function_privilege` check was not reported back. No number changes today (live read 2026-11-13: every division has a weight, every past division name matches).
+An unknown division is **unrated** in the career bonus: it adds 0 instead of counting as 0.85. TypeScript and SQL give the same number, except for a division name with a leading tab or a non-breaking space: TypeScript rates it and SQL leaves it unrated (see the migration header and fixture 13). **The SQL was applied to the live database by Doug on 2026-11-16, before PR #1744 was merged** (`docs/OPERATIONS.md` section 6f). The fingerprint (count and md5 of `calculate_career_power_score` over all teams) was **identical before and after**: count 51, md5 `c4d29aa83f550d893309275afc806e5f` (Doug's screenshots; the SQL Editor reported "Success. No rows returned"). The resolver check gave 1.00 for `Competitive` and NULL for `zzz`. The optional `has_function_privilege` check was not reported back. No number changes today (live read 2026-11-13: every division has a weight, every past division name matches).
 
 - **The rule (the same in both places).**
   - Unrated = a blank name, a name that matches no division, or a matched division with a NULL weight. A weight of 0 is a real 0.
@@ -500,7 +500,8 @@ An unknown division is **unrated** in the career bonus: it adds 0 instead of cou
   - All 35 SQL test files pass alone and combined. The fingerprint (count and md5) is identical before and after the migration on a 91-team live-like fixture. The revert restores the original. The hand-apply steps in section 6f ran as written.
   - Limits: CI's Postgres is 15 (QA used 16.15), and `supabase db lint` was not run (the CLI was missing).
   - Added after that round, and run by the developer on the scratch cluster: fixtures 16 and 17 in `career_power_score_parity.sql` and in `calculateCareerPowerScore.test.ts`. QA has not re-run them.
-- **Open:** Doug's hand-apply (section 6f), then merge. The playoff-fallback rule above stays a developer choice unless Doug says otherwise.
+- **Done:** Doug applied the SQL (section 6f) on 2026-11-16, and PR #1744 merged the same day.
+- **Open:** The playoff-fallback rule above stays a developer choice unless Doug says otherwise.
 
 ## PR-R result (recap week with no scored team), built 2026-11-13
 
@@ -612,7 +613,7 @@ Standard mode (Dual Match Mode off) threw on about 1 in 10 blocks of 6, 8 or 10 
 
 ## Slice 5 result (built 2026-11-16, QA PARTIAL: no defect)
 
-Slice 5 is the SMALL version (Doug approved it on 2026-11-17, after the Skeptic cut the first draft down). **Rule for the whole slice: no number any team sees changes. No SQL, no migration, nothing to hand-apply.** Pin first. Merge only copies that are provably identical. Anything that differs is a league question for Doug (Slice 6).
+Slice 5 is the SMALL version (Doug approved it on 2026-11-16, after the Skeptic cut the first draft down). **Rule for the whole slice: no number any team sees changes. No SQL, no migration, nothing to hand-apply.** Pin first. Merge only copies that are provably identical. Anything that differs is a league question for Doug (Slice 6).
 
 - **Run 1 (done, 5 commits on `claude/adoring-bohr-waxxok`: `b2de766`, `389f589`, `608a5ec`, `a7d2c40`, `1a1cf72`):**
   - **V1 (tests only), the bracket seed sort** (`src/services/bracket-creator.ts`, the "Neither has manual seed" block, which sets the REAL bracket seeds). Two new pins in `bracket-creator.test.ts`: (1) when two scores print the same, the better division is seeded first although the other team has the higher win %; (2) 41.65 and 41.6 both print "41.6" (41.65 is stored just under the .x5 boundary), so they are tied and win % decides. Mutation-checked on the source: swapping the tier and win % lines fails pin 1; comparing raw scores, or rounding with `Math.round(x * 10) / 10`, fails pin 2.
