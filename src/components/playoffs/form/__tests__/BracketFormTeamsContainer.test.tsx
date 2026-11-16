@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { Team } from '@/types';
+
 import { BracketFormTeamsContainer } from '../bracket-teams/components/BracketFormTeamsContainer';
 import type {
   BracketFormStateResult,
@@ -57,7 +59,11 @@ vi.mock('../bracket-teams/components/TeamSelectionEmpty', () => ({
 
 vi.mock('../bracket-teams/components/TeamSelectionForm', () => ({
   TeamSelectionForm: ({ teams, formState, onSeedChange }: MockTeamSelectionFormProps) => (
-    <div data-testid="team-selection-form">
+    <div
+      data-testid="team-selection-form"
+      data-team-order={teams.map((team) => team.id).join(',')}
+      data-team-seeds={teams.map((team) => team.seed).join(',')}
+    >
       <span>Teams: {teams ? teams.length : 0}</span>
       <span>{formState?.statusMessage || 'Ready'}</span>
       <button onClick={() => formState?.handleTeamToggle?.('team-1')}>Toggle Team</button>
@@ -322,6 +328,118 @@ describe('BracketFormTeamsContainer', () => {
         teamsProp,
         defaultProps.divisionId
       );
+    });
+  });
+
+  // The list shows teams best first, in the order the saved bracket will seed them.
+  // These run with the `teams` prop, the way the playoff page renders the form.
+  describe('List order', () => {
+    const entry = (id: string, overrides: Partial<Team> = {}): Team => ({
+      id,
+      name: id,
+      divisionName: 'Intermediate',
+      division_id: 'div-1',
+      power_score: 50,
+      win_percentage: 0.5,
+      ...overrides,
+    });
+
+    const renderWithTeams = (teams: Team[]) =>
+      render(<BracketFormTeamsContainer {...defaultProps} teams={teams} />);
+
+    const listOrder = () =>
+      screen.getByTestId('team-selection-form').getAttribute('data-team-order');
+    const listSeeds = () =>
+      screen.getByTestId('team-selection-form').getAttribute('data-team-seeds');
+
+    it('lists the teams best first, not A to Z', () => {
+      renderWithTeams([
+        entry('Alpha', { power_score: 20 }),
+        entry('Bravo', { power_score: 80 }),
+        entry('Charlie', { power_score: 50 }),
+      ]);
+
+      // The hook mock returns 'team-1'. It is not in the list: the prop is what shows.
+      expect(listOrder()).toBe('Bravo,Charlie,Alpha');
+    });
+
+    it('breaks a tie on the displayed score by division, then win %, then name', () => {
+      renderWithTeams([
+        entry('Zulu', { power_score: 41.6, divisionName: 'Recreational', win_percentage: 0.9 }),
+        entry('Yankee', { power_score: 41.65, divisionName: 'Intermediate', win_percentage: 0.4 }),
+        entry('X-ray', { power_score: 41.6, divisionName: 'Intermediate', win_percentage: 0.7 }),
+        entry('Whiskey', { power_score: 41.6, divisionName: 'Competitive', win_percentage: 0.1 }),
+        entry('Victor', { power_score: 41.6, divisionName: 'Intermediate', win_percentage: 0.4 }),
+      ]);
+
+      // 41.65 and 41.6 print the same. Competitive first, then Intermediate by
+      // win % (X-ray 0.7), then the 0.4 pair by name (Victor, Yankee), then Recreational.
+      expect(listOrder()).toBe('Whiskey,X-ray,Victor,Yankee,Zulu');
+    });
+
+    it('puts a team with no power score last', () => {
+      renderWithTeams([
+        entry('Alpha', { power_score: null, win_percentage: 0.9 }),
+        entry('Bravo', { power_score: 10 }),
+      ]);
+
+      expect(listOrder()).toBe('Bravo,Alpha');
+    });
+
+    it('numbers the badges by the new order and keeps a stored seed', () => {
+      renderWithTeams([
+        entry('Alpha', { power_score: 20 }),
+        entry('Bravo', { power_score: 80 }),
+        entry('Charlie', { power_score: 50, seed: 9 }),
+      ]);
+
+      // The badge is `seed || position`. Bravo is 1st, Charlie keeps its stored 9,
+      // and Alpha is 3rd.
+      expect(listOrder()).toBe('Bravo,Charlie,Alpha');
+      expect(listSeeds()).toBe('1,9,3');
+    });
+
+    it('does not reorder the list the parent passed in', () => {
+      const teams = [entry('Alpha', { power_score: 20 }), entry('Bravo', { power_score: 80 })];
+      renderWithTeams(teams);
+
+      expect(teams.map((team) => team.id)).toEqual(['Alpha', 'Bravo']);
+      expect(listOrder()).toBe('Bravo,Alpha');
+    });
+
+    it('lists the teams of a picked division best first too', () => {
+      const divisions = [
+        { id: 'comp', name: 'Competitive', display_division: 'Competitive' },
+        { id: 'rec', name: 'Recreational', display_division: 'Recreational' },
+      ];
+      render(
+        <BracketFormTeamsContainer
+          {...defaultProps}
+          divisions={divisions}
+          divisionId="comp"
+          teams={[
+            entry('Alpha', { power_score: 20, division_id: 'comp' }),
+            entry('Bravo', { power_score: 80, division_id: 'rec' }),
+            entry('Charlie', { power_score: 60, division_id: 'comp' }),
+          ]}
+        />
+      );
+
+      expect(listOrder()).toBe('Charlie,Alpha');
+    });
+
+    it('also lists a list from the hook best first when there is no teams prop', () => {
+      mockUseBracketFormData.mockReturnValue({
+        teams: [entry('Alpha', { power_score: 20 }), entry('Bravo', { power_score: 80 })],
+        isLoading: false,
+        isError: false,
+        errorMessage: null,
+        isDataReady: true,
+      });
+
+      render(<BracketFormTeamsContainer {...defaultProps} />);
+
+      expect(listOrder()).toBe('Bravo,Alpha');
     });
   });
 

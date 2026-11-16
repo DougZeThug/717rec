@@ -4,7 +4,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { MAX_BRACKET_TEAMS, MIN_BRACKET_TEAMS } from '@/constants/brackets';
 import { useToast } from '@/hooks/useToast';
+import type { Team } from '@/types';
 import { warnLog } from '@/utils/logger';
+import { compareSeedOrder, type SeedOrderTeam } from '@/utils/rankingUtils/seedOrder';
 import { isDivisionArray, isDivisionIdValid, isTeamArray } from '@/utils/typeGuards';
 
 import { useBracketFormData } from '../hooks/useBracketFormData';
@@ -18,6 +20,17 @@ import { TeamSelectionForm } from './TeamSelectionForm';
 import { TeamSelectionLoading } from './TeamSelectionLoading';
 
 const EMPTY_DIVISIONS: BracketFormTeamsContainerProps['divisions'] = [];
+
+/** One team in the shape `compareSeedOrder` reads. */
+const toSeedOrderTeam = (team: Team): SeedOrderTeam => ({
+  powerScore: team.power_score,
+  divisionName: team.divisionName,
+  winPercentage: team.win_percentage,
+  name: team.name,
+});
+
+const compareTeamsBestFirst = (a: Team, b: Team): number =>
+  compareSeedOrder(toSeedOrderTeam(a), toSeedOrderTeam(b));
 
 /**
  * The teams to list: only the picked division's — unless the admin asks for
@@ -135,7 +148,9 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   const processedTeams = React.useMemo((): ProcessedTeam[] => {
     if (!isTeamArray(allTeams)) return [];
 
-    return allTeams.map((team, index) => ({
+    // Best first, the order the saved bracket seeds the teams. Sort a copy: the
+    // list belongs to the parent. The badge below reads this position.
+    return [...allTeams].sort(compareTeamsBestFirst).map((team, index) => ({
       id: team.id,
       name: team.name || 'Unnamed Team',
       wins: team.wins || 0,
