@@ -38,6 +38,8 @@ type TeamDetailRow = {
   power_score: number | null;
   /** The stored column the standings read, not a local wins/(wins+losses). */
   win_percentage: number;
+  /** The division name the tier rule reads. Left out, the team has no division. */
+  divisionname?: string;
   /** Carried only so a fixture can show the two numbers disagreeing. */
   wins?: number;
   losses?: number;
@@ -278,6 +280,75 @@ describe('createBracket — seeding order', () => {
     });
 
     expect(seededTeams().map((t) => t.id)).toEqual(['a', 'b']);
+  });
+
+  // The rule order is: displayed score, then division tier, then win %, then
+  // name. A better division beats a better win % when the two scores print the
+  // same. Today's behaviour, pinned so a swap of the two rules cannot pass.
+  it('seeds the better division first on a displayed tie, although the other team has the higher win %', async () => {
+    installSupabase({
+      fullTeamData: [
+        {
+          team_id: 'rec',
+          name: 'Rec Stars',
+          power_score: 55,
+          win_percentage: 0.9,
+          divisionname: 'Recreational',
+        },
+        {
+          team_id: 'comp',
+          name: 'Comp Crew',
+          power_score: 55,
+          win_percentage: 0.4,
+          divisionname: 'Competitive',
+        },
+      ],
+    });
+    await createBracket({
+      ...baseOptions,
+      teams: [
+        { id: 'rec', name: 'Rec Stars' },
+        { id: 'comp', name: 'Comp Crew' },
+      ],
+    });
+
+    expect(seededTeams().map((t) => t.id)).toEqual(['comp', 'rec']);
+    expect(seededTeams().map((t) => t.seed)).toEqual([1, 2]);
+  });
+
+  // The seed sort compares the score as it prints (one decimal). 41.65 is stored
+  // just under the .x5 boundary, so it prints "41.6", the same as 41.6. They are
+  // tied, and the win % decides. Rounding with Math.round(x * 10) / 10 would read
+  // 41.7, seed the 0.4 team first, and skip the tiebreakers the standings used.
+  it('treats 41.65 and 41.6 as the same displayed score and lets win % decide', async () => {
+    installSupabase({
+      fullTeamData: [
+        {
+          team_id: 'high',
+          name: 'High Raw',
+          power_score: 41.65,
+          win_percentage: 0.4,
+          divisionname: 'Intermediate',
+        },
+        {
+          team_id: 'low',
+          name: 'Low Raw',
+          power_score: 41.6,
+          win_percentage: 0.7,
+          divisionname: 'Intermediate',
+        },
+      ],
+    });
+    await createBracket({
+      ...baseOptions,
+      teams: [
+        { id: 'high', name: 'High Raw' },
+        { id: 'low', name: 'Low Raw' },
+      ],
+    });
+
+    expect(seededTeams().map((t) => t.id)).toEqual(['low', 'high']);
+    expect(seededTeams().map((t) => t.seed)).toEqual([1, 2]);
   });
 
   it('seeds on the stored win percentage, not a local recomputation', async () => {
