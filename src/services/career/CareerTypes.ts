@@ -1,7 +1,7 @@
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
 
 export interface TeamData {
-  divisions: { division_weight: number } | null;
+  divisions: { division_weight: number | null } | null;
 }
 
 export interface TeamDetailsArchive {
@@ -20,6 +20,7 @@ export interface CareerData {
   bracketDivisionWeights: Record<string, number>;
   bracketDivisionDisplayNames: Record<string, string>;
   bracketSeasonMap: Record<string, string>;
-  teamDivisionWeight: number;
+  // The team's current division weight. null = no division or no weight (unrated).
+  teamDivisionWeight: number | null;
   currentSeasonId: string | null;
 }

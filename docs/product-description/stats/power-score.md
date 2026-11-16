@@ -69,7 +69,11 @@ A team with no completed match has **no** power score. The column shows "—", t
 gauge shows neutral grey, and the team sorts to the bottom. This is different
 from a score of 0, which is a real rating a very poor team can reach.
 
-A team in the **Hidden** division also has no power score, by design.
+A team in the **Hidden** division is scored like any team with completed matches.
+Hidden teams are left out of the standings, the rankings and the weekly recap, so
+the number mostly shows only on the team's own page, if someone opens it by
+direct link. A Hidden team with no matches this season has no score, as any team
+without matches.
 
 ### Leave without changing anything
 
@@ -176,6 +180,18 @@ A team with no matches at all has a career score of 0, so it sits at the foot
 of the career table. Unlike the standings, where an unplayed team shows "—"
 and no rating, the career table gives it a real number.
 
+A title or runner-up finish in a division the app cannot find a weight for is
+**left out of the bonus**. That means a division name that matches no division,
+or a division that has no weight. The finish still shows. It just earns no
+points, and the app does not guess a weight for it. A playoff run is different.
+It is scored by the weight of the divisions it was played in, and a season with no
+weight is left out of that average. If none of its seasons has a weight, the run is
+scored by the team's current division instead. Only when the team's own division
+has no weight either does the playoff win-rate bonus drop to 0. This only happens
+if a division is renamed after a title was won, or a wrong name is typed into a
+past season. The database works out the same number for the King Slayer badge, so the
+badge and the screen agree. See [`OPERATIONS.md`](../../OPERATIONS.md) section 6f.
+
 ## Where a power score appears
 
 - **`/stats`** — the Power column, the mobile gauge, the top-three leaderboard,
@@ -210,7 +226,7 @@ they are too.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role | No effect. Everyone sees the same number. Only an admin can change anything that feeds it. | No effect. |
-| The record's state | A team with no completed match has no score and shows "—". A hidden team has no score. A completed match feeds the score; a pending score submission does not, until it is approved. | A match being reopened reverses everything the original result contributed. |
+| The record's state | A team with no completed match has no score and shows "—". A hidden team keeps the score it earned. A completed match feeds the score; a pending score submission does not, until it is approved. | A match being reopened reverses everything the original result contributed. |
 | The season's state | An active season's scores move. **An archived season's scores are frozen** against a formula change or a re-tiering. **A Power Score weight change is the exception:** saving new weights in the sandbox recomputes every season, archived included. | Archiving a season freezes it at that moment. Saving new weights, an admin's deliberate recompute of an archived season, or a one-off rule change shipped as a migration (such as the 2026-10 rule that ties leave the match term) are the only ways a frozen number changes. |
 | Viewport | On a wide screen the score is a coloured number in a table cell. On a phone it is a number in a card, and in detailed view an animated circular gauge. | No effect. |
 | Keys the app honours | None. A power score is text, not a control. | None. |
@@ -299,6 +315,11 @@ looks like a bug to anyone watching one team.
   bottom of the career table, below every team with a record. The two tables
   differ here on purpose: the standings show "—" and no rating for the same
   team.
+- **A past title can stop earning bonus points if its division is renamed.** Past
+  seasons find their division weight by the division's name. A title whose name no
+  longer matches any division adds nothing to the career bonus, and the champion
+  count is unchanged. Nothing on screen says so. An admin check lists these
+  ([`OPERATIONS.md`](../../OPERATIONS.md) section 6f).
 
 ## Open questions and verification
 

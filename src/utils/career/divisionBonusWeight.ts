@@ -8,8 +8,6 @@
  * row in `divisions`.
  */
 
-import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
-
 /** Synthetic season labels → the real `divisions.name` they represent. */
 const DIVISION_NAME_ALIASES: Record<string, string> = {
   'intermediate 1': 'intermediate high',
@@ -23,18 +21,29 @@ const DIVISION_NAME_ALIASES: Record<string, string> = {
 const normalize = (name: string): string => name.trim().toLowerCase();
 
 /**
+ * Live division weights by name. A division with no weight is kept as `null`,
+ * not dropped: it must stop the lookup below as "unrated", not fall through to
+ * an alias or a base tier word.
+ */
+type DivisionWeightsByName = ReadonlyMap<string, number | null>;
+
+/**
  * Look up the live weight for a historical division name.
- * Falls back to the shared default weight when nothing resolves.
+ * Returns `null` ("unrated") for a blank name, a name that matches no division,
+ * or a matched division with no weight. A stored weight of 0 is a real 0. The
+ * career bonus leaves an unrated division out instead of guessing a weight.
+ * The SQL twin returns the same (`resolve_division_bonus_weight`).
  */
 export const resolveDivisionBonusWeight = (
   divisionName: string | null | undefined,
-  weightsByName: Map<string, number>
-): number => {
-  if (!divisionName) return DEFAULT_DIVISION_WEIGHT;
+  weightsByName: DivisionWeightsByName
+): number | null => {
+  if (!divisionName) return null;
 
   const key = normalize(divisionName);
 
-  // 1. Exact match against a live division name
+  // 1. Exact match against a live division name. A match with no weight
+  // (null) is final: it must not fall through to the steps below.
   const exact = weightsByName.get(key);
   if (exact !== undefined) return exact;
 
@@ -50,21 +59,46 @@ export const resolveDivisionBonusWeight = (
   const baseWeight = weightsByName.get(base);
   if (baseWeight !== undefined) return baseWeight;
 
-  return DEFAULT_DIVISION_WEIGHT;
+  return null;
 };
 
 /**
- * Average live weight across a set of season division names.
- * Returns null when nothing resolves, so callers can keep their own fallback.
+ * The weights of the RATED season division names only. Blank and unknown names
+ * and divisions with no weight are left out, so no `null` can reach a sum or
+ * `Math.max` (`Math.max(null)` is 0 and `Math.max(undefined)` is NaN).
+ */
+const ratedWeights = (
+  divisionNames: readonly (string | null | undefined)[],
+  weightsByName: DivisionWeightsByName
+): number[] =>
+  divisionNames
+    .map((name) => resolveDivisionBonusWeight(name, weightsByName))
+    .filter((weight): weight is number => weight !== null);
+
+/**
+ * Average live weight across the RATED season division names.
+ * Returns null when none is rated, so callers can choose their own fallback.
  */
 export const averageDivisionBonusWeight = (
   divisionNames: readonly (string | null | undefined)[],
-  weightsByName: Map<string, number>
+  weightsByName: DivisionWeightsByName
 ): number | null => {
-  const resolved = divisionNames
-    .filter((name): name is string => Boolean(name))
-    .map((name) => resolveDivisionBonusWeight(name, weightsByName));
+  const rated = ratedWeights(divisionNames, weightsByName);
 
-  if (resolved.length === 0) return null;
-  return resolved.reduce((sum, weight) => sum + weight, 0) / resolved.length;
+  if (rated.length === 0) return null;
+  return rated.reduce((sum, weight) => sum + weight, 0) / rated.length;
+};
+
+/**
+ * Highest live weight across the RATED season division names.
+ * Returns null when none is rated, so callers can choose their own fallback.
+ */
+export const maxDivisionBonusWeight = (
+  divisionNames: readonly (string | null | undefined)[],
+  weightsByName: DivisionWeightsByName
+): number | null => {
+  const rated = ratedWeights(divisionNames, weightsByName);
+
+  if (rated.length === 0) return null;
+  return Math.max(...rated);
 };

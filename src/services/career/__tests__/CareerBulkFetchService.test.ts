@@ -109,7 +109,7 @@ describe('fetchAllTeamsCareerData', () => {
     expect(data?.seasonPowerScores[0].power_score).toBe(80);
   });
 
-  it('includes entry for teamId with no stats (defaults applied)', async () => {
+  it('includes entry for teamId with no stats (no team weight)', async () => {
     mockFrom.mockImplementation(
       buildFromMock({
         ...successOverrides,
@@ -123,7 +123,7 @@ describe('fetchAllTeamsCareerData', () => {
     expect(result.has('t1')).toBe(true);
     const data = result.get('t1');
     expect(data?.seasonStats).toHaveLength(0);
-    expect(data?.teamDivisionWeight).toBe(0.85);
+    expect(data?.teamDivisionWeight).toBeNull();
   });
 
   it('throws DatabaseError when season_stats query fails', async () => {
@@ -294,10 +294,11 @@ describe('bracket lookup cache', () => {
   });
 });
 
-// ─── Default division weight (0.85) ───────────────────────────────────────────
+// ─── Team weight (unrated) and bracket weight (0.85 default) ──────────────────
 
-// These pin the default division weight in CareerBulkFetchService.ts as it is today.
-// They describe the code as it is and claim no league rule.
+// The team weight has no default: a team with no division or no weight is unrated
+// (null). The bracket weight still defaults to 0.85. The bracket tests describe
+// the code as it is today and claim no league rule.
 
 /** Like buildFromMock, but serves the given bracket rows (own copies, never BRACKET_ROWS). */
 function buildFromMockServingBrackets(
@@ -315,7 +316,7 @@ function buildFromMockServingBrackets(
   };
 }
 
-describe("team division weight default (today's behaviour)", () => {
+describe('team division weight (unrated)', () => {
   beforeEach(() => vi.clearAllMocks());
 
   const fetchTeamWith = async (teamRows: unknown[]) => {
@@ -326,36 +327,40 @@ describe("team division weight default (today's behaviour)", () => {
     return result.get('t1');
   };
 
-  // The team weight uses `||`, so a stored 0 becomes 0.85 today. This is the
-  // current code, not a decided league rule. The `||` in buildTeamDivisionMaps is
-  // masked by the two `||` where the result is assembled, so a switch to `??`
-  // shows up here only when the map-building line and at least one of the two
-  // assembling lines change together (the two assembling lines alone are not
-  // caught).
+  // The team weight is read in three places: where the map is built, and in the
+  // two fields of the result (teamDivisionWeight and teamData.divisions). They
+  // must change together. If ANY ONE keeps an old `||` default, a stored 0 or a
+  // missing weight turns back into 0.85 in the field it feeds, so every case here
+  // reads BOTH fields. (When the three lines were changed from `||` to `??`,
+  // changing only one of them could not be seen, because the other two turned the
+  // 0 back into 0.85. That is why the three must stay in step.)
   it.each([
-    { label: '0', divisions: { division_weight: 0 } },
     { label: 'null', divisions: { division_weight: null } },
     { label: 'missing', divisions: {} },
     { label: 'absent (no division)', divisions: null },
-  ])(
-    "a team division weight of $label counts as 0.85 (today's behaviour)",
-    async ({ divisions }) => {
-      const data = await fetchTeamWith([{ id: 't1', divisions }]);
+  ])('a team division weight of $label is unrated (null) in both fields', async ({ divisions }) => {
+    const data = await fetchTeamWith([{ id: 't1', divisions }]);
 
-      expect(data?.teamDivisionWeight).toBe(0.85);
-      expect(data?.teamData?.divisions?.division_weight).toBe(0.85);
-    }
-  );
-
-  // The existing missing-team test only checks teamDivisionWeight; this also checks teamData.
-  it("a team with no row at all counts as 0.85 in both weight fields (today's behaviour)", async () => {
-    const data = await fetchTeamWith([]);
-
-    expect(data?.teamDivisionWeight).toBe(0.85);
-    expect(data?.teamData?.divisions?.division_weight).toBe(0.85);
+    expect(data?.teamDivisionWeight).toBeNull();
+    expect(data?.teamData?.divisions?.division_weight).toBeNull();
   });
 
-  it("keeps a positive team division weight (today's behaviour)", async () => {
+  it('keeps a stored team division weight of 0 as 0 in both fields', async () => {
+    const data = await fetchTeamWith([{ id: 't1', divisions: { division_weight: 0 } }]);
+
+    expect(data?.teamDivisionWeight).toBe(0);
+    expect(data?.teamData?.divisions?.division_weight).toBe(0);
+  });
+
+  // The existing missing-team test only checks teamDivisionWeight; this also checks teamData.
+  it('a team with no row at all is unrated (null) in both weight fields', async () => {
+    const data = await fetchTeamWith([]);
+
+    expect(data?.teamDivisionWeight).toBeNull();
+    expect(data?.teamData?.divisions?.division_weight).toBeNull();
+  });
+
+  it('keeps a positive team division weight', async () => {
     const data = await fetchTeamWith([{ id: 't1', divisions: { division_weight: 0.6 } }]);
 
     expect(data?.teamDivisionWeight).toBe(0.6);

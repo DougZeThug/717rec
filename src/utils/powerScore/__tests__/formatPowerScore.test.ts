@@ -8,8 +8,8 @@ describe('formatPowerScore', () => {
     expect(formatPowerScore(score)).toBe('—');
   });
 
-  // v_team_details returns NULL for a team that has not played and for Hidden
-  // teams, so null reaches this helper and used to throw on .toFixed.
+  // v_team_details returns NULL for a team that has not played (no score yet),
+  // so null reaches this helper and used to throw on .toFixed.
   it('returns em dash for null rather than throwing', () => {
     const score: number | null = null;
     expect(() => formatPowerScore(score)).not.toThrow();

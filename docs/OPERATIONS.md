@@ -415,6 +415,10 @@ find the 'opponent1_position' column of 'match'".
 > runbook too: **§6c** below. It changes who holds the King Slayer badge, so
 > read what players will notice before you run it.
 
+> **Applying the unrated-division career bonus** (`20261117120000`) has its own
+> runbook: **§6f** below. **Database first, then merge.** It changes no number
+> today, and it ships a check and a way back.
+
 > **Seasons are created inactive** (`20260826120000_seasons_created_inactive.sql`).
 > One statement, no runbook: it sets `public.seasons.is_active` to default
 > `false`. Existing rows are untouched, so whichever season is active stays
@@ -610,6 +614,9 @@ which restores the previous function body, then re-run the badge recheck block
 at the foot of the newer migration. Note that this puts the badge back on a
 number that disagrees with the screen.
 
+**Since 2026-11-16** a division with no known weight is left out of the bonus
+instead of counting as 0.85. See **§6f**.
+
 ## 6d. Publishing a weekly content pack
 
 Plain-language runbook for **Admin → Weekly Content Pack**. Full behaviour:
@@ -766,3 +773,103 @@ migrations by hand rolls forward again.
 
 `supabase/tests/power_score_ties_excluded.sql` covers the rule in the
 `db-apply-and-smoke` CI job.
+
+## 6f. An unknown division is left out of the career bonus
+
+Doug's rule (2026-11-13): when a division is genuinely unknown, **leave it out of
+the career bonus.** Do not guess a weight. Migration
+`supabase/migrations/20261117120000_unrated_division_career_bonus.sql` does this
+in the database. The app code does the same, so the screen and the King Slayer
+badge keep giving the same number.
+
+A division is **unknown** (unrated) when its name is blank, matches no division,
+or matches a division that has no weight. A weight of 0 is a real weight.
+
+- A title or a runner-up finish in an unknown division adds 0 points. The title
+  still shows in the champion count.
+- An unknown playoff season is left out of the average of the team's other
+  playoff seasons. Only when none of its playoff seasons has a weight is the
+  team's current division used. If the team has no weight either, the playoff
+  win-rate bonus is 0.
+- The cap on the bonus uses the strongest known division. If there is none, it
+  uses the team's current division. If there is none, the whole bonus is 0.
+
+**What players will notice: nothing today.** Every live division has a weight
+and every past division name matches one (live read, 2026-11-13). The rule matters
+the day a division is **renamed**, because past seasons find their weight by the
+division's NAME text. It also matters when an odd name is typed into the History
+editor. A team with a title in an unknown division then loses those points.
+
+### Applying it (Supabase SQL Editor, not Lovable)
+
+**The order matters: database first, then merge the pull request.** The app code
+and the database must give the same number. If the code is merged first, the
+screen and the King Slayer badge can disagree for a team with an unknown division.
+
+1. **Before.** Do two things. Do not score any match between step 1 and step 3.
+   A scored match moves the current-season number and makes the check useless.
+   - Paste the **full** contents of `supabase/scripts/check_unrated_divisions.sql`
+     and Run. It only reads. **Expect 0 rows** ("Success. No rows returned"). At
+     this point it can show teams, brackets and divisions with no weight. It
+     cannot yet show a past season with an unknown name, because the old function
+     still guesses 0.85. The check in step 3 is the real test.
+   - Run this fingerprint and **save the two values** (count and md5):
+
+     ```sql
+     SELECT count(*),
+            md5(string_agg(t.id::text || ':' || round(public.calculate_career_power_score(t.id), 6)::text,
+                           ',' ORDER BY t.id)) AS fingerprint
+     FROM public.teams t;
+     ```
+
+2. **Apply.** Paste the **full** contents of
+   `supabase/migrations/20261117120000_unrated_division_career_bonus.sql` and Run.
+   It is `CREATE OR REPLACE`, so re-running it is safe. It writes no table and
+   re-checks no badge.
+3. **After.** Run the fingerprint again. **The count and the md5 must be
+   identical to step 1.** Then run:
+
+   ```sql
+   SELECT public.resolve_division_bonus_weight('Competitive') AS known,
+          public.resolve_division_bonus_weight('zzz') AS unknown;
+   ```
+
+   `known` shows the live Competitive weight. `unknown` is empty. Run
+   `check_unrated_divisions.sql` again. It must still return 0 rows, and now it
+   also checks the past seasons.
+4. **If the md5 is different, or the check shows a row, stop.** A division is
+   unknown, and a team's score moved. Use "If it needs undoing" below. Read the
+   rows from the check first: they say which season, which team and which name.
+5. **Then merge the pull request.** Nothing looks different on any screen.
+
+### Before you rename a division, or edit a past season
+
+Past titles find their weight by division name. Run
+`check_unrated_divisions.sql` **before** you rename a division and **after** you
+use Edit Divisions on a past season. Any row it returns is a place where the bonus
+has no weight to use. A title or runner-up finish there earns 0 points. An unknown
+playoff season is left out of the average of the team's other playoff seasons.
+Only when none of the team's playoff seasons has a weight is the team's current
+division weight used. The playoff bonus is 0 only if that has no weight either.
+
+One thing the check cannot see: a division with a name of two or more words, such
+as "Competitive Low". If you rename it, old titles quietly use the weight of the
+first word ("Competitive") instead, and nothing is flagged. A one-word name
+(such as "Cuspers") is flagged. Tell the developer before you rename a
+multi-word division.
+
+### If it needs undoing
+
+Paste `supabase/scripts/revert_unrated_division_bonus.sql` and Run. It puts both
+old function bodies back, in one transaction. An unknown division counts as 0.85
+again. It changes no table and does not re-check the badges (that would re-stamp
+their dates). Then revert the pull request, or the next person who applies
+migrations by hand rolls forward again, and the app and the database disagree.
+
+`supabase/tests/career_power_score_parity.sql` covers the rule in the
+`db-apply-and-smoke` CI job. It shares its numbers with
+`src/services/career/__tests__/calculateCareerPowerScore.test.ts`.
+
+One difference is known and left as it is: a division name with a **tab** or a
+**non-breaking space** in it counts as unknown in the database, but the app still
+reads it. Real names do not have these.

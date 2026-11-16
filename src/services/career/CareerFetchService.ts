@@ -218,7 +218,8 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
   const playoffMatches = playoffMatchesResult.data as PlayoffMatchData[] | null;
   const activeSeason = activeSeasonResult.data as { id: string } | null;
 
-  const teamDivisionWeight = teamData?.divisions?.division_weight || DEFAULT_DIVISION_WEIGHT;
+  // No default here: a team with no division or no weight is unrated (null). A stored 0 stays 0.
+  const teamDivisionWeight = teamData?.divisions?.division_weight ?? null;
 
   // The two bracket lookups do not depend on each other, so they run together.
   const bracketIds = uniqueBracketIds(playoffMatches);

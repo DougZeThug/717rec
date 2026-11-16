@@ -1,25 +1,23 @@
 /**
- * TEMPORARY FALLBACK. The career code and the Team page code use this value
- * when a division weight is missing. The career `||` sites (CareerFetchService,
- * CareerBulkFetchService, calculatePlayoffStats) also use it for a stored
- * weight of 0 (and NaN). `resolveDivisionBonusWeight` (divisionBonusWeight.ts)
- * uses it for an unknown or empty division name. It is not an endorsed
- * league-strength value.
+ * TEMPORARY FALLBACK. The bracket and Team page code use this value when a
+ * division weight is missing, and so does the by-id weights cache (match
+ * predictions). It is not an endorsed league-strength value.
  *
- * Per a live read Doug shared on 2026-11-13, no live division weight is 0.85.
- * Doug also decided on 2026-11-13 that a genuinely unknown division must be
- * treated as UNRATED. That means it is left out of the career bonus, like the
- * season Power Score does. That is DECIDED, NOT BUILT (see the corrections log
- * in docs/agents/LEAGUE_CONTEXT.md).
+ * The career bonus does NOT use it any more. There, a blank name, a name that
+ * matches no division, or a division with no weight is UNRATED (null) and adds
+ * 0, like the season Power Score does for an unrated opponent (Doug, 2026-11-13).
+ * See `resolveDivisionBonusWeight` (divisionBonusWeight.ts) and the team weight
+ * in CareerFetchService and CareerBulkFetchService, which keep null now. The SQL
+ * twin of the career bonus follows the same rule: they must change together.
  *
- * Until then:
+ * Where it is still used: the bracket weight (`||` in CareerFetchService and
+ * calculatePlayoffStats, `??` in CareerBulkFetchService), the Team page tier
+ * (teamSeasonStats calculations, mappers and fetchSeasonBreakdown) and the by-id
+ * cache in divisionWeightsCache.
+ *
  * - The value must stay 0.85.
  * - The value must stay BELOW 0.89. That is the competitive-playoff threshold in
  *   calculatePlayoffStats.ts and teamSeasonStats/calculations.ts, and in SQL.
- * - SQL keeps its own copy of 0.85 in the functions
- *   `resolve_division_bonus_weight()` and `calculate_career_power_score()`.
- *   supabase/tests/career_power_score_parity.sql pins it. TypeScript and SQL
- *   must change together.
  * - Two applied migrations have a stale path comment for this constant. A
  *   migration that has run cannot be edited.
  * - The match predictions keep their own copy in

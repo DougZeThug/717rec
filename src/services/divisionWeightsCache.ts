@@ -9,11 +9,13 @@ import { cacheLog } from '@/utils/logger';
 import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
 
 type DivisionWeightsMap = Map<string, number>;
+// By name, a division with no weight stays in the map as null (unrated).
+type DivisionWeightsByNameMap = Map<string, number | null>;
 
 let cachedWeights: DivisionWeightsMap | null = null;
 let cachePromise: Promise<DivisionWeightsMap> | null = null;
-let cachedWeightsByName: DivisionWeightsMap | null = null;
-let namePromise: Promise<DivisionWeightsMap> | null = null;
+let cachedWeightsByName: DivisionWeightsByNameMap | null = null;
+let namePromise: Promise<DivisionWeightsByNameMap> | null = null;
 
 /**
  * Fetch division weights from database (with in-memory caching)
@@ -79,8 +81,11 @@ export const clearDivisionWeightsCache = () => {
 /**
  * Fetch division weights keyed by lowercased division NAME (with caching).
  * Used where only a historical division name is available (career bonuses).
+ * A division with no weight is KEPT as null, not defaulted and not dropped. The
+ * career resolver reads null as "unrated"; a dropped entry would let it fall
+ * through to a base tier word and give that division's weight instead.
  */
-export const fetchDivisionWeightsByName = (): Promise<DivisionWeightsMap> => {
+export const fetchDivisionWeightsByName = (): Promise<DivisionWeightsByNameMap> => {
   if (cachedWeightsByName) return Promise.resolve(cachedWeightsByName);
   if (namePromise) return namePromise;
 
@@ -88,10 +93,10 @@ export const fetchDivisionWeightsByName = (): Promise<DivisionWeightsMap> => {
     try {
       const data = await DivisionService.fetchDivisionWeightsMap();
 
-      const weights = new Map<string, number>();
+      const weights = new Map<string, number | null>();
       data.forEach((div) => {
         if (!div.name) return;
-        weights.set(div.name.trim().toLowerCase(), div.division_weight ?? DEFAULT_DIVISION_WEIGHT);
+        weights.set(div.name.trim().toLowerCase(), div.division_weight ?? null);
       });
 
       if (weights.size > 0) {

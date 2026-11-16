@@ -2,6 +2,7 @@ import { CareerQueryService } from '@/services/career/CareerQueryService';
 import { fetchDivisionWeightsByName } from '@/services/divisionWeightsCache';
 import {
   averageDivisionBonusWeight,
+  maxDivisionBonusWeight,
   resolveDivisionBonusWeight,
 } from '@/utils/career/divisionBonusWeight';
 
@@ -28,7 +29,9 @@ interface CareerPowerScoreInput {
   careerPlayoffWins: number;
   careerPlayoffLosses: number;
   competitivePlayoffWins: number;
-  teamDivisionWeight: number;
+  // The team's current division weight. null = no division or no weight (unrated).
+  // A stored 0 is a real 0.
+  teamDivisionWeight: number | null;
   // Division names of the seasons the team actually reached the playoffs in.
   // Used so an old playoff run is rated by the division it happened in,
   // not by the division the team sits in today.
@@ -138,49 +141,53 @@ const calculateBaseCareerScore = (
 /**
  * Bonus for a list of finishes (titles or runner-ups). Each one earns
  * `points` scaled by the SQUARED live weight of the division it happened in,
- * so soft-field finishes cannot out-earn a hard schedule.
+ * so soft-field finishes cannot out-earn a hard schedule. A finish in an
+ * unrated division (blank, unknown, or no weight) earns 0.
  */
 const sumSquaredWeightBonus = (
   divisions: string[],
   points: number,
-  weightsByName: Map<string, number>
+  weightsByName: Map<string, number | null>
 ): number => {
   let bonus = 0;
   for (const divName of divisions) {
     const weight = resolveDivisionBonusWeight(divName, weightsByName);
+    if (weight === null) continue;
     bonus += points * weight * weight;
   }
   return bonus;
 };
 
-/** Win-rate bonus above 50%, scaled by the weight of the divisions the playoff runs happened in. */
+/**
+ * Win-rate bonus above 50%, scaled by the weight of the divisions the playoff runs happened in.
+ * With no weight to scale by (null) the bonus is 0. The win rate still counts every playoff match.
+ */
 const calculateOtherPlayoffBonus = (
   playoffWins: number,
   playoffLosses: number,
-  playoffWeight: number
+  playoffWeight: number | null
 ): number => {
+  if (playoffWeight === null) return 0;
   const totalPlayoffMatches = playoffWins + playoffLosses;
   const playoffWinRate = totalPlayoffMatches > 0 ? playoffWins / totalPlayoffMatches : 0;
   return Math.max(0, (playoffWinRate - 0.5) * 4 * playoffWeight);
 };
 
 /**
- * Total bonus cap, scaled by the strongest division the team earned bonuses in.
+ * Total bonus cap, scaled by the strongest RATED division the team earned bonuses in.
  * This prevents a pile of soft-division titles from reaching the same ceiling as
- * a Competitive championship. If no bonus-qualifying divisions exist, fall back to
- * the team's current division weight so the cap is still tied to a real division.
+ * a Competitive championship. If no rated bonus division exists, fall back to the
+ * team's current division weight so the cap is still tied to a real division. If
+ * that is unrated too, the cap is 0: the whole bonus is 0.
  */
 const calculateBonusCap = (
   bonusDivisionNames: string[],
-  teamDivisionWeight: number,
-  weightsByName: Map<string, number>
+  teamDivisionWeight: number | null,
+  weightsByName: Map<string, number | null>
 ): number => {
   const maxBonusWeight =
-    bonusDivisionNames.length > 0
-      ? Math.max(
-          ...bonusDivisionNames.map((name) => resolveDivisionBonusWeight(name, weightsByName))
-        )
-      : teamDivisionWeight;
+    maxDivisionBonusWeight(bonusDivisionNames, weightsByName) ?? teamDivisionWeight;
+  if (maxBonusWeight === null) return 0;
   return 15 * maxBonusWeight * maxBonusWeight;
 };
 
@@ -191,6 +198,9 @@ const calculateBonusCap = (
  * Title and runner-up bonuses are scaled by the SQUARE of the live division
  * weight, so a title won in a soft field cannot out-earn a strong record made
  * against a hard schedule. Weights always come from the `divisions` table.
+ * A title, runner-up or playoff run in a division with no known weight (blank
+ * name, no matching division, or a division with no weight) is unrated: it adds
+ * 0 instead of a guessed weight. The SQL twin follows the same rule.
  *
  * The total bonus cap is also scaled by the strongest division the team earned
  * bonuses in, so three soft-division titles do not reach the same maximum as a
@@ -239,8 +249,9 @@ export const calculateCareerPowerScore = async ({
   // Runner-up bonus — same squared scaling
   const runnerUpBonus = sumSquaredWeightBonus(runnerUpDivisions, 4, weightsByName);
 
-  // Playoff performance bonus — rated by the divisions the playoff runs actually
-  // happened in, falling back to the team's current division weight.
+  // Playoff performance bonus — rated by the RATED divisions the playoff runs
+  // actually happened in, falling back to the team's current division weight.
+  // If neither is rated, the playoff win-rate bonus is 0.
   const playoffWeight =
     averageDivisionBonusWeight(playoffDivisions ?? [], weightsByName) ?? teamDivisionWeight;
   const otherPlayoffBonus = calculateOtherPlayoffBonus(

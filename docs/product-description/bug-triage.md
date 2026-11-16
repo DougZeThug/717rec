@@ -1944,6 +1944,8 @@ finding read a superseded migration.
   the playoff rate weighted by the divisions the runs happened in, a competitive
   threshold of 0.89, and `career_power_score` falling back to `power_score`.
   Migration `supabase/migrations/20260901120000_career_power_score_match_app.sql`.
+  (history: superseded 2026-11-16, see the unrated division rule: the 0.85
+  default is gone from the career bonus.)
 - **Corrected on review — the entry names a dead file.**
   `20260225200000_fix-badge-logic.sql` was replaced twice by `CREATE OR REPLACE`
   on the same signature and has not been the live definition since 2026-03-10.
