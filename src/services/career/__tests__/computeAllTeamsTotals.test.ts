@@ -121,6 +121,88 @@ describe('computeAllTeamsTotals', () => {
     expect(t1?.playoff_finishes[0].season_name).toBe('Spring 2025');
   });
 
+  // A season row with no division name, or no season row to name it, still
+  // counts as a title, a runner-up and a playoff finish. The finish reads
+  // "Unknown" and "Unknown Season". A blank division is unrated (Doug,
+  // 2026-11-13), so the finish adds nothing to the career score: the team with
+  // the honours scores exactly what the same team without them scores.
+  it('names a finish in a season with no division name "Unknown" and gives it no bonus', async () => {
+    // A live rated name beside the fixture's "premier": a fallback that turned a
+    // blank division into a RATED name (say "Competitive") would earn a bonus,
+    // change the score, and fail the last assertion.
+    mockFetchDivisionWeightsByName.mockResolvedValue(
+      new Map([
+        ['premier', 1],
+        ['competitive', 1],
+      ])
+    );
+    const seasonsFor = (id: string, honours: boolean) => [
+      {
+        team_id: id,
+        season_id: 'season-1',
+        champion: honours,
+        runner_up: false,
+        playoff_rank: honours ? 1 : null,
+        sos: 0.5,
+        division_name: null,
+        power_score: 0.7,
+        career_power_score: 0.68,
+        match_wins: 8,
+        match_losses: 2,
+        seasons: null,
+      },
+      {
+        team_id: id,
+        season_id: 'season-2',
+        champion: false,
+        runner_up: honours,
+        playoff_rank: honours ? 2 : null,
+        sos: 0.45,
+        division_name: '',
+        power_score: 0.6,
+        career_power_score: 0.59,
+        match_wins: 6,
+        match_losses: 4,
+        seasons: { name: 'Autumn 2025' },
+      },
+    ];
+    const bulkWith = (id: string, honours: boolean) => {
+      const rows = seasonsFor(id, honours);
+      return {
+        ...bulkFor(id),
+        seasonStats: rows,
+        seasonPowerScores: rows.map((row) => ({
+          power_score: row.power_score,
+          career_power_score: row.career_power_score,
+          match_wins: row.match_wins,
+          match_losses: row.match_losses,
+          season_id: row.season_id,
+        })),
+      } as unknown as BulkTeamCareerData;
+    };
+    mockFetchAllTeamsCareerData.mockResolvedValue(
+      new Map([
+        ['t1', bulkWith('t1', true)],
+        ['t2', bulkWith('t2', false)],
+      ])
+    );
+
+    const result = await computeAllTeamsTotals([team('t1'), team('t2')]);
+
+    const honoured = result.get('t1');
+    const plain = result.get('t2');
+    expect(honoured?.championships).toBe(1);
+    expect(honoured?.runner_ups).toBe(1);
+    expect(honoured?.playoff_finishes).toEqual([
+      { rank: 1, season_name: 'Unknown Season', division_name: 'Unknown' },
+      { rank: 2, season_name: 'Autumn 2025', division_name: 'Unknown' },
+    ]);
+    expect(plain?.championships).toBe(0);
+    expect(plain?.playoff_finishes).toEqual([]);
+    expect(honoured?.career_power_score).toBeGreaterThan(0);
+    expect(honoured?.career_power_score).toBe(plain?.career_power_score);
+  });
+
   // The defect. The division-weights read is memoised behind one shared
   // promise, so a single failure rejects for every team at once. Each rejection
   // was caught, logged, and the team quietly dropped — leaving an empty Map
