@@ -604,6 +604,44 @@ describe('calculateCareerPowerScore', () => {
 
       expect(result).toBeCloseTo(50, 4);
     });
+
+    // Fixture 16: a PLAYOFF season can set the cap. The title and the runner-up
+    // finish are in Intermediate High (0.70); the only Competitive (1.00) row is a
+    // playoff season. 16 playoff wins, all competitive wins. Sum: 3.43 + 1.96 +
+    // 2 (win rate x 1.00) + 8 = 15.39. Cap: 15 x 1.00^2 = 15 (binds). Total 65. A
+    // cap that ignored playoff seasons would be 7.35 and give 57.35.
+    it('fixture 16: a playoff season can set the cap', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['Intermediate High'],
+        runnerUpDivisions: ['Intermediate High'],
+        careerPlayoffWins: 16,
+        competitivePlayoffWins: 16,
+        playoffDivisions: ['Competitive'],
+        prefetchedSeasonStats: [season('p1'), season('p2'), season('p3')],
+      });
+
+      expect(result).toBeCloseTo(65, 4);
+    });
+
+    // Fixture 17: the playoff weight is the AVERAGE of the rated playoff seasons.
+    // Team weight 0.50; playoff seasons Competitive (1.00) and Intermediate High
+    // (0.70); 9 wins and 1 loss, none competitive. Weight (1.00 + 0.70) / 2 = 0.85,
+    // bonus (0.9 - 0.5) x 4 x 0.85 = 1.36, total 51.36. The highest weight would
+    // give 51.6, the lowest 51.12 and the team weight 50.8.
+    it('fixture 17: the playoff weight is the average of the rated playoff seasons', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: [],
+        teamDivisionWeight: 0.5,
+        careerPlayoffWins: 9,
+        careerPlayoffLosses: 1,
+        playoffDivisions: ['Competitive', 'Intermediate High'],
+        prefetchedSeasonStats: [season('p1'), season('p2')],
+      });
+
+      expect(result).toBeCloseTo(51.36, 4);
+    });
   });
 });
 

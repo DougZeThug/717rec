@@ -20,8 +20,10 @@
 -- 0). Fixtures 5 onward pin the unrated-division rule
 -- (20261117120000_unrated_division_career_bonus.sql): a division with no known
 -- weight is left out of the bonus instead of counting as 0.85. Fixture 5 was
--- 55.0575 and fixture 6 was 58.4875 before that rule. Fixture 14 pins the cap as
--- the HIGHEST rated weight (a known-division case: old and new functions agree).
+-- 55.0575 and fixture 6 was 58.4875 before that rule. Fixtures 14, 16 and 17 are
+-- known-division cases (old and new functions agree): 14 pins the cap as the
+-- HIGHEST rated weight, 16 that a playoff season can set the cap, and 17 that
+-- the playoff weight is the AVERAGE of the rated playoff seasons.
 --
 -- Everything runs inside one rolled-back transaction.
 
@@ -51,6 +53,8 @@ DECLARE
   v_team_opp uuid   := '00000000-0000-0000-0000-0000000cb40e';
   v_team_n uuid     := '00000000-0000-0000-0000-0000000cb40f';
   v_team_o uuid     := '00000000-0000-0000-0000-0000000cb410';
+  v_team_p uuid     := '00000000-0000-0000-0000-0000000cb411';
+  v_team_q uuid     := '00000000-0000-0000-0000-0000000cb412';
   -- Probe divisions, with names no real division has.
   v_div_zero uuid   := '00000000-0000-0000-0000-0000000cb501';
   v_div_null uuid   := '00000000-0000-0000-0000-0000000cb502';
@@ -71,10 +75,10 @@ BEGIN
   DELETE FROM public.brackets WHERE id IN (v_bracket_comp, v_bracket_none);
   DELETE FROM public.team_season_stats WHERE team_id IN
     (v_team_a, v_team_b, v_team_c, v_team_d, v_team_e, v_team_f, v_team_g, v_team_h,
-     v_team_i, v_team_j, v_team_k, v_team_l, v_team_m, v_team_opp, v_team_n, v_team_o);
+     v_team_i, v_team_j, v_team_k, v_team_l, v_team_m, v_team_opp, v_team_n, v_team_o, v_team_p, v_team_q);
   DELETE FROM public.teams WHERE id IN
     (v_team_a, v_team_b, v_team_c, v_team_d, v_team_e, v_team_f, v_team_g, v_team_h,
-     v_team_i, v_team_j, v_team_k, v_team_l, v_team_m, v_team_opp, v_team_n, v_team_o);
+     v_team_i, v_team_j, v_team_k, v_team_l, v_team_m, v_team_opp, v_team_n, v_team_o, v_team_p, v_team_q);
   DELETE FROM public.divisions WHERE id IN
     (v_div_zero, v_div_null, v_div_half, v_div_word, v_div_word_null, v_div_root_null);
   DELETE FROM public.seasons WHERE id IN (v_season_1, v_season_2, v_season_3);
@@ -229,6 +233,8 @@ BEGIN
     (v_team_m,   'Parity M', v_div_comp),
     (v_team_n,   'Parity N', v_div_comp),
     (v_team_o,   'Parity O', v_div_comp),
+    (v_team_p,   'Parity P', v_div_comp),
+    (v_team_q,   'Parity Q', v_div_half),
     (v_team_opp, 'Parity Opponent', v_div_comp);
 
   INSERT INTO public.brackets (id, title, format, state, division_id, season_id, uses_brackets_manager) VALUES
@@ -525,6 +531,79 @@ BEGIN
   v_score := public.calculate_career_power_score(v_team_o);
   IF round(v_score, 4) <> 50.0000 THEN
     RAISE EXCEPTION 'Fixture 15: expected 50 (base word with no weight is unrated), got %', v_score;
+  END IF;
+
+  -- ────────────────────────────────────────────────────────────────────────
+  -- Fixture 16 — a PLAYOFF season can set the cap.
+  --
+  -- Parity P's only Competitive (1.00) row is a playoff season: it was never
+  -- champion or runner-up there. Its title and runner-up finish are both in
+  -- Intermediate High (0.70). The cap takes the strongest division across titles,
+  -- runner-ups AND playoff seasons, and the bonus is large enough to bind:
+  --
+  --   title     = 7 x 0.70^2                =  3.43
+  --   runner-up = 4 x 0.70^2                =  1.96
+  --   win rate  = (1.0 - 0.5) x 4 x 1.00    =  2     (16-0; the one playoff
+  --                                                  season is Competitive)
+  --   competitive wins = 16 x 0.5           =  8
+  --   sum                                   = 15.39
+  --   cap = 15 x 1.00^2 = 15                (binds)  -> total 50 + 15 = 65
+  --   (a cap that ignored playoff seasons would be 15 x 0.70^2 = 7.35 -> 57.35)
+  --
+  -- Every division is known, so the old function gives the same 65.
+  -- ────────────────────────────────────────────────────────────────────────
+  INSERT INTO public.team_season_stats
+    (season_id, team_id, match_wins, match_losses, game_wins, game_losses,
+     division_name, power_score, career_power_score, champion, runner_up, playoff_rank)
+  VALUES
+    (v_season_1, v_team_p, 5, 5, 10, 10, 'Intermediate High', 0.50, 0.50, true,  false, NULL),
+    (v_season_2, v_team_p, 5, 5, 10, 10, 'Intermediate High', 0.50, 0.50, false, true,  NULL),
+    (v_season_3, v_team_p, 5, 5, 10, 10, 'Competitive',       0.50, 0.50, false, false, 3);
+
+  INSERT INTO public.playoff_matches
+    (bracket_id, match_type, round, position, status, team1_id, team2_id, winner_id, loser_id)
+  SELECT v_bracket_comp, 'winners', 5, n, 'completed', v_team_p, v_team_opp, v_team_p, v_team_opp
+  FROM generate_series(1, 16) AS n;
+
+  v_score := public.calculate_career_power_score(v_team_p);
+  IF round(v_score, 4) <> 65.0000 THEN
+    RAISE EXCEPTION 'Fixture 16: expected 65 (a playoff season sets the cap), got %', v_score;
+  END IF;
+
+  -- ────────────────────────────────────────────────────────────────────────
+  -- Fixture 17 — the playoff weight is the AVERAGE of the rated playoff seasons.
+  --
+  -- Parity Q sits in a 0.50 division and reached the playoffs in two rated
+  -- seasons with different weights: Competitive (1.00) and Intermediate High
+  -- (0.70). It won 9 playoff matches and lost 1, none of them competitive wins.
+  -- No title and no runner-up, so the bonus is small and the cap (15) does not
+  -- bind:
+  --
+  --   playoff weight = (1.00 + 0.70) / 2    =  0.85   (not 1.00, 0.70 or 0.50)
+  --   win rate       = 9 / 10 = 0.9
+  --   bonus          = (0.9 - 0.5) x 4 x 0.85 = 1.36
+  --   total          = 51.36
+  --   (the highest weight would give 1.60, the lowest 1.12, the team weight 0.80)
+  --
+  -- Every division is known, so the old function gives the same 51.36.
+  -- ────────────────────────────────────────────────────────────────────────
+  INSERT INTO public.team_season_stats
+    (season_id, team_id, match_wins, match_losses, game_wins, game_losses,
+     division_name, power_score, career_power_score, champion, runner_up, playoff_rank)
+  VALUES
+    (v_season_1, v_team_q, 5, 5, 10, 10, 'Competitive',       0.50, 0.50, false, false, 1),
+    (v_season_2, v_team_q, 5, 5, 10, 10, 'Intermediate High', 0.50, 0.50, false, false, 2);
+
+  INSERT INTO public.playoff_matches
+    (bracket_id, match_type, round, position, status, team1_id, team2_id, winner_id, loser_id)
+  SELECT v_bracket_none, 'winners', 4, n, 'completed', v_team_q, v_team_opp,
+         CASE WHEN n <= 9 THEN v_team_q ELSE v_team_opp END,
+         CASE WHEN n <= 9 THEN v_team_opp ELSE v_team_q END
+  FROM generate_series(1, 10) AS n;
+
+  v_score := public.calculate_career_power_score(v_team_q);
+  IF round(v_score, 4) <> 51.3600 THEN
+    RAISE EXCEPTION 'Fixture 17: expected 51.36 (playoff weight is the average, 0.85), got %', v_score;
   END IF;
 
   -- ────────────────────────────────────────────────────────────────────────
