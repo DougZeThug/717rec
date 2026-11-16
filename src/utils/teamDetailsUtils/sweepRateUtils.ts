@@ -40,12 +40,11 @@ export const calculateSweepRate = (teamId: string, matches: Match[] | undefined)
     if (match.team1Id === teamId) {
       // Team won as team1, check if team2 got 0 game wins
       return match.team2_game_wins === 0 && match.team1_game_wins === 2;
-    } else if (match.team2Id === teamId) {
-      // Team won as team2, check if team1 got 0 game wins
+    } else {
+      // Team won as team2 (the filter above keeps only matches this team played),
+      // check if team1 got 0 game wins
       return match.team1_game_wins === 0 && match.team2_game_wins === 2;
     }
-
-    return false;
   }).length;
 
   const sweepRate = (sweeps / totalMatches) * 100;
