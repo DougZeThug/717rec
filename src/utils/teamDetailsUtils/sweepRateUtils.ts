@@ -9,9 +9,11 @@ export const calculateSweepRate = (teamId: string, matches: Match[] | undefined)
     };
   }
 
-  // Filter for completed matches involving this team
+  // Filter for completed matches involving this team. A completed match with no
+  // winner is a tie and stays out, so the bottom number is wins plus losses.
   const completedMatches = matches.filter(
-    (match) => match.iscompleted && (match.team1Id === teamId || match.team2Id === teamId)
+    (match) =>
+      match.iscompleted && match.winnerId && (match.team1Id === teamId || match.team2Id === teamId)
   );
 
   const totalMatches = completedMatches.length;
