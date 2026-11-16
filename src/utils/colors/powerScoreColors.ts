@@ -3,12 +3,10 @@
 
 // Power score utilities - expects 0-100 scale input (database view returns 0-100)
 
-export const formatPowerScore = (score: number | null | undefined): string => {
-  if (score === null || score === undefined) {
-    return '—';
-  }
-  return score.toFixed(1);
-};
+// One formatter for the whole app. It lives next to `getDisplayedPowerScore`,
+// which sorting uses and which must round exactly the way this prints. It is
+// re-exported here so the existing `@/utils/colors` import paths keep working.
+export { formatPowerScore } from '@/utils/powerScore/formatPowerScore';
 
 // The floors of the eight bands the helpers below share, highest first.
 // Exported so a legend can list the bands without restating the thresholds.
