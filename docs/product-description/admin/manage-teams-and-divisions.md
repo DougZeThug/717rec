@@ -128,11 +128,20 @@ with a tooltip explaining why.
 division, or type a new division name for a team with **Edit Divisions** on a
 past season (History page), any title or runner-up finish saved under the old
 name no longer matches a division. The career bonus then leaves it out: it earns
-0 points. A playoff run saved under the old name is scored by the team's current
-division instead. Run the unrated-division check
+0 points. A playoff season saved under the old name is left out of the average of
+the team's other playoff seasons. Only when none of the team's playoff seasons has
+a weight is the team's current division used, and the playoff bonus is 0 only if
+that has no weight either. Run the unrated-division check
 (`supabase/scripts/check_unrated_divisions.sql`, steps in
 [`OPERATIONS.md`](../../OPERATIONS.md) section 6f) before a rename and after Edit
 Divisions on a past season.
+
+**The check cannot see every rename.** If the division has a name of two or more
+words (for example Competitive Low), renaming it does **not** make its old titles
+unrated. They silently take the weight of the first word instead: 1.00 for
+"Competitive" in place of 0.95. Nothing is flagged. Tell the developer before you
+rename a multi-word division. A one-word division (for example Cuspers) does become
+unrated when renamed, and the check flags it.
 
 ### Submit
 

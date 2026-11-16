@@ -787,8 +787,10 @@ or matches a division that has no weight. A weight of 0 is a real weight.
 
 - A title or a runner-up finish in an unknown division adds 0 points. The title
   still shows in the champion count.
-- A playoff run in only unknown seasons is rated by the team's current division.
-  If the team has no weight either, the playoff win-rate bonus is 0.
+- An unknown playoff season is left out of the average of the team's other
+  playoff seasons. Only when none of its playoff seasons has a weight is the
+  team's current division used. If the team has no weight either, the playoff
+  win-rate bonus is 0.
 - The cap on the bonus uses the strongest known division. If there is none, it
   uses the team's current division. If there is none, the whole bonus is 0.
 
@@ -845,8 +847,10 @@ screen and the King Slayer badge can disagree for a team with an unknown divisio
 Past titles find their weight by division name. Run
 `check_unrated_divisions.sql` **before** you rename a division and **after** you
 use Edit Divisions on a past season. Any row it returns is a place where the bonus
-has no weight to use. A title or runner-up finish there earns 0 points. A playoff
-run there is scored by the team's current division instead.
+has no weight to use. A title or runner-up finish there earns 0 points. An unknown
+playoff season is left out of the average of the team's other playoff seasons.
+Only when none of the team's playoff seasons has a weight is the team's current
+division weight used. The playoff bonus is 0 only if that has no weight either.
 
 One thing the check cannot see: a division with a name of two or more words, such
 as "Competitive Low". If you rename it, old titles quietly use the weight of the
