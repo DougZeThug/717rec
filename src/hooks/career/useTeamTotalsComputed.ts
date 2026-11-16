@@ -1,21 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { calculateCareerPowerScore } from '@/services/career/calculateCareerPowerScore';
 import { fetchCareerData } from '@/services/career/CareerService';
-import {
-  calculateCareerClutchRate,
-  calculateCareerMatchStats,
-  calculateCareerSOS,
-  calculateDivisionRecords,
-  calculatePlayoffStats,
-  calculateSweepRate,
-} from '@/utils/career';
-import { calculatePlayoffConsistency } from '@/utils/career/calculatePlayoffNarratives';
-import { PlayoffFinish, TeamTotals } from '@/utils/career/types';
+import { computeTotalsFromCareerData } from '@/services/career/computeAllTeamsTotals';
+import { TeamTotals } from '@/utils/career/types';
 
 /**
  * Computes team career totals from raw career data.
- * Uses parallel database fetch + pure calculation functions.
+ * Uses a database fetch + the shared calculation core (the same one the career
+ * rankings use, see computeTotalsFromCareerData).
  */
 const computeTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
   const careerData = await fetchCareerData(teamId);
@@ -24,130 +16,10 @@ const computeTeamTotals = async (teamId: string): Promise<TeamTotals | null> => 
     return null;
   }
 
-  const {
-    seasonStats,
-    currentMatches,
-    archivedMatches,
-    playoffMatches,
-    teamDivisionMap,
-    bracketDivisionWeights,
-    bracketDivisionDisplayNames,
-    bracketSeasonMap,
-    teamDivisionWeight,
-    currentSeasonId,
-  } = careerData;
-
-  // Calculate career match stats (exclude current season from seasonStats to avoid double-counting)
-  const matchStats = calculateCareerMatchStats({
-    seasonStats,
-    currentMatches,
-    teamId,
-    currentSeasonId,
-    playoffMatches,
-    bracketSeasonMap,
-  });
-
-  // Calculate playoff stats
-  const playoffStats = calculatePlayoffStats({
-    playoffMatches,
-    bracketDivisionWeights,
-    teamId,
-  });
-
-  // Calculate total matches for sweep rate.
-  // career_match_wins/losses already includes playoff matches (via the
-  // v_team_season_agg view for historical seasons and explicit addition
-  // for the current season), so we must NOT add career_playoff_* again.
-  const totalMatches = matchStats.career_match_wins + matchStats.career_match_losses;
-
-  // Combine regular matches for sweep calculation
-  const regularMatches = [
-    ...(Array.isArray(currentMatches) ? currentMatches : []),
-    ...(Array.isArray(archivedMatches) ? archivedMatches : []),
-  ];
-
-  // Calculate sweep rate
-  const sweepStats = calculateSweepRate({
-    regularMatches,
-    playoffMatches,
-    teamId,
-    totalMatches,
-  });
-
-  // Calculate career clutch rate
-  const clutchStats = calculateCareerClutchRate({
-    regularMatches,
-    playoffMatches,
-    teamId,
-  });
-
-  // Calculate career SOS
-  const career_sos = calculateCareerSOS(seasonStats);
-
-  // Calculate division records
-  const division_records = calculateDivisionRecords({
-    currentMatches,
-    archivedMatches,
-    playoffMatches,
-    teamDivisionMap,
-    bracketDivisionWeights,
-    bracketDivisionDisplayNames,
-    teamId,
-  });
-
-  // Count championships and runner-ups with their historical division names
-  const championships = seasonStats?.filter((stat) => stat.champion).length || 0;
-  const runner_ups = seasonStats?.filter((stat) => stat.runner_up).length || 0;
-
-  // Extract division names for championships and runner-ups
-  const championshipDivisions =
-    seasonStats?.filter((stat) => stat.champion).map((stat) => stat.division_name || 'Unknown') ||
-    [];
-
-  const runnerUpDivisions =
-    seasonStats?.filter((stat) => stat.runner_up).map((stat) => stat.division_name || 'Unknown') ||
-    [];
-
-  // Get playoff finishes (sorted by rank)
-  const playoff_finishes: PlayoffFinish[] =
-    seasonStats
-      ?.filter((stat): stat is typeof stat & { playoff_rank: number } => stat.playoff_rank != null)
-      .map((stat) => ({
-        rank: stat.playoff_rank,
-        season_name: stat.seasons?.name || 'Unknown Season',
-        division_name: stat.division_name || 'Unknown',
-      }))
-      .sort((a, b) => a.rank - b.rank) || [];
-
-  // Calculate career power score (requires database access)
-  const career_power_score = await calculateCareerPowerScore({
-    teamId,
-    championshipDivisions,
-    runnerUpDivisions,
-    careerPlayoffWins: playoffStats.career_playoff_wins,
-    careerPlayoffLosses: playoffStats.career_playoff_losses,
-    competitivePlayoffWins: playoffStats.competitive_playoff_wins,
-    teamDivisionWeight,
-    playoffDivisions: playoff_finishes.map((finish) => finish.division_name),
-    currentSeasonId,
-  });
-
-  // Calculate playoff consistency
-  const playoff_consistency = calculatePlayoffConsistency(seasonStats);
-
-  return {
-    ...matchStats,
-    ...playoffStats,
-    championships,
-    runner_ups,
-    playoff_finishes,
-    career_power_score,
-    ...sweepStats,
-    ...clutchStats,
-    career_sos,
-    division_records,
-    playoff_consistency,
-  };
+  // No prefetched rows on purpose: calculateCareerPowerScore reads the season
+  // rows and the current-team row itself. Do not pass `null` here: it would be
+  // read as "no rows" and drop the season history.
+  return computeTotalsFromCareerData(teamId, careerData);
 };
 
 /**

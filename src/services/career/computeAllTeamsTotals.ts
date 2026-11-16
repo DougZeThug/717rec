@@ -1,5 +1,6 @@
 import { calculateCareerPowerScore } from '@/services/career/calculateCareerPowerScore';
 import { BulkTeamCareerData, fetchAllTeamsCareerData } from '@/services/career/CareerService';
+import type { CareerData } from '@/services/career/CareerTypes';
 import { Team } from '@/types';
 import {
   calculateCareerClutchRate,
@@ -13,24 +14,45 @@ import { calculatePlayoffConsistency } from '@/utils/career/calculatePlayoffNarr
 import { PlayoffFinish, TeamTotals } from '@/utils/career/types';
 import { errorLog } from '@/utils/logger';
 
+interface CurrentTeamPowerData {
+  power_score: number | null;
+  career_power_score?: number | null;
+  wins: number | null;
+  losses: number | null;
+}
+
 /**
- * Computes TeamTotals for a single team from pre-fetched bulk data.
- *
- * Every calculation here is pure except one: calculateCareerPowerScore. The
- * pre-fetched data saves it two queries, but it still reads the live division
- * weights, so it can throw — and it throws for every team at once, because they
- * all await the same memoised fetch. computeAllTeamsTotals below is where that
- * matters.
+ * The two rows calculateCareerPowerScore reads from the database unless it is
+ * handed them. Either BOTH are given or NEITHER is.
  */
-export async function computeTotalsFromBulkData(
+interface PrefetchedPowerData {
+  prefetchedSeasonStats: BulkTeamCareerData['seasonPowerScores'];
+  prefetchedCurrentTeamData: CurrentTeamPowerData | null;
+}
+
+/**
+ * Computes TeamTotals for one team from its career data. This is the ONE copy
+ * of the arithmetic: the bulk path below (computeTotalsFromBulkData, behind the
+ * career rankings) and the Team page hook (useTeamTotalsComputed) both call it.
+ *
+ * `prefetched` is the only thing the two callers do differently. The bulk path
+ * already holds the season rows and the current-team row, so it hands them over
+ * and calculateCareerPowerScore skips its two queries. The hook passes NOTHING,
+ * and the function reads them itself. Do not pass `null` for "nothing" (and do
+ * not write `?? null` on the way in): calculateCareerPowerScore uses prefetched
+ * data only when BOTH arguments are not `undefined`, so `null` reads as "this
+ * team has no rows" and silently drops the whole season history.
+ * careerTotalsPaths.test.ts pins this.
+ *
+ * Every calculation here is pure except one: calculateCareerPowerScore. It
+ * still reads the live division weights, so it can throw — and it throws for
+ * every team at once, because they all await the same memoised fetch.
+ * computeAllTeamsTotals below is where that matters.
+ */
+export async function computeTotalsFromCareerData(
   teamId: string,
-  data: BulkTeamCareerData,
-  currentTeamPowerData: {
-    power_score: number | null;
-    career_power_score?: number | null;
-    wins: number | null;
-    losses: number | null;
-  } | null
+  data: CareerData,
+  prefetched?: PrefetchedPowerData
 ): Promise<TeamTotals> {
   const {
     seasonStats,
@@ -43,7 +65,6 @@ export async function computeTotalsFromBulkData(
     bracketSeasonMap,
     teamDivisionWeight,
     currentSeasonId,
-    seasonPowerScores,
   } = data;
 
   // Calculate career match stats
@@ -119,7 +140,7 @@ export async function computeTotalsFromBulkData(
       }))
       .sort((a, b) => a.rank - b.rank) || [];
 
-  // Pass pre-fetched data so calculateCareerPowerScore skips its 2 DB queries
+  // With pre-fetched data calculateCareerPowerScore skips its 2 DB queries
   const career_power_score = await calculateCareerPowerScore({
     teamId,
     championshipDivisions,
@@ -130,8 +151,7 @@ export async function computeTotalsFromBulkData(
     teamDivisionWeight,
     playoffDivisions: playoff_finishes.map((finish) => finish.division_name),
     currentSeasonId,
-    prefetchedSeasonStats: seasonPowerScores,
-    prefetchedCurrentTeamData: currentTeamPowerData,
+    ...prefetched,
   });
 
   const playoff_consistency = calculatePlayoffConsistency(seasonStats);
@@ -149,6 +169,23 @@ export async function computeTotalsFromBulkData(
     division_records,
     playoff_consistency,
   };
+}
+
+/**
+ * Computes TeamTotals for a single team from pre-fetched bulk data. It hands the
+ * bulk fetch's season rows and the Teams list's current-team row to the shared
+ * core, so calculateCareerPowerScore skips its two queries. A team with no
+ * current row passes `null`, which the function reads as "no rows".
+ */
+export function computeTotalsFromBulkData(
+  teamId: string,
+  data: BulkTeamCareerData,
+  currentTeamPowerData: CurrentTeamPowerData | null
+): Promise<TeamTotals> {
+  return computeTotalsFromCareerData(teamId, data, {
+    prefetchedSeasonStats: data.seasonPowerScores,
+    prefetchedCurrentTeamData: currentTeamPowerData,
+  });
 }
 
 /**
