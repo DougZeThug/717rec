@@ -149,7 +149,8 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     if (!isTeamArray(allTeams)) return [];
 
     // Best first, the order the saved bracket seeds the teams. Sort a copy: the
-    // list belongs to the parent. The badge below reads this position.
+    // list belongs to the parent. The Select tab "#" no longer reads the seed set
+    // below. A team's stored seed, when it has one, is what Manage Seeds shows.
     return [...allTeams].sort(compareTeamsBestFirst).map((team, index) => ({
       id: team.id,
       name: team.name || 'Unnamed Team',
