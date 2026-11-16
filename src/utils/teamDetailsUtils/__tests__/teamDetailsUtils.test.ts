@@ -85,6 +85,80 @@ describe('teamDetails utilities', () => {
     });
   });
 
+  // A tie is a completed match with no winner. Win % and the Career sweep rate already
+  // leave it out, so the Team page sweep rate does too.
+  it('leaves a tied match out of the sweep rate bottom number', () => {
+    const matches: Match[] = [
+      {
+        id: 'm1',
+        iscompleted: true,
+        team1Id: 'team-a',
+        team2Id: 'team-b',
+        winnerId: 'team-a',
+        loserId: 'team-b',
+        team1_game_wins: 2,
+        team2_game_wins: 0,
+      },
+      {
+        id: 'm2',
+        iscompleted: true,
+        team1Id: 'team-c',
+        team2Id: 'team-a',
+        winnerId: 'team-a',
+        loserId: 'team-c',
+        team1_game_wins: 0,
+        team2_game_wins: 2,
+      },
+      {
+        id: 'm3',
+        iscompleted: true,
+        team1Id: 'team-a',
+        team2Id: 'team-d',
+        team1_game_wins: 1,
+        team2_game_wins: 1,
+      },
+      {
+        id: 'm4',
+        iscompleted: true,
+        team1Id: 'team-a',
+        team2Id: 'team-e',
+        winnerId: 'team-e',
+        loserId: 'team-a',
+        team1_game_wins: 0,
+        team2_game_wins: 2,
+      },
+    ];
+
+    // 2 sweeps out of 3 decided matches. The tie is not in the bottom number.
+    const result = calculateSweepRate('team-a', matches);
+    expect(result.sweeps).toBe(2);
+    expect(result.totalMatches).toBe(3);
+    expect(result.sweepRate).toBeCloseTo(66.67, 2);
+
+    // A team with no tie keeps the same number as before.
+    const withoutTie = matches.filter((match) => match.id !== 'm3');
+    expect(calculateSweepRate('team-a', withoutTie)).toEqual(result);
+  });
+
+  it('reports a zero sweep rate when every completed match was a tie', () => {
+    const matches: Match[] = [
+      {
+        id: 'm1',
+        iscompleted: true,
+        team1Id: 'team-a',
+        team2Id: 'team-b',
+        team1_game_wins: 1,
+        team2_game_wins: 1,
+      },
+    ];
+
+    expect(calculateSweepRate('team-a', matches)).toEqual({
+      sweeps: 0,
+      totalMatches: 0,
+      sweepRate: 0,
+    });
+  });
+
   it('classifies rivalries and maps label/type thresholds', () => {
     const records: HeadToHeadRecord[] = [
       {

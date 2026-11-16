@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
@@ -102,7 +102,37 @@ describe('TeamSelectionForm', () => {
 
     expect(screen.getByText('Team Alpha')).toBeInTheDocument();
     expect(screen.getByText('#1')).toBeInTheDocument();
-    expect(screen.getByText('96')).toBeInTheDocument(); // Rounded power score
+    expect(screen.getByText('95.5')).toBeInTheDocument(); // Power score, one decimal
+  });
+
+  // The chip shows the same one-decimal score as the standings and the saved
+  // bracket order. A whole number hid ties: 41.6 and 41.7 both showed as "42".
+  it('shows the power score with one decimal, not rounded to a whole number', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        {...defaultProps}
+        teams={[createMockTeam({ powerScore: 41.6, power_score: 41.6 })]}
+      />
+    );
+
+    expect(screen.getByText('41.6')).toBeInTheDocument();
+    expect(screen.queryByText('42')).not.toBeInTheDocument();
+  });
+
+  // A team with no score reads 0 in the picker. It shows no chip, and no stray
+  // "0" (React prints a bare 0 for `0 && ...`).
+  it('shows no power score chip and no stray 0 for a score of 0', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        {...defaultProps}
+        teams={[createMockTeam({ powerScore: 0, power_score: 0 })]}
+      />
+    );
+
+    const teamButton = screen.getByRole('button', { name: /Team Alpha/ });
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
+    expect(screen.queryByText('0.0')).not.toBeInTheDocument();
+    expect(teamButton).toHaveTextContent(/^Team Alpha#1$/);
   });
 
   it('calls handleTeamToggle when team is clicked', async () => {
@@ -141,6 +171,25 @@ describe('TeamSelectionForm', () => {
       'aria-selected',
       'false'
     );
+  });
+
+  // A missing form state falls back to safe defaults instead of crashing the pop-up.
+  it('renders with safe defaults when the form state is missing', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        {...defaultProps}
+        teams={[]}
+        formState={undefined as unknown as BracketFormStateResult}
+      />
+    );
+
+    // Nothing is ticked, no error or warning, and the status line reads "Ready".
+    expect(screen.getByText('0/16')).toBeInTheDocument();
+    expect(screen.getByText('Ready to select teams').parentElement).toHaveClass(
+      'text-muted-foreground'
+    );
+    expect(screen.queryByText('Clear all')).not.toBeInTheDocument();
+    expect(screen.getByText('No teams available for selection')).toBeInTheDocument();
   });
 
   it('shows clear all button when has selection', () => {
@@ -223,5 +272,64 @@ describe('TeamSelectionForm on a phone', () => {
     const card = screen.getByRole('button', { name: /Team Alpha/ });
     expect(card).toHaveClass('sm:min-w-[240px]');
     expect(card).not.toHaveClass('min-w-[240px]');
+  });
+});
+
+// The "#" on each team button is the team's place in the list shown (1 to N),
+// the order the bracket uses. A stored teams.seed is a frozen snapshot of the
+// last Save in the Seeds tab, and the bracket ignores it, so it must not show here.
+describe('TeamSelectionForm "#" badge', () => {
+  const badgeOf = (teamName: string) =>
+    within(screen.getByRole('button', { name: new RegExp(teamName) })).getByText(/^#\d+$/)
+      .textContent;
+
+  it('numbers the teams 1 to N in row order, whatever their stored seeds are', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        teams={[
+          createMockTeam({ id: 'team-1', name: 'Alpha', seed: 7 }),
+          createMockTeam({ id: 'team-2', name: 'Bravo', seed: 9 }),
+          createMockTeam({ id: 'team-3', name: 'Charlie', seed: 2 }),
+        ]}
+        formState={createMockFormState()}
+        maxTeams={16}
+        minTeams={2}
+      />
+    );
+
+    const rows = screen.getAllByRole('button', { name: /Alpha|Bravo|Charlie/ });
+    expect(rows.map((row) => within(row).getByText(/^[A-Z][a-z]+$/).textContent)).toEqual([
+      'Alpha',
+      'Bravo',
+      'Charlie',
+    ]);
+    expect(rows.map((row) => within(row).getByText(/^#\d+$/).textContent)).toEqual([
+      '#1',
+      '#2',
+      '#3',
+    ]);
+    // The stored seeds (7, 9, 2) are not shown on this tab.
+    expect(screen.queryByText('#7')).not.toBeInTheDocument();
+    expect(screen.queryByText('#9')).not.toBeInTheDocument();
+  });
+
+  it('starts at #1 for a short list, such as one division, and for a team with no stored seed', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        teams={[
+          createMockTeam({ id: 'team-1', name: 'Alpha', seed: 12 }),
+          createMockTeam({ id: 'team-2', name: 'Bravo', seed: 0 }),
+        ]}
+        formState={createMockFormState()}
+        maxTeams={16}
+        minTeams={2}
+      />
+    );
+
+    expect(badgeOf('Alpha')).toBe('#1');
+    // A team with no stored seed shows its place, not "#0".
+    expect(badgeOf('Bravo')).toBe('#2');
+    expect(screen.queryByText('#0')).not.toBeInTheDocument();
+    expect(screen.queryByText('#12')).not.toBeInTheDocument();
   });
 });

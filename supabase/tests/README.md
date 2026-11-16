@@ -147,11 +147,13 @@ so a non-zero exit code means drift was detected.
   `v_head_to_head`) and `get_batch_head_to_head`. One fixture, worked out by hand
   in the file: regular-season, playoff and archived matches all count, a match
   with the sides swapped reads from the right side, and a tie or an unfinished
-  regular-season or archived match is left out. (Playoff matches count whenever
-  a winner and loser are set, whatever their status; that is described, not
-  pinned.) Also pins the win % order, the mirrored rows for
-  `get_head_to_head_records(NULL)`, a row of zeros for a pair that never met, and
-  no row for a team paired with itself.
+  regular-season or archived match is left out. Also pins the win % order, the
+  mirrored rows for `get_head_to_head_records(NULL)`, a row of zeros for a pair
+  that never met, and no row for a team paired with itself. Two quirks are pinned
+  as today's behaviour (nobody chose them): a completed match with a winner and
+  no loser is dropped by the view but counted by `get_batch_head_to_head`, and a
+  playoff match with a winner and loser counts in both whatever its status
+  (`in_progress` and `pending` included).
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.

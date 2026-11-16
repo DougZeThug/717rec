@@ -3,7 +3,7 @@ import { calculateClutchRecord } from '@/utils/teamDetailsUtils/matchOutcomeUtil
 import { calculateSweepRate } from '@/utils/teamDetailsUtils/sweepRateUtils';
 
 export interface LeagueTeamMatchStats {
-  /** Sweeps as a percentage of all matches played, 0-100. */
+  /** Sweeps as a percentage of matches with a winner (ties left out), 0-100. */
   sweepRate: number;
   /** Win rate in matches that went to a deciding third game, 0-100. */
   clutchWinPct: number;

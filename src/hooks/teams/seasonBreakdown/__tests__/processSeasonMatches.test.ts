@@ -138,6 +138,67 @@ describe('processSeasonMatches', () => {
     });
   });
 
+  // The opponent's division comes from team_season_stats, one row per team per season.
+  // A team that changed division between seasons keeps its old division for its old games.
+  it('reads the opponent division for the season being processed', () => {
+    const SEASON_A = 'season-a';
+    const SEASON_B = 'season-b';
+    const MOVER = 'opp-moved';
+    const teamDivisionMap = new Map([
+      [`${MOVER}_${SEASON_A}`, 'Competitive'],
+      [`${MOVER}_${SEASON_B}`, 'Intermediate'],
+    ]);
+
+    // Season A: the team sweeps the opponent. Season B: the team loses 1-2 to it.
+    const seasonA = processSeasonMatches(
+      TEAM_ID,
+      SEASON_A,
+      [
+        createRegularMatch({
+          team1_id: TEAM_ID,
+          team2_id: MOVER,
+          team1_game_wins: 2,
+          team2_game_wins: 0,
+          winner_id: TEAM_ID,
+          loser_id: MOVER,
+          season_id: SEASON_A,
+        }),
+      ],
+      [],
+      teamDivisionMap
+    );
+    const seasonB = processSeasonMatches(
+      TEAM_ID,
+      SEASON_B,
+      [
+        createRegularMatch({
+          team1_id: TEAM_ID,
+          team2_id: MOVER,
+          team1_game_wins: 1,
+          team2_game_wins: 2,
+          winner_id: MOVER,
+          loser_id: TEAM_ID,
+          season_id: SEASON_B,
+        }),
+      ],
+      [],
+      teamDivisionMap
+    );
+
+    // Season A: the opponent was Competitive, so the game counts there only.
+    expect(seasonA.divisionRecords).toEqual({
+      competitive: { wins: 1, losses: 0, gameWins: 2, gameLosses: 0 },
+      intermediate: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
+      recreational: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
+    });
+    // Season B: the same opponent was Intermediate, so the game counts there only.
+    expect(seasonB.divisionRecords).toEqual({
+      competitive: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
+      intermediate: { wins: 0, losses: 1, gameWins: 1, gameLosses: 2 },
+      recreational: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
+    });
+  });
+
   it('processes playoff counters and maps division tiers from bracketInfo.division_weight', () => {
     const playoffMatches = [
       createPlayoffMatch({

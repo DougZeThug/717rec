@@ -253,8 +253,8 @@ hand; they appear on team pages. See [`stats/badges.md`](stats/badges.md).
 **Head to head.** One team's record against one other team, across matches they
 have both played.
 
-**Sweep.** A match won 2–0. **Sweep rate** is sweeps as a share of _all_ matches
-played, not of matches won.
+**Sweep.** A match won 2–0. **Sweep rate** is sweeps as a share of matches with a
+winner (wins plus losses), not of matches won. A tied match is left out.
 
 **Clutch record.** A team's wins and losses in matches that went to a deciding
 third game.

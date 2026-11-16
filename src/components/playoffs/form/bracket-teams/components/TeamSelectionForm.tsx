@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { formatPowerScore } from '@/utils/powerScore/formatPowerScore';
 
 import { useFormStateManager } from '../hooks/useFormStateManager';
 import {
@@ -324,9 +325,11 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
   });
 
   /**
-   * Renders team selection button with appropriate styling based on selection state
+   * Renders team selection button with appropriate styling based on selection state.
+   * The "#" badge is the team's place in the list shown (index + 1), the order the
+   * bracket uses. A stored team.seed is a snapshot of the last Save and is ignored here.
    */
-  const renderTeamButton = (team: ProcessedTeam) => {
+  const renderTeamButton = (team: ProcessedTeam, index: number) => {
     if (!team || !team.id) return null;
 
     const isSelected = safeFormState.selected.has(team.id);
@@ -370,7 +373,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
 
         <div className="shrink-0">
           <SeedStatusBadge
-            seed={team.seed || 0}
+            seed={index + 1}
             isManual={isManual}
             hasConflict={hasConflict}
             isPending={isPending}
@@ -378,10 +381,10 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
           />
         </div>
 
-        {team.powerScore && (
+        {team.powerScore > 0 && (
           <div className="flex items-center gap-1 text-xs opacity-75 shrink-0">
             <Zap className="size-3" />
-            <span>{Math.round(team.powerScore)}</span>
+            <span>{formatPowerScore(team.powerScore)}</span>
           </div>
         )}
       </Button>
