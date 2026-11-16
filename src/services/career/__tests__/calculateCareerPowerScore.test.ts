@@ -451,6 +451,159 @@ describe('calculateCareerPowerScore', () => {
 
       expect(result).toBeCloseTo(53.43, 4);
     });
+
+    // Fixtures 7 to 15 use the SAME inputs and give the SAME totals as the same
+    // numbered fixtures in the SQL file. Fixture 13 is the one KNOWN DIFFERENCE.
+    // Each SQL season row is a 5-5 season at 0.5, so the base is 50 everywhere.
+    const season = (id: string) => ({
+      career_power_score: 0.5,
+      power_score: 0.5,
+      match_wins: 5,
+      match_losses: 5,
+      season_id: id,
+    });
+    // The probe divisions the SQL file inserts (a weight of 0, no weight, ...).
+    const withWeights = (extra: [string, number | null][]) => {
+      weightState.byName = new Map<string, number | null>([...weightState.byName, ...extra]);
+    };
+    const UNKNOWN = 'Nothing Like A Division';
+
+    // Fixture 7: a runner-up finish in an unknown division adds nothing (was 52.89).
+    it('fixture 7: a runner-up finish in an unknown division adds nothing', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: [],
+        runnerUpDivisions: [UNKNOWN],
+        prefetchedSeasonStats: [season('p1')],
+      });
+
+      expect(result).toBeCloseTo(50, 4);
+    });
+
+    // Fixture 8: team weight 0.5; one unknown playoff season; 10 playoff wins, none lost.
+    // (1.0 - 0.5) x 4 x 0.5 = 1.0, under a cap of 15 x 0.5^2 = 3.75. Total 51 (was 51.7).
+    it('fixture 8: a playoff run in only unknown seasons uses the team weight', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: [],
+        teamDivisionWeight: 0.5,
+        careerPlayoffWins: 10,
+        playoffDivisions: [UNKNOWN],
+        prefetchedSeasonStats: [season('p1')],
+      });
+
+      expect(result).toBeCloseTo(51, 4);
+    });
+
+    // Fixture 9: no team weight. A Competitive title (7) and an unknown playoff
+    // season with 10 playoff wins. The win-rate bonus is 0, not 1.7. Total 57.
+    it('fixture 9: with no weight to rate the run by, the win-rate bonus is 0', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['Competitive'],
+        teamDivisionWeight: null,
+        careerPlayoffWins: 10,
+        playoffDivisions: [UNKNOWN],
+        prefetchedSeasonStats: [season('p1'), season('p2')],
+      });
+
+      expect(result).toBeCloseTo(57, 4);
+    });
+
+    // Fixture 10: the LEAST guard. No team weight, an unknown title, an unknown
+    // runner-up, one competitive playoff win. The cap is 0, so the total is the
+    // base alone: never 100, never 50.5.
+    it('fixture 10: an all-unrated team gets its base score and nothing else', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: [UNKNOWN],
+        runnerUpDivisions: [UNKNOWN],
+        teamDivisionWeight: null,
+        careerPlayoffWins: 1,
+        competitivePlayoffWins: 1,
+        prefetchedSeasonStats: [season('p1'), season('p2')],
+      });
+
+      expect(result).toBeCloseTo(50, 4);
+    });
+
+    // Fixture 11: a title in a division with a real weight of 0. The bonus is 0 and
+    // the cap is 0, so the one competitive win (+0.5) and the win rate do not count.
+    it('fixture 11: a weight of 0 is a real 0 and caps the bonus at 0', async () => {
+      withWeights([['parity zero probe', 0]]);
+
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['Parity Zero Probe'],
+        careerPlayoffWins: 1,
+        competitivePlayoffWins: 1,
+        prefetchedSeasonStats: [season('p1')],
+      });
+
+      expect(result).toBeCloseTo(50, 4);
+    });
+
+    // Fixture 12: "Parityword Nullprobe" exists and has no weight. Its first word,
+    // "parityword", is a division with weight 0.55. The matched row is final.
+    it('fixture 12: a division with no weight does not borrow a base-word weight', async () => {
+      withWeights([
+        ['parityword', 0.55],
+        ['parityword nullprobe', null],
+      ]);
+
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['Parityword Nullprobe'],
+        prefetchedSeasonStats: [season('p1')],
+      });
+
+      expect(result).toBeCloseTo(50, 4);
+    });
+
+    // Fixture 13: KNOWN DIFFERENCE FROM SQL. The same name, "<tab>Competitive", is
+    // unrated in SQL (total 50) because btrim() does not strip a tab. JavaScript
+    // trim() does, so the app rates it as Competitive: 7 x 1.00^2 = 7, total 57.
+    it('fixture 13: a tab in the name is rated here (SQL gives 50: known difference)', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['\tCompetitive'],
+        prefetchedSeasonStats: [season('p1')],
+      });
+
+      expect(result).toBeCloseTo(57, 4);
+    });
+
+    // Fixture 14: the cap is the HIGHEST rated weight. A Competitive (1.00)
+    // runner-up and an Intermediate High (0.70) title, 20 playoff wins that are all
+    // competitive wins. Sum: 4 + 3.43 + 2 (win rate x team weight 1.0) + 10 = 19.43.
+    // Cap: 15 x 1.00^2 = 15 (binds). Total 65. A cap built from the lowest weight
+    // would be 15 x 0.70^2 = 7.35 and give 57.35.
+    it('fixture 14: the cap comes from the highest rated weight, not the lowest', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['Intermediate High'],
+        runnerUpDivisions: ['Competitive'],
+        careerPlayoffWins: 20,
+        competitivePlayoffWins: 20,
+        prefetchedSeasonStats: [season('p1'), season('p2')],
+      });
+
+      expect(result).toBeCloseTo(65, 4);
+    });
+
+    // Fixture 15: "Parityroot" is a division with no weight. "Parityroot 3" reaches
+    // it through the base tier word, and its NULL weight is final: unrated, adds 0.
+    it('fixture 15: a base tier word whose division has no weight is unrated', async () => {
+      withWeights([['parityroot', null]]);
+
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['Parityroot 3'],
+        prefetchedSeasonStats: [season('p1')],
+      });
+
+      expect(result).toBeCloseTo(50, 4);
+    });
   });
 });
 

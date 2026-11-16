@@ -11,14 +11,17 @@
 -- The fixtures below are asserted with the SAME inputs and the SAME expected
 -- totals in
 -- src/services/career/__tests__/calculateCareerPowerScore.test.ts
--- ("shares fixtures with supabase/tests/career_power_score_parity.sql").
--- Change one side and the other fails.
+-- ("parity with supabase/tests/career_power_score_parity.sql").
+-- Change one side and the other fails. The one exception is fixture 13, a KNOWN
+-- DIFFERENCE: a tab in a division name is unrated here (50) but rated by the app
+-- (57), and the TypeScript test pins that other number.
 --
 -- Fixtures 1-4 are the original known-division totals (53.43, 57.35, 56.3175,
 -- 0). Fixtures 5 onward pin the unrated-division rule
 -- (20261117120000_unrated_division_career_bonus.sql): a division with no known
 -- weight is left out of the bonus instead of counting as 0.85. Fixture 5 was
--- 55.0575 and fixture 6 was 58.4875 before that rule.
+-- 55.0575 and fixture 6 was 58.4875 before that rule. Fixture 14 pins the cap as
+-- the HIGHEST rated weight (a known-division case: old and new functions agree).
 --
 -- Everything runs inside one rolled-back transaction.
 
@@ -46,12 +49,15 @@ DECLARE
   v_team_l uuid     := '00000000-0000-0000-0000-0000000cb40c';
   v_team_m uuid     := '00000000-0000-0000-0000-0000000cb40d';
   v_team_opp uuid   := '00000000-0000-0000-0000-0000000cb40e';
+  v_team_n uuid     := '00000000-0000-0000-0000-0000000cb40f';
+  v_team_o uuid     := '00000000-0000-0000-0000-0000000cb410';
   -- Probe divisions, with names no real division has.
   v_div_zero uuid   := '00000000-0000-0000-0000-0000000cb501';
   v_div_null uuid   := '00000000-0000-0000-0000-0000000cb502';
   v_div_half uuid   := '00000000-0000-0000-0000-0000000cb503';
   v_div_word uuid   := '00000000-0000-0000-0000-0000000cb504';
   v_div_word_null uuid := '00000000-0000-0000-0000-0000000cb505';
+  v_div_root_null uuid := '00000000-0000-0000-0000-0000000cb506';
   -- A bracket in the Competitive division (its wins count as competitive) and
   -- one with no division (its wins do not).
   v_bracket_comp uuid := '00000000-0000-0000-0000-0000000cb601';
@@ -65,12 +71,12 @@ BEGIN
   DELETE FROM public.brackets WHERE id IN (v_bracket_comp, v_bracket_none);
   DELETE FROM public.team_season_stats WHERE team_id IN
     (v_team_a, v_team_b, v_team_c, v_team_d, v_team_e, v_team_f, v_team_g, v_team_h,
-     v_team_i, v_team_j, v_team_k, v_team_l, v_team_m, v_team_opp);
+     v_team_i, v_team_j, v_team_k, v_team_l, v_team_m, v_team_opp, v_team_n, v_team_o);
   DELETE FROM public.teams WHERE id IN
     (v_team_a, v_team_b, v_team_c, v_team_d, v_team_e, v_team_f, v_team_g, v_team_h,
-     v_team_i, v_team_j, v_team_k, v_team_l, v_team_m, v_team_opp);
+     v_team_i, v_team_j, v_team_k, v_team_l, v_team_m, v_team_opp, v_team_n, v_team_o);
   DELETE FROM public.divisions WHERE id IN
-    (v_div_zero, v_div_null, v_div_half, v_div_word, v_div_word_null);
+    (v_div_zero, v_div_null, v_div_half, v_div_word, v_div_word_null, v_div_root_null);
   DELETE FROM public.seasons WHERE id IN (v_season_1, v_season_2, v_season_3);
 
   -- Pin the live weights of the seeded divisions for the length of the
@@ -200,13 +206,15 @@ BEGIN
   --   Parity Half Probe       weight 0.50  a team division with a known weight
   --   Parityword              weight 0.55  a base tier word ...
   --   Parityword Nullprobe    weight NULL  ... and a division that begins with it
+  --   Parityroot              weight NULL  a base tier word whose division has no weight
   -- ────────────────────────────────────────────────────────────────────────
   INSERT INTO public.divisions (id, name, division_weight) VALUES
     (v_div_zero,      'Parity Zero Probe',    0),
     (v_div_null,      'Parity Null Probe',    NULL),
     (v_div_half,      'Parity Half Probe',    0.50),
     (v_div_word,      'Parityword',           0.55),
-    (v_div_word_null, 'Parityword Nullprobe', NULL);
+    (v_div_word_null, 'Parityword Nullprobe', NULL),
+    (v_div_root_null, 'Parityroot',           NULL);
 
   INSERT INTO public.teams (id, name, division_id) VALUES
     (v_team_e,   'Parity E', v_div_comp),
@@ -219,6 +227,8 @@ BEGIN
     (v_team_k,   'Parity K', v_div_comp),
     (v_team_l,   'Parity L', v_div_comp),
     (v_team_m,   'Parity M', v_div_comp),
+    (v_team_n,   'Parity N', v_div_comp),
+    (v_team_o,   'Parity O', v_div_comp),
     (v_team_opp, 'Parity Opponent', v_div_comp);
 
   INSERT INTO public.brackets (id, title, format, state, division_id, season_id, uses_brackets_manager) VALUES
@@ -460,6 +470,64 @@ BEGIN
   END IF;
 
   -- ────────────────────────────────────────────────────────────────────────
+  -- Fixture 14 — the cap is the HIGHEST rated weight, not the lowest.
+  --
+  -- Parity N has two rated bonus divisions with DIFFERENT weights: a runner-up
+  -- finish in Competitive (1.00) and a title in Intermediate High (0.70). It also
+  -- won 20 playoff matches in the Competitive bracket (20 competitive wins), so
+  -- the bonus is far above any cap. The total depends on which weight sets the cap:
+  --
+  --   runner-up = 4 x 1.00^2                =  4
+  --   title     = 7 x 0.70^2               =  3.43
+  --   win rate  = (1.0 - 0.5) x 4 x 1.00    =  2     (no playoff season: the team
+  --                                                  weight, 1.00)
+  --   competitive wins = 20 x 0.5           = 10
+  --   sum                                   = 19.43
+  --   cap = 15 x MAX(1.00, 0.70)^2 = 15     (binds)  -> total 50 + 15 = 65
+  --   (a cap built from the LOWEST weight would be 15 x 0.70^2 = 7.35 -> 57.35)
+  --
+  -- Every division here is known, so the old function gives the same 65.
+  -- ────────────────────────────────────────────────────────────────────────
+  INSERT INTO public.team_season_stats
+    (season_id, team_id, match_wins, match_losses, game_wins, game_losses,
+     division_name, power_score, career_power_score, champion, runner_up)
+  VALUES
+    (v_season_1, v_team_n, 5, 5, 10, 10, 'Competitive',       0.50, 0.50, false, true),
+    (v_season_2, v_team_n, 5, 5, 10, 10, 'Intermediate High', 0.50, 0.50, true,  false);
+
+  INSERT INTO public.playoff_matches
+    (bracket_id, match_type, round, position, status, team1_id, team2_id, winner_id, loser_id)
+  SELECT v_bracket_comp, 'winners', 3, n, 'completed', v_team_n, v_team_opp, v_team_n, v_team_opp
+  FROM generate_series(1, 20) AS n;
+
+  v_score := public.calculate_career_power_score(v_team_n);
+  IF round(v_score, 4) <> 65.0000 THEN
+    RAISE EXCEPTION 'Fixture 14: expected 65 (cap from the highest rated weight, 15 x 1.00^2), got %', v_score;
+  END IF;
+
+  -- ────────────────────────────────────────────────────────────────────────
+  -- Fixture 15 — a base tier word whose division has no weight is unrated.
+  --
+  -- "Parityroot" is a division with no weight. Parity O won a title in
+  -- "Parityroot 3": no exact match, no synthetic label, so the lookup reaches the
+  -- base tier word "parityroot", finds that row, and its NULL weight is final. The
+  -- title is unrated and adds 0 (not 7 x 0.85^2 = 5.0575, which would be a default
+  -- weight handed to a division that has none).
+  --
+  --   total = 50
+  -- ────────────────────────────────────────────────────────────────────────
+  INSERT INTO public.team_season_stats
+    (season_id, team_id, match_wins, match_losses, game_wins, game_losses,
+     division_name, power_score, career_power_score, champion, runner_up)
+  VALUES
+    (v_season_1, v_team_o, 5, 5, 10, 10, 'Parityroot 3', 0.50, 0.50, true, false);
+
+  v_score := public.calculate_career_power_score(v_team_o);
+  IF round(v_score, 4) <> 50.0000 THEN
+    RAISE EXCEPTION 'Fixture 15: expected 50 (base word with no weight is unrated), got %', v_score;
+  END IF;
+
+  -- ────────────────────────────────────────────────────────────────────────
   -- resolve_division_bonus_weight: the three resolution steps of
   -- src/utils/career/divisionBonusWeight.ts, in order.
   -- ────────────────────────────────────────────────────────────────────────
@@ -524,6 +592,18 @@ BEGIN
   v_weight := public.resolve_division_bonus_weight('Parityword 7');
   IF v_weight IS DISTINCT FROM 0.55 THEN
     RAISE EXCEPTION 'Base tier word: expected 0.55, got %', v_weight;
+  END IF;
+
+  -- The base tier word step too: "Parityroot 3" reaches the division "Parityroot",
+  -- which has no weight. That is a match, so the answer is NULL, not a default.
+  v_weight := public.resolve_division_bonus_weight('Parityroot 3');
+  IF v_weight IS NOT NULL THEN
+    RAISE EXCEPTION 'Base word with a NULL weight: expected NULL, got %', v_weight;
+  END IF;
+
+  v_weight := public.resolve_division_bonus_weight('Parityroot');
+  IF v_weight IS NOT NULL THEN
+    RAISE EXCEPTION 'Exact division with a NULL weight: expected NULL, got %', v_weight;
   END IF;
 
   -- KNOWN DIFFERENCE FROM TYPESCRIPT: btrim() and split_part(' ') only know the
