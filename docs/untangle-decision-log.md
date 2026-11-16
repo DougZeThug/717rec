@@ -413,7 +413,7 @@ Slice 4 (lite) puts the default division weight 0.85 in one place. **Every `??` 
 | `calculatePlayoffStats.ts` `\|\|` -> `??` | NOT CAUGHT (invariant, see above) |
 
 - **Phase B (deferred) and its TRAP.** Phase B would make the `||` sites agree with SQL for a stored weight of exactly 0 (`??`). The live read below says no division is NULL or 0, so it would change no number today. It stays deferred because the "unrated" decision below replaces it. **TRAP: the three `||` in `CareerBulkFetchService.ts` (lines 94, 378 and 388) must change together.** If only some change, the others turn the 0 back into 0.85 and nothing visible happens. Introduce a resolver function only then, not before. The existing pins to edit on purpose then are in `CareerFetchService.test.ts` and the new bulk pins.
-- **DOUG'S DECISION (2026-11-13): "Treat as unrated" for a genuinely unknown division. BUILT 2026-11-16 (migration file `20261117120000`), pending Doug's hand-apply of the SQL. See "Unrated division result" below.**
+- **DOUG'S DECISION (2026-11-13): "Treat as unrated" for a genuinely unknown division. BUILT 2026-11-16 (migration file `20261117120000`) and APPLIED to the live database by Doug on 2026-11-16 (PR #1744 merged the same day). See "Unrated division result" below.**
   - **What it means:** when a team's or bracket's division is genuinely unknown, that part is left out of the career bonus instead of guessing 0.85. The season Power Score already does this for unrated opponents.
   - **What the developer recommended:** "keep the fallback and add an admin warning." Doug chose "unrated". On 2026-11-16 he chose "Build it now" over "warning first, build later".
   - **It touches SQL.** `resolve_division_bonus_weight()` returned 0.85 for an unknown name. `calculate_career_power_score()` used 0.85 when a team weight IS NULL. So it needs a migration and a hand-apply (`docs/OPERATIONS.md` section 6f).
@@ -450,7 +450,7 @@ Slice 4 (lite) puts the default division weight 0.85 in one place. **Every `??` 
 
 ## Unrated division result (career bonus), built 2026-11-16 (migration file `20261117120000`)
 
-An unknown division is **unrated** in the career bonus: it adds 0 instead of counting as 0.85. TypeScript and SQL give the same number. **The SQL is written and tested but NOT applied to the live database.** Doug applies it before the PR is merged (`docs/OPERATIONS.md` section 6f). No number changes today (live read 2026-11-13: every division has a weight, every past division name matches).
+An unknown division is **unrated** in the career bonus: it adds 0 instead of counting as 0.85. TypeScript and SQL give the same number. **The SQL was applied to the live database by Doug on 2026-11-16, before PR #1744 was merged** (`docs/OPERATIONS.md` section 6f). The fingerprint (count and md5 of `calculate_career_power_score` over all teams) was **identical before and after**: count 51, md5 `c4d29aa83f550d893309275afc806e5f` (Doug's screenshots; the SQL Editor reported "Success. No rows returned"). The resolver check gave 1.00 for `Competitive` and NULL for `zzz`. The optional `has_function_privilege` check was not reported back. No number changes today (live read 2026-11-13: every division has a weight, every past division name matches).
 
 - **The rule (the same in both places).**
   - Unrated = a blank name, a name that matches no division, or a matched division with a NULL weight. A weight of 0 is a real 0.
