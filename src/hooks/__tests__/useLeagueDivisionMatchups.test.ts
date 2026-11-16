@@ -98,6 +98,15 @@ describe('computeDivisionMatchups', () => {
     expect(result.every((r) => r.winsA === 0 && r.winsB === 0)).toBe(true);
   });
 
+  it('skips a match with no season', () => {
+    const result = computeDivisionMatchups({
+      matches: [{ winner_id: 'c1', loser_id: 'i1', season_id: null }],
+      archivedMatches: [],
+      teamSeasonDivisions: [tsd('c1', 's1', 'Competitive'), tsd('i1', 's1', 'Intermediate')],
+    });
+    expect(result.every((r) => r.winsA === 0 && r.winsB === 0)).toBe(true);
+  });
+
   it('skips hidden divisions', () => {
     const result = computeDivisionMatchups({
       matches: [{ winner_id: 't1', loser_id: 't2', season_id: 's1' }],

@@ -104,9 +104,8 @@ describe('isHiddenDivisionName', () => {
     }
   );
 
-  it('says a missing name is not Hidden', () => {
-    expect(isHiddenDivisionName(null)).toBe(false);
-    expect(isHiddenDivisionName(undefined)).toBe(false);
+  it.each([null, undefined])('says a missing name (%s) is not Hidden', (name) => {
+    expect(isHiddenDivisionName(name)).toBe(false);
   });
 });
 

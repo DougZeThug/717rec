@@ -291,4 +291,101 @@ describe('calculateDivisionRecords', () => {
     expect(result.intermediate.wins).toBe(0);
     expect(result.recreational.wins).toBe(0);
   });
+
+  const emptyRecords = {
+    competitive: { wins: 0, losses: 0 },
+    intermediate: { wins: 0, losses: 0 },
+    recreational: { wins: 0, losses: 0 },
+  };
+
+  it('skips an archived match with no season or no opponent', () => {
+    const base = {
+      winner_id: 'team-1',
+      loser_id: 'team-2',
+      team1_id: 'team-1',
+      team2_id: 'team-2',
+      team1_game_wins: 2,
+      team2_game_wins: 0,
+    };
+    const archivedMatches: ArchivedMatchData[] = [
+      { ...base, season_id: null },
+      { ...base, team2_id: null, season_id: 'season-1' },
+    ];
+
+    const result = calculateDivisionRecords({
+      currentMatches: null,
+      archivedMatches,
+      playoffMatches: null,
+      teamDivisionMap: new Map([['team-2_season-1', 'Competitive']]),
+      bracketDivisionWeights: {},
+      bracketDivisionDisplayNames: {},
+      teamId,
+    });
+
+    expect(result).toEqual(emptyRecords);
+  });
+
+  it('skips a current match with no season or no opponent', () => {
+    const base = {
+      winner_id: 'team-1',
+      loser_id: 'team-2',
+      team1_id: 'team-1',
+      team2_id: 'team-2',
+      team1_game_wins: 2,
+      team2_game_wins: 0,
+      team2: { id: 'team-2', divisions: { name: 'Competitive' } },
+    };
+    const currentMatches: MatchData[] = [
+      { ...base, season_id: null },
+      { ...base, team2_id: null, season_id: 'season-1' },
+    ];
+
+    const result = calculateDivisionRecords({
+      currentMatches,
+      archivedMatches: null,
+      playoffMatches: null,
+      teamDivisionMap: new Map(),
+      bracketDivisionWeights: {},
+      bracketDivisionDisplayNames: {},
+      teamId,
+    });
+
+    expect(result).toEqual(emptyRecords);
+  });
+
+  // A team moved to Hidden after it dropped out has no archive row for the active
+  // season, so its joined CURRENT division (Hidden) would drop the game. The map
+  // entry (the real division, put there by the Hidden fix) is read first and wins.
+  it('lets a map entry beat the joined current division of a Hidden opponent', () => {
+    const currentMatches: MatchData[] = [
+      {
+        winner_id: 'team-1',
+        loser_id: 'team-2',
+        team1_id: 'team-1',
+        team2_id: 'team-2',
+        team1_game_wins: 2,
+        team2_game_wins: 0,
+        season_id: 'season-1',
+        team2: { id: 'team-2', divisions: { name: 'Hidden' } },
+      },
+    ];
+    const calculate = (teamDivisionMap: Map<string, string>) =>
+      calculateDivisionRecords({
+        currentMatches,
+        archivedMatches: null,
+        playoffMatches: null,
+        teamDivisionMap,
+        bracketDivisionWeights: {},
+        bracketDivisionDisplayNames: {},
+        teamId,
+      });
+
+    // No real division known: the game is left out (the fallback, unchanged).
+    expect(calculate(new Map())).toEqual(emptyRecords);
+    // The real division is known: the game is filed there.
+    expect(calculate(new Map([['team-2_season-1', 'Intermediate']])).intermediate).toEqual({
+      wins: 1,
+      losses: 0,
+    });
+  });
 });

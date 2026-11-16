@@ -250,6 +250,20 @@ describe('fetchRealDivisionOverrides', () => {
     expect(mockFrom).not.toHaveBeenCalledWith('divisions');
   });
 
+  it('leaves a team to the list when the division names come back empty', async () => {
+    mockTables({
+      [STATS]: rows([{ team_id: NEW_TEAM, season_id: NEW_SEASON }]),
+      [VIEW]: rows([viewRow(NEW_TEAM, NEW_SEASON, 'div-intermediate')]),
+      divisions: { data: null, error: null },
+    });
+
+    const overrides = await fetchRealDivisionOverrides();
+
+    expect(overrides.has(NEW_KEY)).toBe(false);
+    expect([...overrides]).toEqual([...dougMap()]);
+    expect(warnLog).not.toHaveBeenCalled();
+  });
+
   it('reads nothing more when no team-season is Hidden', async () => {
     mockTables({});
 
