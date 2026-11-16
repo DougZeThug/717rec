@@ -173,6 +173,25 @@ describe('TeamSelectionForm', () => {
     );
   });
 
+  // A missing form state falls back to safe defaults instead of crashing the pop-up.
+  it('renders with safe defaults when the form state is missing', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        {...defaultProps}
+        teams={[]}
+        formState={undefined as unknown as BracketFormStateResult}
+      />
+    );
+
+    // Nothing is ticked, no error or warning, and the status line reads "Ready".
+    expect(screen.getByText('0/16')).toBeInTheDocument();
+    expect(screen.getByText('Ready to select teams').parentElement).toHaveClass(
+      'text-muted-foreground'
+    );
+    expect(screen.queryByText('Clear all')).not.toBeInTheDocument();
+    expect(screen.getByText('No teams available for selection')).toBeInTheDocument();
+  });
+
   it('shows clear all button when has selection', () => {
     renderWithRouter(<TeamSelectionForm {...defaultProps} />);
 
