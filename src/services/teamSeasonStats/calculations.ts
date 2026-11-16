@@ -21,11 +21,16 @@ interface MatchCounters {
   playoffLosses: number;
 }
 
-/** Maps a division display name to the tier buckets used in season breakdown stats. */
+/**
+ * Maps a division display name to the tier buckets used in season breakdown stats.
+ * Hidden/Hidden2 are administrative divisions, so they return null and a game
+ * against one is left out of the split. This matches the Career copy.
+ */
 export const categorizeDivision = (divisionName: string | null): DivisionTier | null => {
   if (!divisionName) return null;
   const name = divisionName.toLowerCase();
-  if (name.includes('competitive') || name.includes('hidden')) return 'competitive';
+  if (name.includes('hidden')) return null;
+  if (name.includes('competitive')) return 'competitive';
   if (name.includes('intermediate') || name.includes('cuspers')) return 'intermediate';
   if (name.includes('recreational')) return 'recreational';
   return null;

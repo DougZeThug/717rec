@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { SeasonBreakdown } from '@/types/teamAdvancedStats';
+import { categorizeDivision as careerCategorizeDivision } from '@/utils/career/calculateDivisionRecords';
 
 import {
   calculateBestWorstDivisionTiers,
@@ -42,11 +43,50 @@ const createSeason = (overrides: Partial<SeasonBreakdown>): SeasonBreakdown => (
 describe('team season stat calculations', () => {
   it('categorizes known division names the same way as the hook helper did', () => {
     expect(categorizeDivision('Competitive East')).toBe('competitive');
-    expect(categorizeDivision('hidden bracket')).toBe('competitive');
+    expect(categorizeDivision('hidden bracket')).toBeNull();
     expect(categorizeDivision('Cuspers')).toBe('intermediate');
     expect(categorizeDivision('Recreational West')).toBe('recreational');
     expect(categorizeDivision('Premier')).toBeNull();
     expect(categorizeDivision(null)).toBeNull();
+  });
+
+  // A game against a Hidden team is left out of the vs Competitive / Intermediate /
+  // Recreational split, the same as on the Career page.
+  it('leaves Hidden divisions out of every tier', () => {
+    expect(categorizeDivision('Hidden')).toBeNull();
+    expect(categorizeDivision('Hidden2')).toBeNull();
+    expect(categorizeDivision('HIDDEN bracket')).toBeNull();
+    // The Hidden check runs first, so a name with a tier word as well is still left out.
+    expect(categorizeDivision('Hidden Competitive')).toBeNull();
+    expect(categorizeDivision('Recreational (hidden)')).toBeNull();
+  });
+
+  it('gives the same tier as the Career page for every division name', () => {
+    const names = [
+      'Competitive',
+      'Competitive Low',
+      'Cuspers',
+      'Cuspers 1',
+      'Intermediate High',
+      'Intermediate',
+      'Intermediate Low',
+      'Recreational High',
+      'Recreational',
+      'Hidden',
+      'Hidden2',
+      'hidden bracket',
+      'Hidden Competitive',
+      'Recreational (hidden)',
+      'Premier',
+      '',
+      null,
+    ];
+
+    for (const name of names) {
+      expect(categorizeDivision(name), `division ${String(name)}`).toBe(
+        careerCategorizeDivision(name)
+      );
+    }
   });
 
   // Archived seasons with two Cuspers brackets store "Cuspers 1"/"Cuspers 2".
