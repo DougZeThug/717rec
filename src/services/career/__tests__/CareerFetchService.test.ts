@@ -289,15 +289,22 @@ describe('fetchCareerData query flow', () => {
       expect((await fetchCareerData(TEAM_ID))?.teamDivisionWeight).toBe(0.6);
     });
 
+    // A team with no division or no weight is unrated (null), not 0.85.
     it.each([
       ['the division is null', { data: { divisions: null }, error: null }],
-      ['the weight is 0', { data: { divisions: { division_weight: 0 } }, error: null }],
+      ['the weight is null', { data: { divisions: { division_weight: null } }, error: null }],
       ['the team row is missing', { data: null, error: null }],
       ['the team query fails', { data: null, error: pgError('teams failed') }],
-    ])('falls back to 0.85 when %s', async (_label, teams) => {
+    ])('has no team weight (null) when %s', async (_label, teams) => {
       setup({ teams });
 
-      expect((await fetchCareerData(TEAM_ID))?.teamDivisionWeight).toBe(0.85);
+      expect((await fetchCareerData(TEAM_ID))?.teamDivisionWeight).toBeNull();
+    });
+
+    it('keeps a stored weight of 0 as 0', async () => {
+      setup({ teams: { data: { divisions: { division_weight: 0 } }, error: null } });
+
+      expect((await fetchCareerData(TEAM_ID))?.teamDivisionWeight).toBe(0);
     });
   });
 

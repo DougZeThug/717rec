@@ -87,11 +87,12 @@ function groupMatchesByTeam<T extends { team1_id: string | null; team2_id: strin
 function buildTeamDivisionMaps(
   teamDivisionsData: { id: string; divisions: unknown }[] | null,
   archiveData: TeamDetailsArchive[] | null
-): { teamDivisionWeights: Map<string, number>; teamDivisionMap: Map<string, string> } {
-  const teamDivisionWeights = new Map<string, number>();
+): { teamDivisionWeights: Map<string, number | null>; teamDivisionMap: Map<string, string> } {
+  const teamDivisionWeights = new Map<string, number | null>();
   for (const row of teamDivisionsData ?? []) {
-    const divisions = row.divisions as { division_weight: number } | null;
-    teamDivisionWeights.set(row.id, divisions?.division_weight || DEFAULT_DIVISION_WEIGHT);
+    const divisions = row.divisions as { division_weight: number | null } | null;
+    // No default: a team with no division or no weight is unrated (null). A stored 0 stays 0.
+    teamDivisionWeights.set(row.id, divisions?.division_weight ?? null);
   }
 
   const teamDivisionMap = new Map<string, string>();
@@ -375,7 +376,7 @@ export const fetchAllTeamsCareerData = async (
 
     result.set(teamId, {
       teamData: {
-        divisions: { division_weight: teamDivisionWeights.get(teamId) || DEFAULT_DIVISION_WEIGHT },
+        divisions: { division_weight: teamDivisionWeights.get(teamId) ?? null },
       },
       seasonStats,
       currentMatches: currentMatchesByTeam.get(teamId) || null,
@@ -385,7 +386,7 @@ export const fetchAllTeamsCareerData = async (
       bracketDivisionWeights,
       bracketDivisionDisplayNames,
       bracketSeasonMap,
-      teamDivisionWeight: teamDivisionWeights.get(teamId) || DEFAULT_DIVISION_WEIGHT,
+      teamDivisionWeight: teamDivisionWeights.get(teamId) ?? null,
       currentSeasonId,
       seasonPowerScores,
     });

@@ -95,14 +95,19 @@ describe('divisionWeightsCache', () => {
       expect([...weights.keys()]).toEqual(['recreational']);
     });
 
-    it('uses 0.85 when division_weight is null or undefined', async () => {
+    // A division with no weight is unrated for the career bonus. It is kept in
+    // the map as null (not defaulted to 0.85 and not dropped). A dropped entry
+    // would let the resolver fall through to a base tier word and rate it.
+    it('keeps a division whose division_weight is null or undefined as null', async () => {
       vi.mocked(DivisionService.fetchDivisionWeightsMap).mockResolvedValue([
         { id: 'div-1', name: 'Alpha', division_weight: null },
         { id: 'div-2', name: 'Beta' },
       ] as never);
       const weights = await fetchDivisionWeightsByName();
-      expect(weights.get('alpha')).toBe(0.85);
-      expect(weights.get('beta')).toBe(0.85);
+      expect(weights.has('alpha')).toBe(true);
+      expect(weights.has('beta')).toBe(true);
+      expect(weights.get('alpha')).toBeNull();
+      expect(weights.get('beta')).toBeNull();
     });
 
     it('keeps a weight of 0 instead of replacing it with the default', async () => {

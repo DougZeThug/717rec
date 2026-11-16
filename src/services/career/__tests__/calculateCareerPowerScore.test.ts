@@ -4,7 +4,7 @@ import { calculateCareerPowerScore } from '../calculateCareerPowerScore';
 
 // Live division weights come from the divisions table — mock the cache, not values in code.
 const weightState = vi.hoisted(() => ({
-  byName: new Map<string, number>([
+  byName: new Map<string, number | null>([
     ['competitive', 1.0],
     ['competitive low', 0.95],
     ['cuspers', 0.9],
@@ -289,7 +289,7 @@ describe('calculateCareerPowerScore', () => {
   describe('parity with supabase/tests/career_power_score_parity.sql', () => {
     beforeEach(() => {
       // The same live weights that test pins on the divisions table.
-      weightState.byName = new Map<string, number>([
+      weightState.byName = new Map<string, number | null>([
         ['competitive', 1.0],
         ['intermediate high', 0.7],
         ['cuspers', 0.95],
@@ -399,14 +399,14 @@ describe('calculateCareerPowerScore', () => {
       expect(result).toBeCloseTo(56.3175, 4);
     });
 
-    // Fixtures 5 and 6 pin TODAY'S number for a title won in a division the
-    // weights do not know: it is rated at the 0.85 default. The unrated-division
-    // change flips both on purpose (to 50 and 53.43), and the SQL twins of both
-    // fixtures arrive in the same change as that flip.
+    // Fixtures 5 and 6: a title won in a division the weights do not know is
+    // UNRATED, so it adds 0 instead of a guessed 0.85 weight. They were 55.0575
+    // and 58.4875 before the unrated-division change.
     //
     // Fixture 5: base 50, one title in an unknown division.
-    // 7 x 0.85^2 = 5.0575, under a cap of 15 x 0.85^2 = 10.8375.
-    it("fixture 5: a title in an unknown division is worth 5.0575 (today's number)", async () => {
+    // The title adds 0 and no bonus division is rated, so the cap falls back to
+    // the team weight (1.0, as in the SQL fixture). Total 50.
+    it('fixture 5: a title in an unknown division adds nothing', async () => {
       const result = await calculateCareerPowerScore({
         ...parityInput,
         championshipDivisions: ['Nothing Like A Division'],
@@ -421,13 +421,13 @@ describe('calculateCareerPowerScore', () => {
         ],
       });
 
-      expect(result).toBeCloseTo(55.0575, 4);
+      expect(result).toBeCloseTo(50, 4);
     });
 
     // Fixture 6: base 50, an Intermediate High title plus an unknown-division title.
-    // 7 x 0.70^2 = 3.43, plus 7 x 0.85^2 = 5.0575, is 8.4875, under a cap of
-    // 15 x max(0.70, 0.85)^2 = 10.8375.
-    it("fixture 6: a known title plus an unknown title adds 8.4875 (today's number)", async () => {
+    // 7 x 0.70^2 = 3.43 plus 0 for the unknown title. The cap is set by the rated
+    // division only: 15 x 0.70^2 = 7.35, not raised by the unknown one. Total 53.43.
+    it('fixture 6: a known title plus an unknown title adds only the known one', async () => {
       const result = await calculateCareerPowerScore({
         ...parityInput,
         championshipDivisions: ['Intermediate High', 'Nothing Like A Division'],
@@ -449,7 +449,7 @@ describe('calculateCareerPowerScore', () => {
         ],
       });
 
-      expect(result).toBeCloseTo(58.4875, 4);
+      expect(result).toBeCloseTo(53.43, 4);
     });
   });
 });
@@ -648,11 +648,11 @@ describe('calculateCareerPowerScore bonus and cap details', () => {
     });
   });
 
-  // Pins what the code does today for a division the weights do not know: it is
-  // rated at the 0.85 default. The unrated-division change flips the pins in
-  // this block on purpose (an unknown division will add 0). The 0 weight pins at
-  // the end do not flip: a stored 0 is a real weight.
-  describe("a division the weights do not know (today's behaviour)", () => {
+  // A division the weights do not know is UNRATED: a blank name, a name that
+  // matches no division, or a division with no weight. It adds 0 to the bonus
+  // instead of a guessed weight (it used to count as 0.85). The pins at the
+  // end show a stored 0 is a real weight and stays 0.
+  describe('a division the weights do not know (unrated)', () => {
     afterEach(() => {
       weightState.byName = new Map(DEFAULT_WEIGHTS);
     });
@@ -660,27 +660,44 @@ describe('calculateCareerPowerScore bonus and cap details', () => {
     it.each([
       ['an unknown name', 'Mystery'],
       ['a blank name', ''],
-    ])('pays a title won in %s as 7 x 0.85^2', async (_label, division) => {
+    ])('adds nothing for a title won in %s', async (_label, division) => {
       const result = await calculateCareerPowerScore({
         ...baseInput,
         championshipDivisions: [division],
       });
 
-      // 7 x 0.85^2 = 5.0575, under the cap of 15 x 0.85^2 = 10.8375
-      expect(result).toBeCloseTo(55.0575, 10);
+      // It was 7 x 0.85^2 = 5.0575 before.
+      expect(result).toBe(50);
     });
 
-    it('pays a runner-up finish in an unknown division as 4 x 0.85^2', async () => {
+    it('adds nothing for a runner-up finish in an unknown division', async () => {
       const result = await calculateCareerPowerScore({
         ...baseInput,
         runnerUpDivisions: ['Mystery'],
       });
 
-      // 4 x 0.85^2 = 2.89
-      expect(result).toBeCloseTo(52.89, 10);
+      // It was 4 x 0.85^2 = 2.89 before.
+      expect(result).toBe(50);
     });
 
-    it('counts an unknown season in the playoff weight average', async () => {
+    it('adds nothing for a division with no weight, and does not use a base-word weight', async () => {
+      weightState.byName = new Map<string, number | null>([
+        ['intermediate', 0.7],
+        ['intermediate high', null],
+      ]);
+
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        // "Intermediate 1" maps to "intermediate high", which has no weight. The
+        // base word "intermediate" (0.7) must not be used instead.
+        championshipDivisions: ['Intermediate 1'],
+        runnerUpDivisions: ['Intermediate High'],
+      });
+
+      expect(result).toBe(50);
+    });
+
+    it('averages the playoff weight over the rated seasons only', async () => {
       const result = await calculateCareerPowerScore({
         ...baseInput,
         careerPlayoffWins: 10,
@@ -688,11 +705,11 @@ describe('calculateCareerPowerScore bonus and cap details', () => {
         playoffDivisions: ['Competitive', 'Mystery'],
       });
 
-      // average weight (1.0 + 0.85) / 2 = 0.925; bonus (1 - 0.5) * 4 * 0.925 = 1.85
-      expect(result).toBeCloseTo(51.85, 10);
+      // Only Competitive (1.0) counts: (1 - 0.5) * 4 * 1.0 = 2. It was 1.85 (average 0.925).
+      expect(result).toBeCloseTo(52, 10);
     });
 
-    it('rates a run by 0.85 when every playoff season is unknown, not by the team weight', async () => {
+    it('uses the team weight for the playoff run when every playoff season is unknown', async () => {
       const result = await calculateCareerPowerScore({
         ...baseInput,
         teamDivisionWeight: 0.5,
@@ -701,11 +718,26 @@ describe('calculateCareerPowerScore bonus and cap details', () => {
         playoffDivisions: ['Mystery'],
       });
 
-      // (1 - 0.5) * 4 * 0.85 = 1.7, under the cap of 15 x 0.85^2 = 10.8375
-      expect(result).toBeCloseTo(51.7, 10);
+      // (1 - 0.5) * 4 * 0.5 = 1.0, under the cap of 15 x 0.5^2 = 3.75. It was 1.7 (0.85).
+      expect(result).toBeCloseTo(51, 10);
     });
 
-    it('lets an unknown division set the bonus cap', async () => {
+    it('pays no playoff win-rate bonus when the team weight is unrated too', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        teamDivisionWeight: null,
+        // A rated title keeps the cap alive, so only the playoff term can be 0 here.
+        championshipDivisions: ['Competitive'],
+        careerPlayoffWins: 10,
+        careerPlayoffLosses: 0,
+        playoffDivisions: ['Mystery'],
+      });
+
+      // Title 7 x 1.0^2 = 7 under a cap of 15. The playoff win-rate bonus is 0, not NaN.
+      expect(result).toBe(57);
+    });
+
+    it('does not let an unknown division set the bonus cap', async () => {
       const result = await calculateCareerPowerScore({
         ...baseInput,
         championshipDivisions: ['Intermediate'],
@@ -713,12 +745,55 @@ describe('calculateCareerPowerScore bonus and cap details', () => {
         competitivePlayoffWins: 100, // 50 points, far above any cap
       });
 
-      // cap = 15 x max(0.7, 0.85)^2 = 10.8375. The unknown division sets it, not Intermediate.
-      expect(result).toBeCloseTo(60.8375, 10);
+      // cap = 15 x 0.7^2 = 7.35 (Intermediate only). It was 10.8375 (the unknown 0.85).
+      expect(result).toBeCloseTo(57.35, 10);
+    });
+
+    it('caps by the team weight when every bonus division is unknown', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        teamDivisionWeight: 0.7,
+        championshipDivisions: ['Mystery'],
+        runnerUpDivisions: [''],
+        playoffDivisions: ['Mystery'],
+        competitivePlayoffWins: 100,
+      });
+
+      // cap = 15 x 0.7^2 = 7.35, from the team weight, not 0 and not NaN.
+      expect(result).toBeCloseTo(57.35, 10);
+    });
+
+    it('pays no bonus at all when every bonus division and the team weight are unrated', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        teamDivisionWeight: null,
+        championshipDivisions: ['Mystery'],
+        runnerUpDivisions: ['Mystery'],
+        careerPlayoffWins: 10,
+        careerPlayoffLosses: 0,
+        playoffDivisions: ['Mystery'],
+        competitivePlayoffWins: 100,
+      });
+
+      // The cap is 0, so the whole bonus is 0, and the score is the base alone.
+      expect(result).toBe(50);
+    });
+
+    it('pays no bonus when the team has no bonus division and its weight is unrated', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        teamDivisionWeight: null,
+        competitivePlayoffWins: 100,
+      });
+
+      expect(result).toBe(50);
     });
 
     it('pays nothing for a division with a real weight of 0, and caps the bonus at 0', async () => {
-      weightState.byName = new Map<string, number>([...DEFAULT_WEIGHTS, ['zero division', 0]]);
+      weightState.byName = new Map<string, number | null>([
+        ...DEFAULT_WEIGHTS,
+        ['zero division', 0],
+      ]);
 
       const result = await calculateCareerPowerScore({
         ...baseInput,
@@ -726,8 +801,28 @@ describe('calculateCareerPowerScore bonus and cap details', () => {
         competitivePlayoffWins: 100,
       });
 
-      // title 7 x 0^2 = 0, cap 15 x 0^2 = 0: a 0 is a real weight, not the 0.85 default
+      // title 7 x 0^2 = 0, cap 15 x 0^2 = 0: a 0 is a real weight, not unrated
       expect(result).toBe(50);
+    });
+
+    it('rates a playoff run at 0 when the only rated playoff season has a real weight of 0', async () => {
+      weightState.byName = new Map<string, number | null>([
+        ...DEFAULT_WEIGHTS,
+        ['zero division', 0],
+      ]);
+
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        // A Competitive title keeps the cap at 15, so the cap does not hide the playoff term.
+        championshipDivisions: ['Competitive'],
+        careerPlayoffWins: 10,
+        careerPlayoffLosses: 0,
+        playoffDivisions: ['Zero Division'],
+      });
+
+      // The average of the rated seasons is 0, so the win-rate bonus is 0. The team weight
+      // (1.0) is only for a run with no rated season, so it adds nothing here. Title: 7.
+      expect(result).toBe(57);
     });
 
     it('keeps a team division weight of 0 when no bonus division exists', async () => {
@@ -741,6 +836,20 @@ describe('calculateCareerPowerScore bonus and cap details', () => {
 
       // The playoff weight and the cap both fall back to the team weight 0.
       expect(result).toBe(50);
+    });
+
+    it('does not move the score of a team whose divisions are all known', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        championshipDivisions: ['Competitive', 'Intermediate'],
+        runnerUpDivisions: ['Recreational'],
+        careerPlayoffWins: 7,
+        careerPlayoffLosses: 3,
+        playoffDivisions: ['Competitive', 'Intermediate'],
+      });
+
+      // 7 x 1.0 + 7 x 0.49 + 4 x 0.1225 + (0.2 x 4 x 0.85) = 7 + 3.43 + 0.49 + 0.68 = 11.6, under a cap of 15
+      expect(result).toBeCloseTo(61.6, 10);
     });
   });
 });
