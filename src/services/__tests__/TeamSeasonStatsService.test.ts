@@ -49,6 +49,10 @@ vi.mock('@/utils/logger', () => ({
   dbLog: (...args: unknown[]) => mockDbLog(...args),
 }));
 
+vi.mock('@/services/divisions/RealDivisionService', () => ({
+  fetchRealDivisionOverrides: vi.fn(),
+}));
+
 vi.mock('@/services/teamSeasonStats/calculations', () => ({
   processSeasonMatches: vi.fn(() => ({
     sweeps: 0,
@@ -65,6 +69,7 @@ vi.mock('@/services/teamSeasonStats/calculations', () => ({
   })),
 }));
 
+import { fetchRealDivisionOverrides } from '@/services/divisions/RealDivisionService';
 import { processSeasonMatches } from '@/services/teamSeasonStats/calculations';
 
 import { batchUpdateSeasonStats, fetchSeasonBreakdown } from '../TeamSeasonStatsService';
@@ -152,6 +157,8 @@ describe('fetchSeasonBreakdown', () => {
   });
 
   const setupQueries = (overrides?: Partial<Record<string, QueryResult<unknown>>>) => {
+    // No real divisions by default, so these tests see the stored names as before.
+    vi.mocked(fetchRealDivisionOverrides).mockResolvedValue(new Map());
     const results: Record<string, QueryResult<unknown>> = {
       team_season_stats: {
         data: [seasonRow(), seasonRow({ season_id: 's2', power_score: 0.6 })],
@@ -319,6 +326,54 @@ describe('fetchSeasonBreakdown', () => {
     expect(selectCalls.matches[0]).toContain('winner_id');
     expect(selectCalls.playoff_matches[0]).toContain('bracket_id');
     expect(selectCalls.brackets[0]).toContain('divisions(division_weight)');
+  });
+
+  describe('real division of a dropped-out (Hidden) team', () => {
+    // The division map the (mocked) season maths receives for season s1.
+    const divisionMapPassedFor = (seasonId: string) =>
+      vi.mocked(processSeasonMatches).mock.calls.find(([, id]) => id === seasonId)?.[4];
+
+    const hiddenOpponent = {
+      all_team_season_stats: {
+        data: [
+          { team_id: TEAM_ID, season_id: 's1', division_name: 'Alpha' },
+          { team_id: 'team-2', season_id: 's1', division_name: 'Hidden' },
+          { team_id: 'team-3', season_id: 's2', division_name: 'Beta' },
+        ],
+        error: null,
+      },
+    };
+
+    it('hands the real division to the season maths in place of Hidden', async () => {
+      setupQueries(hiddenOpponent);
+      vi.mocked(fetchRealDivisionOverrides).mockResolvedValue(
+        new Map([['team-2_s1', 'Recreational']])
+      );
+
+      await fetchSeasonBreakdown(TEAM_ID);
+
+      expect(divisionMapPassedFor('s1')?.get('team-2_s1')).toBe('Recreational');
+      expect(vi.mocked(fetchRealDivisionOverrides)).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps a real stored division when an override disagrees', async () => {
+      setupQueries(hiddenOpponent);
+      vi.mocked(fetchRealDivisionOverrides).mockResolvedValue(
+        new Map([['team-3_s2', 'Recreational']])
+      );
+
+      await fetchSeasonBreakdown(TEAM_ID);
+
+      expect(divisionMapPassedFor('s2')?.get('team-3_s2')).toBe('Beta');
+    });
+
+    it('leaves the stored names alone when there are no overrides', async () => {
+      setupQueries(hiddenOpponent);
+
+      await fetchSeasonBreakdown(TEAM_ID);
+
+      expect(divisionMapPassedFor('s1')?.get('team-2_s1')).toBe('Hidden');
+    });
   });
 
   // These pin the default division weight (0.85) in fetchSeasonBreakdown.ts as it is today.
