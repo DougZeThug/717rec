@@ -247,8 +247,10 @@ Standings UI            team_season_stats          power_score_snapshots
 `upsert_team_season_stats()` copies `v_team_season_agg.power_score` into
 `team_season_stats`. It takes no season parameter — it re-derives every season
 on every call, so a formula change propagates broadly at once. **Archived
-seasons are exempt**: their `power_score`, `sos` and `division_name` are frozen
-(see above).
+seasons are exempt**: their `power_score`, `career_power_score`, `sos` and
+`division_name` are frozen (see above), except that saving new Power Score
+weights recomputes them too (`upsert_team_season_stats(true)`, migration
+`20260820120000_power_score_weight_sandbox.sql:261,321`).
 
 ### The weight sandbox
 

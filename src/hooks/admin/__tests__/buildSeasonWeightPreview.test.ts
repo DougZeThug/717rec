@@ -159,19 +159,40 @@ describe('buildSeasonWeightPreview', () => {
     expect(preview[0].rows.map((r) => r.teamName)).toEqual(['Xray', 'Yankee']);
   });
 
-  it('scores Team A (W 2-0, L 1-2, T 1-1) as the database does', () => {
-    // The same fixture as supabase/tests/power_score_ties_excluded.sql: every
-    // opponent weighs 0.5. The tie is out of the match term (0.5 / 1.0 = 0.5)
-    // but its games still count in the game term (4 of 7).
+  // The fixture of supabase/tests/power_score_ties_excluded.sql, with the
+  // numbers that file asserts. Every opponent weighs 0.5 except Opp 3, the team
+  // Team A ties, which weighs 0.8. The preview takes the components the view
+  // computes, so these are what the SQL derives from the matches:
+  //   Team A  W 2-0 v Opp 1, L 1-2 v Opp 2, T 1-1 v Opp 3 (0.8)
+  //     weighted_win_pct      0.5 / (0.5 + 0.5)                         = 0.5
+  //                           (the tie is out of the match term)
+  //     sos                   (0.5 + 0.5 + 0.8) / 3                     = 0.6
+  //                           (the tie still counts in SOS)
+  //     weighted_game_win_pct (2*0.5 + 1*0.5 + 1*0.8) / (2*0.5 + 3*0.5 + 2*0.8)
+  //                                                                     = 23/41
+  //     power                 0.5*40 + 0.6*45 + 23/41*15               = 55.4146
+  //   Team B  W 2-0 v Opp 1, L 0-2 v Opp 2, no tie: 0.5, 0.5, 0.5       = 50.0
+  //   Team E  one 1-1 tie and nothing else: 0, 0.5, 0.5                 = 30.0
+  //           (0, never NaN, and still rated because it played)
+  // The Win % the SQL also asserts (0.5 for A, 0 for E) is not shown by the
+  // preview. It only breaks ties, and the two tests above pin that rule.
+  it('scores the power_score_ties_excluded.sql fixture as the database does', () => {
     const teamA = {
-      ...component('a', 0.5, 0.5, 4 / 7),
+      ...component('a', 0.5, 0.6, 23 / 41),
       matches_played: 3,
       wins: 1,
       losses: 1,
       game_wins: 4,
       game_losses: 3,
     };
-    // Ties only: 0, never NaN, and still rated because it played.
+    const teamB = {
+      ...component('b', 0.5, 0.5, 0.5),
+      matches_played: 2,
+      wins: 1,
+      losses: 1,
+      game_wins: 2,
+      game_losses: 2,
+    };
     const teamE = {
       ...component('e', 0, 0.5, 0.5),
       matches_played: 1,
@@ -181,17 +202,25 @@ describe('buildSeasonWeightPreview', () => {
       game_losses: 1,
     };
     const preview = buildSeasonWeightPreview({
-      teams: [team('a', 'Team A', 'Recreational'), team('e', 'Team E', 'Recreational')],
-      components: [teamA, teamE],
+      teams: [
+        team('a', 'Team A', 'Recreational'),
+        team('b', 'Team B', 'Recreational'),
+        team('e', 'Team E', 'Recreational'),
+      ],
+      components: [teamA, teamB, teamE],
       baseline,
       candidate,
     });
 
-    const [first, second] = preview[0].rows;
+    const [first, second, third] = preview[0].rows;
     expect(first.teamName).toBe('Team A');
-    expect(first.baselineScore).toBeCloseTo(0.5 * 40 + 0.5 * 45 + (4 / 7) * 15, 9); // 51.0714
-    expect(second.teamName).toBe('Team E');
-    expect(second.baselineScore).toBeCloseTo(30, 9);
+    expect(first.baselineScore).toBeCloseTo(55.4146, 4);
+    expect(first.baselineScore).toBeCloseTo(0.5 * 40 + 0.6 * 45 + (23 / 41) * 15, 9);
+    expect(second.teamName).toBe('Team B');
+    expect(second.baselineScore).toBeCloseTo(50, 9);
+    expect(third.teamName).toBe('Team E');
+    expect(third.baselineScore).toBeCloseTo(30, 9);
+    expect([first, second, third].map((row) => row.baselineRank)).toEqual([1, 2, 3]);
     expect(preview[0].unrated).toEqual([]);
   });
 });

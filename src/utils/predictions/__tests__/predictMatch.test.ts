@@ -287,11 +287,13 @@ describe('predictMatch', () => {
   // The weekly recap lists one head-to-head pair per match with no de-duplication.
   // When two matches of the week have the same teams in the same order, the batch
   // SQL function multiplies the counts: a pair listed twice reads x4, three times
-  // x9 (docs/untangle-decision-log.md, "Slice 5 result"). That is harmless: a
-  // repeated pair means the two teams have already met at least twice, so the
-  // counts were past MIN_H2H_MATCHES, and the rating reads only wins / (wins +
-  // losses). The recap reads only probA and probB. These pins fail if the rating
-  // ever starts to depend on how many meetings were counted.
+  // x9 (docs/untangle-decision-log.md, "Slice 5 result"). That is harmless: both
+  // matches are decided, so both are already counted and the total is past
+  // MIN_H2H_MATCHES either way, and the rating reads only wins / (wins + losses).
+  // The recap reads only probA and probB. These pins fail if the rating ever
+  // starts to depend on how many meetings were counted. They all start at a total
+  // of 2 or more. A tie is not counted, so one win plus one tie reads 1 and x4
+  // reads 4, which crosses the floor: that edge is not pinned (see the log).
   describe('head-to-head counts that are all multiplied (a repeated pair in the weekly recap)', () => {
     const records = [
       { wins: 3, losses: 1 },
