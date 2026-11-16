@@ -1,5 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import { fetchRealDivisionOverrides } from '@/services/divisions/RealDivisionService';
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
+import { applyRealDivisions } from '@/utils/divisions/realDivisionOverrides';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
 import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
@@ -196,8 +198,12 @@ const buildTeamDivisionMap = (archives: TeamDetailsArchive[] | null): Map<string
 export const fetchCareerData = async (teamId: string): Promise<CareerData | null> => {
   assertValidUuid(teamId, 'teamId');
 
-  // Fetch all independent queries in parallel
-  const results = await runCareerQueries(teamId);
+  // Fetch all independent queries in parallel. The real-division lookup never
+  // throws, so it runs beside them.
+  const [results, realDivisions] = await Promise.all([
+    runCareerQueries(teamId),
+    fetchRealDivisionOverrides(),
+  ]);
   reportCareerQueryErrors(results);
 
   const [
@@ -234,7 +240,8 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     currentMatches,
     archivedMatches,
     playoffMatches,
-    teamDivisionMap: buildTeamDivisionMap(allTeamDetailsArchive),
+    // A team moved to Hidden after it dropped out is filed under its real division.
+    teamDivisionMap: applyRealDivisions(buildTeamDivisionMap(allTeamDetailsArchive), realDivisions),
     bracketDivisionWeights,
     bracketDivisionDisplayNames,
     bracketSeasonMap,

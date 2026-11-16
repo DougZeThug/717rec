@@ -1,6 +1,8 @@
 import { QUERY_STALE_TIMES } from '@/config/cache';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchRealDivisionOverrides } from '@/services/divisions/RealDivisionService';
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
+import { applyRealDivisions } from '@/utils/divisions/realDivisionOverrides';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
 import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
@@ -82,11 +84,13 @@ function groupMatchesByTeam<T extends { team1_id: string | null; team2_id: strin
 
 /**
  * Builds teamDivisionWeights (teamId → weight) and teamDivisionMap
- * ("teamId_seasonId" → divisionname) from raw query results.
+ * ("teamId_seasonId" → divisionname) from raw query results. The real division
+ * of a team that dropped out and was moved to Hidden replaces its Hidden name.
  */
 function buildTeamDivisionMaps(
   teamDivisionsData: { id: string; divisions: unknown }[] | null,
-  archiveData: TeamDetailsArchive[] | null
+  archiveData: TeamDetailsArchive[] | null,
+  realDivisions: ReadonlyMap<string, string>
 ): { teamDivisionWeights: Map<string, number | null>; teamDivisionMap: Map<string, string> } {
   const teamDivisionWeights = new Map<string, number | null>();
   for (const row of teamDivisionsData ?? []) {
@@ -101,7 +105,10 @@ function buildTeamDivisionMaps(
       teamDivisionMap.set(`${archive.team_id}_${archive.season_id}`, archive.divisionname);
     }
   }
-  return { teamDivisionWeights, teamDivisionMap };
+  return {
+    teamDivisionWeights,
+    teamDivisionMap: applyRealDivisions(teamDivisionMap, realDivisions),
+  };
 }
 
 /**
@@ -231,6 +238,7 @@ export const fetchAllTeamsCareerData = async (
     allTeamDetailsArchiveResult,
     allPlayoffMatchesResult,
     activeSeasonResult,
+    realDivisions,
   ] = await Promise.all([
     // All teams with division weights
     supabase.from('teams').select('id, divisions(division_weight)').in('id', teamIds),
@@ -307,6 +315,8 @@ export const fetchAllTeamsCareerData = async (
       .not('winner_id', 'is', null),
     // Active season (just one row)
     supabase.from('seasons').select('id').eq('is_active', true).single(),
+    // Real division of dropped-out teams: one read for the whole run, never throws
+    fetchRealDivisionOverrides(),
   ]);
 
   // Handle critical error
@@ -324,7 +334,8 @@ export const fetchAllTeamsCareerData = async (
   // 2. Build shared lookup maps (computed once, shared across all teams)
   const { teamDivisionWeights, teamDivisionMap } = buildTeamDivisionMaps(
     allTeamDivisionsResult.data as { id: string; divisions: unknown }[] | null,
-    allTeamDetailsArchiveResult.data as TeamDetailsArchive[] | null
+    allTeamDetailsArchiveResult.data as TeamDetailsArchive[] | null,
+    realDivisions
   );
 
   // Active season lookup: PGRST116 (no rows) is a valid empty state; any other

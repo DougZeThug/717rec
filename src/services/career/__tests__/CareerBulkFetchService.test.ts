@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { applyDropoutDivisions, DROPOUT_DIVISIONS } from '@/constants/dropoutDivisions';
+import { fetchRealDivisionOverrides } from '@/services/divisions/RealDivisionService';
 import { DatabaseError } from '@/types/errors';
+import { calculateDivisionRecords } from '@/utils/career/calculateDivisionRecords';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
@@ -20,8 +23,12 @@ vi.mock('@/config/cache', () => ({
   QUERY_STALE_TIMES: { STANDARD: 300000 },
 }));
 
+vi.mock('@/services/divisions/RealDivisionService', () => ({
+  fetchRealDivisionOverrides: vi.fn(),
+}));
+
 // Import after mocks
-import { fetchAllTeamsCareerData } from '../CareerBulkFetchService';
+import { type BulkTeamCareerData, fetchAllTeamsCareerData } from '../CareerBulkFetchService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -83,6 +90,11 @@ const successOverrides = {
   seasons: { data: { id: 's-1' }, error: null },
 };
 
+// No real divisions unless a test asks for them, so every test sees the stored names.
+beforeEach(() => {
+  vi.mocked(fetchRealDivisionOverrides).mockResolvedValue(new Map());
+});
+
 // ─── fetchAllTeamsCareerData ──────────────────────────────────────────────────
 
 describe('fetchAllTeamsCareerData', () => {
@@ -92,6 +104,7 @@ describe('fetchAllTeamsCareerData', () => {
     const result = await fetchAllTeamsCareerData([]);
     expect(result.size).toBe(0);
     expect(mockFrom).not.toHaveBeenCalled();
+    expect(fetchRealDivisionOverrides).not.toHaveBeenCalled();
   });
 
   it('returns BulkTeamCareerData for each teamId on success', async () => {
@@ -518,5 +531,143 @@ describe("active season lookup (today's behaviour)", () => {
 
     await expect(request).rejects.toThrow(DatabaseError);
     await expect(request).rejects.toThrow('Failed to fetch active season: active season failed');
+  });
+});
+
+// A team moved to Hidden after it dropped out. Its games are real games, so the
+// real division (Doug's list, plus the Power Score lookup) files them.
+describe('real division of a dropped-out (Hidden) team', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const doug = (prefix: string) => {
+    const key = Object.keys(DROPOUT_DIVISIONS).find((k) => k.startsWith(prefix)) ?? '';
+    const [teamId, seasonId] = key.split('_');
+    return { key, teamId, seasonId };
+  };
+  const BURNING_HOLES = doug('eb7976c7'); // Summer 1 2026, really Recreational
+  const ZOO_PALS = doug('56387477'); // Fall 2026 (active), really Intermediate
+  const REAL_OPPONENT = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+
+  const game = (team1: string, team2: string, seasonId: string, team1Won: boolean) => ({
+    winner_id: team1Won ? team1 : team2,
+    loser_id: team1Won ? team2 : team1,
+    team1_game_wins: team1Won ? 2 : 0,
+    team2_game_wins: team1Won ? 0 : 2,
+    team1_id: team1,
+    team2_id: team2,
+    season_id: seasonId,
+  });
+
+  const setup = () =>
+    mockFrom.mockImplementation(
+      buildFromMock({
+        ...successOverrides,
+        teams: {
+          data: [
+            { id: 't1', divisions: { division_weight: 0.9 } },
+            { id: 't2', divisions: { division_weight: 0.5 } },
+          ],
+          error: null,
+        },
+        matches: {
+          data: [
+            // t1 beat Zoo Pals in the ACTIVE season: no archive row, joined division is Hidden.
+            {
+              ...game('t1', ZOO_PALS.teamId, ZOO_PALS.seasonId, true),
+              team1: { id: 't1', divisions: { name: 'Competitive' } },
+              team2: { id: ZOO_PALS.teamId, divisions: { name: 'Hidden' } },
+            },
+          ],
+          error: null,
+        },
+        matches_archive: {
+          data: [
+            // t1 lost 0-2 to Burning Holes. t2 beat the same team.
+            game('t1', BURNING_HOLES.teamId, BURNING_HOLES.seasonId, false),
+            game('t2', BURNING_HOLES.teamId, BURNING_HOLES.seasonId, true),
+            game('t1', REAL_OPPONENT, BURNING_HOLES.seasonId, true),
+          ],
+          error: null,
+        },
+        team_details_archive: {
+          data: [
+            {
+              team_id: BURNING_HOLES.teamId,
+              season_id: BURNING_HOLES.seasonId,
+              divisionname: 'Hidden',
+            },
+            {
+              team_id: REAL_OPPONENT,
+              season_id: BURNING_HOLES.seasonId,
+              divisionname: 'Competitive',
+            },
+          ],
+          error: null,
+        },
+      })
+    );
+
+  const recordsFor = (data: BulkTeamCareerData | undefined, teamId: string) =>
+    calculateDivisionRecords({
+      currentMatches: data?.currentMatches ?? null,
+      archivedMatches: data?.archivedMatches ?? null,
+      playoffMatches: null,
+      teamDivisionMap: data?.teamDivisionMap ?? new Map(),
+      bracketDivisionWeights: {},
+      bracketDivisionDisplayNames: {},
+      teamId,
+    });
+
+  it("leaves today's numbers alone when there are no overrides: the Hidden games are dropped", async () => {
+    setup();
+
+    const result = await fetchAllTeamsCareerData(['t1', 't2']);
+
+    expect(recordsFor(result.get('t1'), 't1')).toEqual({
+      competitive: { wins: 1, losses: 0 },
+      intermediate: { wins: 0, losses: 0 },
+      recreational: { wins: 0, losses: 0 },
+    });
+    expect(recordsFor(result.get('t2'), 't2').recreational).toEqual({ wins: 0, losses: 0 });
+  });
+
+  it("files each team's Hidden games under the real division, active season included", async () => {
+    setup();
+    vi.mocked(fetchRealDivisionOverrides).mockResolvedValue(applyDropoutDivisions(new Map()));
+
+    const result = await fetchAllTeamsCareerData(['t1', 't2']);
+
+    expect(recordsFor(result.get('t1'), 't1')).toEqual({
+      competitive: { wins: 1, losses: 0 },
+      // Zoo Pals, Fall 2026 (active): only the map can carry it.
+      intermediate: { wins: 1, losses: 0 },
+      // The 0-2 loss to Burning Holes.
+      recreational: { wins: 0, losses: 1 },
+    });
+    expect(recordsFor(result.get('t2'), 't2').recreational).toEqual({ wins: 1, losses: 0 });
+  });
+
+  it('reads the overrides ONCE for the whole run and shares the map between teams', async () => {
+    setup();
+    vi.mocked(fetchRealDivisionOverrides).mockResolvedValue(applyDropoutDivisions(new Map()));
+
+    const result = await fetchAllTeamsCareerData(['t1', 't2']);
+
+    expect(fetchRealDivisionOverrides).toHaveBeenCalledTimes(1);
+    expect(result.get('t1')?.teamDivisionMap).toBe(result.get('t2')?.teamDivisionMap);
+    expect(result.get('t1')?.teamDivisionMap.get(ZOO_PALS.key)).toBe('Intermediate');
+  });
+
+  it('never replaces a real archived division with an override', async () => {
+    setup();
+    vi.mocked(fetchRealDivisionOverrides).mockResolvedValue(
+      new Map([[`${REAL_OPPONENT}_${BURNING_HOLES.seasonId}`, 'Recreational']])
+    );
+
+    const result = await fetchAllTeamsCareerData(['t1']);
+
+    expect(
+      result.get('t1')?.teamDivisionMap.get(`${REAL_OPPONENT}_${BURNING_HOLES.seasonId}`)
+    ).toBe('Competitive');
   });
 });
