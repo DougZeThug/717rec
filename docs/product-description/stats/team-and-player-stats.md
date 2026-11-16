@@ -96,7 +96,7 @@ Not applicable. There is no commit on any of these numbers.
 | **Trend** | Movement since the last weekly snapshot. | Compared in the browser against a stored snapshot. Blank for a team that has never been ranked. |
 | **Streak** | The current run of wins or losses, as `W3` or `L2`. | Worked out in the browser from the match list, newest first, stopping at the first result that breaks the run. Ties are skipped rather than breaking a streak. **Playoff matches count.** |
 | **Close losses** | Matches lost in which the team still won at least one game — a 1–2 defeat. | Server. |
-| **Sweeps and sweep rate** | Matches won 2–0, and that count as a percentage of *all* matches played — not of matches won. | Worked out in the browser from the team's match list. |
+| **Sweeps and sweep rate** | Matches won 2–0, and that count as a percentage of matches with a winner (wins plus losses) — not of matches won. A tied match is left out of the bottom number, as it is in Win %. | Worked out in the browser from the team's match list. |
 | **Clutch record** | Wins and losses in matches that went to a deciding third game, and the win rate in them. | Worked out in the browser from game wins summing to three. |
 
 The browser-side numbers and the server-side numbers are built from different
@@ -272,8 +272,10 @@ page in a session fills in immediately.
 
 ## Edge cases
 
-- **Sweep rate is a share of all matches, not of wins.** A team that wins half
-  its matches and sweeps every one of them shows 50%, not 100%.
+- **Sweep rate is a share of matches with a winner, not of wins.** A team that
+  wins half its matches and sweeps every one of them shows 50%, not 100%. A tied
+  match is left out of the bottom number (changed 2026-11-16): 2 sweeps in 3
+  matches with a winner, plus a tie, reads 66.7%, not 50%.
 - **A grade with nothing to measure shows a dash.** Only Clutch can reach that
   state, and only for a team that has never played a game 3. A team with no
   rating at all gets no card rather than a card of dashes.
