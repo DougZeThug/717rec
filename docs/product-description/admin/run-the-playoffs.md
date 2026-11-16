@@ -122,7 +122,12 @@ The create dialog opens empty every time. Its fields:
   division changes; a division with no teams says so and offers the box.
 - **Format** — Single or Double Elimination. Default Double.
 - **Grand final** — one match or two, for double elimination only.
-- **Teams** — between **2 and 32**, shown as "Select Teams (*N*/32)".
+- **Teams** — between **2 and 32**, shown as "Select Teams (*N*/32)". The
+  list is **best first**, in the order the saved bracket uses (score to one
+  decimal, then division tier, then win %, then name), not A to Z. The **#**
+  number beside a team is a stored seed if the team has one, otherwise its
+  place in the whole league list. It is not the 1-to-N seed inside this
+  division (the Projected seeds card shows that).
 
 The **Seeds** tab inside the picker is a separate thing from the bracket: it
 edits each team's stored seed for the division and **saves straight to the
