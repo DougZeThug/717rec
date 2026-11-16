@@ -398,6 +398,59 @@ describe('calculateCareerPowerScore', () => {
 
       expect(result).toBeCloseTo(56.3175, 4);
     });
+
+    // Fixtures 5 and 6 pin TODAY'S number for a title won in a division the
+    // weights do not know: it is rated at the 0.85 default. The unrated-division
+    // change flips both on purpose (to 50 and 53.43), and the SQL twins of both
+    // fixtures arrive in the same change as that flip.
+    //
+    // Fixture 5: base 50, one title in an unknown division.
+    // 7 x 0.85^2 = 5.0575, under a cap of 15 x 0.85^2 = 10.8375.
+    it("fixture 5: a title in an unknown division is worth 5.0575 (today's number)", async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['Nothing Like A Division'],
+        prefetchedSeasonStats: [
+          {
+            career_power_score: 0.5,
+            power_score: 0.5,
+            match_wins: 5,
+            match_losses: 5,
+            season_id: 'p1',
+          },
+        ],
+      });
+
+      expect(result).toBeCloseTo(55.0575, 4);
+    });
+
+    // Fixture 6: base 50, an Intermediate High title plus an unknown-division title.
+    // 7 x 0.70^2 = 3.43, plus 7 x 0.85^2 = 5.0575, is 8.4875, under a cap of
+    // 15 x max(0.70, 0.85)^2 = 10.8375.
+    it("fixture 6: a known title plus an unknown title adds 8.4875 (today's number)", async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['Intermediate High', 'Nothing Like A Division'],
+        prefetchedSeasonStats: [
+          {
+            career_power_score: 0.5,
+            power_score: 0.5,
+            match_wins: 5,
+            match_losses: 5,
+            season_id: 'p1',
+          },
+          {
+            career_power_score: 0.5,
+            power_score: 0.5,
+            match_wins: 5,
+            match_losses: 5,
+            season_id: 'p2',
+          },
+        ],
+      });
+
+      expect(result).toBeCloseTo(58.4875, 4);
+    });
   });
 });
 
@@ -592,6 +645,102 @@ describe('calculateCareerPowerScore bonus and cap details', () => {
       });
 
       expect(result).toBe(0);
+    });
+  });
+
+  // Pins what the code does today for a division the weights do not know: it is
+  // rated at the 0.85 default. The unrated-division change flips the pins in
+  // this block on purpose (an unknown division will add 0). The 0 weight pins at
+  // the end do not flip: a stored 0 is a real weight.
+  describe("a division the weights do not know (today's behaviour)", () => {
+    afterEach(() => {
+      weightState.byName = new Map(DEFAULT_WEIGHTS);
+    });
+
+    it.each([
+      ['an unknown name', 'Mystery'],
+      ['a blank name', ''],
+    ])('pays a title won in %s as 7 x 0.85^2', async (_label, division) => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        championshipDivisions: [division],
+      });
+
+      // 7 x 0.85^2 = 5.0575, under the cap of 15 x 0.85^2 = 10.8375
+      expect(result).toBeCloseTo(55.0575, 10);
+    });
+
+    it('pays a runner-up finish in an unknown division as 4 x 0.85^2', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        runnerUpDivisions: ['Mystery'],
+      });
+
+      // 4 x 0.85^2 = 2.89
+      expect(result).toBeCloseTo(52.89, 10);
+    });
+
+    it('counts an unknown season in the playoff weight average', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        careerPlayoffWins: 10,
+        careerPlayoffLosses: 0,
+        playoffDivisions: ['Competitive', 'Mystery'],
+      });
+
+      // average weight (1.0 + 0.85) / 2 = 0.925; bonus (1 - 0.5) * 4 * 0.925 = 1.85
+      expect(result).toBeCloseTo(51.85, 10);
+    });
+
+    it('rates a run by 0.85 when every playoff season is unknown, not by the team weight', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        teamDivisionWeight: 0.5,
+        careerPlayoffWins: 10,
+        careerPlayoffLosses: 0,
+        playoffDivisions: ['Mystery'],
+      });
+
+      // (1 - 0.5) * 4 * 0.85 = 1.7, under the cap of 15 x 0.85^2 = 10.8375
+      expect(result).toBeCloseTo(51.7, 10);
+    });
+
+    it('lets an unknown division set the bonus cap', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        championshipDivisions: ['Intermediate'],
+        runnerUpDivisions: ['Mystery'],
+        competitivePlayoffWins: 100, // 50 points, far above any cap
+      });
+
+      // cap = 15 x max(0.7, 0.85)^2 = 10.8375. The unknown division sets it, not Intermediate.
+      expect(result).toBeCloseTo(60.8375, 10);
+    });
+
+    it('pays nothing for a division with a real weight of 0, and caps the bonus at 0', async () => {
+      weightState.byName = new Map<string, number>([...DEFAULT_WEIGHTS, ['zero division', 0]]);
+
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        championshipDivisions: ['Zero Division'],
+        competitivePlayoffWins: 100,
+      });
+
+      // title 7 x 0^2 = 0, cap 15 x 0^2 = 0: a 0 is a real weight, not the 0.85 default
+      expect(result).toBe(50);
+    });
+
+    it('keeps a team division weight of 0 when no bonus division exists', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        teamDivisionWeight: 0,
+        careerPlayoffWins: 10,
+        careerPlayoffLosses: 0,
+        competitivePlayoffWins: 100,
+      });
+
+      // The playoff weight and the cap both fall back to the team weight 0.
+      expect(result).toBe(50);
     });
   });
 });
