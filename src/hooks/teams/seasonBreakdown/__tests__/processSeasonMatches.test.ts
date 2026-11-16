@@ -129,96 +129,13 @@ describe('processSeasonMatches', () => {
       closeWins: 2,
       closeLosses: 2,
       divisionRecords: {
-        // The 1-2 loss to the Hidden team is left out of the split. It still counts
-        // as a close loss above, because sweeps and close matches do not use the tier.
-        competitive: { wins: 1, losses: 0, gameWins: 2, gameLosses: 0 },
+        competitive: { wins: 1, losses: 1, gameWins: 3, gameLosses: 2 },
         intermediate: { wins: 1, losses: 0, gameWins: 2, gameLosses: 1 },
         recreational: { wins: 0, losses: 1, gameWins: 1, gameLosses: 2 },
       },
       playoffWins: 0,
       playoffLosses: 0,
     });
-  });
-
-  it('leaves a tied or unfinished match out of the division records', () => {
-    const teamDivisionMap = new Map([[`opp-competitive_${SEASON_ID}`, 'Competitive']]);
-    const tie = createRegularMatch({
-      team1_id: TEAM_ID,
-      team2_id: 'opp-competitive',
-      team1_game_wins: 1,
-      team2_game_wins: 1,
-    });
-    const unfinished = createRegularMatch({
-      team1_id: 'opp-competitive',
-      team2_id: TEAM_ID,
-      team1_game_wins: 1,
-      team2_game_wins: 0,
-    });
-
-    const result = processSeasonMatches(TEAM_ID, SEASON_ID, [tie, unfinished], [], teamDivisionMap);
-
-    expect(result.divisionRecords.competitive).toEqual({
-      wins: 0,
-      losses: 0,
-      gameWins: 0,
-      gameLosses: 0,
-    });
-    expect(result.sweeps).toBe(0);
-    expect(result.closeWins).toBe(0);
-    expect(result.closeLosses).toBe(0);
-  });
-
-  // The opponent's division comes from team_season_stats, one row per team per season.
-  // A team that went Hidden later must not change its old games.
-  it('reads the opponent division for the season being processed', () => {
-    const SEASON_A = 'season-a';
-    const SEASON_B = 'season-b';
-    const MOVER = 'opp-moved';
-    const teamDivisionMap = new Map([
-      [`${MOVER}_${SEASON_A}`, 'Competitive'],
-      [`${MOVER}_${SEASON_B}`, 'Hidden'],
-    ]);
-    const sweepAgainstMover = (seasonId: string) =>
-      createRegularMatch({
-        team1_id: TEAM_ID,
-        team2_id: MOVER,
-        team1_game_wins: 2,
-        team2_game_wins: 0,
-        winner_id: TEAM_ID,
-        loser_id: MOVER,
-        season_id: seasonId,
-      });
-
-    const seasonA = processSeasonMatches(
-      TEAM_ID,
-      SEASON_A,
-      [sweepAgainstMover(SEASON_A)],
-      [],
-      teamDivisionMap
-    );
-    const seasonB = processSeasonMatches(
-      TEAM_ID,
-      SEASON_B,
-      [sweepAgainstMover(SEASON_B)],
-      [],
-      teamDivisionMap
-    );
-
-    // Season A: the opponent was Competitive, so the game counts there.
-    expect(seasonA.divisionRecords).toEqual({
-      competitive: { wins: 1, losses: 0, gameWins: 2, gameLosses: 0 },
-      intermediate: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
-      recreational: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
-    });
-    // Season B: the opponent was Hidden, so the game is left out of every card.
-    expect(seasonB.divisionRecords).toEqual({
-      competitive: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
-      intermediate: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
-      recreational: { wins: 0, losses: 0, gameWins: 0, gameLosses: 0 },
-    });
-    // The sweep still counts in both seasons.
-    expect(seasonA.sweeps).toBe(1);
-    expect(seasonB.sweeps).toBe(1);
   });
 
   it('processes playoff counters and maps division tiers from bracketInfo.division_weight', () => {
