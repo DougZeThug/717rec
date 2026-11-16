@@ -14,8 +14,16 @@
 -- counted by neither function, and an unfinished regular-season match, or an
 -- unfinished archived one, is not counted even if a stale winner is stamped on
 -- the row. Playoff matches are different: they are counted whenever a winner
--- and loser are set, whatever their status. This file describes that and does
--- not pin it.
+-- and loser are set, whatever their status. Two quirks are pinned at the bottom
+-- as today's behaviour (Slice 6; nobody chose them, and no code changed):
+--   * a completed match with a winner and NO loser: the view needs both, so
+--     get_head_to_head_records drops it; get_batch_head_to_head needs only the
+--     winner, so it counts it. The two functions disagree on that match.
+--   * a playoff match with a winner and loser whose status is not 'completed':
+--     both functions count it.
+-- Doug read the live data on 2026-11-16: 0 completed matches have a winner and
+-- no loser; 8 Fall 2025 playoff rows have a winner and a score but a status of
+-- 'in_progress' or 'pending'. Both functions count those 8 today. Left as is.
 --
 -- The fixture swaps sides on purpose (B is team1 in one of the A-B matches) so
 -- that a count taken from the wrong side reads wrong. The numbers are worked
@@ -34,6 +42,12 @@
 --            B side:   the same four matches mirrored: wins 1, losses 3,
 --                      game wins 3, game losses 7, win pct 25.0
 --   A vs C   one regular match, A wins 2-1: played 1, wins 1, game 2-1, 100.0
+--   D vs E   one regular match, D wins 2-0, loser_id NULL. The view and
+--            get_head_to_head_records have no D-E row. The batch counts it:
+--            D wins 1, E wins 0, total 1, game wins 2 / 0.
+--   F vs G   two playoff matches, F wins both, status 'in_progress' (2-1) and
+--            'pending' (2-0). Both functions count both: played 2, wins 2,
+--            losses 0, game wins 4, game losses 1, win pct 100.0.
 
 BEGIN;
 
@@ -52,16 +66,25 @@ DECLARE
   v_playoff_id uuid := '00000000-0000-0000-0000-0000000fc106';
   v_archive_id uuid := '00000000-0000-0000-0000-0000000fc107';
   v_archive_open_id uuid := '00000000-0000-0000-0000-0000000fc108';
+  v_team_d uuid := '00000000-0000-0000-0000-0000000fc0d1';
+  v_team_e uuid := '00000000-0000-0000-0000-0000000fc0e1';
+  v_team_f uuid := '00000000-0000-0000-0000-0000000fc0f1';
+  v_team_g uuid := '00000000-0000-0000-0000-0000000fc0a2';
+  v_no_loser_id uuid := '00000000-0000-0000-0000-0000000fc109';
+  v_po_running_id uuid := '00000000-0000-0000-0000-0000000fc10a';
+  v_po_pending_id uuid := '00000000-0000-0000-0000-0000000fc10b';
   v_row_count integer;
   v_order uuid[];
   v_pairs jsonb;
   r record;
 BEGIN
   DELETE FROM public.matches_archive WHERE id IN (v_archive_id, v_archive_open_id);
-  DELETE FROM public.playoff_matches WHERE id = v_playoff_id;
+  DELETE FROM public.playoff_matches
+   WHERE id IN (v_playoff_id, v_po_running_id, v_po_pending_id);
   DELETE FROM public.matches
-   WHERE id IN (v_m1_id, v_m2_id, v_tie_id, v_open_id, v_ac_id);
-  DELETE FROM public.teams WHERE id IN (v_team_a, v_team_b, v_team_c);
+   WHERE id IN (v_m1_id, v_m2_id, v_tie_id, v_open_id, v_ac_id, v_no_loser_id);
+  DELETE FROM public.teams
+   WHERE id IN (v_team_a, v_team_b, v_team_c, v_team_d, v_team_e, v_team_f, v_team_g);
   DELETE FROM public.divisions WHERE id = v_division_id;
   DELETE FROM public.seasons WHERE id = v_season_id;
 
@@ -72,7 +95,11 @@ BEGIN
   INSERT INTO public.teams (id, name, division_id, wins, losses, game_wins, game_losses) VALUES
     (v_team_a, 'Head To Head Alpha',   v_division_id, 0, 0, 0, 0),
     (v_team_b, 'Head To Head Bravo',   v_division_id, 0, 0, 0, 0),
-    (v_team_c, 'Head To Head Charlie', v_division_id, 0, 0, 0, 0);
+    (v_team_c, 'Head To Head Charlie', v_division_id, 0, 0, 0, 0),
+    (v_team_d, 'Head To Head Delta',   v_division_id, 0, 0, 0, 0),
+    (v_team_e, 'Head To Head Echo',    v_division_id, 0, 0, 0, 0),
+    (v_team_f, 'Head To Head Foxtrot', v_division_id, 0, 0, 0, 0),
+    (v_team_g, 'Head To Head Golf',    v_division_id, 0, 0, 0, 0);
 
   -- The view needs a loser_id on every row it counts, so a decided match sets both.
   INSERT INTO public.matches
@@ -88,14 +115,20 @@ BEGIN
     -- m4: not completed. The stale winner makes sure only iscompleted keeps it out.
     (v_open_id, v_team_a, v_team_b, v_season_id, 4, false, '2026-03-22', 2, 0, v_team_a, v_team_b),
     -- A vs C: A wins 2-1.
-    (v_ac_id,   v_team_a, v_team_c, v_season_id, 5, true,  '2026-03-29', 2, 1, v_team_a, v_team_c);
+    (v_ac_id,   v_team_a, v_team_c, v_season_id, 5, true,  '2026-03-29', 2, 1, v_team_a, v_team_c),
+    -- D vs E: D wins 2-0 but loser_id is NULL. Pinned at the bottom as today's behaviour.
+    (v_no_loser_id, v_team_d, v_team_e, v_season_id, 6, true, '2026-04-05', 2, 0, v_team_d, NULL);
 
   -- Playoff scores are game wins and are numeric on this table.
   INSERT INTO public.playoff_matches
     (id, match_type, position, round, team1_id, team2_id, team1_score, team2_score,
      winner_id, loser_id, status)
   VALUES
-    (v_playoff_id, 'winners', 1, 1, v_team_a, v_team_b, 2, 1, v_team_a, v_team_b, 'completed');
+    (v_playoff_id, 'winners', 1, 1, v_team_a, v_team_b, 2, 1, v_team_a, v_team_b, 'completed'),
+    -- F vs G: a winner, a loser and a score, but the match is not marked completed.
+    -- Pinned at the bottom as today's behaviour.
+    (v_po_running_id, 'winners', 2, 1, v_team_f, v_team_g, 2, 1, v_team_f, v_team_g, 'in_progress'),
+    (v_po_pending_id, 'winners', 3, 1, v_team_f, v_team_g, 2, 0, v_team_f, v_team_g, 'pending');
 
   -- A past season's copy of a match.
   INSERT INTO public.matches_archive
@@ -256,6 +289,67 @@ BEGIN
   IF (r.team1_wins, r.team2_wins, r.total_matches, r.team1_game_wins, r.team2_game_wins)
      IS DISTINCT FROM (0, 0, 0, 0, 0) THEN
     RAISE EXCEPTION 'batch B-C read wins % / % total % game wins % / %, expected all zeros',
+      r.team1_wins, r.team2_wins, r.total_matches, r.team1_game_wins, r.team2_game_wins;
+  END IF;
+
+  -- ---------------------------------------------------------------------------
+  -- Today's behaviour, pinned. Nobody chose either of these; see the header.
+  -- If one of these fails, the counting rule changed: decide it on purpose, then
+  -- change this test with it.
+  -- ---------------------------------------------------------------------------
+
+  -- D beat E 2-0 but loser_id is NULL. The view needs a winner AND a loser, so the
+  -- view and get_head_to_head_records leave the match out. Neither team has a row.
+  IF EXISTS (SELECT 1 FROM public.v_head_to_head
+              WHERE team_id IN (v_team_d, v_team_e) OR opponent_id IN (v_team_d, v_team_e)) THEN
+    RAISE EXCEPTION 'v_head_to_head has a row for a match with a winner and no loser; today it needs both';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.get_head_to_head_records(NULL)
+              WHERE team_id IN (v_team_d, v_team_e) OR opponent_id IN (v_team_d, v_team_e)) THEN
+    RAISE EXCEPTION 'get_head_to_head_records(NULL) has a row for a match with a winner and no loser; today it needs both';
+  END IF;
+  SELECT count(*) INTO v_row_count FROM public.get_head_to_head_records(v_team_d);
+  IF v_row_count <> 0 THEN
+    RAISE EXCEPTION 'get_head_to_head_records(D) returned % rows, expected 0 (the only match has no loser)', v_row_count;
+  END IF;
+
+  -- The batch function needs only a winner, so it DOES count that same match.
+  -- The two readers disagree on it.
+  v_pairs := jsonb_build_array(
+    jsonb_build_object('team1', v_team_d, 'team2', v_team_e),
+    jsonb_build_object('team1', v_team_f, 'team2', v_team_g)
+  );
+  SELECT * INTO r FROM public.get_batch_head_to_head(v_pairs)
+   WHERE team1_id = v_team_d AND team2_id = v_team_e;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'get_batch_head_to_head has no D-E row';
+  END IF;
+  IF (r.team1_wins, r.team2_wins, r.total_matches, r.team1_game_wins, r.team2_game_wins)
+     IS DISTINCT FROM (1, 0, 1, 2, 0) THEN
+    RAISE EXCEPTION 'batch D-E read wins % / % total % game wins % / %, expected wins 1 / 0 total 1 game wins 2 / 0 (a winner with no loser is counted)',
+      r.team1_wins, r.team2_wins, r.total_matches, r.team1_game_wins, r.team2_game_wins;
+  END IF;
+
+  -- F vs G: two playoff matches with a winner, a loser and a score, one
+  -- 'in_progress' and one 'pending'. Both functions count both.
+  SELECT * INTO r FROM public.get_head_to_head_records(v_team_f) WHERE opponent_id = v_team_g;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'get_head_to_head_records(F) has no row for G; a playoff match that is not completed is counted today';
+  END IF;
+  IF (r.matches_played, r.wins, r.losses, r.game_wins, r.game_losses, r.win_pct)
+     IS DISTINCT FROM (2, 2, 0, 4, 1, 100.0) THEN
+    RAISE EXCEPTION 'F vs G read played % / wins % / losses % / game wins % / game losses % / win pct %, expected 2 / 2 / 0 / 4 / 1 / 100.0',
+      r.matches_played, r.wins, r.losses, r.game_wins, r.game_losses, r.win_pct;
+  END IF;
+
+  SELECT * INTO r FROM public.get_batch_head_to_head(v_pairs)
+   WHERE team1_id = v_team_f AND team2_id = v_team_g;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'get_batch_head_to_head has no F-G row';
+  END IF;
+  IF (r.team1_wins, r.team2_wins, r.total_matches, r.team1_game_wins, r.team2_game_wins)
+     IS DISTINCT FROM (2, 0, 2, 4, 1) THEN
+    RAISE EXCEPTION 'batch F-G read wins % / % total % game wins % / %, expected wins 2 / 0 total 2 game wins 4 / 1 (playoff matches that are not completed are counted)',
       r.team1_wins, r.team2_wins, r.total_matches, r.team1_game_wins, r.team2_game_wins;
   END IF;
 END $$;
