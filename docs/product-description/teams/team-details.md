@@ -92,7 +92,9 @@ Inside Stats & Report Card, the Core tab's tile reads **Win %** and the Game
 tab's tile reads **Game Win %** (changed 2026-11-10; they read "Win Percentage"
 and "Game Win Percentage", which were cut off in a half-width tile on a
 320-pixel phone). Inside Career & Achievements, **Records by Division** shows
-the team's record against each division tier. Below 640 pixels the three cards
+the team's record against each division tier. A game against a team that later
+dropped out (moved to Hidden) is filed under the division that team played in.
+The same holds for the division cards in the advanced stats. Below 640 pixels the three cards
 are one per row; from 640 pixels up they sit side by side (changed 2026-11-10;
 before, three cards in one row were cut at 320 pixels). The opponent history
 dialog and the phone head-to-head cards in Matchups & Rivalries are described

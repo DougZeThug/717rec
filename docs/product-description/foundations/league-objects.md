@@ -59,6 +59,15 @@ past matches still count for everyone who played it. Hiding is not deleting, and
 the distinction matters: deleting a match reverses the statistics it produced,
 hiding a team does not.
 
+A game against a team that later dropped out is filed under the division that
+team played in, not under Hidden. This holds on the team page's division cards,
+in Career "Records by Division", on the Compare page and on the Division
+Matchups card. The app takes that division from a short list the league gave it
+and from the Power Score's own record. The season record, the standings and the
+Power Score do not change. If the app cannot find the division, Career and the
+Division Matchups card leave the game out, and the team page counts it as
+Competitive.
+
 ### Team
 
 The unit that plays. A team has a name, a division, a roster, a record, and a
