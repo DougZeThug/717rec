@@ -9,8 +9,10 @@
 --
 --   * season finish     a past champion, runner-up or playoff season whose
 --                       division name is blank, matches no division, or matches
---                       a division that has no weight. That title or finish adds
---                       0 to the career bonus.
+--                       a division that has no weight. A title or runner-up
+--                       there adds 0 to the career bonus. A playoff season there
+--                       is left out of the playoff weight average (a run with no
+--                       rated season uses the team's current division).
 --   * team              a team with no division, or whose division has no weight.
 --                       Its own weight is unrated. It is only used when none of
 --                       its past finishes is rated.
@@ -24,6 +26,13 @@
 -- count. The rest are the rows themselves. Run this BEFORE renaming a division
 -- (past seasons find their weight by division NAME) and AFTER using Edit
 -- Divisions on a past season (a name typed there is free text).
+--
+-- KNOWN LIMIT (not new, not changed here): this check cannot see a rename of a
+-- MULTI-WORD division. The name lookup falls through to the first word, so an old
+-- "Competitive Low" title (0.95) still finds the division "Competitive" (1.00)
+-- after "Competitive Low" is renamed. The name resolves, so no row appears, but
+-- the weight has silently changed. A single-word rename (for example "Cuspers")
+-- does become unrated and is flagged here.
 --
 -- It asks the real database function, public.resolve_division_bonus_weight(), so
 -- the synthetic season labels ("Intermediate 1") and the rest of the name rules

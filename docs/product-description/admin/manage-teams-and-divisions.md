@@ -126,9 +126,10 @@ with a tooltip explaining why.
 
 **Caution: past titles find their weight by division name.** If you rename a
 division, or type a new division name for a team with **Edit Divisions** on a
-past season (History page), any title or finish saved under the old name no
-longer matches a division. The career bonus then
-leaves it out. Run the unrated-division check
+past season (History page), any title or runner-up finish saved under the old
+name no longer matches a division. The career bonus then leaves it out: it earns
+0 points. A playoff run saved under the old name is scored by the team's current
+division instead. Run the unrated-division check
 (`supabase/scripts/check_unrated_divisions.sql`, steps in
 [`OPERATIONS.md`](../../OPERATIONS.md) section 6f) before a rename and after Edit
 Divisions on a past season.

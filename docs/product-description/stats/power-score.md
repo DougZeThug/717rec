@@ -180,12 +180,16 @@ A team with no matches at all has a career score of 0, so it sits at the foot
 of the career table. Unlike the standings, where an unplayed team shows "—"
 and no rating, the career table gives it a real number.
 
-A title, runner-up finish or playoff run in a division the app cannot find a
-weight for is **left out of the bonus**. That means a division name that matches
-no division, or a division that has no weight. The finish still shows. It just
-earns no points, and the app does not guess a weight for it. This only happens if
-a division is renamed after a title was won, or a wrong name is typed into a past
-season. The database works out the same number for the King Slayer badge, so the
+A title or runner-up finish in a division the app cannot find a weight for is
+**left out of the bonus**. That means a division name that matches no division,
+or a division that has no weight. The finish still shows. It just earns no
+points, and the app does not guess a weight for it. A playoff run is different.
+It is scored by the weight of the divisions it was played in, and a season with no
+weight is left out of that average. If none of its seasons has a weight, the run is
+scored by the team's current division instead. Only when the team's own division
+has no weight either does the playoff win-rate bonus drop to 0. This only happens
+if a division is renamed after a title was won, or a wrong name is typed into a
+past season. The database works out the same number for the King Slayer badge, so the
 badge and the screen agree. See [`OPERATIONS.md`](../../OPERATIONS.md) section 6f.
 
 ## Where a power score appears

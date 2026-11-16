@@ -614,7 +614,7 @@ which restores the previous function body, then re-run the badge recheck block
 at the foot of the newer migration. Note that this puts the badge back on a
 number that disagrees with the screen.
 
-**Since 2026-11-17** a division with no known weight is left out of the bonus
+**Since 2026-11-16** a division with no known weight is left out of the bonus
 instead of counting as 0.85. See **§6f**.
 
 ## 6d. Publishing a weekly content pack
@@ -844,8 +844,15 @@ screen and the King Slayer badge can disagree for a team with an unknown divisio
 
 Past titles find their weight by division name. Run
 `check_unrated_divisions.sql` **before** you rename a division and **after** you
-use Edit Divisions on a past season. Any row it returns is a title or finish that
-now earns no bonus points.
+use Edit Divisions on a past season. Any row it returns is a place where the bonus
+has no weight to use. A title or runner-up finish there earns 0 points. A playoff
+run there is scored by the team's current division instead.
+
+One thing the check cannot see: a division with a name of two or more words, such
+as "Competitive Low". If you rename it, old titles quietly use the weight of the
+first word ("Competitive") instead, and nothing is flagged. A one-word name
+(such as "Cuspers") is flagged. Tell the developer before you rename a
+multi-word division.
 
 ### If it needs undoing
 
