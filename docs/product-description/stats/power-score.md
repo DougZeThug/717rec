@@ -180,6 +180,14 @@ A team with no matches at all has a career score of 0, so it sits at the foot
 of the career table. Unlike the standings, where an unplayed team shows "—"
 and no rating, the career table gives it a real number.
 
+A title, runner-up finish or playoff run in a division the app cannot find a
+weight for is **left out of the bonus**. That means a division name that matches
+no division, or a division that has no weight. The finish still shows. It just
+earns no points, and the app does not guess a weight for it. This only happens if
+a division is renamed after a title was won, or a wrong name is typed into a past
+season. The database works out the same number for the King Slayer badge, so the
+badge and the screen agree. See [`OPERATIONS.md`](../../OPERATIONS.md) section 6f.
+
 ## Where a power score appears
 
 - **`/stats`** — the Power column, the mobile gauge, the top-three leaderboard,
@@ -303,6 +311,11 @@ looks like a bug to anyone watching one team.
   bottom of the career table, below every team with a record. The two tables
   differ here on purpose: the standings show "—" and no rating for the same
   team.
+- **A past title can stop earning bonus points if its division is renamed.** Past
+  seasons find their division weight by the division's name. A title whose name no
+  longer matches any division adds nothing to the career bonus, and the champion
+  count is unchanged. Nothing on screen says so. An admin check lists these
+  ([`OPERATIONS.md`](../../OPERATIONS.md) section 6f).
 
 ## Open questions and verification
 

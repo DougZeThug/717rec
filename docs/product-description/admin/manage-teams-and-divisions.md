@@ -124,6 +124,15 @@ be corrected in place.
 A division whose display grouping is "Hidden" has both Edit and delete disabled,
 with a tooltip explaining why.
 
+**Caution: past titles find their weight by division name.** If you rename a
+division, or type a new division name for a team with **Edit Divisions** on a
+past season (History page), any title or finish saved under the old name no
+longer matches a division. The career bonus then
+leaves it out. Run the unrated-division check
+(`supabase/scripts/check_unrated_divisions.sql`, steps in
+[`OPERATIONS.md`](../../OPERATIONS.md) section 6f) before a rename and after Edit
+Divisions on a past season.
+
 ### Submit
 
 **Division dropdown.** Picking a division opens a prompt — "Change this team's

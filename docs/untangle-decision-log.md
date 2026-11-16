@@ -413,13 +413,13 @@ Slice 4 (lite) puts the default division weight 0.85 in one place. **Every `??` 
 | `calculatePlayoffStats.ts` `\|\|` -> `??` | NOT CAUGHT (invariant, see above) |
 
 - **Phase B (deferred) and its TRAP.** Phase B would make the `||` sites agree with SQL for a stored weight of exactly 0 (`??`). The live read below says no division is NULL or 0, so it would change no number today. It stays deferred because the "unrated" decision below replaces it. **TRAP: the three `||` in `CareerBulkFetchService.ts` (lines 94, 378 and 388) must change together.** If only some change, the others turn the 0 back into 0.85 and nothing visible happens. Introduce a resolver function only then, not before. The existing pins to edit on purpose then are in `CareerFetchService.test.ts` and the new bulk pins.
-- **DOUG'S DECISION (2026-11-13): "Treat as unrated" for a genuinely unknown division. DECIDED, NOT BUILT.**
+- **DOUG'S DECISION (2026-11-13): "Treat as unrated" for a genuinely unknown division. BUILT 2026-11-17, pending Doug's hand-apply of the SQL. See "Unrated division result" below.**
   - **What it means:** when a team's or bracket's division is genuinely unknown, that part is left out of the career bonus instead of guessing 0.85. The season Power Score already does this for unrated opponents.
-  - **What the developer recommended:** "keep the fallback and add an admin warning." Doug chose "unrated".
-  - **It touches SQL.** `resolve_division_bonus_weight()` returns 0.85 for an unknown name. `calculate_career_power_score()` uses 0.85 when a team weight IS NULL. So it needs a migration and a hand-apply (`docs/OPERATIONS.md` section 6).
+  - **What the developer recommended:** "keep the fallback and add an admin warning." Doug chose "unrated". On 2026-11-16 he chose "Build it now" over "warning first, build later".
+  - **It touches SQL.** `resolve_division_bonus_weight()` returned 0.85 for an unknown name. `calculate_career_power_score()` used 0.85 when a team weight IS NULL. So it needs a migration and a hand-apply (`docs/OPERATIONS.md` section 6f).
   - **TypeScript and SQL must change together.** If only one changes, the career score on screen stops matching the database. That is the old B-35 bug (`docs/product-description/bug-triage.md`).
-  - **Before building:** own PR with a design, competition-scoring and supabase-data review, a skeptic, and Doug's approval. The design must say what "unrated" means at each site: title and runner-up bonus, playoff bonus and cap, competitive-playoff count, Team page tier, prediction default.
-  - **No number changes today**, because no division is missing (see the live read). Until it is built, the value stays 0.85 and below 0.89.
+  - **Before building (done):** own PR with a design, competition-scoring and supabase-data review, a skeptic, and Doug's approval.
+  - **No number changes today**, because no division is missing (see the live read). The value 0.85 stays below 0.89 for the sites that still use it (see "NOT built" below).
 - **Live facts (from a live read Doug shared 2026-11-13; not re-read by the developer):**
   - Weights: Competitive 1.00, Competitive Low 0.95, Cuspers 0.90, Intermediate High 0.80, Intermediate 0.70, Intermediate Low 0.60, Recreational High 0.60, Recreational 0.35, Hidden 0.60, Hidden2 0.35. That is 10 divisions. **No division is 0.85.** 0 of 10 have a NULL or zero weight.
   - 0 of 51 teams, 0 of 34 brackets and 0 of 575 completed playoff results lack a valid division link. All 292 `team_season_stats` division names matched a real division, directly or through an existing translation rule.
@@ -447,6 +447,45 @@ Slice 4 (lite) puts the default division weight 0.85 in one place. **Every `??` 
   - Unused fields: `bracketDivisionWeights` in the `calculateDivisionRecords` input type, and `divisionWeight?` in `types/autoSchedule.ts:27`.
   - The 0.89 and 0.4 thresholds: 0.89 is written in 3 TypeScript files (`calculatePlayoffStats.ts:35`, `teamSeasonStats/calculations.ts:119`, `calculateDivisionRecords.ts:38`) and in SQL (`>= 0.89` at line 249 of both migrations `20260901120000` and `20260901173600`). 0.4 is written in 2 TypeScript files only (`teamSeasonStats/calculations.ts:120`, `calculateDivisionRecords.ts:39`). SQL has no 0.4.
   - The 3B note "decide in Slice 4" about folders that lint does not constrain stays open. Slice 4 (lite) did not touch it.
+
+## Unrated division result (career bonus), built 2026-11-17
+
+An unknown division is **unrated** in the career bonus: it adds 0 instead of counting as 0.85. TypeScript and SQL give the same number. **The SQL is written and tested but NOT applied to the live database.** Doug applies it before the PR is merged (`docs/OPERATIONS.md` section 6f). No number changes today (live read 2026-11-13: every division has a weight, every past division name matches).
+
+- **The rule (the same in both places).**
+  - Unrated = a blank name, a name that matches no division, or a matched division with a NULL weight. A weight of 0 is a real 0.
+  - A matched division with a NULL weight stops the lookup. It does not fall through to a synthetic label or a base tier word.
+  - Title and runner-up: an unrated one adds 0 (the champion count still shows).
+  - Playoff win-rate weight: the average over rated seasons only. With none rated it uses the team's current weight. If that is unrated too, the win-rate bonus is 0. The win rate still counts every playoff match. **This fallback is a developer choice (the simplest rule; the bonus is worth about 2 points or less). Doug can overrule it.**
+  - Bonus cap: 15 x (the highest rated weight)^2. With none rated it uses the team weight. If that is unrated too, the whole bonus is 0.
+  - The team's own weight has no default: `number | null`, and a stored 0 stays 0.
+  - Not changed: the competitive-playoff count (an unknown bracket is not counted, in both places), Hidden division names.
+- **Commits (branch `claude/adoring-bohr-waxxok`):** `4fe1472` pin tests (green on the old code), `7a35378` TypeScript half, `824365c` SQL (migration `20261117120000`, revert script, parity tests), `7834ae2` read-only check script, then this docs commit.
+- **Files:** `src/utils/career/divisionBonusWeight.ts` (resolver returns `number | null`; rated-only average and max), `src/services/career/calculateCareerPowerScore.ts`, `CareerFetchService.ts` and `CareerBulkFetchService.ts` (no 0.85 for the team weight; **all three bulk lines changed together**), the by-name cache in `divisionWeightsCache.ts` (a null weight stays in the map as null: dropping it would let the resolver fall through to a base word and give 0.70 where SQL gives null). SQL: `supabase/migrations/20261117120000_unrated_division_career_bonus.sql`, `supabase/scripts/revert_unrated_division_bonus.sql`, `supabase/scripts/check_unrated_divisions.sql`, `supabase/tests/career_power_score_parity.sql`.
+- **NOT built, and why (nothing here changes a career-bonus number):**
+  - **Match predictions** (`predictMatch.ts`) keep their own 0.85. A forecast is not a bonus. Doug said to leave the prediction constants.
+  - **The by-id cache** (`divisionWeightsCache.ts`, `fetchDivisionWeights`) feeds predictions only.
+  - **Bracket weights** (`CareerFetchService.ts`, `CareerBulkFetchService.ts`, `calculatePlayoffStats.ts`) are only compared with 0.89. A missing weight (0.85 or null) means "not competitive" either way.
+  - **The Team page tier** (`teamSeasonStats/calculations.ts`, `mappers.ts`, `fetchSeasonBreakdown.ts`) is display only.
+  - **The `'Unknown'` text** in `computeAllTeamsTotals.ts` and `useTeamTotalsComputed.ts` matches no division, so the new rule already covers it.
+  - **The season Power Score** already skips an unrated opponent.
+  - **Id-based weights** (a weight column on each season row) need a new column and a backfill of history. Rejected.
+  - **Old text copies of 0.85** in applied migrations (for example the revert text in `20260812171710`). An applied migration cannot be edited.
+  - The constant `DEFAULT_DIVISION_WEIGHT` stays 0.85 for the sites above. Its comment now says the career bonus no longer uses it.
+- **Two ways a division can become unknown (the reason for the check script):**
+  - **A division rename.** Career weights are found by division NAME text. Archived `team_season_stats.division_name` is frozen text. Rename "Competitive" and every old Competitive title loses its weight.
+  - **Free text in the History editor.** `src/services/teamSeasonStats/updates.ts:31` writes whatever name the admin types into `division_name`.
+  - Run `supabase/scripts/check_unrated_divisions.sql` before a rename and after Edit Divisions on a past season. **A team with an unknown-division title LOSES bonus points** (worked example: 72.98 to 68.00). Doug accepts: "no proof of the division, no credit".
+- **KNOWN DIFFERENCE FROM SQL (not widened).** JavaScript `trim()` and `split(/\s+/)` also treat a tab and a non-breaking space as blanks. SQL `btrim()` and `split_part(' ')` do not. A name such as `<tab>Competitive` is rated 1.00 by the app and is unrated (NULL) in SQL. Both sides are pinned in tests (`divisionBonusWeight.test.ts`, "known difference from SQL"; fixture 13 and the resolver checks in `career_power_score_parity.sql`). Aligning them touches `normalize()`, the base-word split and the cache key, and would change how names rate today. Doug accepted leaving it. No such name is expected in real data.
+- **Where the SQL ran.** It ran for real on a throwaway local Postgres 16 cluster (scratch folder, no network, no league data), not on Postgres 15 like CI and **not on the live database**. The steps mirrored `.github/workflows/supabase-ci.yml`: the CI bootstrap plus every migration file (443, the new one included) in one `psql`, then every file in `supabase/tests` (35 files).
+  - **Before** the migration, the new parity test failed at fixture 5 (`got 55.0575`). **After**, all 35 files passed, in single files and in the CI-style combined run.
+  - Fixture 5 (one unknown title, base 50): **55.0575 became 50.0000.** Fixture 6 (an Intermediate High title plus an unknown title): **58.4875 became 53.4300.** Fixtures 1-4 stayed 53.43, 57.35, 56.3175 and 0.
+  - The revert script, run on a copy, gave function bodies, comments, volatility and grants identical to the state before the migration, and the old parity test passed on it. Running the migration twice gave the same functions.
+  - The hand-apply fingerprint (count and md5 of every team's career score) was identical before and after on a fixture with only known divisions, and differed once one name was misspelled.
+  - **Deliberate SQL breaks (each must fail a test):** resolver 0.85 restored, matched NULL falling through (exact step and alias step), title not guarded, runner-up not guarded, cap without COALESCE, playoff average counting unknown seasons, team-weight default restored, a weight of 0 treated as unrated, SQL widened to JavaScript trim, a GRANT added: all caught. A NULL bonus reaching `LEAST(100, base + NULL)` gives 100 in the guard test (fixture 10): caught. **Two are not caught, and both are equivalent:** removing only the final `COALESCE(v_total_playoff_bonus, 0)` (nothing above can produce a NULL now, so it is a safety net), and a forced NULL bonus with that `COALESCE` kept (the safety net works, the score stays at base). Note the unguarded-title break gives the **full cap** (65 in fixture 5), because `LEAST` skips the NULL.
+- **Limit of the check script.** Before the migration is applied, the old function still guesses 0.85, so the check cannot show a season finish with an unknown name. It does show teams, brackets and divisions with no weight at any time. The fingerprint comparison in section 6f is the real test of "nothing moved".
+- **QA numbers:** QA to confirm (full suite, coverage, build, integrity).
+- **Open:** Doug's hand-apply (section 6f), then merge. The playoff-fallback rule above stays a developer choice unless Doug says otherwise.
 
 ## PR-R result (recap week with no scored team), built 2026-11-13
 

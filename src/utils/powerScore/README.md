@@ -207,8 +207,11 @@ details are worth knowing:
   for rows written before the two were split.
 - `resolve_division_bonus_weight(name)` is the SQL twin of
   `src/utils/career/divisionBonusWeight.ts`: exact name, then the synthetic
-  season labels, then the base tier word, then the `0.85` default. Like the
-  client, it **never** holds a weight value — the old SQL did, in a hardcoded
+  season labels, then the base tier word. A name that matches nothing, a blank
+  name, or a matched division with no weight is **unrated** (`NULL` in SQL, `null`
+  in TypeScript): the career bonus leaves it out instead of using a default
+  weight, and a matched division with no weight stops the lookup. A weight of 0 is
+  a real 0. Like the client, it **never** holds a weight value — the old SQL did, in a hardcoded
   `CASE`, and could not see an admin re-weight a division. `divisions.name` has
   no unique constraint, so it resolves duplicates the way the client's map does
   (greatest name wins).
