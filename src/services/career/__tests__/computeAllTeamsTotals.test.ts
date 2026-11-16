@@ -127,6 +127,15 @@ describe('computeAllTeamsTotals', () => {
   // 2026-11-13), so the finish adds nothing to the career score: the team with
   // the honours scores exactly what the same team without them scores.
   it('names a finish in a season with no division name "Unknown" and gives it no bonus', async () => {
+    // A live rated name beside the fixture's "premier": a fallback that turned a
+    // blank division into a RATED name (say "Competitive") would earn a bonus,
+    // change the score, and fail the last assertion.
+    mockFetchDivisionWeightsByName.mockResolvedValue(
+      new Map([
+        ['premier', 1],
+        ['competitive', 1],
+      ])
+    );
     const seasonsFor = (id: string, honours: boolean) => [
       {
         team_id: id,
