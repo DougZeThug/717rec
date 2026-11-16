@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { formatPowerScore } from '@/utils/powerScore/formatPowerScore';
 
 import { useFormStateManager } from '../hooks/useFormStateManager';
 import {
@@ -378,10 +379,10 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
           />
         </div>
 
-        {team.powerScore && (
+        {team.powerScore > 0 && (
           <div className="flex items-center gap-1 text-xs opacity-75 shrink-0">
             <Zap className="size-3" />
-            <span>{Math.round(team.powerScore)}</span>
+            <span>{formatPowerScore(team.powerScore)}</span>
           </div>
         )}
       </Button>

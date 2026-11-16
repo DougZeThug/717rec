@@ -102,7 +102,37 @@ describe('TeamSelectionForm', () => {
 
     expect(screen.getByText('Team Alpha')).toBeInTheDocument();
     expect(screen.getByText('#1')).toBeInTheDocument();
-    expect(screen.getByText('96')).toBeInTheDocument(); // Rounded power score
+    expect(screen.getByText('95.5')).toBeInTheDocument(); // Power score, one decimal
+  });
+
+  // The chip shows the same one-decimal score as the standings and the saved
+  // bracket order. A whole number hid ties: 41.6 and 41.7 both showed as "42".
+  it('shows the power score with one decimal, not rounded to a whole number', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        {...defaultProps}
+        teams={[createMockTeam({ powerScore: 41.6, power_score: 41.6 })]}
+      />
+    );
+
+    expect(screen.getByText('41.6')).toBeInTheDocument();
+    expect(screen.queryByText('42')).not.toBeInTheDocument();
+  });
+
+  // A team with no score reads 0 in the picker. It shows no chip, and no stray
+  // "0" (React prints a bare 0 for `0 && ...`).
+  it('shows no power score chip and no stray 0 for a score of 0', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        {...defaultProps}
+        teams={[createMockTeam({ powerScore: 0, power_score: 0 })]}
+      />
+    );
+
+    const teamButton = screen.getByRole('button', { name: /Team Alpha/ });
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
+    expect(screen.queryByText('0.0')).not.toBeInTheDocument();
+    expect(teamButton).toHaveTextContent(/^Team Alpha#1$/);
   });
 
   it('calls handleTeamToggle when team is clicked', async () => {
