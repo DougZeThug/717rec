@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
@@ -253,5 +253,64 @@ describe('TeamSelectionForm on a phone', () => {
     const card = screen.getByRole('button', { name: /Team Alpha/ });
     expect(card).toHaveClass('sm:min-w-[240px]');
     expect(card).not.toHaveClass('min-w-[240px]');
+  });
+});
+
+// The "#" on each team button is the team's place in the list shown (1 to N),
+// the order the bracket uses. A stored teams.seed is a frozen snapshot of the
+// last Save in the Seeds tab, and the bracket ignores it, so it must not show here.
+describe('TeamSelectionForm "#" badge', () => {
+  const badgeOf = (teamName: string) =>
+    within(screen.getByRole('button', { name: new RegExp(teamName) })).getByText(/^#\d+$/)
+      .textContent;
+
+  it('numbers the teams 1 to N in row order, whatever their stored seeds are', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        teams={[
+          createMockTeam({ id: 'team-1', name: 'Alpha', seed: 7 }),
+          createMockTeam({ id: 'team-2', name: 'Bravo', seed: 9 }),
+          createMockTeam({ id: 'team-3', name: 'Charlie', seed: 2 }),
+        ]}
+        formState={createMockFormState()}
+        maxTeams={16}
+        minTeams={2}
+      />
+    );
+
+    const rows = screen.getAllByRole('button', { name: /Alpha|Bravo|Charlie/ });
+    expect(rows.map((row) => within(row).getByText(/^[A-Z][a-z]+$/).textContent)).toEqual([
+      'Alpha',
+      'Bravo',
+      'Charlie',
+    ]);
+    expect(rows.map((row) => within(row).getByText(/^#\d+$/).textContent)).toEqual([
+      '#1',
+      '#2',
+      '#3',
+    ]);
+    // The stored seeds (7, 9, 2) are not shown on this tab.
+    expect(screen.queryByText('#7')).not.toBeInTheDocument();
+    expect(screen.queryByText('#9')).not.toBeInTheDocument();
+  });
+
+  it('starts at #1 for a short list, such as one division, and for a team with no stored seed', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        teams={[
+          createMockTeam({ id: 'team-1', name: 'Alpha', seed: 12 }),
+          createMockTeam({ id: 'team-2', name: 'Bravo', seed: 0 }),
+        ]}
+        formState={createMockFormState()}
+        maxTeams={16}
+        minTeams={2}
+      />
+    );
+
+    expect(badgeOf('Alpha')).toBe('#1');
+    // A team with no stored seed shows its place, not "#0".
+    expect(badgeOf('Bravo')).toBe('#2');
+    expect(screen.queryByText('#0')).not.toBeInTheDocument();
+    expect(screen.queryByText('#12')).not.toBeInTheDocument();
   });
 });

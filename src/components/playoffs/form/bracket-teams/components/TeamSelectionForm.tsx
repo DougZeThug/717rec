@@ -325,9 +325,11 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
   });
 
   /**
-   * Renders team selection button with appropriate styling based on selection state
+   * Renders team selection button with appropriate styling based on selection state.
+   * The "#" badge is the team's place in the list shown (index + 1), the order the
+   * bracket uses. A stored team.seed is a snapshot of the last Save and is ignored here.
    */
-  const renderTeamButton = (team: ProcessedTeam) => {
+  const renderTeamButton = (team: ProcessedTeam, index: number) => {
     if (!team || !team.id) return null;
 
     const isSelected = safeFormState.selected.has(team.id);
@@ -371,7 +373,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
 
         <div className="shrink-0">
           <SeedStatusBadge
-            seed={team.seed || 0}
+            seed={index + 1}
             isManual={isManual}
             hasConflict={hasConflict}
             isPending={isPending}
