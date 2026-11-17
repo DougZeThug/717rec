@@ -17,6 +17,8 @@
 --       its winner, its games and its date
 --   L3  the number of manual_override games is what the override rows say it
 --       should be, and no game is left unrated in the six seasons
+--   L3b every manual_override game's opponent weight equals that division's weight
+--       today (it should: each map division has one weight-history row)
 --   L4  stored scores that differ from the rules now: only the six seasons may
 --   L5  the live-season views (v_team_details) read no override game
 --   L6  the scores are re-derived with the live formula from the game rows: the
@@ -157,7 +159,27 @@ l3 AS (
     (SELECT count(*) FROM public.v_power_score_team_matches_rated r
       WHERE r.resolved_by = 'unresolved'
         AND r.season_id NOT IN (SELECT season_id FROM six)) AS unresolved_other,
-    (SELECT count(*) FROM public.power_score_division_override) AS override_rows
+    (SELECT count(*) FROM public.power_score_division_override) AS override_rows,
+    (SELECT string_agg(x.label, '; ' ORDER BY x.label)
+       FROM (SELECT DISTINCT t.name || ' [team ' || r.opponent_id || '] in ' || se.name
+                    || ' [season ' || r.season_id || ']' AS label
+             FROM public.v_power_score_team_matches_rated r
+             JOIN six ON six.season_id = r.season_id
+             JOIN public.teams t ON t.id = r.opponent_id
+             JOIN public.seasons se ON se.id = r.season_id
+             WHERE r.resolved_by = 'unresolved'
+             LIMIT 12) x) AS unresolved_list
+),
+-- L3b
+l3b AS (
+  SELECT count(*) AS bad, count(*) FILTER (WHERE true) AS n_checked
+  FROM public.v_power_score_team_matches_rated r
+  JOIN public.divisions d ON d.id = r.opp_division_id
+  WHERE r.resolved_by = 'manual_override'
+    AND r.opp_weight IS DISTINCT FROM d.division_weight
+),
+l3b_n AS (
+  SELECT count(*) AS n FROM public.v_power_score_team_matches_rated WHERE resolved_by = 'manual_override'
 ),
 -- L4
 l4 AS (
@@ -300,7 +322,23 @@ FROM (
          l3.override_rows || ' override rows; manual_override games ' || l3.actual || ' (rows say ' || l3.expected
          || '); unrated games in the six seasons ' || l3.unresolved_six
          || '; unrated games in other seasons ' || l3.unresolved_other
+         || CASE WHEN l3.unresolved_six > 0 THEN
+              '. A FAIL here from a Hidden or unmapped name is EXPECTED, not a fault of the fix: script 02 gave that team no row. '
+              || 'Still unrated: ' || COALESCE(l3.unresolved_list, '(none listed)')
+              || '. NEXT STEP: write one row by hand for each, with the real division and a reason (the reason has no person name): '
+              || 'INSERT INTO public.power_score_division_override (team_id, season_id, division_id, reason) VALUES '
+              || '(''<team id>'', ''<season id>'', (SELECT id FROM public.divisions WHERE name = ''<division name>''), '
+              || '''League owner, <date>: <why>''); '
+              || 'then run this list again, and watch L1: a row added by hand can replace a snapshot, archive or bracket answer.'
+            ELSE '' END
     FROM l3
+  UNION ALL
+  SELECT 'L3b override weight is today''s weight',
+         CASE WHEN l3b.bad = 0 THEN 'PASS' ELSE 'FAIL' END,
+         l3b.bad || ' of ' || l3b_n.n || ' override games carry a weight that is not the division''s weight today'
+         || CASE WHEN l3b.bad > 0 THEN '. A division weight was changed after those games were played (division_weight_history has more than one row for it). '
+              || 'The game is rated by the weight it had on the game date. Tell the developer.' ELSE '' END
+    FROM l3b, l3b_n
   UNION ALL
   SELECT 'L4 stored vs rules now',
          CASE WHEN l4.elsewhere > 0 THEN 'FAIL'

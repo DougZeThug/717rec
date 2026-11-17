@@ -39,6 +39,7 @@
 -- so restoring the saved numbers (undo path 1) cannot lose a newer score.
 
 DROP TABLE IF EXISTS pg_temp.division_truth_recompute;
+DROP TABLE IF EXISTS pg_temp.division_truth_before;
 CREATE TEMP TABLE division_truth_recompute (ord int, what text, detail text, val text);
 
 DO $$

@@ -12,7 +12,9 @@
 --     Sandbox "Save & rescore", would write the new numbers again.
 --
 --   PATH 2 = STOP USING THE OVERRIDES.
---     Deletes every row in power_score_division_override, puts the view
+--     FIRST copies every row of power_score_division_override into the locked table
+--     power_score_division_override_pre_undo (so a row added by hand is not lost).
+--     Then deletes every row in power_score_division_override, puts the view
 --     v_power_score_team_matches_rated back to the text of migration 20261003183939
 --     (no override step), and recomputes the six seasons from the rules. This
 --     gives the numbers today's rules give. It is NOT the same as today's stored
@@ -22,6 +24,16 @@
 --
 --   TO GO ALL THE WAY BACK to the state before this fix: run PATH 2, then run
 --   PATH 1. (Path 2 first, so path 1 has the last word on the stored numbers.)
+--
+--   TO PUT THE OVERRIDE ROWS BACK after path 2 (rows saved in the pre_undo table):
+--     INSERT INTO public.power_score_division_override
+--       (team_id, season_id, division_id, reason, created_at)
+--     SELECT DISTINCT ON (team_id, season_id) team_id, season_id, division_id, reason, created_at
+--     FROM public.power_score_division_override_pre_undo
+--     ORDER BY team_id, season_id, saved_at DESC
+--     ON CONFLICT (team_id, season_id) DO NOTHING;
+--   (Each path 2 run appends only the rows it deleted. A second path 2 run has nothing
+--   to delete and adds nothing.) Drop the pre_undo table when it is no longer needed.
 --
 -- It takes the Sandbox weight-save lock, so the two never run together. The old
 -- view text below is copied from 20261003183939. If the migration file is still
@@ -38,6 +50,7 @@ DECLARE
   v_path text := 'TYPE-1-OR-2-HERE';   -- <<<<<< TYPE HERE: 1 or 2 (keep the quotes)
   v_rows integer;
   v_del  bigint;
+  v_saved bigint;
 BEGIN
   IF v_path NOT IN ('1', '2') THEN
     RAISE EXCEPTION 'STOP: type 1 or 2 on the line marked TYPE HERE. Nothing was changed.';
@@ -70,6 +83,26 @@ BEGIN
     IF to_regclass('public.power_score_division_override') IS NULL THEN
       RAISE EXCEPTION 'STOP: the override table does not exist, so there is nothing to undo. Nothing was changed.';
     END IF;
+
+    -- Save a copy first, so nothing added by hand is lost. Append-only; locked like
+    -- the other backup tables (service_role only).
+    CREATE TABLE IF NOT EXISTS public.power_score_division_override_pre_undo (
+      team_id     uuid NOT NULL,
+      season_id   uuid NOT NULL,
+      division_id uuid NOT NULL,
+      reason      text NOT NULL,
+      created_at  timestamptz,
+      saved_at    timestamptz NOT NULL DEFAULT now()
+    );
+    REVOKE ALL ON public.power_score_division_override_pre_undo FROM PUBLIC, anon, authenticated;
+    ALTER TABLE public.power_score_division_override_pre_undo ENABLE ROW LEVEL SECURITY;
+    GRANT ALL ON public.power_score_division_override_pre_undo TO service_role;
+
+    INSERT INTO public.power_score_division_override_pre_undo
+      (team_id, season_id, division_id, reason, created_at)
+    SELECT o.team_id, o.season_id, o.division_id, o.reason, o.created_at
+    FROM public.power_score_division_override o;
+    GET DIAGNOSTICS v_saved = ROW_COUNT;
 
     DELETE FROM public.power_score_division_override;
     GET DIAGNOSTICS v_del = ROW_COUNT;
@@ -153,8 +186,9 @@ BEGIN
     GET DIAGNOSTICS v_rows = ROW_COUNT;
     INSERT INTO division_truth_undo VALUES
       (1, 'PATH RUN', '2 = overrides removed, old view back, six seasons recomputed'),
-      (2, 'OVERRIDE ROWS DELETED', v_del::text),
-      (3, 'STORED ROWS RECOMPUTED', v_rows::text);
+      (2, 'OVERRIDE ROWS SAVED FIRST (in power_score_division_override_pre_undo)', v_saved::text),
+      (3, 'OVERRIDE ROWS DELETED', v_del::text),
+      (4, 'STORED ROWS RECOMPUTED', v_rows::text);
   END IF;
 END $undo$;
 
@@ -162,6 +196,13 @@ END $undo$;
 SELECT r.what, r.val
 FROM (
   SELECT ord, what, val FROM division_truth_undo
+  UNION ALL
+  SELECT 9, 'rows now in the pre_undo table (all path 2 runs)',
+         -- query_to_xml reads the table only if the CASE reaches it.
+         CASE WHEN to_regclass('public.power_score_division_override_pre_undo') IS NULL THEN 'no table (path 2 not run yet)'
+              ELSE (xpath('/row/c/text()', query_to_xml(
+                      'SELECT count(*) AS c FROM public.power_score_division_override_pre_undo',
+                      false, true, '')))[1]::text END
   UNION ALL
   SELECT 10, 'override rows left',
          -- query_to_xml reads the table only if the CASE reaches it.

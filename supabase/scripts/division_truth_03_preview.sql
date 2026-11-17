@@ -5,25 +5,52 @@
 -- stored number. (It makes one temporary view that vanishes with the session.)
 -- Doug looks at the result and approves, or does not.
 --
--- ONE row per team in each of the six seasons. Every score is on the 0-100 scale
--- the site shows. The columns:
+-- APPROVING THIS TABLE ALSO APPROVES THE OLD-RULE CATCH-UP. About 62 team-seasons
+-- already show a stored score that differs from what today's rules give (older rule
+-- changes were never recomputed). The recompute fixes those too. They show up in
+-- the live_rules column (live_rules is not equal to stored), not in fix_part.
 --
+-- ONE result, two parts, same columns. Every score is on the 0-100 scale the site
+-- shows.
+--   PART 1. One row per team in each of the six seasons (season = the season name).
+--           Every team with a saved row in those seasons is listed, so expect over
+--           100 rows (the three 2025 seasons have 30 or more teams each).
+--   PART 2. Rows with season = CAREER: the team's CAREER score, for each team whose
+--           career score changes. They come last.
+--
+-- THE COLUMNS
 --   stored      the score the site shows TODAY (from the backup, script 01)
 --   live_rules  the score TODAY's rules give, with no fix (backup, live_* columns).
 --               stored vs live_rules is an OLD rule change that was never
---               recomputed (the 62 team-seasons). It is NOT caused by this fix.
+--               recomputed. It is NOT caused by this fix.
 --   after       the score after the fix (what the recompute would store)
 --   change      after - stored      (what a player would see change)
 --   fix_part    after - live_rules  (the part caused by THIS fix)
---   rank_was    place in the season by stored score (1 = best, ties share)
---   rank_now    place in the season by after score
---   games_changed  games of this team whose opponent weight changed
---                  (or that were unrated and now are rated)
+--   rank_was    place by stored score (1 = best, ties share). Part 1: place in that
+--               season. Part 2: place among all teams that played a match.
+--   rank_now    place by after score
+--   games_changed  games of this team whose opponent weight changed (or that were
+--                  unrated and now are rated). Part 2: the total over the six seasons.
 --   via_override   games of this team now rated by an override row
 --
 -- A team with games_changed = 0 must have fix_part = 0.00. If not, tell the
--- developer. Sorted: by season, then the biggest absolute change first.
--- Spring 2025 has about 15 teams, each other season 7 to 16. Paste the result back.
+-- developer. Part 1 is sorted by season, then the biggest absolute change first.
+--
+-- HOW THE CAREER ROWS ARE WORKED OUT. It is the real career formula, not a new one:
+-- calculate_career_power_score() in migration 20261117120000 (lines 150-345), the
+-- same as src/services/career/calculateCareerPowerScore.ts (lines 100-140). The
+-- base is the average of the stored season scores (career_power_score, else
+-- power_score) weighted by matches played (wins + losses), over ALL of a team's
+-- seasons, not only the six, plus the live season from v_team_details. This script
+-- swaps in the three numbers (stored, live_rules, after) for the six seasons and
+-- keeps every other season as stored. The bonus (titles, runner-ups, playoffs) does
+-- not change with this fix. It is read from the real function today:
+-- bonus = calculate_career_power_score(team) - the base worked out from the stored
+-- numbers. Career = the smaller of 100 and (base + bonus).
+-- A team marked * had a career score of 100 today (capped). Its real bonus is at
+-- least what is used here, so its live_rules and after scores are LOWER limits. The
+-- rank is by score only: the site's list also hides some teams and breaks ties its
+-- own way.
 
 -- The OLD rule, for comparing. This is the body of v_power_score_team_matches_rated
 -- exactly as migration 20261003183939 wrote it, without the override step, saved as
@@ -118,20 +145,120 @@ scored AS (
               ELSE rank() OVER (PARTITION BY b.season_id ORDER BY a.power_score DESC NULLS LAST) END AS rank_now
   FROM public.team_season_stats_pre_division_truth b
   LEFT JOIN public.v_team_season_agg a ON a.season_id = b.season_id AND a.team_id = b.team_id
+),
+-- PART 2: the career score, in four versions (now, before, live rules, after).
+-- One row per stored team-season, as calculate_career_power_score() reads them.
+career_rows AS (
+  SELECT s.team_id,
+         COALESCE(s.match_wins, 0) + COALESCE(s.match_losses, 0) AS m,
+         COALESCE(s.career_power_score, s.power_score) AS now_score,
+         CASE WHEN b.team_id IS NOT NULL THEN COALESCE(b.career_power_score, b.power_score)
+              ELSE COALESCE(s.career_power_score, s.power_score) END AS before_score,
+         CASE WHEN b.team_id IS NOT NULL THEN COALESCE(b.live_career_power_score, b.live_power_score)
+              ELSE COALESCE(s.career_power_score, s.power_score) END AS live_score,
+         CASE WHEN b.team_id IS NOT NULL AND a.team_id IS NOT NULL
+              THEN COALESCE(a.career_power_score, a.power_score)
+              ELSE COALESCE(s.career_power_score, s.power_score) END AS after_score
+  FROM public.team_season_stats s
+  LEFT JOIN public.team_season_stats_pre_division_truth b
+         ON b.season_id = s.season_id AND b.team_id = s.team_id
+  LEFT JOIN public.v_team_season_agg a
+         ON a.season_id = s.season_id AND a.team_id = s.team_id AND b.team_id IS NOT NULL
+  -- the live season is not read here: the function reads it from v_team_details
+  WHERE s.season_id IS DISTINCT FROM (SELECT id FROM public.seasons WHERE is_active = true LIMIT 1)
+),
+career_sums AS (
+  SELECT r.team_id,
+    sum(r.now_score    * 100 * r.m) FILTER (WHERE r.now_score    IS NOT NULL AND r.m > 0) AS ws_now,
+    sum(r.m)                        FILTER (WHERE r.now_score    IS NOT NULL AND r.m > 0) AS ms_now,
+    sum(r.before_score * 100 * r.m) FILTER (WHERE r.before_score IS NOT NULL AND r.m > 0) AS ws_before,
+    sum(r.m)                        FILTER (WHERE r.before_score IS NOT NULL AND r.m > 0) AS ms_before,
+    sum(r.live_score   * 100 * r.m) FILTER (WHERE r.live_score   IS NOT NULL AND r.m > 0) AS ws_live,
+    sum(r.m)                        FILTER (WHERE r.live_score   IS NOT NULL AND r.m > 0) AS ms_live,
+    sum(r.after_score  * 100 * r.m) FILTER (WHERE r.after_score  IS NOT NULL AND r.m > 0) AS ws_after,
+    sum(r.m)                        FILTER (WHERE r.after_score  IS NOT NULL AND r.m > 0) AS ms_after
+  FROM career_rows r
+  GROUP BY r.team_id
+),
+-- the live season, as the function reads it (already on the 0-100 scale)
+career_live_season AS (
+  SELECT d.team_id,
+         CASE WHEN COALESCE(d.career_power_score, d.power_score) IS NOT NULL
+               AND COALESCE(d.wins, 0) + COALESCE(d.losses, 0) > 0
+              THEN COALESCE(d.career_power_score, d.power_score) * (COALESCE(d.wins, 0) + COALESCE(d.losses, 0)) END AS ws,
+         CASE WHEN COALESCE(d.career_power_score, d.power_score) IS NOT NULL
+               AND COALESCE(d.wins, 0) + COALESCE(d.losses, 0) > 0
+              THEN COALESCE(d.wins, 0) + COALESCE(d.losses, 0) END AS ms
+  FROM public.v_team_details d
+),
+career_base AS (
+  SELECT t.id AS team_id, t.name,
+    CASE WHEN COALESCE(c.ms_now, 0)    + COALESCE(l.ms, 0) > 0 THEN (COALESCE(c.ws_now, 0)    + COALESCE(l.ws, 0)) / (COALESCE(c.ms_now, 0)    + COALESCE(l.ms, 0)) ELSE 0 END AS base_now,
+    CASE WHEN COALESCE(c.ms_before, 0) + COALESCE(l.ms, 0) > 0 THEN (COALESCE(c.ws_before, 0) + COALESCE(l.ws, 0)) / (COALESCE(c.ms_before, 0) + COALESCE(l.ms, 0)) ELSE 0 END AS base_before,
+    CASE WHEN COALESCE(c.ms_live, 0)   + COALESCE(l.ms, 0) > 0 THEN (COALESCE(c.ws_live, 0)   + COALESCE(l.ws, 0)) / (COALESCE(c.ms_live, 0)   + COALESCE(l.ms, 0)) ELSE 0 END AS base_live,
+    CASE WHEN COALESCE(c.ms_after, 0)  + COALESCE(l.ms, 0) > 0 THEN (COALESCE(c.ws_after, 0)  + COALESCE(l.ws, 0)) / (COALESCE(c.ms_after, 0)  + COALESCE(l.ms, 0)) ELSE 0 END AS base_after,
+    (COALESCE(c.ms_now, 0) + COALESCE(l.ms, 0)) AS matches_now,
+    public.calculate_career_power_score(t.id) AS career_now
+  FROM public.teams t
+  LEFT JOIN career_sums c ON c.team_id = t.id
+  LEFT JOIN career_live_season l ON l.team_id = t.id
+),
+career AS (
+  SELECT b.team_id, b.name, b.matches_now,
+         (b.career_now >= 100) AS capped,
+         -- the bonus is the real career score today minus the base worked out from the
+         -- stored numbers; when the score is capped at 100 this is a lower limit
+         CASE WHEN b.career_now >= 100 THEN 100 - b.base_now ELSE b.career_now - b.base_now END AS bonus,
+         b.base_before, b.base_live, b.base_after
+  FROM career_base b
+),
+career_scored AS (
+  SELECT c.team_id, c.name, c.capped, c.matches_now,
+         least(100, c.base_before + c.bonus) AS before_raw,
+         least(100, c.base_live   + c.bonus) AS live_raw,
+         least(100, c.base_after  + c.bonus) AS after_raw
+  FROM career c
+),
+career_ranked AS (
+  SELECT cs.*,
+         CASE WHEN cs.matches_now > 0 THEN rank() OVER (PARTITION BY (cs.matches_now > 0) ORDER BY cs.before_raw DESC) END AS rank_was,
+         CASE WHEN cs.matches_now > 0 THEN rank() OVER (PARTITION BY (cs.matches_now > 0) ORDER BY cs.after_raw DESC) END AS rank_now
+  FROM career_scored cs
 )
-SELECT se.name AS season,
-       t.name AS team,
-       round(sc.stored_raw * 100, 1) AS stored,
-       round(sc.live_raw * 100, 1) AS live_rules,
-       round(sc.after_raw * 100, 1) AS after,
-       round((sc.after_raw - sc.stored_raw) * 100, 2) AS change,
-       round((sc.after_raw - sc.live_raw) * 100, 2) AS fix_part,
-       sc.rank_was,
-       sc.rank_now,
-       COALESCE(g.games_changed, 0) AS games_changed,
-       COALESCE(g.via_override, 0) AS via_override
-FROM scored sc
-JOIN public.seasons se ON se.id = sc.season_id
-JOIN public.teams t ON t.id = sc.team_id
-LEFT JOIN games g ON g.season_id = sc.season_id AND g.team_id = sc.team_id
-ORDER BY se.start_date, abs(sc.after_raw - sc.stored_raw) DESC NULLS LAST, t.name;
+SELECT x.season, x.team, x.stored, x.live_rules, x.after, x.change, x.fix_part,
+       x.rank_was, x.rank_now, x.games_changed, x.via_override
+FROM (
+  SELECT 1 AS part, se.start_date AS season_date, abs(sc.after_raw - sc.stored_raw) AS sort_change,
+         se.name AS season,
+         t.name AS team,
+         round(sc.stored_raw * 100, 1) AS stored,
+         round(sc.live_raw * 100, 1) AS live_rules,
+         round(sc.after_raw * 100, 1) AS after,
+         round((sc.after_raw - sc.stored_raw) * 100, 2) AS change,
+         round((sc.after_raw - sc.live_raw) * 100, 2) AS fix_part,
+         sc.rank_was,
+         sc.rank_now,
+         COALESCE(g.games_changed, 0) AS games_changed,
+         COALESCE(g.via_override, 0) AS via_override
+  FROM scored sc
+  JOIN public.seasons se ON se.id = sc.season_id
+  JOIN public.teams t ON t.id = sc.team_id
+  LEFT JOIN games g ON g.season_id = sc.season_id AND g.team_id = sc.team_id
+  UNION ALL
+  SELECT 2, NULL, abs(cr.after_raw - cr.before_raw),
+         'CAREER',
+         cr.name || CASE WHEN cr.capped THEN ' *' ELSE '' END,
+         round(cr.before_raw, 1),
+         round(cr.live_raw, 1),
+         round(cr.after_raw, 1),
+         round(cr.after_raw - cr.before_raw, 2),
+         round(cr.after_raw - cr.live_raw, 2),
+         cr.rank_was,
+         cr.rank_now,
+         COALESCE((SELECT sum(g.games_changed) FROM games g WHERE g.team_id = cr.team_id), 0),
+         COALESCE((SELECT sum(g.via_override) FROM games g WHERE g.team_id = cr.team_id), 0)
+  FROM career_ranked cr
+  WHERE round(cr.after_raw, 2) <> round(cr.before_raw, 2)
+     OR round(cr.live_raw, 2) <> round(cr.before_raw, 2)
+) x
+ORDER BY x.part, x.season_date, x.sort_change DESC NULLS LAST, x.team;

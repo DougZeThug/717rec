@@ -1,8 +1,11 @@
 -- Division truth, script 02: WRITE THE OVERRIDE ROWS (hand-apply step 3).
 --
 -- NOT A MIGRATION. Paste the WHOLE file into the Supabase SQL Editor and run it.
--- Run it AFTER the backup (01) and AFTER the migration 20261117130000. Order and
--- reasons: docs/OPERATIONS.md section 6g.
+-- Run it AFTER the backup (01) and AFTER the migration 20261117130000. Right
+-- before it, run the precheck (00) and the dry run (02a). Order and reasons:
+-- docs/OPERATIONS.md section 6g. Step 3 changes the VIEW at once; the stored
+-- numbers change only at the recompute (04), if all six seasons are closed.
+-- To back out BEFORE step 6: DELETE FROM public.power_score_division_override;
 --
 -- WHAT IT DOES. It writes rows into power_score_division_override, so a game is
 -- rated by the division the opponent had in THAT season. Nothing else. It does
@@ -44,6 +47,13 @@
 --
 -- SAFE TO RE-RUN: ON CONFLICT DO NOTHING. Expect about 85 rows (an estimate; the
 -- result below gives the real number).
+--
+-- LOOK FIRST: script 02a (division_truth_02a_dryrun.sql) lists, without writing
+-- anything, the exact rows this script would insert. Run it before this one. The
+-- two scripts share one block of SQL (marked SHARED BLOCK): keep it identical.
+--
+-- The reason text on each row holds no person's name, because the table can be
+-- read through the public API. It starts with "League owner, 2026-11-17".
 --
 -- UNDO: supabase/scripts/division_truth_05_undo.sql.
 --
@@ -101,6 +111,8 @@ BEGIN
 END $$;
 
 WITH
+-- ===== SHARED BLOCK. Script 02 (writes) and script 02a (dry run) must hold this
+-- ===== block word for word. Change one, change the other.
 old_seasons(season_id) AS (VALUES
   ('d6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a'::uuid),  -- Spring 2025
   ('e537c594-3ba9-4d79-ba63-f6ed90c89e30'::uuid),  -- Summer 1 2025
@@ -120,15 +132,17 @@ tier_map(stored_key, division_key) AS (VALUES
 division_pick AS (
   SELECT lower(btrim(dr.name)) AS division_key,
          (array_agg(dr.id))[1] AS division_id,
-         (array_agg(dr.name))[1] AS division_name
+         (array_agg(dr.name))[1] AS division_name,
+         (array_agg(dr.division_weight))[1] AS division_weight
   FROM public.v_division_rateable dr
   GROUP BY lower(btrim(dr.name))
   HAVING count(*) = 1
 ),
--- Doug's exceptions: they win over the map.
+-- Doug's exceptions: they win over the map. The reason text is public (the table
+-- can be read through the API), so it holds no person's name.
 exception_rows(team_id, season_id, division_key, reason) AS (
   SELECT t.id, s.season_id, 'recreational high',
-         'Doug, 2026-11-17: was Recreational High'
+         'League owner, 2026-11-17: was Recreational High'
   FROM public.teams t
   CROSS JOIN (VALUES ('e537c594-3ba9-4d79-ba63-f6ed90c89e30'::uuid),
                      ('d50bb12e-99be-4170-802a-695a402373ce'::uuid)) s(season_id)
@@ -137,16 +151,19 @@ exception_rows(team_id, season_id, division_key, reason) AS (
 -- The 3 explicit rows for the 7 newer games.
 explicit_rows(team_id, season_id, division_key, reason) AS (VALUES
   ('5db6b718-81af-4bd0-a0cd-0a0eae4330ad'::uuid, '34cd19e2-abf5-43b8-a16f-6d73a0e998ac'::uuid, 'competitive',
-   'Doug, 2026-11-17: dropped-out team; its real division that season was Competitive'),
+   'League owner, 2026-11-17: dropped-out team; its real division that season was Competitive'),
   ('e91cb2d1-ef48-48e7-b15f-735c941f3679'::uuid, '4b90a1d8-b90a-4e47-8e8c-b89a7b54e106'::uuid, 'recreational',
-   'Doug, 2026-11-17: dropped-out team; its real division that season was Recreational'),
+   'League owner, 2026-11-17: dropped-out team; its real division that season was Recreational'),
   ('accd6e20-f761-4769-8cdc-6c9495cc231c'::uuid, '9cd55eb8-672c-4a43-a9df-3552a7759cca'::uuid, 'recreational',
-   'Doug, 2026-11-17: dropped-out team; its real division that season was Recreational')
+   'League owner, 2026-11-17: dropped-out team; its real division that season was Recreational')
 ),
 -- THE PER-GAME RULE: opponent team-seasons with at least one guessed or unrated
 -- game. 'manual_override' is not in the list, so a re-run finds none of them.
+-- weak_games = how many of its games are guessed or unrated.
 cand AS (
-  SELECT r.season_id, r.opponent_id AS team_id, count(*) AS games
+  SELECT r.season_id, r.opponent_id AS team_id, count(*) AS games,
+         count(*) FILTER (WHERE r.resolved_by IN ('division_history', 'current_division',
+                                                  'last_known_division', 'unresolved')) AS weak_games
   FROM public.v_power_score_team_matches_rated r
   JOIN old_seasons o ON o.season_id = r.season_id
   GROUP BY r.season_id, r.opponent_id
@@ -154,7 +171,7 @@ cand AS (
                                    'last_known_division', 'unresolved'))
 ),
 judged AS (
-  SELECT c.season_id, c.team_id, c.games,
+  SELECT c.season_id, c.team_id, c.games, c.weak_games,
          s.division_name AS stored_name,
          (s.team_id IS NOT NULL) AS has_stored,
          e.division_key AS exc_key,
@@ -165,18 +182,29 @@ judged AS (
   LEFT JOIN exception_rows e ON e.season_id = c.season_id AND e.team_id = c.team_id
   LEFT JOIN tier_map m ON m.stored_key = lower(btrim(s.division_name))
 ),
+-- The rows that get a division: old-season team-seasons (by the map or the
+-- exception list), then the 3 explicit rows.
 wanted AS (
   SELECT j.season_id, j.team_id, d.division_id,
          COALESCE(j.exc_reason,
-                  format('Doug, 2026-11-17: season division name "%s" = %s',
-                         btrim(j.stored_name), d.division_name)) AS reason
+                  format('League owner, 2026-11-17: season division name "%s" = %s',
+                         btrim(j.stored_name), d.division_name)) AS reason,
+         btrim(j.stored_name) AS stored_label,
+         j.weak_games AS games_affected
   FROM judged j
   JOIN division_pick d ON d.division_key = COALESCE(j.exc_key, j.map_key)
   UNION ALL
-  SELECT e.season_id, e.team_id, d.division_id, e.reason
+  SELECT e.season_id, e.team_id, d.division_id, e.reason,
+         (SELECT btrim(s.division_name) FROM public.team_season_stats s
+           WHERE s.season_id = e.season_id AND s.team_id = e.team_id),
+         (SELECT count(*) FROM public.v_power_score_team_matches_rated r
+           WHERE r.season_id = e.season_id AND r.opponent_id = e.team_id
+             AND r.resolved_by IN ('division_history', 'current_division',
+                                   'last_known_division', 'unresolved'))
   FROM explicit_rows e
   JOIN division_pick d ON d.division_key = e.division_key
 ),
+-- ===== END OF SHARED BLOCK =====
 ins AS (
   INSERT INTO public.power_score_division_override (team_id, season_id, division_id, reason)
   SELECT w.team_id, w.season_id, w.division_id, w.reason FROM wanted w
