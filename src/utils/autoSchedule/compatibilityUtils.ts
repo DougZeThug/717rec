@@ -90,6 +90,14 @@ const ADJACENT_DIVISION_SCORE = 5;
 const MAX_SKILL_CUT = 0.5;
 
 /**
+ * The skill cut is rounded to whole steps of 1/SKILL_STEPS_PER_UNIT (1/1024). A weighted gap needs
+ * to be 1/32 (about 3.1%) or more to count for one step. Keep this a power of two: the matcher
+ * only adds, subtracts, doubles and halves the scores, and those stay exact. A finer step is this
+ * one number.
+ */
+export const SKILL_STEPS_PER_UNIT = 1024;
+
+/**
  * The lowest score a pair from neighbouring divisions can get (5 minus the largest skill cut).
  * A pair below this can only be forbidden (0), so the batch preview counts only those and
  * rematches in its red Warnings badge. A neighbouring-division pair is not counted there.
@@ -161,10 +169,11 @@ function distance(first: number | null, second: number | null): number | null {
  *
  * For each pair the division score counts first. The score starts at the division-only score
  * (10 same tier, 5 next tier, 0 blocked) and takes away a small amount for the skill gap between
- * the two teams: 0.5 x gap squared, rounded to the nearest 1/256. The gap is 0 to 1, so the amount
- * is 0 to 0.5. A same-tier pair stays in 9.5 to 10 and a next-tier pair in 4.5 to 5, so the two
- * bands do not overlap. A blocked pair stays 0. The skill term comes off every pair, so it also
- * sways the choice between cross-division pairings.
+ * the two teams: 0.5 x gap squared, rounded to the nearest 1/1024. A gap under 1/32 (about 3.1%)
+ * rounds to nothing. The gap is 0 to 1, so the amount is 0 to 0.5. A same-tier pair stays in
+ * 9.5 to 10 and a next-tier pair in 4.5 to 5, so the two bands do not overlap. A blocked pair
+ * stays 0. The skill term comes off every pair, so it also sways the choice between cross-division
+ * pairings.
  *
  * With the switch ON, standardPairing.ts asks each round to pair as many teams as it can first
  * (`preferFullRounds`), then to take the best division total, then the best skill. For blocks of
@@ -175,7 +184,7 @@ function distance(first: number | null, second: number | null): number | null {
  * strength of schedule, win rate, game win rate). A distance is skipped, not counted as 0, when
  * either team has no data for it: Power Score null or 0, or no decided matches. A team that is
  * not in `ratings` has no data at all, so its pairs score as the division-only function does.
- * Whole 1/256 steps keep every sum exact for the matcher.
+ * Whole 1/1024 steps keep every sum exact for the matcher.
  */
 export function createQualityCompatibility(
   ratings: ReadonlyMap<string, TeamRating>,
@@ -226,7 +235,9 @@ export function createQualityCompatibility(
     }
     const gap = usedWeight > 0 ? weightedDiff / usedWeight : 0;
 
-    return base - Math.round(MAX_SKILL_CUT * gap * gap * 256) / 256;
+    return (
+      base - Math.round(MAX_SKILL_CUT * gap * gap * SKILL_STEPS_PER_UNIT) / SKILL_STEPS_PER_UNIT
+    );
   };
 }
 
@@ -239,7 +250,7 @@ export function formatCompatibilityScore(score: number): string {
   if (score >= ADJACENT_DIVISION_SCORE) return score.toFixed(1);
 
   // The small add-on stops 4.6 * 100 = 459.99999999999994 from being cut to 4.59. The cap keeps a
-  // score that is a hair under 5 from reaching 5.00. Real scores are whole 1/256 steps, which
+  // score that is a hair under 5 from reaching 5.00. Real scores are whole 1/1024 steps, which
   // times 100 are exact, so neither guard changes them.
   const hundredths = Math.min(499, Math.floor(score * 100 + 1e-9));
   return (hundredths / 100).toFixed(2).replace(/0$/, '');
