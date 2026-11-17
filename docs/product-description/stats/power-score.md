@@ -317,9 +317,11 @@ looks like a bug to anyone watching one team.
 - **A team's record and its rating can be built from different matches**, when a
   match's historical division cannot be resolved.
 - **Old seasons are rated more carefully, not perfectly.** A pinned division is the
-  league's best knowledge of that season, not a recorded fact. The old seasons use
-  **today's** division weights, because weight edits made before 2026-08-12 were
-  never recorded. A team has one division per season there, even if it moved.
+  league's best knowledge of that season, not a recorded fact. A game is rated by the
+  weight its division had **on the game date**. The weight history starts on
+  2026-08-12; for the six divisions the old seasons use, the league's live read on
+  2026-11-17 shows one history row each, so today's weight applies. A team has one
+  division per season there, even if it moved.
 - **Re-weighting a division moves every active-season score at once**, including
   for teams that never played that division, through the schedule-strength term.
 - **An archived season and the current season can be rated by different

@@ -106,6 +106,19 @@ so a non-zero exit code means drift was detected.
   `REVOKE ALL ... FROM PUBLIC, anon, authenticated` line: on Supabase that line
   removes the default write grants, and on CI there are none to remove. Read that
   line in review. There is no fake test for it.
+- `division_truth_scripts.sql` — runs the REAL hand-apply scripts
+  `supabase/scripts/division_truth_*.sql` on a small league fixture, inside one
+  rolled-back transaction (it must run from the repo root: it uses `\i` and `cat` with
+  `supabase/scripts/...` paths, as CI does). The dry run (`02a`) writes nothing, and
+  the rows it lists as INSERT are exactly the rows script `02` then writes (set
+  equality on season, team, division); it lists what it would skip (a stored name
+  not in the map, no stored row) and leaves out a team-season a snapshot already
+  answers. Pins Doug's exception ("Here for Fireball" = Recreational High), the 3
+  explicit rows, a second run that writes 0, reasons that name no person and start
+  "League owner, 2026-11-17", the preview and checks scripts running, the recompute
+  (moves one season only, only the score columns, second run 0) and both undo paths
+  (path 2 saves the override rows first and a second run adds nothing; path 1 puts the
+  saved scores back).
 - `declined_request_team_change.sql` — asserts a refused join request may be
   aimed at a different team, and that every other lock on `team_memberships`
   still holds (pending rows immovable, no self-approval, no handing the row on,
