@@ -184,7 +184,8 @@ Last measured: 2026-08-11.
 | Functions  | 64.66%  |
 | Branches   | 58.15%  |
 
-Measured from a full passing run: 511 test files / 3840 tests.
+Measured from a full passing run on 2026-08-11: 511 test files / 3840 tests. The
+suite is larger now: 881 test files / 8,382 tests as of 2026-11-17.
 
 The overall number is held down by the component layer, which is still uneven
 at 62% lines even after the 2026-08 test expansion. The logic-heavy areas
@@ -414,7 +415,8 @@ per-area numbers matter for a decision, recompute them from a fresh
 
 ## What's tested today
 
-511 test files / 3840 tests as of 2026-08-11. Highlights by layer:
+881 test files / 8,382 tests as of 2026-11-17. The highlights by layer below are
+from the 2026-08-11 run (511 test files / 3840 tests):
 
 **Services (89% lines):** the data-access layer is the best-covered area.
 Suites exist for `ProfileService`, `HeadToHeadService`, team fetch/create/

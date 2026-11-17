@@ -56,11 +56,23 @@ When there's an odd number of teams:
 - Can prioritize team skill balance
 
 **Quality Optimization:**
-When "Prioritize Match Quality" is enabled:
-- `powerScoreWeight`: 1.5 - Balance team power scores
-- `sosWeight`: 1.0 - Consider strength of schedule
-- `recordWeight`: 1.0 - Match teams with similar records
-- `divisionWeight`: 2.0 - Favor same-division pairings
+When "Prioritize Match Quality" is enabled, the Auto Schedule tab sends these
+weights (`src/hooks/useAutoSchedule/usePairingOperations.ts:182-185`):
+- `powerScoreWeight`: 5 - Balance team power scores
+- `sosWeight`: 3 - Consider strength of schedule
+- `recordWeight`: 3.5 - Match teams with similar records
+- `gameRecordWeight`: 2 - Match teams with similar game records
+
+There is no `divisionWeight`. The batch matches screen sends only
+`powerScoreWeight` 5 and `recordWeight` 3.5
+(`src/components/admin/batch-matches/auto-schedule/hooks/useAutoScheduleSection.ts:84-85`).
+
+Today these weights are passed along but not read. The single-block path scores
+each pair with `calculateDivisionOnlyCompatibility`
+(`src/hooks/scheduling/utils/standardPairing.ts:79`), which looks only at the
+division tier gap. The only code that reads the weights is
+`calculateConfigurableCompatibility` (deprecated), and it is reached only through
+`generateDualBlockPairings`, which has no production caller.
 
 **Constraints:**
 - Configurable rematch avoidance

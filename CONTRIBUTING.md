@@ -7,7 +7,7 @@ This guide documents the conventions and patterns used in this codebase to ensur
 Before marking any feature or bugfix as complete, ensure it meets the criteria in [Definition of Done](./src/docs/DEFINITION_OF_DONE.md).
 
 **Quick checklist:**
-- [ ] Builds without errors (`npm run build`)
+- [ ] No TypeScript errors (`npm run typecheck`) and the build works (`npm run build`)
 - [ ] Tests pass (`npm run test`)
 - [ ] Loading/empty/error states handled
 - [ ] Accessible via keyboard
@@ -92,6 +92,10 @@ export const maxTeamSize = 4;
 ## Feature Organization
 
 When adding a new feature (e.g., "notifications"):
+
+> Example only, not real files. Here and in "Barrel Exports" below,
+> "notifications" and its file names stand in for your own feature. The real
+> notifications code uses different file names.
 
 1. **Components**: `src/components/notifications/`
    - Create feature-specific components
