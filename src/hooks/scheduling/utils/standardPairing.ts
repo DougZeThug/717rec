@@ -64,8 +64,10 @@ const createQualityScoreFn = async (
 /**
  * Schedules team pairings using the standard Edmonds' Blossom algorithm.
  *
- * This function processes each time block independently, maximizing compatibility scores
- * and supporting quality optimization weights. It's ideal for single-block scheduling
+ * This function processes each time block independently, maximizing compatibility scores.
+ * The score is division-only (10 same tier, 5 next tier, 0 blocked) unless the screen sent
+ * weights (Prioritize Match Quality ON). Then a small skill term is taken off, so skill only
+ * decides between choices with the same division mix. It's ideal for single-block scheduling
  * where each time slot is treated separately.
  *
  * @param timeBlockTeams - Map of time block names to teams

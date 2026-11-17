@@ -174,9 +174,14 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
 
       <div className="text-xs text-muted-foreground mt-2">
         <p>
-          * Match compatibility score is based on team records, power scores, and previous matches
+          * Match score is 10 for teams in the same division and 5 for neighbouring divisions.
+          Rematches are flagged
         </p>
-        <p>* Teams with similar skill levels are paired for more competitive matches</p>
+        <p>
+          * With Prioritize Match Quality ON (Standard mode), a close power score and record are
+          preferred, and a gap takes a little off the score. A neighbouring-division pair can then
+          show just under 5
+        </p>
         {dualMatchMode && (
           <p>
             * In dual match mode, teams are scheduled to play in both time blocks with different

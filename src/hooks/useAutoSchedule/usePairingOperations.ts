@@ -177,6 +177,8 @@ export const usePairingOperations = (
           avoidRematches,
           prioritizeQuality,
           dualMatchMode,
+          // Four fixed weights, not set by any screen. Standard mode reads them when
+          // Prioritize Match Quality is ON. Dual Match Mode does not read them.
           weights: prioritizeQuality
             ? {
                 powerScoreWeight: 5,

@@ -13,7 +13,10 @@ const InformationSection: React.FC = () => {
       </div>
 
       <ul className="list-disc pl-5 space-y-1">
-        <li>Teams are matched based on skill levels using power scores and win records</li>
+        <li>
+          Teams are matched by division first. With Prioritize Match Quality ON (Standard mode), a
+          close power score and record are preferred next
+        </li>
         <li>Algorithm avoids pairing teams that have already played against each other</li>
         <li>Matches are optimized to be as competitive and fair as possible</li>
         <li>

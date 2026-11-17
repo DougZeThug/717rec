@@ -80,7 +80,7 @@ const SettingsBody: React.FC<AlgorithmSettingsProps> = ({
       <SettingRow
         id="prioritize-quality"
         label="Prioritize Match Quality"
-        description="Match teams with similar skill levels (higher priority)"
+        description="Pair within a division first, then prefer a close power score and record"
         checked={prioritizeQuality}
         onCheckedChange={setPrioritizeQuality}
       />

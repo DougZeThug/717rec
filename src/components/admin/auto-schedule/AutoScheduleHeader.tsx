@@ -20,8 +20,9 @@ const AutoScheduleHeader: React.FC = () => {
       </div>
 
       <p className="text-muted-foreground">
-        Generate optimal match schedules automatically based on team compatibility and skill levels.
-        The algorithm prioritizes competitive matches and avoids rematches when possible.
+        Generate match schedules automatically. Teams are paired by division first, and rematches
+        are avoided when possible. With Prioritize Match Quality ON (Standard mode), teams with a
+        close power score and record are preferred next.
       </p>
     </div>
   );
