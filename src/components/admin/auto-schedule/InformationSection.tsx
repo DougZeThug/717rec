@@ -18,7 +18,9 @@ const InformationSection: React.FC = () => {
           close power score and record are preferred next
         </li>
         <li>Algorithm avoids pairing teams that have already played against each other</li>
-        <li>Matches are optimized to be as competitive and fair as possible</li>
+        <li>
+          A pair from the same division scores highest, then a pair from neighbouring divisions
+        </li>
         <li>
           Standard mode stops on a time block with an odd number of teams (3 or more): move a team,
           or use Dual Match Mode. A team alone in its block is shown as unmatched

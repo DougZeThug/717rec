@@ -27,4 +27,15 @@ describe('Auto Schedule screen text about match quality', () => {
     );
     expect(text).not.toContain('Teams are matched based on skill levels using power scores');
   });
+
+  it('the help box does not promise the most competitive or fair matches, which is false with the switch OFF and in Dual Match Mode', () => {
+    const { container } = render(<InformationSection />);
+
+    const text = container.textContent ?? '';
+    expect(text).toContain(
+      'A pair from the same division scores highest, then a pair from neighbouring divisions'
+    );
+    expect(text).not.toContain('optimized to be as competitive and fair as possible');
+    expect(text).not.toMatch(/optimi[sz]ed/i);
+  });
 });

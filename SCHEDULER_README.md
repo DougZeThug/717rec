@@ -53,7 +53,7 @@ When there's an odd number of teams:
 - Compatibility score by division: 10 for the same division, 5 for neighbouring divisions, 0 for Competitive against Recreational (blocked)
 - With "Prioritize Match Quality" ON, a small skill term is taken off that score (see Quality Optimization)
 - Each time block scheduled independently
-- With "Prioritize Match Quality" ON, prefers teams with a close Power Score, strength of schedule, win record and game record. Division comes first
+- With "Prioritize Match Quality" ON, prefers teams with a close Power Score, strength of schedule, win record and game record. For each pair the division score counts first
 
 **Quality Optimization:**
 This works in Standard mode only. Dual Match Mode does not read the weights.
@@ -88,14 +88,19 @@ How the weights are used (`src/hooks/scheduling/utils/standardPairing.ts`):
   0 to 1: a weighted average of four distances (Power Score over 100, strength of
   schedule, win rate, game win rate). A distance is skipped when either team has no
   data for it (Power Score null or 0, or no decided matches).
-- **Division comes first, and the skill term is small.** The skill term takes at
-  most 0.5 off a pair. A pair from the same division stays between 9.5 and 10. A
-  pair from neighbouring divisions stays between 4.5 and 5. A blocked pair stays 0.
-  Some mixed blocks force a cross-division pair under both settings.
+- **For each pair the division score counts first, and the skill term is small.**
+  The skill term takes at most 0.5 off a pair. A pair from the same division stays
+  between 9.5 and 10. A pair from neighbouring divisions stays between 4.5 and 5. A
+  blocked pair stays 0. The skill term comes off every pair, so it also sways the
+  choice between cross-division pairings. With ON each round first pairs as many
+  teams as it can, then division, then skill. For blocks of 20 or more teams the
+  skill terms of one round could add up past one division step. That is not guarded.
+  Real block sizes are UNKNOWN. Some mixed blocks force a cross-division pair under
+  both settings.
 - **Every round pairs as many teams as it can (ON only).** With the switch ON,
   `standardPairing.ts` passes `preferFullRounds` to the generator. Its first run
-  then matches as many teams as it can in each round, so a smaller round cannot win
-  just because each pair loses a little. With OFF the flag is false and the first
+  then matches as many teams as it can in each round, so a smaller round never wins,
+  even if its pairs score higher. With OFF the flag is false and the first
   run is the one it always was. This first run uses the vendored copy of the
   library (`blossom/vendor/`), like the retry does. Dual Match Mode does not use
   the flag.
@@ -105,23 +110,33 @@ How the weights are used (`src/hooks/scheduling/utils/standardPairing.ts`):
 - **A visible effect:** with the switch ON, a pair from neighbouring divisions
   whose teams are not close scores a little under 5 (a weighted gap under about 6%
   rounds away, so very close teams still score exactly 5). The preview shows it
-  with the amber note "may not be evenly matched". The red "N Warnings" badge
-  counts every pair that scores under 5, so these pairs count in it too. With OFF
-  it counts only rematches and 0-score pairs. An average of exactly 8.0 can read
-  7.97.
-- **What the seeded test grid shows** (`standardPairing.qualityGrid.test.ts`: blocks of
-  6, 8, 10 and 12 teams, three tier mixes, 40 seeded blocks each, three library
+  with the amber note "may not be evenly matched". The red "N Warnings" badge does
+  not count these pairs. With ON or OFF it counts only rematches and forbidden
+  pairs (score under 4.5, which means 0). The card prints a score under 5 cut to
+  two decimals, for example 4.99, so it never reads 5.0. An average of exactly 8.0
+  can read 7.97.
+- **What the seeded test grid shows** (`standardPairing.qualityGrid.test.ts`: blocks
+  of 6, 8, 10 and 12 teams, three tier mixes, 40 seeded blocks each, three library
   modes). A list is "good" when no pair bends a rule (Competitive against
   Recreational, or a repeated pair unless both teams are Recreational) and Apply can
-  place it into the block's two time slots. In every block where a good list can be
-  found, ON found one (360 of 360 blocks, in all three library modes). OFF found one
-  in 268 (plain), 293 (browser that fails only on contractions) and 321 (library
-  throws every call) of the same 360. In no seeded block did ON give a bad list where
-  OFF gave a good one. Where no good list can be found, no setting avoids bending a
-  rule, and ON stops less often than OFF overall (a block of 3 Competitive, 1
-  Intermediate and 2 Recreational teams, or 5, 1 and 2). In a block of 6 with 2 Competitive, 2
-  Intermediate and 2 Recreational teams a good list exists, but neither setting
-  finds it.
+  place it into the block's two time slots. In 9 of the 12 tested cases ON found a
+  good list in all 40 blocks (360 of 480 blocks). OFF found 268, 293 and 321 of the
+  same 480 in the three library modes (the OFF totals were reproduced by QA-C in a
+  throwaway copy; they are not pinned by a test). In 2 cases no good list exists (3
+  Competitive, 1 Intermediate and 2 Recreational teams at 6 teams, and 5, 1 and 2 at 8
+  teams). In 1 case one exists but neither setting finds it (2 Competitive, 2
+  Intermediate and 2 Recreational teams at 6 teams). The tests use random ratings and
+  6 to 12 teams. Real block sizes are UNKNOWN. In no seeded block did ON give a bad
+  list where OFF gave a good one.
+- **Where no good list exists, a rule bends under both settings, and ON is not always
+  better.** ON stops less often than OFF overall (blocks of 8 teams with 5
+  Competitive, 1 Intermediate and 2 Recreational teams: 2 stops against 11 in the
+  plain library). Two things go the other way. In blocks of 6 teams with 3
+  Competitive, 1 Intermediate and 2 Recreational teams, ON can bend more
+  rules than OFF (34 against 21 bent pairs in the plain library), because OFF has 19
+  of 40 lists that Apply cannot place into the two time slots (ON has 6). And in 1 of
+  40 blocks of 8 teams with 5 Competitive, 1 Intermediate and 2 Recreational teams, ON
+  stopped where OFF finished (the admin sees a red error toast).
 
 The old scorers `calculateTeamCompatibility` and
 `calculateConfigurableCompatibility` (deprecated) are not used by the Standard

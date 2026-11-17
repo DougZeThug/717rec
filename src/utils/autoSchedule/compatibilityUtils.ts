@@ -159,13 +159,17 @@ function distance(first: number | null, second: number | null): number | null {
 /**
  * Builds the score function for "Prioritize Match Quality" in Standard mode.
  *
- * Division comes first. The score starts at the division-only score (10 same tier, 5 next tier,
- * 0 blocked) and takes away a tiny amount for the skill gap between the two teams:
- * 0.5 x gap squared, rounded to the nearest 1/256. The gap is 0 to 1, so the amount is 0 to 0.5.
- * A same-tier pair stays in 9.5 to 10 and a next-tier pair in 4.5 to 5. The bands never touch,
- * so the division score counts first and the skill term is small. A blocked pair stays 0. With
- * the switch ON, standardPairing.ts also asks each round to pair as many teams as it can
- * (`preferFullRounds`), so a smaller round cannot win because each pair loses a little.
+ * For each pair the division score counts first. The score starts at the division-only score
+ * (10 same tier, 5 next tier, 0 blocked) and takes away a small amount for the skill gap between
+ * the two teams: 0.5 x gap squared, rounded to the nearest 1/256. The gap is 0 to 1, so the amount
+ * is 0 to 0.5. A same-tier pair stays in 9.5 to 10 and a next-tier pair in 4.5 to 5, so the two
+ * bands do not overlap. A blocked pair stays 0. The skill term comes off every pair, so it also
+ * sways the choice between cross-division pairings.
+ *
+ * With the switch ON, standardPairing.ts asks each round to pair as many teams as it can first
+ * (`preferFullRounds`), then to take the best division total, then the best skill. For blocks of
+ * 20 or more teams the skill terms of one round could add up past one division step (5). That is
+ * not guarded. Real block sizes are UNKNOWN.
  *
  * The gap is a weighted average of four distances, each from 0 to 1 (Power Score over 100,
  * strength of schedule, win rate, game win rate). A distance is skipped, not counted as 0, when

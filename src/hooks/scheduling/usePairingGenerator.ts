@@ -41,8 +41,9 @@ export const usePairingGenerator = () => {
    * 2. Standard Mode (config.dualMatchMode = false):
    *    Uses Edmonds' Blossom algorithm for optimal quality matching
    *    - Maximizes compatibility scores (division first: 10 same tier, 5 next tier)
-   *    - With weights (Prioritize Match Quality ON), reads real ratings once and uses a
-   *      small skill term to choose between same-division pairings
+   *    - With weights (Prioritize Match Quality ON), reads real ratings once. A small skill
+   *      term (at most 0.5) comes off every pair's score, so it also sways the choice between
+   *      cross-division pairings. Each pair's division score still counts first
    *    - Each time block scheduled independently
    */
   const generateMatchPairings = useCallback(
