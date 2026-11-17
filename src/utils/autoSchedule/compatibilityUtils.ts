@@ -1,5 +1,5 @@
 import { getDisplayDivision } from '@/styles/design-system/divisions';
-import { Team } from '@/types';
+import { AlgorithmConfig, Team } from '@/types';
 import { debugLog } from '@/utils/logger';
 
 /**
@@ -105,6 +105,110 @@ export function calculateDivisionOnlyCompatibility(team1: Team, team2: Team): nu
   } else {
     return 0; // Extreme difference - blocked/poor match
   }
+}
+
+/**
+ * One team's real ratings, as `v_team_details` reports them. A `null` means the view has no
+ * value. The scheduler's own Team objects hold placeholders (Power Score 0, SOS 0.5), so the
+ * ratings travel in a Map by team id, not on the Team.
+ */
+export interface TeamRating {
+  power_score: number | null;
+  sos: number | null;
+  wins: number | null;
+  losses: number | null;
+  game_wins: number | null;
+  game_losses: number | null;
+}
+
+/** The four admin weights. A missing key gets the default that the old scorer used. */
+type QualityWeights = NonNullable<AlgorithmConfig['weights']>;
+
+/** A weight that is not a positive number counts as 0, so it can never push a score out of its band. */
+function usableWeight(value: number | undefined, fallback: number): number {
+  const weight = value ?? fallback;
+  return Number.isFinite(weight) && weight > 0 ? weight : 0;
+}
+
+/** Share of decided results that were won, or null when nothing is decided yet. */
+function wonShare(won: number | null, lost: number | null): number | null {
+  const total = (won ?? 0) + (lost ?? 0);
+  return total > 0 ? (won ?? 0) / total : null;
+}
+
+/** Distance between two values, or null when either one is missing or not a real number. */
+function distance(first: number | null, second: number | null): number | null {
+  if (first === null || second === null) return null;
+  const apart = Math.abs(first - second);
+  return Number.isFinite(apart) ? apart : null;
+}
+
+/**
+ * Builds the score function for "Prioritize Match Quality" in Standard mode.
+ *
+ * Division comes first. The score starts at the division-only score (10 same tier, 5 next tier,
+ * 0 blocked) and takes away a tiny amount for the skill gap between the two teams:
+ * 0.5 x gap squared, rounded to the nearest 1/256. The gap is 0 to 1, so the amount is 0 to 0.5.
+ * A same-tier pair stays in 9.5 to 10 and a next-tier pair in 4.5 to 5. The bands never touch,
+ * so skill only decides between choices that have the same division mix. A blocked pair stays 0.
+ *
+ * The gap is a weighted average of four distances, each from 0 to 1 (Power Score over 100,
+ * strength of schedule, win rate, game win rate). A distance is skipped, not counted as 0, when
+ * either team has no data for it: Power Score null or 0, or no decided matches. A team that is
+ * not in `ratings` has no data at all, so its pairs score as the division-only function does.
+ * Whole 1/256 steps keep every sum exact for the matcher.
+ */
+export function createQualityCompatibility(
+  ratings: ReadonlyMap<string, TeamRating>,
+  weights: QualityWeights = {}
+): (team1: Team, team2: Team) => number {
+  // Same defaults as calculateConfigurableCompatibility.
+  const powerWeight = usableWeight(weights.powerScoreWeight, 3);
+  const sosWeight = usableWeight(weights.sosWeight, 1.5);
+  const recordWeight = usableWeight(weights.recordWeight, 2);
+  const gameRecordWeight = usableWeight(weights.gameRecordWeight, 1);
+
+  return (team1, team2) => {
+    const base = calculateDivisionOnlyCompatibility(team1, team2);
+    if (base === 0) return 0;
+
+    const rating1 = ratings.get(team1.id);
+    const rating2 = ratings.get(team2.id);
+    if (!rating1 || !rating2) return base;
+
+    const record1 = wonShare(rating1.wins, rating1.losses);
+    const record2 = wonShare(rating2.wins, rating2.losses);
+    const powerDistance = distance(
+      rating1.power_score || null, // 0 is a placeholder, not a rating
+      rating2.power_score || null
+    );
+
+    // Each distance is 0 to 1, or null when a team has no data for it.
+    const terms: Array<[weight: number, diff: number | null]> = [
+      [powerWeight, powerDistance === null ? null : powerDistance / 100],
+      // SOS means nothing before a team has played a decided match.
+      [sosWeight, record1 !== null && record2 !== null ? distance(rating1.sos, rating2.sos) : null],
+      [recordWeight, distance(record1, record2)],
+      [
+        gameRecordWeight,
+        distance(
+          wonShare(rating1.game_wins, rating1.game_losses),
+          wonShare(rating2.game_wins, rating2.game_losses)
+        ),
+      ],
+    ];
+
+    let weightedDiff = 0;
+    let usedWeight = 0;
+    for (const [weight, diff] of terms) {
+      if (diff === null) continue;
+      weightedDiff += weight * Math.min(1, diff);
+      usedWeight += weight;
+    }
+    const gap = usedWeight > 0 ? weightedDiff / usedWeight : 0;
+
+    return base - Math.round(0.5 * gap * gap * 256) / 256;
+  };
 }
 
 /**
