@@ -537,6 +537,10 @@ preview any mix safely: nothing changes until you press **Save & rescore**.
    NOTICE: power score weight sandbox installed: weights 40/45/15, NNN season rows
    ```
 
+   The weights in that line are the latest row of `power_score_weight_history`.
+   40/45/15 is what they were when the Sandbox was first installed. The live
+   numbers are in `power_score_weight_history` (40/50/10 on 2026-11-17).
+
    Prefer Lovable? Ask it, verbatim: _"Apply the SQL migration file
    `supabase/migrations/20260820120000_power_score_weight_sandbox.sql` from
    the GitHub repo to the project database, then regenerate the Supabase
@@ -544,13 +548,15 @@ preview any mix safely: nothing changes until you press **Save & rescore**.
    otherwise lags harmlessly (compile-time only).
 
 3. Verify, still in the SQL editor — all three:
-   - `SELECT * FROM get_power_score_weights();` → one row, `40 / 45 / 15`
+   - `SELECT * FROM get_power_score_weights();` → one row, the live weights (`40 / 45 / 15` at the first install; `40 / 50 / 10` on 2026-11-17)
    - `SELECT power_score_100(1, 1, 1);` → `100`
    - `SELECT * FROM admin_audit_coverage_drift();` → no rows
 4. Reload the admin panel. The tab now shows the live-weights banner and Save
-   works. **No scores have changed yet** — the seeded weights are the same
-   40/45/15 the site has always used. Re-running the migration later is safe:
-   it re-reads the latest weights instead of resetting them.
+   works. **No scores have changed yet** — the starting numbers were 40/45/15,
+   the same as the site used when the Sandbox was installed. The live numbers
+   now are in `power_score_weight_history` (40/50/10 on 2026-11-17).
+   Re-running the migration later is safe: it re-reads the latest weights
+   instead of resetting them.
 
 ### Using it day to day
 
@@ -564,14 +570,15 @@ preview any mix safely: nothing changes until you press **Save & rescore**.
   `power_score_weight_history` (append-only — nothing is ever overwritten).
 - **Revert** goes back to the previous mix the same way, and reverting a
   revert toggles back again.
-- **A save always rewrites the stored scores of every season** from the live
-  rules. This is also true when you save the numbers that are already live (the
-  screen says "reasserted"). A save changes nothing only if the stored scores
-  already match the live rules. A live check on 2026-11-17 showed that they do
-  not: a save would change 62 team-seasons (Spring 2025, Summer 1 2025 and
-  Summer 2 2025). **Do not press Save & rescore until the old-season fix is
-  decided.** No table backup exists, and Revert works the scores out again from
-  the live rules: it does not restore the old stored numbers. See
+- **Any save rewrites the stored scores of every season** from the live rules.
+  A save changes nothing only if the stored scores already match the live rules.
+  A live check on 2026-11-17 showed that they do not: any save would change 62
+  team-seasons (Spring 2025, Summer 1 2025 and Summer 2 2025). **Do not press
+  Save & rescore until the old-season fix is decided.** The Save button is off
+  when the typed numbers equal the live numbers, so a save with the same weights
+  (the screen says "reasserted") needs a stale tab or a second admin. No table
+  backup exists, and Revert works the scores out again from the live rules: it
+  does not restore the old stored numbers. See
   `docs/untangle-decision-log.md`, "Power Score check result (2026-11-17)".
 
 Caveats:

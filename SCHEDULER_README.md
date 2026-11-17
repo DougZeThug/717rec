@@ -133,7 +133,7 @@ How the weights are used (`src/hooks/scheduling/utils/standardPairing.ts`):
   list where OFF gave a good one.
 - **Where no good list exists, a rule bends under both settings, and ON is not always
   better.** ON stops less often than OFF overall (blocks of 8 teams with 5
-  Competitive, 1 Intermediate and 2 Recreational teams: 2 stops against 11 in the
+  Competitive, 1 Intermediate and 2 Recreational teams: 1 stop against 11 in the
   plain library). Two things go the other way. In blocks of 6 teams with 3
   Competitive, 1 Intermediate and 2 Recreational teams, ON can bend more
   rules than OFF (34 against 21 bent pairs in the plain library), because OFF has 19

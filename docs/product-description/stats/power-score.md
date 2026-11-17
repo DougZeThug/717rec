@@ -127,8 +127,9 @@ Three consequences follow, and all three surprise people:
 - **Beating a weak team can lower the score.** Both win-rate terms are averages,
   and the strength-of-schedule term drops. A team on a perfect record can still
   fall.
-- **Nearly half the number is the schedule.** A team with no say in who it plays
-  carries 45 points of a rating decided by the fixture list.
+- **About half the number is the schedule.** The strength-of-schedule part carries
+  about half of the score: 50 of 100 points at the live weights (45 by default). A
+  team has no say in who it plays, so that part is decided by the fixture list.
 - **100 is reachable.** A team scores 100 when it wins every decided match, wins
   every game, and has a schedule strength of 1.0. Schedule strength reaches 1.0
   only when the average weight of the rated opponents' divisions on the match
@@ -140,9 +141,10 @@ Three consequences follow, and all three surprise people:
 
 **The three weights are not fixed.** 40/45/15 is the default. The live numbers
 read on 2026-11-17 were 40/50/10, applied 2026-09-03. They are kept as data and
-changed through the admin sandbox. A save rewrites every season's stored score at
-once, also when the numbers are the same as the live ones. The help page quotes
-whatever is live rather than the numbers above.
+changed through the admin sandbox. Any save rewrites every season's stored score at
+once, from the live rules. The Save button is off when the typed numbers are the
+same as the live ones. The help page quotes whatever is live rather than the
+numbers above.
 
 ## Which division an opponent counts as
 
