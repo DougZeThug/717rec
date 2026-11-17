@@ -51,7 +51,7 @@ When there's an odd number of teams:
 **Features:**
 - Optimal maximum weight matching
 - Configurable compatibility scoring
-- Supports quality optimization weights
+- Accepts quality optimization weights (not used today, see Quality Optimization)
 - Each time block scheduled independently
 - Can prioritize team skill balance
 
@@ -63,8 +63,9 @@ weights (`src/hooks/useAutoSchedule/usePairingOperations.ts:182-185`):
 - `recordWeight`: 3.5 - Match teams with similar records
 - `gameRecordWeight`: 2 - Match teams with similar game records
 
-There is no `divisionWeight`. The batch matches screen sends only
-`powerScoreWeight` 5 and `recordWeight` 3.5
+No screen sends a `divisionWeight` (the `CompatibilityWeights` type in
+`src/types/autoSchedule.ts:27` still has an optional one). The batch matches
+screen sends only `powerScoreWeight` 5 and `recordWeight` 3.5
 (`src/components/admin/batch-matches/auto-schedule/hooks/useAutoScheduleSection.ts:84-85`).
 
 Today these weights are passed along but not read. The single-block path scores
@@ -104,7 +105,7 @@ division tier gap. The only code that reads the weights is
 **Prioritize Match Quality:**
 - Only available in Standard Mode (Blossom)
 - Hidden when Dual Match Mode is enabled
-- Applies quality weights to favor balanced matchups
+- Sends quality weights, but they are not read today (see Quality Optimization)
 
 ---
 

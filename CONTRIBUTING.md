@@ -93,7 +93,7 @@ export const maxTeamSize = 4;
 
 When adding a new feature (e.g., "notifications"):
 
-> Example only, not real files. Here and in "Barrel Exports" below,
+> Example names only. Here and in "Barrel Exports" below,
 > "notifications" and its file names stand in for your own feature. The real
 > notifications code does not match these file names one for one.
 
