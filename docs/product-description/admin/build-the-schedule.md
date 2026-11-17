@@ -261,7 +261,8 @@ What the admin may notice with the switch on:
   two teams are not close, that pair scores a little under 5, so the preview flags
   it with the tooltip "These teams may not be evenly matched". Teams that are very
   close still score exactly 10 or 5. A night that averaged exactly 8.0 with the
-  switch off can read 7.97 with it on.
+  switch off can average 7.97 with it on. The Export tab still shows 8.0, but the rating can
+  drop from Excellent to Good.
 - **The red "N Warnings" badge does not count these pairs.** With the switch on or
   off, it counts only rematches and forbidden pairs (a score of 0). A
   neighbouring-division pair with a gap keeps its amber card and tooltip, and the card
@@ -278,16 +279,15 @@ What the admin may notice with the switch on:
   the Apply step can place every match into the block's two time slots. In 9 of the 12
   tested cases the switch on found a good schedule in all 40 blocks (360 of 480
   blocks). The switch off found 268, 293 and 321 of the same 480, depending on how the
-  matching library behaves in the browser (the totals for the switch off were
-  reproduced by QA-C in a throwaway copy; they are not pinned by a test). In 2 cases
-  no good schedule exists (3 Competitive, 1 Intermediate and 2 Recreational teams at 6
+  matching library behaves in the browser (a separate check reproduced the totals for the switch off; no test pins them). In 2 cases
+  no good schedule exists when no pair may repeat on a night (3 Competitive, 1 Intermediate and 2 Recreational teams at 6
   teams, and 5, 1 and 2 at 8 teams). In 1 case one exists but neither setting finds it
   (2 Competitive, 2 Intermediate and 2 Recreational teams at 6 teams). The tests use
   random ratings and 6 to 12 teams. Real block sizes are UNKNOWN. In no tested block
   did the switch on give a bad list where the switch off gave a good one.
 - **Where no good schedule exists, a rule still bends, and the switch on is not always
   better.** A block of 6 with 3 Competitive, 1 Intermediate and 2 Recreational teams
-  has no good schedule under either setting, and the same holds for 5, 1 and 2 teams
+  has no good schedule under either setting (when no pair may repeat on a night), and the same holds for 5, 1 and 2 teams
   in a block of 8. In a block of 6 with 2 Competitive, 2 Intermediate and 2
   Recreational teams a good schedule exists, but neither setting finds it. With the
   switch on, Generate stops less often than with it off in the blocks of 8. Two things

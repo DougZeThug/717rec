@@ -114,15 +114,15 @@ How the weights are used (`src/hooks/scheduling/utils/standardPairing.ts`):
   not count these pairs. With ON or OFF it counts only rematches and forbidden
   pairs (score under 4.5, which means 0). The card prints a score under 5 cut to
   two decimals, for example 4.99, so it never reads 5.0. An average of exactly 8.0
-  can read 7.97.
+  can become 7.97. The Export tab still shows 8.0, but the rating can drop from
+  Excellent to Good.
 - **What the seeded test grid shows** (`standardPairing.qualityGrid.test.ts`: blocks
   of 6, 8, 10 and 12 teams, three tier mixes, 40 seeded blocks each, three library
   modes). A list is "good" when no pair bends a rule (Competitive against
   Recreational, or a repeated pair unless both teams are Recreational) and Apply can
   place it into the block's two time slots. In 9 of the 12 tested cases ON found a
   good list in all 40 blocks (360 of 480 blocks). OFF found 268, 293 and 321 of the
-  same 480 in the three library modes (the OFF totals were reproduced by QA-C in a
-  throwaway copy; they are not pinned by a test). In 2 cases no good list exists (3
+  same 480 in the three library modes (a separate check reproduced the OFF totals; no test pins them). In 2 cases no good list exists when no pair may repeat on a night (3
   Competitive, 1 Intermediate and 2 Recreational teams at 6 teams, and 5, 1 and 2 at 8
   teams). In 1 case one exists but neither setting finds it (2 Competitive, 2
   Intermediate and 2 Recreational teams at 6 teams). The tests use random ratings and
