@@ -49,7 +49,7 @@ vi.mock('edmonds-blossom', async (importOriginal) => {
       // Real browser: a strict-mode browser throws when the library assigns an undeclared
       // variable. Node does not, so look for the three names it leaks and throw for them.
       const leaks = globalThis as Record<string, unknown>;
-      const clear = () => ['b', 'path', 'v'].forEach((name) => delete leaks[name]);
+      const clear = () => ['b', 'path', 'v'].forEach((name) => Reflect.deleteProperty(leaks, name));
       clear();
       const result = real.default(edges, maxCardinality);
       const leaked = ['b', 'path', 'v'].some((name) => name in leaks);

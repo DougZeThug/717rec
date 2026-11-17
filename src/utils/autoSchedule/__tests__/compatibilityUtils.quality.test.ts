@@ -440,10 +440,10 @@ describe('createQualityCompatibility', () => {
     // 0.1 of game win rate, so the gap is 0.1 per step. A step takes 0.5 x 0.1^2 = 0.005 off,
     // which is 1.28 steps of 1/256, so 1 comes off. Two steps: 0.02 = 5.12, so 5 come off.
     // Three steps: 0.045 = 11.52, so 12 come off.
-    const A = teamOf('A', 'Intermediate');
-    const B = teamOf('B', 'Intermediate');
-    const C = teamOf('C', 'Intermediate');
-    const D = teamOf('D', 'Intermediate');
+    const teamA = teamOf('A', 'Intermediate');
+    const teamB = teamOf('B', 'Intermediate');
+    const teamC = teamOf('C', 'Intermediate');
+    const teamD = teamOf('D', 'Intermediate');
     const ratings = new Map([
       [
         'A',
@@ -465,18 +465,22 @@ describe('createQualityCompatibility', () => {
     const scoreOf = createQualityCompatibility(ratings, SCREEN_WEIGHTS);
 
     it('scores one step apart 9.99609375, two apart 9.98046875 and three apart 9.953125', () => {
-      expect(scoreOf(A, B)).toBe(10 - 1 / 256);
-      expect(scoreOf(B, C)).toBe(10 - 1 / 256);
-      expect(scoreOf(C, D)).toBe(10 - 1 / 256);
-      expect(scoreOf(A, C)).toBe(10 - 5 / 256);
-      expect(scoreOf(B, D)).toBe(10 - 5 / 256);
-      expect(scoreOf(A, D)).toBe(10 - 12 / 256);
+      expect(scoreOf(teamA, teamB)).toBe(10 - 1 / 256);
+      expect(scoreOf(teamB, teamC)).toBe(10 - 1 / 256);
+      expect(scoreOf(teamC, teamD)).toBe(10 - 1 / 256);
+      expect(scoreOf(teamA, teamC)).toBe(10 - 5 / 256);
+      expect(scoreOf(teamB, teamD)).toBe(10 - 5 / 256);
+      expect(scoreOf(teamA, teamD)).toBe(10 - 12 / 256);
     });
 
     it('prefers A-B with C-D, then A-C with B-D, over the far pairs', () => {
       // Round 1: A-B and C-D (19.9922) beat A-C and B-D (19.9609) and A-D and B-C (19.9492).
-      expect(scoreOf(A, B) + scoreOf(C, D)).toBeGreaterThan(scoreOf(A, C) + scoreOf(B, D));
-      expect(scoreOf(A, C) + scoreOf(B, D)).toBeGreaterThan(scoreOf(A, D) + scoreOf(B, C));
+      expect(scoreOf(teamA, teamB) + scoreOf(teamC, teamD)).toBeGreaterThan(
+        scoreOf(teamA, teamC) + scoreOf(teamB, teamD)
+      );
+      expect(scoreOf(teamA, teamC) + scoreOf(teamB, teamD)).toBeGreaterThan(
+        scoreOf(teamA, teamD) + scoreOf(teamB, teamC)
+      );
     });
   });
 });
