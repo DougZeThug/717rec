@@ -88,6 +88,17 @@ describe('scheduleStandardPairings with Prioritize Match Quality', () => {
       expect(fetchTeamsByIds).not.toHaveBeenCalled();
     });
 
+    it('does not ask for full rounds: the generator runs as it always did', async () => {
+      await scheduleStandardPairings(
+        { Early: teamsOf('A', 4), Late: teamsOf('B', 4) },
+        { avoidRematches: true, prioritizeQuality: true },
+        []
+      );
+
+      expect(generatorConfig(0).preferFullRounds).toBe(false);
+      expect(generatorConfig(1).preferFullRounds).toBe(false);
+    });
+
     it('hands the same function to every block and still passes the weights field through', async () => {
       await scheduleStandardPairings(
         { Early: teamsOf('A', 4), Late: teamsOf('B', 4) },
@@ -154,6 +165,17 @@ describe('scheduleStandardPairings with Prioritize Match Quality', () => {
       expect(fetchTeamsByIds).not.toHaveBeenCalled();
       expect(generatePairingsWithBlossom).not.toHaveBeenCalled();
       expect(result).toEqual({ pairings: {}, unmatchedTeamIds: ['L1'] });
+    });
+
+    it('asks the generator for full rounds in every block', async () => {
+      await scheduleStandardPairings(
+        { Early: early, Late: late },
+        { avoidRematches: true, weights: SCREEN_WEIGHTS },
+        []
+      );
+
+      expect(generatorConfig(0).preferFullRounds).toBe(true);
+      expect(generatorConfig(1).preferFullRounds).toBe(true);
     });
 
     it('hands every block the same new function, not the division-only one', async () => {

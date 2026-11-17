@@ -217,7 +217,7 @@ export async function generatePairingsWithBlossom(
 
   let baseline: TeamPairing[];
   try {
-    baseline = await generateOnce(teams, config, false);
+    baseline = await generateOnce(teams, config, config.preferFullRounds === true);
   } catch (baselineError) {
     const retry = await retryWithPerfectMatchings(teams, config, usesOnlyAllowedEdges);
     if (!retry) throw baselineError;

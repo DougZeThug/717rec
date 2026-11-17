@@ -34,7 +34,7 @@ export const GRID_MIXES: Record<string, readonly string[]> = {
 };
 
 /** The block sizes of the grid. All are even, because Standard mode stops on an odd block. */
-export const GRID_SIZES = [6, 8, 10];
+export const GRID_SIZES = [6, 8, 10, 12];
 
 /** A random whole number from `low` to `high`, both included. */
 const between = (random: () => number, low: number, high: number) =>

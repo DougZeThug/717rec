@@ -90,7 +90,8 @@ describe('scheduleStandardPairings with Prioritize Match Quality ON and the real
       createMockTeam({ id, name: id })
     );
 
-    // Every block of standardPairing.realGenerator.test.ts, as a table.
+    // Every block of standardPairing.realGenerator.test.ts, as a table, except the 6 teams from
+    // mixed divisions. That one block no longer gives the same list with ON (see below).
     const nights: Array<{
       name: string;
       blocks: Record<string, Team[]>;
@@ -140,7 +141,6 @@ describe('scheduleStandardPairings with Prioritize Match Quality ON and the real
           ['B3', 'B4'],
         ],
       },
-      { name: '6 teams from mixed divisions', blocks: { Early: mixedDivisions } },
       { name: '6 teams listed out of order', blocks: { Early: unsortedSix } },
     ];
 
@@ -170,10 +170,19 @@ describe('scheduleStandardPairings with Prioritize Match Quality ON and the real
       ]);
     });
 
-    it('returns the pinned pairs, scores and order for 6 teams from mixed divisions', async () => {
-      const result = await scheduleStandardPairings({ Early: mixedDivisions }, ON, []);
+    // The one block where ON with equal ratings is NOT the OFF list. Teams: A1 Competitive,
+    // A2 Intermediate, A3 Recreational, A4 "Cuspers", A5 "Recreational High", A6 no division.
+    // The score reads "Cuspers" and a missing division as Recreational, and the hard rule reads
+    // them as Intermediate. So A1 (Competitive) has only one real partner (A2): its second
+    // match must be a pair that scores 0 (A1-A4 here). Both lists hold exactly that one 0-score
+    // pair and nothing else that bends a rule. ON asks each round to pair as many teams as it
+    // can, so it picks other partners for the rest and lists the pairs in another order.
+    // OFF is the old pinned list, unchanged.
+    it('keeps the one forced 0-score pair, and every team on 2 matches, for 6 teams from mixed divisions', async () => {
+      const off = await scheduleStandardPairings({ Early: mixedDivisions }, OFF, []);
+      const on = await scheduleStandardPairings({ Early: mixedDivisions }, ON, []);
 
-      expect(describePairs(result.pairings.Early)).toEqual([
+      expect(describePairs(off.pairings.Early)).toEqual([
         'A1|A2|5|false',
         'A1|A4|0|false',
         'A3|A4|10|false',
@@ -181,7 +190,21 @@ describe('scheduleStandardPairings with Prioritize Match Quality ON and the real
         'A5|A6|10|false',
         'A2|A6|5|false',
       ]);
-      expect(result.unmatchedTeamIds).toEqual([]);
+      expect(describePairs(on.pairings.Early)).toEqual([
+        'A1|A2|5|false',
+        'A3|A6|10|false',
+        'A4|A5|10|false',
+        'A1|A4|0|false',
+        'A2|A6|5|false',
+        'A3|A5|10|false',
+      ]);
+      for (const result of [off, on]) {
+        expect(matchesPerTeam(result.pairings.Early, mixedDivisions)).toEqual([2, 2, 2, 2, 2, 2]);
+        expect(
+          (result.pairings.Early ?? []).filter((pairing) => pairing.compatibilityScore === 0)
+        ).toHaveLength(1);
+        expect(result.unmatchedTeamIds).toEqual([]);
+      }
     });
 
     it('returns the pinned pairs for 6 teams listed out of order', async () => {

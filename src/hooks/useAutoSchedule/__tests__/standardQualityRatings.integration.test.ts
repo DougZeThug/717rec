@@ -5,6 +5,7 @@ import { useSchedulePreview } from '@/hooks/scheduling/useSchedulePreview';
 import { fetchTeamsByIds } from '@/services/matches/MatchTeamLookupService';
 import type { Team, TimeBlockTeamsMap } from '@/types';
 import { DatabaseError } from '@/types/errors';
+import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossom';
 import { ratingRow } from '@/utils/test/autoSchedule/qualityHelpers';
 import { createMockTeam } from '@/utils/test/autoSchedule/testHelpers';
 
@@ -41,6 +42,12 @@ vi.mock('@/services/matches/SchedulingHistoryService', () => ({
 vi.mock('@/services/matches/MatchTeamLookupService', () => ({
   fetchTeamsByIds: vi.fn(),
 }));
+
+// The real generator, watched: a Dual night must not ask it for anything.
+vi.mock('@/utils/autoSchedule/blossom', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utils/autoSchedule/blossom')>();
+  return { ...actual, generatePairingsWithBlossom: vi.fn(actual.generatePairingsWithBlossom) };
+});
 
 vi.mock('@/utils/logger', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/utils/logger')>();
@@ -116,6 +123,8 @@ describe('Prioritize Match Quality, from the button to the toast', () => {
 
       expect(fetchTeamsByIds).toHaveBeenCalledTimes(1);
       expect(fetchTeamsByIds).toHaveBeenCalledWith(['A1', 'A2', 'A3', 'A4']);
+      // ON asks the real generator for full rounds.
+      expect(vi.mocked(generatePairingsWithBlossom).mock.calls[0]?.[1].preferFullRounds).toBe(true);
       expect(result.current.generatedPairings.Early).toHaveLength(4);
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({ title: expect.stringContaining('Schedule Generated') })
@@ -160,6 +169,9 @@ describe('Prioritize Match Quality, from the button to the toast', () => {
       );
 
       expect(fetchTeamsByIds).not.toHaveBeenCalled();
+      expect(vi.mocked(generatePairingsWithBlossom).mock.calls[0]?.[1].preferFullRounds).toBe(
+        false
+      );
       expect(result.current.generatedPairings.Early).toHaveLength(4);
     });
 
@@ -173,6 +185,9 @@ describe('Prioritize Match Quality, from the button to the toast', () => {
       );
 
       expect(fetchTeamsByIds).not.toHaveBeenCalled();
+      // Dual Match Mode has its own scheduler. It never calls the Blossom generator, so it can
+      // never ask it for full rounds.
+      expect(generatePairingsWithBlossom).not.toHaveBeenCalled();
       expect(Object.keys(result.current.generatedPairings).length).toBeGreaterThan(0);
     });
   });

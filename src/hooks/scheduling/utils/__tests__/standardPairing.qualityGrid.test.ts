@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { fetchTeamsByIds } from '@/services/matches/MatchTeamLookupService';
 import type { TeamPair } from '@/types/autoSchedule';
+import { splitsIntoTwoSlots } from '@/utils/autoSchedule/blossom/validation';
 import {
   buildGridBlock,
   countRuleBends,
@@ -13,18 +14,28 @@ import { createMockTeam } from '@/utils/test/autoSchedule/testHelpers';
 import { scheduleStandardPairings } from '../standardPairing';
 
 /**
- * The acceptance grid for Prioritize Match Quality: the same seeded blocks run with the switch
- * OFF and ON, through the real generator. ON must not bend more rules than OFF.
+ * The acceptance grid for Prioritize Match Quality: the same seeded blocks (40 for each tier mix
+ * and block size) run with the switch OFF and ON, through the real generator.
  *
- * A rule is bent by a Competitive team against a Recreational team, or by a repeated pair when
- * the two teams are not both Recreational.
+ * A list is CLEAN when no pair bends a rule: a Competitive team against a Recreational team, or
+ * a repeated pair when the two teams are not both Recreational. A list is PLACEABLE when Apply
+ * can put it into the block's two time slots (`splitsIntoTwoSlots`). A list that is clean but
+ * not placeable cannot be saved, so only "clean AND placeable" counts as a good night.
  *
- * Mode "plain" is the library as it runs in Node. Mode "browser" simulates a browser where
- * edmonds-blossom 1.0.0 throws "b is not defined" on every call, the worst case (the same fake
- * as generatePairings.browserLibrary.test.ts). The vendored strict copy used by the retry stays
- * real in both.
+ * Three library modes. "plain" is the library as it runs in Node. "real browser" runs the
+ * library and fails only when it would have thrown "b is not defined" in a strict-mode browser,
+ * which is when a round needs a blossom contraction (it assigns the undeclared b, path or v).
+ * "all-throw" is the worst case from generatePairings.browserLibrary.test.ts: the library throws
+ * on every call. In all three the vendored strict copy, used for full rounds and for the retry,
+ * stays real.
+ *
+ * What the grid shows is written up in docs/untangle-decision-log.md, "Quality switch result".
  */
-const browserLibrary = vi.hoisted(() => ({ throws: false }));
+const library = vi.hoisted(() => ({
+  mode: 'plain' as 'plain' | 'real browser' | 'all-throw',
+  calls: 0,
+  crashed: 0,
+}));
 
 vi.mock('edmonds-blossom', async (importOriginal) => {
   const real = await importOriginal<{
@@ -32,8 +43,23 @@ vi.mock('edmonds-blossom', async (importOriginal) => {
   }>();
   return {
     default: vi.fn((edges: number[][], maxCardinality?: boolean) => {
-      if (browserLibrary.throws) throw new ReferenceError('b is not defined');
-      return real.default(edges, maxCardinality);
+      if (library.mode === 'all-throw') throw new ReferenceError('b is not defined');
+      if (library.mode === 'plain') return real.default(edges, maxCardinality);
+
+      // Real browser: a strict-mode browser throws when the library assigns an undeclared
+      // variable. Node does not, so look for the three names it leaks and throw for them.
+      const leaks = globalThis as Record<string, unknown>;
+      const clear = () => ['b', 'path', 'v'].forEach((name) => delete leaks[name]);
+      clear();
+      const result = real.default(edges, maxCardinality);
+      const leaked = ['b', 'path', 'v'].some((name) => name in leaks);
+      clear();
+      library.calls++;
+      if (leaked) {
+        library.crashed++;
+        throw new ReferenceError('b is not defined');
+      }
+      return result;
     }),
   };
 });
@@ -61,8 +87,9 @@ const ON = {
   weights: { powerScoreWeight: 5, sosWeight: 3, recordWeight: 3.5, gameRecordWeight: 2 },
 };
 
-/** The result of one night of one block: the rule bends, or the error the night stopped with. */
-type Night = { bends: number; unmatched: string[] } | { failed: unknown };
+/** One night of one block: how it ended, or the error it stopped with. */
+type Night = { bends: number; placeable: boolean; unmatched: string[] } | { failed: unknown };
+type SeededNight = { seed: number; off: Night; on: Night };
 
 const runNight = async (
   block: ReturnType<typeof buildGridBlock>,
@@ -71,8 +98,10 @@ const runNight = async (
   vi.mocked(fetchTeamsByIds).mockResolvedValue(block.rows);
   try {
     const result = await scheduleStandardPairings({ Early: block.teams }, config, []);
+    const list = result.pairings.Early ?? [];
     return {
-      bends: countRuleBends(result.pairings.Early ?? []),
+      bends: countRuleBends(list),
+      placeable: splitsIntoTwoSlots(list),
       unmatched: result.unmatchedTeamIds,
     };
   } catch (failed) {
@@ -80,71 +109,113 @@ const runNight = async (
   }
 };
 
-/** Run SEEDS seeded blocks of one tier mix and size, OFF and ON. */
-const runGridCase = async (mixName: string, size: number) => {
-  const nights: Array<{ seed: number; off: Night; on: Night }> = [];
-  for (let seed = 1; seed <= SEEDS; seed++) {
-    const block = buildGridBlock(GRID_MIXES[mixName], size, seed);
-    nights.push({ seed, off: await runNight(block, OFF), on: await runNight(block, ON) });
-  }
-  return nights;
-};
-
+const isGood = (night: Night) => 'bends' in night && night.bends === 0 && night.placeable;
+const count = (nights: SeededNight[], pick: (night: SeededNight) => boolean) =>
+  nights.filter(pick).length;
 const sum = (numbers: number[]) => numbers.reduce((total, next) => total + next, 0);
 
-/** Which seeds ended with more rule bends for ON than for OFF. */
-const seedsWhereOnBendsMore = (nights: Awaited<ReturnType<typeof runGridCase>>) =>
-  nights
-    .filter(({ off, on }) => 'bends' in off && 'bends' in on && on.bends > off.bends)
-    .map(({ seed }) => seed);
+type Case = { mix: string; size: number; key: string };
+const CASES: Case[] = Object.keys(GRID_MIXES).flatMap((mix) =>
+  GRID_SIZES.map((size) => ({ mix, size, key: `${mix} ${size}` }))
+);
 
 /**
- * Where the gate holds today, and where it does not. A case listed as a known gap is run with
- * `it.fails`: it passes while ON still bends more rules than OFF in some seeded block, and it
- * turns red when that is fixed, so the entry can then become a plain gate.
- * See "Quality switch result" in docs/untangle-decision-log.md for the cause and the numbers.
+ * Cases where the old per-block gate, "ON bends no more rules than OFF", still fails. Both are
+ * blocks of 6. They run with `it.fails`: green while the gap is there, red when it is fixed.
+ * - 2/2/2 at 6 (2 Competitive, 2 Intermediate, 2 Recreational): a clean schedule EXISTS (round 1
+ *   C1-C2, I1-R1, I2-R2; round 2 C1-I1, C2-I2, R1-R2). Neither setting finds it, so both bend
+ *   and, block by block, the count goes both ways.
+ * - 3/1/2 at 6 (3 Competitive, 1 Intermediate, 2 Recreational): NO clean schedule exists under
+ *   the no-repeat rule. Both bend. OFF's lower bend count sits beside lists that Apply cannot
+ *   place: in the plain library 19 of OFF's 40 lists cannot be placed (ON: 6).
  */
-type Case = { mix: string; size: number; knownGap: boolean };
-const buildCases = (gaps: ReadonlySet<string>): Case[] =>
-  Object.keys(GRID_MIXES).flatMap((mix) =>
-    GRID_SIZES.map((size) => ({ mix, size, knownGap: gaps.has(`${mix} ${size}`) }))
-  );
+const BEND_GAPS = new Set(['2/2/2 6', '3/1/2 6']);
 
-const MODES = [
-  {
-    mode: 'plain',
-    throws: false,
-    gaps: new Set(['1/2/1 6', '1/2/1 10', '2/2/2 6', '3/1/2 6']),
-  },
-  {
-    mode: 'browser',
-    throws: true,
-    gaps: new Set(['1/2/1 6', '1/2/1 8', '1/2/1 10', '2/2/2 6', '2/2/2 8', '3/1/2 6', '3/1/2 10']),
-  },
-];
+/**
+ * Cases where ON does not find a clean, placeable list in every block. 2/2/2 at 6: a clean
+ * schedule exists but neither setting finds it. 3/1/2 at 6 and at 8 (5 Competitive, 1
+ * Intermediate, 2 Recreational): no clean schedule exists, so nothing can find one.
+ */
+const NO_CLEAN_FOUND = new Set(['2/2/2 6', '3/1/2 6', '3/1/2 8']);
 
-describe.each(MODES)('Prioritize Match Quality grid, $mode library', ({ throws, gaps }) => {
-  describe.each(buildCases(gaps))('tier mix $mix, $size teams', ({ mix, size, knownGap }) => {
-    let nights: Awaited<ReturnType<typeof runGridCase>>;
+const MODES = ['plain', 'real browser', 'all-throw'] as const;
 
-    beforeAll(async () => {
-      browserLibrary.throws = throws;
-      nights = await runGridCase(mix, size);
+describe.each(MODES)('Prioritize Match Quality grid, %s library', (mode) => {
+  const nightsByCase = new Map<string, SeededNight[]>();
+
+  beforeAll(async () => {
+    library.mode = mode;
+    library.calls = 0;
+    library.crashed = 0;
+    for (const { mix, size, key } of CASES) {
+      const nights: SeededNight[] = [];
+      for (let seed = 1; seed <= SEEDS; seed++) {
+        const block = buildGridBlock(GRID_MIXES[mix], size, seed);
+        nights.push({ seed, off: await runNight(block, OFF), on: await runNight(block, ON) });
+      }
+      nightsByCase.set(key, nights);
+    }
+  });
+
+  it('uses the library the way the mode says', () => {
+    if (mode === 'real browser') {
+      // The emulation really fires on some calls, and lets the others through.
+      expect(library.crashed).toBeGreaterThan(0);
+      expect(library.crashed).toBeLessThan(library.calls);
+    } else {
+      expect(library.calls).toBe(0);
+    }
+  });
+
+  it('never turns a good night of OFF into a bad one, in any case', () => {
+    for (const { key } of CASES) {
+      const regressions = (nightsByCase.get(key) ?? [])
+        .filter(({ off, on }) => isGood(off) && !isGood(on))
+        .map(({ seed }) => `${key} seed ${seed}`);
+
+      expect(regressions).toEqual([]);
+    }
+  });
+
+  it('finds at least as many good nights as OFF in every case, and more across the grid', () => {
+    for (const { key } of CASES) {
+      const nights = nightsByCase.get(key) ?? [];
+
+      expect(count(nights, ({ on }) => isGood(on))).toBeGreaterThanOrEqual(
+        count(nights, ({ off }) => isGood(off))
+      );
+    }
+    const all = CASES.flatMap(({ key }) => nightsByCase.get(key) ?? []);
+    expect(count(all, ({ on }) => isGood(on))).toBeGreaterThan(
+      count(all, ({ off }) => isGood(off))
+    );
+  });
+
+  describe.each(CASES)('tier mix $mix, $size teams', ({ key }) => {
+    const nights = () => nightsByCase.get(key) ?? [];
+
+    // Where a clean schedule can be found, ON finds one in every seeded block.
+    const findsCleanEveryTime = NO_CLEAN_FOUND.has(key) ? it.fails : it;
+    findsCleanEveryTime(`ON finds a clean list that Apply can place in all ${SEEDS} blocks`, () => {
+      expect(count(nights(), ({ on }) => isGood(on))).toBe(SEEDS);
     });
 
-    const gate = knownGap ? it.fails : it;
+    const bendsNoMore = BEND_GAPS.has(key) ? it.fails : it;
+    bendsNoMore(`ON bends no more rules than OFF in any of ${SEEDS} blocks`, () => {
+      const worse = nights()
+        .filter(({ off, on }) => 'bends' in off && 'bends' in on && on.bends > off.bends)
+        .map(({ seed }) => seed);
 
-    gate(`ON bends no more rules than OFF in any of ${SEEDS} seeded blocks`, () => {
-      expect(seedsWhereOnBendsMore(nights)).toEqual([]);
+      expect(worse).toEqual([]);
     });
 
     it('stops no more nights than OFF does, and a night that finishes leaves no team short', () => {
       const stopped = (night: Night) => ('failed' in night ? 1 : 0);
 
-      expect(sum(nights.map(({ on }) => stopped(on)))).toBeLessThanOrEqual(
-        sum(nights.map(({ off }) => stopped(off)))
+      expect(sum(nights().map(({ on }) => stopped(on)))).toBeLessThanOrEqual(
+        sum(nights().map(({ off }) => stopped(off)))
       );
-      for (const { on } of nights) {
+      for (const { on } of nights()) {
         if ('unmatched' in on) expect(on.unmatched).toEqual([]);
       }
     });

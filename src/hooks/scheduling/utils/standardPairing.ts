@@ -142,6 +142,8 @@ export const scheduleStandardPairings = async (
       getCompatibilityScoreFn,
       weights: config.weights,
       playedPairsSet,
+      // ON: every round pairs as many teams as it can. A heavier but smaller round cannot win.
+      preferFullRounds: config.weights !== undefined,
     });
 
     // Store pairings for this block
