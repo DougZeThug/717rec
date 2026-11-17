@@ -229,6 +229,47 @@ A team alone in its block is left unmatched." It names each odd block. Before
 A time the app cannot read is now refused before the insert, with a red toast
 naming the match. It can no longer reach the database.
 
+### What the Prioritize Match Quality switch does
+
+**Built 2026-11-17.** Before, this switch did nothing at all. Now it works in
+**Standard mode only**. Both tools show it. Auto Schedule hides it while Dual Match
+Mode is on, because Dual Match Mode does not read it. Doug's usual Dual night does
+not change.
+
+**Division comes first.** The switch only helps choose between pairings that have
+the same division mix. It does not promise that divisions never mix. Some mixed
+blocks force one cross-division pair with the switch on or off.
+
+| Switch | What Generate does |
+| --- | --- |
+| Off (the default) | Scores each pair by division only: 10 for the same division, 5 for neighbouring divisions, 0 for Competitive against Recreational (never paired unless nothing else works). This is the same as before. Nothing extra is read. |
+| On | Reads the real power score, strength of schedule, win record and game record of each team, once. Among pairings with the same division mix, it prefers teams that are close on those four. A wide gap takes a little off the pair's score, never more than 0.5. |
+
+Four fixed weights set how much each one counts: power score 5, strength of
+schedule 3, win record 3.5, game record 2. No screen lets the admin change them.
+They are not the power score weights and not the division weights.
+
+What the admin may notice with the switch on:
+
+- **Scores can read a little lower.** A pair from the same division scores between
+  9.5 and 10. A pair from neighbouring divisions scores between 4.5 and 5. When the
+  two teams are not close, that pair scores a little under 5, so the preview flags
+  it with the tooltip "These teams may not be evenly matched". Teams that are very
+  close still score exactly 10 or 5. A night that averaged exactly 8.0 with the
+  switch off can read 7.97.
+- **A team with no data counts as level.** A team with no power score, or with no
+  decided matches, is left out of that comparison. It is not treated as weak.
+- **A failed read stops Generate.** If the ratings cannot be loaded, a red toast
+  says: "Failed to generate match pairings: Could not load the team ratings that
+  Prioritize Match Quality needs. Turn off Prioritize Match Quality and try again."
+  Turn the switch off and press Generate again. Nothing is generated.
+- **Nothing is saved.** The switch changes only which pairings Generate proposes. No
+  power score, standing or past match changes.
+- **Known gap.** In some small blocks that mix Competitive, Intermediate and
+  Recreational teams, the switch can lead to more rule-bending pairs than with it off:
+  a Competitive team against a Recreational team, or a repeated pair. A seeded test
+  found this with 6 and 10 teams. See the decision log, "Quality switch result".
+
 ## Modifiers
 
 | Modifier | Set at arrival | Changed while editing |
@@ -397,16 +438,20 @@ notification is sent to any team.
   product question.
 - Not confirmed by hand: whether the browser's leave-page warning actually
   appears, and what it says in each browser.
-- Not confirmed by hand: how the pairing algorithm ranks quality, and what makes
-  a rating Excellent rather than Good. That belongs with power score; see
-  [`../stats/power-score.md`](../stats/power-score.md).
+- Not confirmed by hand: what makes a rating Excellent rather than Good. That belongs
+  with power score; see [`../stats/power-score.md`](../stats/power-score.md). How the
+  Prioritize Match Quality switch changes the pairing is described above. It was
+  read from the code and tested with seeded fake data, not tried on a real league
+  night.
 - Not confirmed by hand: what Auto Schedule saves when there is no active season.
   The code attaches the matches to no season rather than refusing.
 - Assumption: "Dual Match Mode" means every team plays two matches in
   consecutive blocks, as its help text says. The pairing behaviour was read from
   the code, not observed.
 
-Verified against `717rec` commit `ea5c8f4`, except the timeslot behaviour above,
+Verified against `717rec` commit `ea5c8f4`, except the Prioritize Match Quality
+switch, which works since 2026-11-17 (see "What the Prioritize Match Quality switch
+does" above and the decision log, "Quality switch result"), and the timeslot behaviour above,
 which was changed after that commit — see B-03 in
 [`bug-triage.md`](../bug-triage.md#b-03-with-dual-match-mode-off-the-auto-schedulers-save-is-always-refused) —
 and the two navigation buttons, changed after it too; see

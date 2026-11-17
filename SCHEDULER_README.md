@@ -50,29 +50,65 @@ When there's an odd number of teams:
 
 **Features:**
 - Optimal maximum weight matching
-- Configurable compatibility scoring
-- Accepts quality optimization weights (not used today, see Quality Optimization)
+- Compatibility score by division: 10 for the same division, 5 for neighbouring divisions, 0 for Competitive against Recreational (blocked)
+- With "Prioritize Match Quality" ON, a small skill term is taken off that score (see Quality Optimization)
 - Each time block scheduled independently
-- Can prioritize team skill balance
+- With "Prioritize Match Quality" ON, prefers teams with a close Power Score, strength of schedule, win record and game record. Division comes first
 
 **Quality Optimization:**
-When "Prioritize Match Quality" is enabled, the Auto Schedule tab sends these
-weights (`src/hooks/useAutoSchedule/usePairingOperations.ts:182-185`):
+This works in Standard mode only. Dual Match Mode does not read the weights.
+
+The switch is ON when the screen sends weights. Both screens send the same four
+fixed numbers. No screen lets the admin change them. They are not the Power Score
+weights (40/45/15) and not the division weights.
 - `powerScoreWeight`: 5 - Balance team power scores
 - `sosWeight`: 3 - Consider strength of schedule
 - `recordWeight`: 3.5 - Match teams with similar records
 - `gameRecordWeight`: 2 - Match teams with similar game records
 
-No screen sends a `divisionWeight` (the `CompatibilityWeights` type in
-`src/types/autoSchedule.ts:27` still has an optional one). The batch matches
-screen sends only `powerScoreWeight` 5 and `recordWeight` 3.5
-(`src/components/admin/batch-matches/auto-schedule/hooks/useAutoScheduleSection.ts:84-85`).
+The Auto Schedule tab sends them from
+`src/hooks/useAutoSchedule/usePairingOperations.ts:182-189`. The batch matches
+screen sends the same four from
+`src/components/admin/batch-matches/auto-schedule/hooks/useAutoScheduleSection.ts:81-91`.
+(Before 2026-11-17 the batch screen sent only `powerScoreWeight` 5 and
+`recordWeight` 3.5.) No screen sends a `divisionWeight` (the `CompatibilityWeights`
+type in `src/types/autoSchedule.ts:22` still has an optional one).
 
-Today these weights are passed along but not read. The single-block path scores
-each pair with `calculateDivisionOnlyCompatibility`
-(`src/hooks/scheduling/utils/standardPairing.ts:79`), which looks only at the
-division tier gap. The only code that reads the weights is
-`calculateConfigurableCompatibility` (deprecated), and it is reached only through
+How the weights are used (`src/hooks/scheduling/utils/standardPairing.ts`):
+- **Switch OFF** (no weights): every pair is scored by
+  `calculateDivisionOnlyCompatibility`: 10 for the same division, 5 for
+  neighbouring divisions, 0 for Competitive against Recreational. Nothing extra is
+  read. This is the same as before the switch worked.
+- **Switch ON** (weights sent): Generate reads the real ratings of every team in
+  the blocks from `v_team_details`, once. The scheduler's own team objects hold
+  placeholders (Power Score 0, strength of schedule 0.5), so the real numbers are
+  kept in a separate map inside the score function. `createQualityCompatibility`
+  in `src/utils/autoSchedule/compatibilityUtils.ts` then scores each pair as the
+  division score minus 0.5 x gap squared, rounded to the nearest 1/256. The gap is
+  0 to 1: a weighted average of four distances (Power Score over 100, strength of
+  schedule, win rate, game win rate). A distance is skipped when either team has no
+  data for it (Power Score null or 0, or no decided matches).
+- **Division comes first.** The skill term takes at most 0.5 off. A pair from the
+  same division stays between 9.5 and 10. A pair from neighbouring divisions stays
+  between 4.5 and 5. A blocked pair stays 0. So skill only decides between choices
+  with the same division mix. It does not promise that divisions never mix: some
+  mixed blocks force a cross-division pair under both settings.
+- **If the ratings cannot be read**, Generate stops and shows: "Could not load the
+  team ratings that Prioritize Match Quality needs. Turn off Prioritize Match
+  Quality and try again."
+- **A visible effect:** with the switch ON, a pair from neighbouring divisions
+  whose teams are not close scores a little under 5 (a weighted gap under about 6%
+  rounds away, so very close teams still score exactly 5). The preview shows it
+  with the amber note "may not be evenly matched". An average of exactly 8.0 can
+  read 7.97.
+- **Known gap:** in some small blocks that mix Competitive, Intermediate and
+  Recreational teams (found in a seeded test with 6 and 10 teams), ON can bend more
+  rules than OFF: a Competitive team against a Recreational team, or a repeated pair.
+  See "Quality switch result" in `docs/untangle-decision-log.md`.
+
+The old scorers `calculateTeamCompatibility` and
+`calculateConfigurableCompatibility` (deprecated) are not used by the Standard
+path. `calculateConfigurableCompatibility` is reached only through
 `generateDualBlockPairings`, which has no production caller.
 
 **Constraints:**
@@ -95,7 +131,7 @@ division tier gap. The only code that reads the weights is
 
 **Dual Match Mode:**
 - Toggles between greedy (ON) and Blossom (OFF) schedulers
-- Shows/hides quality optimization when appropriate
+- Hides the "Prioritize Match Quality" switch while Dual Match Mode is ON (Dual does not read the weights)
 
 **Avoid Rematches:**
 - Both modes: Prevents scheduling teams that played in current season
@@ -105,7 +141,7 @@ division tier gap. The only code that reads the weights is
 **Prioritize Match Quality:**
 - Only available in Standard Mode (Blossom)
 - Hidden when Dual Match Mode is enabled
-- Sends quality weights, but they are not read today (see Quality Optimization)
+- Sends four fixed weights. Standard mode reads them (see Quality Optimization). Dual Match Mode does not
 
 ---
 
@@ -196,10 +232,13 @@ Run tests: `npm test greedyBackToBackScheduler`
 Run tests: `npm test blossomPairingAlgorithm`
 
 **Coverage:**
-- Quality optimization
-- Compatibility scoring
+- Compatibility scoring (division only)
 - Rematch avoidance
 - Unmatched team handling
+
+Prioritize Match Quality (switch ON) has its own tests. Run `npm test compatibilityUtils.quality`
+for the score function, and `npm test standardPairing.quality` for the wiring, the real
+generator, and the seeded ON-versus-OFF grid.
 
 ---
 
@@ -208,7 +247,7 @@ Run tests: `npm test blossomPairingAlgorithm`
 The greedy scheduler was introduced to handle the specific back-to-back scheduling requirement:
 - Replaced complex dual-block logic with simple greedy algorithm
 - Maintained Blossom for standard single-block scheduling
-- UI updated to hide quality optimization in dual match mode
+- UI updated to hide the quality switch in dual match mode (Dual does not read the quality weights)
 - Both algorithms coexist for different use cases
 
 **Before:** All scheduling used Blossom (slower, quality-focused)
