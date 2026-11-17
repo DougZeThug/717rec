@@ -260,7 +260,9 @@ What the admin may notice with the switch on:
   9.5 and 10. A pair from neighbouring divisions scores between 4.5 and 5. When the
   two teams are not close, that pair scores a little under 5, so the preview flags
   it with the tooltip "These teams may not be evenly matched". Teams that are very
-  close still score exactly 10 or 5. A night that averaged exactly 8.0 with the
+  close still score exactly 10 or 5. "Very close" means a weighted gap under about
+  3.1%: for example, power scores within about 8 points and the other three numbers
+  level. A night that averaged exactly 8.0 with the
   switch off can average 7.97 with it on. The Export tab still shows 8.0, but the rating can
   drop from Excellent to Good.
 - **The red "N Warnings" badge does not count these pairs.** With the switch on or

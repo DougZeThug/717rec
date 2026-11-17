@@ -84,10 +84,11 @@ How the weights are used (`src/hooks/scheduling/utils/standardPairing.ts`):
   placeholders (Power Score 0, strength of schedule 0.5), so the real numbers are
   kept in a separate map inside the score function. `createQualityCompatibility`
   in `src/utils/autoSchedule/compatibilityUtils.ts` then scores each pair as the
-  division score minus 0.5 x gap squared, rounded to the nearest 1/256. The gap is
-  0 to 1: a weighted average of four distances (Power Score over 100, strength of
-  schedule, win rate, game win rate). A distance is skipped when either team has no
-  data for it (Power Score null or 0, or no decided matches).
+  division score minus 0.5 x gap squared, rounded to the nearest 1/1024 (one
+  constant, `SKILL_STEPS_PER_UNIT`). The gap is 0 to 1: a weighted average of four
+  distances (Power Score over 100, strength of schedule, win rate, game win rate).
+  A distance is skipped when either team has no data for it (Power Score null or 0,
+  or no decided matches).
 - **For each pair the division score counts first, and the skill term is small.**
   The skill term takes at most 0.5 off a pair. A pair from the same division stays
   between 9.5 and 10. A pair from neighbouring divisions stays between 4.5 and 5. A
@@ -108,9 +109,11 @@ How the weights are used (`src/hooks/scheduling/utils/standardPairing.ts`):
   team ratings that Prioritize Match Quality needs. Turn off Prioritize Match
   Quality and try again."
 - **A visible effect:** with the switch ON, a pair from neighbouring divisions
-  whose teams are not close scores a little under 5 (a weighted gap under about 6%
-  rounds away, so very close teams still score exactly 5). The preview shows it
-  with the amber note "may not be evenly matched". The red "N Warnings" badge does
+  whose teams are not close scores a little under 5 (a weighted gap under about
+  3.1%, that is 1/32, rounds away, so very close teams still score exactly 5. With
+  the screen weights, a Power Score gap of about 8.4 points, with the rest level,
+  is the smallest that counts). The preview shows it with the amber note "may not
+  be evenly matched". The red "N Warnings" badge does
   not count these pairs. With ON or OFF it counts only rematches and forbidden
   pairs (score under 4.5, which means 0). The card prints a score under 5 cut to
   two decimals, for example 4.99, so it never reads 5.0. An average of exactly 8.0
