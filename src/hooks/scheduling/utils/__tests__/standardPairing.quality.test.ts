@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchTeamsByIds } from '@/services/matches/MatchTeamLookupService';
+import type { TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { BusinessLogicError, DatabaseError, ValidationError } from '@/types/errors';
 import type { Team } from '@/types/team';
 import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossom';
@@ -42,8 +43,7 @@ const SCREEN_WEIGHTS = {
 
 /** The message an admin reads when the ratings cannot be loaded. */
 const RATINGS_FAILED =
-  'Could not load the team ratings that Prioritize Match Quality needs. ' +
-  'Turn off Prioritize Match Quality and try again.';
+  'Could not load the team ratings that Prioritize Match Quality needs. Turn off Prioritize Match Quality and try again.';
 
 const teamsOf = (prefix: string, count: number): Team[] =>
   Array.from({ length: count }, (_, index) =>
@@ -132,6 +132,15 @@ describe('scheduleStandardPairings with Prioritize Match Quality', () => {
       );
 
       expect(fetchTeamsByIds).toHaveBeenCalledTimes(1);
+      expect(fetchTeamsByIds).toHaveBeenCalledWith(['A1', 'A2', 'A3', 'A4']);
+    });
+
+    it('skips a block that holds nothing at all, as the OFF path does', async () => {
+      // A saved night can hold a block key with no list. The OFF path skips it, so ON must too.
+      const blocks = { Early: early, Mid: undefined } as unknown as TimeBlockTeamsMap;
+
+      await scheduleStandardPairings(blocks, { avoidRematches: true, weights: SCREEN_WEIGHTS }, []);
+
       expect(fetchTeamsByIds).toHaveBeenCalledWith(['A1', 'A2', 'A3', 'A4']);
     });
 

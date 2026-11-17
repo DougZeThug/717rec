@@ -1,12 +1,14 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { fetchTeamsByIds } from '@/services/matches/MatchTeamLookupService';
+import type { TeamPair } from '@/types/autoSchedule';
 import {
   buildGridBlock,
   countRuleBends,
   GRID_MIXES,
   GRID_SIZES,
 } from '@/utils/test/autoSchedule/qualityGrid';
+import { createMockTeam } from '@/utils/test/autoSchedule/testHelpers';
 
 import { scheduleStandardPairings } from '../standardPairing';
 
@@ -146,5 +148,43 @@ describe.each(MODES)('Prioritize Match Quality grid, $mode library', ({ throws, 
         if ('unmatched' in on) expect(on.unmatched).toEqual([]);
       }
     });
+  });
+});
+
+describe('countRuleBends, the counter the grid uses', () => {
+  const team = (id: string, divisionName: string) => createMockTeam({ id, name: id, divisionName });
+  const competitive = team('C1', 'Competitive');
+  const intermediate = team('I1', 'Intermediate');
+  const recreational = team('R1', 'Recreational');
+  const otherRecreational = team('R2', 'Recreational');
+  const pair = (team1: TeamPair['team1'], team2: TeamPair['team2'], hasPlayedBefore = false) => ({
+    team1,
+    team2,
+    compatibilityScore: 5,
+    hasPlayedBefore,
+  });
+
+  it('counts nothing for pairs that follow the rules', () => {
+    expect(
+      countRuleBends([pair(competitive, intermediate), pair(intermediate, recreational)])
+    ).toBe(0);
+  });
+
+  it('counts a Competitive team against a Recreational team', () => {
+    expect(countRuleBends([pair(competitive, recreational)])).toBe(1);
+  });
+
+  it('counts a pair flagged as played before, unless both teams are Recreational', () => {
+    expect(countRuleBends([pair(competitive, intermediate, true)])).toBe(1);
+    expect(countRuleBends([pair(recreational, otherRecreational, true)])).toBe(0);
+  });
+
+  it('counts the second listing of a pair, unless both teams are Recreational', () => {
+    expect(countRuleBends([pair(competitive, intermediate), pair(intermediate, competitive)])).toBe(
+      1
+    );
+    expect(
+      countRuleBends([pair(recreational, otherRecreational), pair(otherRecreational, recreational)])
+    ).toBe(0);
   });
 });

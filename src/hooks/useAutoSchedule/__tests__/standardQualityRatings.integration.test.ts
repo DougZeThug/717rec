@@ -58,9 +58,7 @@ const night = new Date(2026, 10, 19, 12);
 
 /** What the admin reads when the ratings cannot be loaded. */
 const RATINGS_FAILED =
-  'Failed to generate match pairings: ' +
-  'Could not load the team ratings that Prioritize Match Quality needs. ' +
-  'Turn off Prioritize Match Quality and try again.';
+  'Failed to generate match pairings: Could not load the team ratings that Prioritize Match Quality needs. Turn off Prioritize Match Quality and try again.';
 
 const SCREEN_WEIGHTS = {
   powerScoreWeight: 5,

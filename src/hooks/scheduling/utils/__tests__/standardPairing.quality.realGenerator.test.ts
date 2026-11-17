@@ -218,8 +218,7 @@ describe('scheduleStandardPairings with Prioritize Match Quality ON and the real
       const generate = () => scheduleStandardPairings({ Early: makeTeams('A', 5) }, ON, []);
 
       await expect(generate()).rejects.toThrow(
-        'Block Early Pair (6:30-7:00 PM) has 5 teams. Standard mode needs an even number of teams in a block. ' +
-          'Move a team, or use Dual Match Mode on the Auto Schedule screen.'
+        'Block Early Pair (6:30-7:00 PM) has 5 teams. Standard mode needs an even number of teams in a block. Move a team, or use Dual Match Mode on the Auto Schedule screen.'
       );
       await expect(generate()).rejects.toBeInstanceOf(ValidationError);
       expect(fetchTeamsByIds).not.toHaveBeenCalled();

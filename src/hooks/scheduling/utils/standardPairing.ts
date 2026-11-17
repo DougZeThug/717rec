@@ -37,8 +37,7 @@ const createQualityScoreFn = async (
       rows = await fetchTeamsByIds([...teamIds]);
     } catch (cause) {
       throw new BusinessLogicError(
-        'Could not load the team ratings that Prioritize Match Quality needs. ' +
-          'Turn off Prioritize Match Quality and try again.',
+        'Could not load the team ratings that Prioritize Match Quality needs. Turn off Prioritize Match Quality and try again.',
         { cause }
       );
     }

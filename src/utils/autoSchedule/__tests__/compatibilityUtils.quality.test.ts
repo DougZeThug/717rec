@@ -328,6 +328,14 @@ describe('createQualityCompatibility', () => {
       expect(score(veteran, newTeam)).toBe(10);
     });
 
+    it('counts a null win total as 0 when the team has losses', () => {
+      const noWins = rating({ wins: null, losses: 10 });
+
+      // 0 of 10 against 0 of 10 is level. 0 of 10 against 10 of 10 is the widest record gap.
+      expect(score(noWins, rating({ wins: 0, losses: 10 }))).toBe(10);
+      expect(score(noWins, rating({ wins: 10, losses: 0 }))).toBeLessThan(10);
+    });
+
     it('treats a null count as no decided matches', () => {
       const unknown = rating({
         wins: null,
