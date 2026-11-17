@@ -9,7 +9,6 @@ import type { BracketManagerMatchWithStage, LegacyPlayoffMatchWithGames } from '
 
 /**
  * Fetch playoff matches for a bracket with team data
- * Used by usePlayoffMatches hook
  */
 export const fetchPlayoffMatches = async (bracketId: string): Promise<PlayoffMatchWithTeams[]> => {
   const { data, error } = await supabase

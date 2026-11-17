@@ -21,7 +21,6 @@ type SeasonStatsAccordionRow = Pick<
 };
 
 export const SeasonStatsService = {
-  // From useSeasonStats.ts (fetchSeasons)
   fetchSeasonStatIds: async () => {
     const { data, error } = await supabase
       .from('team_season_stats')
@@ -36,7 +35,6 @@ export const SeasonStatsService = {
     return uniqueSeasons;
   },
 
-  // From useSeasonStats.ts (fetchStatsBySeason)
   fetchStatsBySeason: async (seasonId: string) => {
     const { data, error } = await supabase
       .from('team_season_stats')
