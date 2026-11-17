@@ -180,7 +180,7 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
         <p>
           * With Prioritize Match Quality ON (Standard mode), a close power score and record are
           preferred, and a gap takes a little off the score. A neighbouring-division pair can then
-          show just under 5
+          show just under 5 and count in the red Warnings badge
         </p>
         {dualMatchMode && (
           <p>

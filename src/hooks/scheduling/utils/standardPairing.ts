@@ -65,9 +65,10 @@ const createQualityScoreFn = async (
  *
  * This function processes each time block independently, maximizing compatibility scores.
  * The score is division-only (10 same tier, 5 next tier, 0 blocked) unless the screen sent
- * weights (Prioritize Match Quality ON). Then a small skill term is taken off, so skill only
- * decides between choices with the same division mix. It's ideal for single-block scheduling
- * where each time slot is treated separately.
+ * weights (Prioritize Match Quality ON). Then a small skill term is taken off the division
+ * score (at most 0.5 per pair), and each round pairs as many teams as it can
+ * (`preferFullRounds`). It's ideal for single-block scheduling where each time slot is treated
+ * separately.
  *
  * @param timeBlockTeams - Map of time block names to teams
  * @param config - Algorithm configuration

@@ -88,23 +88,40 @@ How the weights are used (`src/hooks/scheduling/utils/standardPairing.ts`):
   0 to 1: a weighted average of four distances (Power Score over 100, strength of
   schedule, win rate, game win rate). A distance is skipped when either team has no
   data for it (Power Score null or 0, or no decided matches).
-- **Division comes first.** The skill term takes at most 0.5 off. A pair from the
-  same division stays between 9.5 and 10. A pair from neighbouring divisions stays
-  between 4.5 and 5. A blocked pair stays 0. So skill only decides between choices
-  with the same division mix. It does not promise that divisions never mix: some
-  mixed blocks force a cross-division pair under both settings.
+- **Division comes first, and the skill term is small.** The skill term takes at
+  most 0.5 off a pair. A pair from the same division stays between 9.5 and 10. A
+  pair from neighbouring divisions stays between 4.5 and 5. A blocked pair stays 0.
+  Some mixed blocks force a cross-division pair under both settings.
+- **Every round pairs as many teams as it can (ON only).** With the switch ON,
+  `standardPairing.ts` passes `preferFullRounds` to the generator. Its first run
+  then matches as many teams as it can in each round, so a smaller round cannot win
+  just because each pair loses a little. With OFF the flag is false and the first
+  run is the one it always was. This first run uses the vendored copy of the
+  library (`blossom/vendor/`), like the retry does. Dual Match Mode does not use
+  the flag.
 - **If the ratings cannot be read**, Generate stops and shows: "Could not load the
   team ratings that Prioritize Match Quality needs. Turn off Prioritize Match
   Quality and try again."
 - **A visible effect:** with the switch ON, a pair from neighbouring divisions
   whose teams are not close scores a little under 5 (a weighted gap under about 6%
   rounds away, so very close teams still score exactly 5). The preview shows it
-  with the amber note "may not be evenly matched". An average of exactly 8.0 can
-  read 7.97.
-- **Known gap:** in some small blocks that mix Competitive, Intermediate and
-  Recreational teams (found in a seeded test with 6 and 10 teams), ON can bend more
-  rules than OFF: a Competitive team against a Recreational team, or a repeated pair.
-  See "Quality switch result" in `docs/untangle-decision-log.md`.
+  with the amber note "may not be evenly matched". The red "N Warnings" badge
+  counts every pair that scores under 5, so these pairs count in it too. With OFF
+  it counts only rematches and 0-score pairs. An average of exactly 8.0 can read
+  7.97.
+- **What the seeded test grid shows** (`standardPairing.qualityGrid.test.ts`: blocks of
+  6, 8, 10 and 12 teams, three tier mixes, 40 seeded blocks each, three library
+  modes). A list is "good" when no pair bends a rule (Competitive against
+  Recreational, or a repeated pair unless both teams are Recreational) and Apply can
+  place it into the block's two time slots. In every block where a good list can be
+  found, ON found one (360 of 360 blocks, in all three library modes). OFF found one
+  in 268 (plain), 293 (browser that fails only on contractions) and 321 (library
+  throws every call) of the same 360. In no seeded block did ON give a bad list where
+  OFF gave a good one. Where no good list can be found, no setting avoids bending a
+  rule, and ON stops less often than OFF overall (a block of 3 Competitive, 1
+  Intermediate and 2 Recreational teams, or 5, 1 and 2). In a block of 6 with 2 Competitive, 2
+  Intermediate and 2 Recreational teams a good list exists, but neither setting
+  finds it.
 
 The old scorers `calculateTeamCompatibility` and
 `calculateConfigurableCompatibility` (deprecated) are not used by the Standard

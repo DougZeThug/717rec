@@ -236,14 +236,15 @@ naming the match. It can no longer reach the database.
 Mode is on, because Dual Match Mode does not read it. Doug's usual Dual night does
 not change.
 
-**Division comes first.** The switch only helps choose between pairings that have
-the same division mix. It does not promise that divisions never mix. Some mixed
-blocks force one cross-division pair with the switch on or off.
+**Division comes first, and the skill part is small.** The division score counts
+first. The skill part takes at most 0.5 off a pair. The switch does not promise that
+divisions stay apart: some mixed blocks force one cross-division pair with the switch
+on or off.
 
 | Switch | What Generate does |
 | --- | --- |
-| Off (the default) | Scores each pair by division only: 10 for the same division, 5 for neighbouring divisions, 0 for Competitive against Recreational (never paired unless nothing else works). This is the same as before. Nothing extra is read. |
-| On | Reads the real power score, strength of schedule, win record and game record of each team, once. Among pairings with the same division mix, it prefers teams that are close on those four. A wide gap takes a little off the pair's score, never more than 0.5. |
+| Off (the default) | Scores each pair by division only: 10 for the same division, 5 for neighbouring divisions, 0 for Competitive against Recreational (paired only when nothing else works). This is the same as before. Nothing extra is read. |
+| On | Reads the real power score, strength of schedule, win record and game record of each team, once. It prefers teams that are close on those four. A wide gap takes a little off the pair's score, at most 0.5. Every round also pairs as many teams as it can, so a smaller round cannot win just because each pair loses a little. |
 
 Four fixed weights set how much each one counts: power score 5, strength of
 schedule 3, win record 3.5, game record 2. No screen lets the admin change them.
@@ -257,6 +258,9 @@ What the admin may notice with the switch on:
   it with the tooltip "These teams may not be evenly matched". Teams that are very
   close still score exactly 10 or 5. A night that averaged exactly 8.0 with the
   switch off can read 7.97.
+- **The red "N Warnings" badge can count more pairs.** It counts every pair that
+  scores under 5, so a neighbouring-division pair with a gap counts in it. With the
+  switch off it counts only rematches and pairs that score 0.
 - **A team with no data counts as level.** A team with no power score, or with no
   decided matches, is left out of that comparison. It is not treated as weak.
 - **A failed read stops Generate.** If the ratings cannot be loaded, a red toast
@@ -265,10 +269,18 @@ What the admin may notice with the switch on:
   Turn the switch off and press Generate again. Nothing is generated.
 - **Nothing is saved.** The switch changes only which pairings Generate proposes. No
   power score, standing or past match changes.
-- **Known gap.** In some small blocks that mix Competitive, Intermediate and
-  Recreational teams, the switch can lead to more rule-bending pairs than with it off:
-  a Competitive team against a Recreational team, or a repeated pair. A seeded test
-  found this with 6 and 10 teams. See the decision log, "Quality switch result".
+- **What a seeded test shows.** A good schedule is one where no pair bends a rule and
+  the Apply step can place every match into the block's two time slots. In every
+  tested block where a good schedule can be found, the switch on found one (360 of
+  360 blocks of 6 to 12 teams). The switch off found one in 268 to 321 of the same
+  360, depending on how the matching library behaves in the browser. In no tested
+  block did the switch on give a bad list where the switch off gave a good one.
+- **Where no good schedule exists, a rule still bends.** A block of 6 with 3
+  Competitive, 1 Intermediate and 2 Recreational teams has no good schedule under
+  either setting, and the same holds for 5, 1 and 2 teams in a block of 8. With the
+  switch on, Generate stops less often than with it off in these blocks. In a block of
+  6 with 2 Competitive, 2 Intermediate and 2 Recreational teams a good schedule
+  exists, but neither setting finds it. See the decision log, "Quality switch result".
 
 ## Modifiers
 

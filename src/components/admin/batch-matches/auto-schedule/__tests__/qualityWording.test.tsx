@@ -54,7 +54,7 @@ describe('Match Creation screen text about match quality', () => {
     for (const promise of FALSE_PROMISES) expect(text).not.toMatch(promise);
   });
 
-  it('the preview says what the score means, and that a neighbouring-division pair can show just under 5', () => {
+  it('the preview says what the score means, and that a neighbouring-division pair can show just under 5 and count as a warning', () => {
     const pairings: TeamPairingMap = {
       Early: [
         {
@@ -79,9 +79,39 @@ describe('Match Creation screen text about match quality', () => {
       '* Match score is 10 for teams in the same division and 5 for neighbouring divisions. Rematches are flagged'
     );
     expect(text).toContain(
-      '* With Prioritize Match Quality ON (Standard mode), a close power score and record are preferred, and a gap takes a little off the score. A neighbouring-division pair can then show just under 5'
+      '* With Prioritize Match Quality ON (Standard mode), a close power score and record are preferred, and a gap takes a little off the score. A neighbouring-division pair can then show just under 5 and count in the red Warnings badge'
     );
     expect(text).not.toContain('Teams with similar skill levels are paired');
     for (const promise of FALSE_PROMISES) expect(text).not.toMatch(promise);
+  });
+  it('counts a pair that scores just under 5 in the red Warnings badge, and a pair that scores exactly 5 not at all', () => {
+    // With the switch ON, a neighbouring-division pair whose teams are not close scores a little
+    // under 5. With the switch OFF the same pair scores exactly 5.
+    const pairingsScoring = (score: number): TeamPairingMap => ({
+      Early: [
+        {
+          team1: makeTeam('t1', 'Alpha'),
+          team2: makeTeam('t2', 'Bravo'),
+          compatibilityScore: score,
+          hasPlayedBefore: false,
+        },
+      ],
+    });
+    const date = new Date(2026, 10, 19);
+
+    const on = render(
+      <ScheduleMatchesPreview
+        pairings={pairingsScoring(4.98828125)}
+        date={date}
+        isGenerating={false}
+      />
+    );
+    expect(on.getByText('1 Warnings')).toBeInTheDocument();
+    on.unmount();
+
+    const off = render(
+      <ScheduleMatchesPreview pairings={pairingsScoring(5)} date={date} isGenerating={false} />
+    );
+    expect(off.queryByText(/^\d+ Warnings$/)).not.toBeInTheDocument();
   });
 });
