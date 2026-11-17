@@ -88,7 +88,6 @@ const mapRowToBracket = (row: BracketDomainRow): PlayoffBracket => ({
 
 /**
  * Fetch a single bracket's basic data by ID
- * Used by usePlayoffBracketData hook
  */
 export const fetchPlayoffBracketData = async (bracketId: string): Promise<PlayoffBracket> => {
   const { data, error } = await supabase
@@ -138,7 +137,7 @@ export const fetchBracketsOverview = async (
 
 /**
  * Fetch bracket info for JSONB/uses_brackets_manager check
- * Used by BracketView component
+ * Used by the useBracketViewData hook
  *
  * maybeSingle, not single: PostgREST answers a 0-row `single` with an error
  * (PGRST116) rather than with empty data, so handleDatabaseError threw first

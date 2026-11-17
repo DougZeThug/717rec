@@ -1,17 +1,74 @@
+import { fetchTeamsByIds } from '@/services/matches/MatchTeamLookupService';
 import { fetchSeasonHistoryForTeams } from '@/services/matches/SchedulingHistoryService';
 import { AlgorithmConfig, TeamPairingMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
-import { ValidationError } from '@/types/errors';
+import { BusinessLogicError, ValidationError } from '@/types/errors';
 import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossom';
-import { calculateDivisionOnlyCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
+import {
+  calculateDivisionOnlyCompatibility,
+  createQualityCompatibility,
+  TeamRating,
+} from '@/utils/autoSchedule/compatibilityUtils';
 import { getPairConfig } from '@/utils/autoSchedule/constants';
 import { scheduleLog, warnLog } from '@/utils/logger';
 
 /**
+ * The score function for a night with Prioritize Match Quality ON. The scheduler's own teams hold
+ * placeholders (Power Score 0, SOS 0.5), so the real ratings come from `v_team_details`. They are
+ * read once for every team that will be paired and kept in a Map inside the score function. The
+ * Team objects stay as they are, so nothing else that reads them changes.
+ * @throws {BusinessLogicError} When the ratings cannot be read. The message tells the admin to
+ *   turn the switch off, because the schedule can still be made without it.
+ */
+const createQualityScoreFn = async (
+  timeBlockTeams: TimeBlockTeamsMap,
+  weights: NonNullable<AlgorithmConfig['weights']>
+) => {
+  // A block with fewer than two teams is not paired, so its team needs no rating.
+  const teamIds = new Set(
+    Object.values(timeBlockTeams)
+      .filter((teamsInBlock) => (teamsInBlock?.length ?? 0) >= 2)
+      .flatMap((teamsInBlock) => teamsInBlock.map((team) => team.id))
+  );
+
+  const ratings = new Map<string, TeamRating>();
+  if (teamIds.size > 0) {
+    let rows: Awaited<ReturnType<typeof fetchTeamsByIds>>;
+    try {
+      rows = await fetchTeamsByIds([...teamIds]);
+    } catch (cause) {
+      throw new BusinessLogicError(
+        'Could not load the team ratings that Prioritize Match Quality needs. Turn off Prioritize Match Quality and try again.',
+        { cause }
+      );
+    }
+
+    // The view has one row per team. If it ever sent two, the first one counts.
+    for (const row of rows) {
+      if (!row.team_id || ratings.has(row.team_id)) continue;
+      // All six numbers come from the same row, so they cannot disagree with each other.
+      ratings.set(row.team_id, {
+        power_score: row.power_score,
+        sos: row.sos,
+        wins: row.wins,
+        losses: row.losses,
+        game_wins: row.game_wins,
+        game_losses: row.game_losses,
+      });
+    }
+  }
+
+  return createQualityCompatibility(ratings, weights);
+};
+
+/**
  * Schedules team pairings using the standard Edmonds' Blossom algorithm.
  *
- * This function processes each time block independently, maximizing compatibility scores
- * and supporting quality optimization weights. It's ideal for single-block scheduling
- * where each time slot is treated separately.
+ * This function processes each time block independently, maximizing compatibility scores.
+ * The score is division-only (10 same tier, 5 next tier, 0 blocked) unless the screen sent
+ * weights (Prioritize Match Quality ON). Then a small skill term is taken off the division
+ * score (at most 0.5 per pair), and each round pairs as many teams as it can
+ * (`preferFullRounds`). It's ideal for single-block scheduling where each time slot is treated
+ * separately.
  *
  * @param timeBlockTeams - Map of time block names to teams
  * @param config - Algorithm configuration
@@ -46,6 +103,13 @@ export const scheduleStandardPairings = async (
     );
   }
 
+  // Prioritize Match Quality is ON when the screen sent weights. OFF passes the division-only
+  // function itself and reads nothing, so an OFF night is exactly what it always was.
+  const getCompatibilityScoreFn =
+    config.weights === undefined
+      ? calculateDivisionOnlyCompatibility
+      : await createQualityScoreFn(timeBlockTeams, config.weights);
+
   const pairings: TeamPairingMap = {};
   let allUnmatchedTeamIds: string[] = [];
 
@@ -76,9 +140,11 @@ export const scheduleStandardPairings = async (
     const blockPairings = await generatePairingsWithBlossom(teamsInBlock, {
       avoidRematches: config.avoidRematches,
       fetchSeasonHistoryFn: fetchSeasonHistoryForTeams,
-      getCompatibilityScoreFn: calculateDivisionOnlyCompatibility,
+      getCompatibilityScoreFn,
       weights: config.weights,
       playedPairsSet,
+      // ON: every round pairs as many teams as it can. A heavier but smaller round cannot win.
+      preferFullRounds: config.weights !== undefined,
     });
 
     // Store pairings for this block

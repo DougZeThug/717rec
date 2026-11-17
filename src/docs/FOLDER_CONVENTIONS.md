@@ -7,17 +7,20 @@ Quick reference for folder and file naming conventions in this project.
 | Type | Convention | Example |
 |------|------------|---------|
 | Feature folders | kebab-case, plural | `components/teams/` |
-| Utility folders | kebab-case | `utils/power-score/` |
-| Hook folders | kebab-case (no "use" prefix) | `hooks/auto-schedule/` |
+| Utility folders | kebab-case | `utils/colors/` |
+| Hook folders | kebab-case (no "use" prefix) | `hooks/message-board/` |
 | Component files | PascalCase | `TeamCard.tsx` |
-| Hook files | camelCase + use | `useTeams.ts` |
+| Hook files | camelCase + use | `useTeamsQuery.ts` |
 | Service files | PascalCase + Service | `TeamSeasonStatsService.ts` |
-| Type files | camelCase | `match.ts` |
+| Type files | camelCase | `matchStatus.ts` |
 | Util files | camelCase | `dateUtils.ts` |
 
 ## New Feature Checklist
 
 When adding a new feature (e.g., "notifications"):
+
+> Example names only. "notifications" stands in for your feature name.
+> The real notifications code does not match these file names one for one.
 
 - [ ] `src/components/notifications/` - UI components
 - [ ] `src/components/notifications/index.ts` - Barrel export
@@ -43,25 +46,24 @@ export type { FeatureType } from './types';
 
 ```
 components/
-  badges/              # ✅ kebab-case, plural
-    BadgeCard.tsx      # ✅ PascalCase
-    BadgeGrid.tsx
+  matches/             # ✅ kebab-case, plural
+    MatchInteractions.tsx  # ✅ PascalCase
     index.ts           # ✅ barrel export
 
 hooks/
   message-board/       # ✅ kebab-case, no "use" prefix
     useMessageBoard.ts # ✅ camelCase with use prefix
-    useMessageMutations.ts
+    useMessageApi.ts
     index.ts
 
 services/
   brackets/            # ✅ kebab-case, plural
-    BracketService.ts  # ✅ PascalCase + Service
-    bracket-creator.ts
+    BracketReadService.ts   # ✅ PascalCase + Service
+    BracketWriteService.ts
 
 utils/
-  validation/          # ✅ kebab-case
-    matchValidation.ts # ✅ camelCase
+  colors/              # ✅ kebab-case
+    divisionColors.ts  # ✅ camelCase
 ```
 
 ### Patterns to Avoid (Legacy)
@@ -73,7 +75,7 @@ hooks/
   useAutoSchedule/     # ❌ has "use" prefix - should be auto-schedule/
   
 utils/
-  teamStatsUtils/      # ❌ camelCase folder - should be team-stats/
+  teamDetailsUtils/    # ❌ camelCase folder - should be team-details/
 ```
 
 ## File Placement Rules
@@ -95,13 +97,13 @@ utils/
 ### Generic vs Feature-Specific
 
 **Generic** (stays at folder root):
-- `hooks/use-mobile.ts` - used everywhere
-- `hooks/use-toast.ts` - used everywhere
-- `utils/cn.ts` - general utility
+- `hooks/useMobile.ts` - used everywhere
+- `hooks/useToast.ts` - used everywhere
+- `src/lib/utils.ts` - general utility (`cn`)
 
 **Feature-specific** (goes in subfolder):
-- `hooks/teams/useTeams.ts` - team-specific
-- `utils/power-score/calculations.ts` - power score specific
+- `hooks/teams/useTeamsQuery.ts` - team-specific
+- `utils/powerScore/weights.ts` - power score specific
 
 ## Migration Notes
 

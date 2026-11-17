@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  calculateDivisionRecords,
-  categorizeDivision,
-  getTierFromWeight,
-} from '../calculateDivisionRecords';
+import { calculateDivisionRecords, categorizeDivision } from '../calculateDivisionRecords';
 import { ArchivedMatchData, MatchData, PlayoffMatchData } from '../types';
 
 describe('categorizeDivision', () => {
@@ -40,26 +36,6 @@ describe('categorizeDivision', () => {
   it('returns null for unknown divisions', () => {
     expect(categorizeDivision('Unknown Division')).toBeNull();
     expect(categorizeDivision('Premier')).toBeNull();
-  });
-});
-
-describe('getTierFromWeight', () => {
-  it('returns competitive for weight >= 0.89', () => {
-    expect(getTierFromWeight(1.0)).toBe('competitive');
-    expect(getTierFromWeight(0.9)).toBe('competitive');
-    expect(getTierFromWeight(0.89)).toBe('competitive');
-  });
-
-  it('returns intermediate for weight >= 0.40 and < 0.89', () => {
-    expect(getTierFromWeight(0.88)).toBe('intermediate');
-    expect(getTierFromWeight(0.7)).toBe('intermediate');
-    expect(getTierFromWeight(0.4)).toBe('intermediate');
-  });
-
-  it('returns recreational for weight < 0.40', () => {
-    expect(getTierFromWeight(0.39)).toBe('recreational');
-    expect(getTierFromWeight(0.25)).toBe('recreational');
-    expect(getTierFromWeight(0)).toBe('recreational');
   });
 });
 
@@ -209,7 +185,7 @@ describe('calculateDivisionRecords', () => {
   });
 
   it('correctly categorizes Recreational High playoff bracket as recreational', () => {
-    // Regression: weight=0.50 previously mapped to intermediate via getTierFromWeight
+    // Regression: weight=0.50 used to file this as intermediate (a weight-based lookup, since removed)
     const playoffMatches: PlayoffMatchData[] = [
       {
         winner_id: 'team-1',
@@ -237,7 +213,7 @@ describe('calculateDivisionRecords', () => {
   });
 
   it('correctly categorizes cuspers playoff bracket as intermediate', () => {
-    // Regression: weight=0.90 previously mapped to competitive via getTierFromWeight
+    // Regression: weight=0.90 used to file this as competitive (a weight-based lookup, since removed)
     const playoffMatches: PlayoffMatchData[] = [
       {
         winner_id: 'team-1',

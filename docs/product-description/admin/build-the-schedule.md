@@ -229,6 +229,76 @@ A team alone in its block is left unmatched." It names each odd block. Before
 A time the app cannot read is now refused before the insert, with a red toast
 naming the match. It can no longer reach the database.
 
+### What the Prioritize Match Quality switch does
+
+**Built 2026-11-17.** Before, this switch did nothing at all. Now it works in
+**Standard mode only**. Both tools show it. Auto Schedule hides it while Dual Match
+Mode is on, because Dual Match Mode does not read it. Doug's usual Dual night does
+not change.
+
+**For each pair the division score counts first, and the skill part is small.** The
+skill part takes at most 0.5 off a pair. It comes off every pair, so it also sways the
+choice between cross-division pairings. With the switch on, each round first pairs as
+many teams as it can, then division, then skill. In blocks of 20 or more teams the
+skill parts of one round could add up past one division step. The tool does not guard
+against that, and the real block sizes are UNKNOWN. The switch does not promise that
+divisions stay apart: some mixed blocks force one cross-division pair with the switch
+on or off.
+
+| Switch | What Generate does |
+| --- | --- |
+| Off (the default) | Scores each pair by division only: 10 for the same division, 5 for neighbouring divisions, 0 for Competitive against Recreational (paired only when nothing else works). This is the same as before. Nothing extra is read. |
+| On | Reads the real power score, strength of schedule, win record and game record of each team, once. It prefers teams that are close on those four. A wide gap takes a little off the pair's score, at most 0.5. Every round also pairs as many teams as it can, so a smaller round never wins, even if its pairs score higher. |
+
+Four fixed weights set how much each one counts: power score 5, strength of
+schedule 3, win record 3.5, game record 2. No screen lets the admin change them.
+They are not the power score weights and not the division weights.
+
+What the admin may notice with the switch on:
+
+- **Scores can read a little lower.** A pair from the same division scores between
+  9.5 and 10. A pair from neighbouring divisions scores between 4.5 and 5. When the
+  two teams are not close, that pair scores a little under 5, so the preview flags
+  it with the tooltip "These teams may not be evenly matched". Teams that are very
+  close still score exactly 10 or 5. A night that averaged exactly 8.0 with the
+  switch off can average 7.97 with it on. The Export tab still shows 8.0, but the rating can
+  drop from Excellent to Good.
+- **The red "N Warnings" badge does not count these pairs.** With the switch on or
+  off, it counts only rematches and forbidden pairs (a score of 0). A
+  neighbouring-division pair with a gap keeps its amber card and tooltip, and the card
+  prints its score cut to two decimals, for example 4.99, so a pair under 5 does not read 5.0.
+- **A team with no data counts as level.** A team with no power score, or with no
+  decided matches, is left out of that comparison. It is not treated as weak.
+- **A failed read stops Generate.** If the ratings cannot be loaded, a red toast
+  says: "Failed to generate match pairings: Could not load the team ratings that
+  Prioritize Match Quality needs. Turn off Prioritize Match Quality and try again."
+  Turn the switch off and press Generate again. Nothing is generated.
+- **Nothing is saved.** The switch changes only which pairings Generate proposes. No
+  power score, standing or past match changes.
+- **What a seeded test shows.** A good schedule is one where no pair bends a rule and
+  the Apply step can place every match into the block's two time slots. In 9 of the 12
+  tested cases the switch on found a good schedule in all 40 blocks (360 of 480
+  blocks). The switch off found 268, 293 and 321 of the same 480, depending on how the
+  matching library behaves in the browser (a separate check reproduced the totals for the switch off; no test pins them). In 2 cases
+  no good schedule exists when no pair may repeat on a night (3 Competitive, 1 Intermediate and 2 Recreational teams at 6
+  teams, and 5, 1 and 2 at 8 teams). In 1 case one exists but neither setting finds it
+  (2 Competitive, 2 Intermediate and 2 Recreational teams at 6 teams). The tests use
+  random ratings and 6 to 12 teams. Real block sizes are UNKNOWN. In no tested block
+  did the switch on give a bad list where the switch off gave a good one.
+- **Where no good schedule exists, a rule still bends, and the switch on is not always
+  better.** A block of 6 with 3 Competitive, 1 Intermediate and 2 Recreational teams
+  has no good schedule under either setting (when no pair may repeat on a night), and the same holds for 5, 1 and 2 teams
+  in a block of 8. In a block of 6 with 2 Competitive, 2 Intermediate and 2
+  Recreational teams a good schedule exists, but neither setting finds it. With the
+  switch on, Generate stops less often than with it off in the blocks of 8. Two things
+  go the other way. In blocks of 6 teams with 3 Competitive, 1 Intermediate and 2
+  Recreational teams, the switch on can bend more rules than the switch off
+  (34 against 21 bent pairs in the plain library), because the switch off has 19 of 40
+  lists that Apply cannot place into the two time slots (the switch on has 6). And in
+  1 of 40 blocks of 8 teams with 5 Competitive, 1 Intermediate and 2 Recreational
+  teams, the switch on stopped where the switch off finished: the admin sees a red
+  error toast. See the decision log, "Quality switch result".
+
 ## Modifiers
 
 | Modifier | Set at arrival | Changed while editing |
@@ -397,16 +467,20 @@ notification is sent to any team.
   product question.
 - Not confirmed by hand: whether the browser's leave-page warning actually
   appears, and what it says in each browser.
-- Not confirmed by hand: how the pairing algorithm ranks quality, and what makes
-  a rating Excellent rather than Good. That belongs with power score; see
-  [`../stats/power-score.md`](../stats/power-score.md).
+- Not confirmed by hand: what makes a rating Excellent rather than Good. That belongs
+  with power score; see [`../stats/power-score.md`](../stats/power-score.md). How the
+  Prioritize Match Quality switch changes the pairing is described above. It was
+  read from the code and tested with seeded fake data, not tried on a real league
+  night.
 - Not confirmed by hand: what Auto Schedule saves when there is no active season.
   The code attaches the matches to no season rather than refusing.
 - Assumption: "Dual Match Mode" means every team plays two matches in
   consecutive blocks, as its help text says. The pairing behaviour was read from
   the code, not observed.
 
-Verified against `717rec` commit `ea5c8f4`, except the timeslot behaviour above,
+Verified against `717rec` commit `ea5c8f4`, except the Prioritize Match Quality
+switch, which works since 2026-11-17 (see "What the Prioritize Match Quality switch
+does" above and the decision log, "Quality switch result"), and the timeslot behaviour above,
 which was changed after that commit — see B-03 in
 [`bug-triage.md`](../bug-triage.md#b-03-with-dual-match-mode-off-the-auto-schedulers-save-is-always-refused) —
 and the two navigation buttons, changed after it too; see

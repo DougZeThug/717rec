@@ -5,6 +5,7 @@ import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { TeamPairing } from '@/types/autoSchedule';
+import { formatCompatibilityScore } from '@/utils/autoSchedule/compatibilityUtils';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 
 interface MatchPairingItemProps {
@@ -42,7 +43,7 @@ const PairingScoreBadge: React.FC<PairingScoreTooltipProps & React.ComponentProp
         isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-muted'
       }`}
     >
-      Score: {pairing.compatibilityScore.toFixed(1)}/10
+      Score: {formatCompatibilityScore(pairing.compatibilityScore)}/10
     </span>
   </div>
 );

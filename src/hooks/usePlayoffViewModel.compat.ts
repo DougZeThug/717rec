@@ -9,7 +9,7 @@ import type { PlayoffBracket } from '@/types/playoffTypes';
 import { bracketLog } from '@/utils/logger';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
 
-/** Temporary shim exposing the legacy shape for Playoffs.tsx */
+/** Playoff page data: brackets, teams, divisions. Used by usePlayoffPageData. */
 export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
   // Fetch divisions data using the proper hook
   const { divisions, isLoading: divisionsLoading } = useDivisions();

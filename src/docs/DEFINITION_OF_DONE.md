@@ -16,7 +16,7 @@ Every feature or bugfix must satisfy this checklist before it's considered "done
 
 ### Build & Lint
 - [ ] No ESLint errors (`npm run lint`)
-- [ ] No TypeScript compile errors (`npm run build` succeeds)
+- [ ] No TypeScript compile errors (`npm run typecheck` passes)
 - [ ] No `@ts-ignore` or `@ts-expect-error` without justification comment
 - [ ] No `any` types (use proper typing or `unknown`)
 
@@ -33,7 +33,7 @@ Every feature or bugfix must satisfy this checklist before it's considered "done
 
 ### Console Output
 - [ ] No `console.log` in production code
-- [ ] Use `debugLog`, `errorLog`, `diagnosticLog` from logger utils
+- [ ] Use `debugLog` and `errorLog` from logger utils
 
 ---
 

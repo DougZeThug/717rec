@@ -13,6 +13,8 @@ export type TeamPairingConfig = {
     tierPenalty?: number;
   };
   playedPairsSet?: Set<string>; // Pre-fetched match history for performance
+  /** First run matches as many teams as it can in each round (Prioritize Match Quality ON). */
+  preferFullRounds?: boolean;
 };
 
 export type Edge = {

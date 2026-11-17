@@ -41,7 +41,7 @@ export const TimeslotQueryService = {
   },
 
   /**
-   * Fetch timeslots for a team within a date range (used by WeekTimeslotDisplay)
+   * Fetch timeslots for a team within a date range (used by useTimeslotMutation through TimeslotService)
    */
   async fetchWeekTimeslotsByTeam(teamId: string, startDate: string, endDate: string) {
     const { data, error } = await supabase
@@ -100,7 +100,7 @@ export const TimeslotQueryService = {
   },
 
   /**
-   * Fetch team timeslots for a given date and timeslot (used by autoScheduleUtils)
+   * Fetch team timeslots for a given date and timeslot (no production caller; only TimeslotQueryService.test.ts uses it)
    */
   async fetchTeamsByTimeslot(formattedDate: string, timeslot: string) {
     const { data, error } = await supabase

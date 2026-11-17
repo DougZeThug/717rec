@@ -8,7 +8,10 @@ export const InfoFooter: React.FC = () => {
       <Separator className="my-4" />
 
       <div className="text-xs text-muted-foreground mt-2">
-        <p>* Teams are matched based on skill levels using power scores and win records</p>
+        <p>
+          * Teams are matched by division first. With Prioritize Match Quality ON, a close power
+          score and record are preferred next
+        </p>
         <p>
           * A time block with an odd number of teams (3 or more) stops Generate: move a team, or use
           Dual Match Mode on the Auto Schedule screen

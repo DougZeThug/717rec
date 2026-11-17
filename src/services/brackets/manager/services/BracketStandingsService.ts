@@ -26,23 +26,23 @@ export class BracketStandingsService {
   constructor(private storage: SupabaseSqlStorage) {}
 
   /**
-   * Calculate and store final standings for a completed bracket
-   *
-   * Returns a result describing whether records were written. Never throws
-   * for "expected" failure modes (incomplete matches, brackets-manager
-   * lookup errors) — those are logged and surfaced via the returned
-   * 'reason'. Only re-throws on unexpected infrastructure failures.
-   */
-  /**
    * Calculate and store final standings for a completed bracket.
    *
    * PR-06: standings are computed and written server-side by the
    * `finalize_bracket_standings` SQL function (fires automatically via
    * trigger on bracket completion). This client method now:
-   *   1. Runs the best-effort self-heal pass (GF backfill / propagation)
-   *      so admin "Recalculate Standings" can repair a stuck bracket.
-   *   2. Pre-checks that all matches in the final stage are resolved.
-   *   3. Invokes the admin-only RPC to (re)write playoff_team_records.
+   *   1. Pre-checks that all matches in the final stage are resolved.
+   *   2. Invokes the admin-only RPC to (re)write playoff_team_records.
+   *
+   * Returns a result describing whether records were written. For the
+   * expected cases it does not throw. It returns a 'reason' instead:
+   *   - 'no-stages': the bracket has no stages.
+   *   - 'incomplete-matches': a match in the final stage is not resolved yet.
+   *   - 'calculation-error': the RPC returned an error (logged).
+   *   - 'no-records': the RPC ran but wrote no rows.
+   * Any thrown error is rethrown as a DatabaseError. That includes a failed
+   * stage lookup (`storage.select`). A failed read of the stage matches is
+   * only logged: the RPC then re-checks completion on the server.
    *
    * No browser-side write to playoff_team_records occurs anywhere.
    */

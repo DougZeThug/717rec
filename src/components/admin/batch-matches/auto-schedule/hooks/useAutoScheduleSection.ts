@@ -80,9 +80,12 @@ export const useAutoScheduleSection = ({
       prioritizeQuality,
       weights: prioritizeQuality
         ? {
-            // Increase power score and record weights for higher quality matches
+            // The same four fixed weights as the Auto Schedule screen
+            // (usePairingOperations.ts). Standard mode reads them when the switch is ON.
             powerScoreWeight: 5,
+            sosWeight: 3,
             recordWeight: 3.5,
+            gameRecordWeight: 2,
           }
         : undefined,
     });

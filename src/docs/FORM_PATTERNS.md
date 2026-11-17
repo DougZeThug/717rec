@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/useToast";
 
 const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),

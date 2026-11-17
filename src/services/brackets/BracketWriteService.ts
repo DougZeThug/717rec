@@ -124,7 +124,6 @@ export const updatePlayoffMatchScores = async (
 
 /**
  * Delete all playoff games for a match
- * Used by usePlayoffMatchUpdate hook (legacy path)
  */
 export const deletePlayoffGames = async (matchId: string): Promise<void> => {
   const { error } = await supabase.from('playoff_games').delete().eq('match_id', matchId);
@@ -136,7 +135,6 @@ export const deletePlayoffGames = async (matchId: string): Promise<void> => {
 
 /**
  * Insert multiple playoff game records
- * Used by usePlayoffMatchUpdate hook (legacy path)
  */
 export const insertPlayoffGames = async (
   games: Array<{
@@ -182,7 +180,6 @@ export const replacePlayoffGames = async (
 
 /**
  * Update a single team's seed value
- * Used by useOptimisticTeamMutations hook
  */
 export const updateTeamSeed = (
   teamId: string,
@@ -191,7 +188,6 @@ export const updateTeamSeed = (
 
 /**
  * Batch update team seeds via RPC
- * Used by useOptimisticTeamMutations hook
  */
 export const batchUpdateTeamSeeds = (
   updates: TeamSeedUpdateInput[]
