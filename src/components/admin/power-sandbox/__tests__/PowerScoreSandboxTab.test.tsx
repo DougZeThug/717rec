@@ -204,6 +204,75 @@ describe('PowerScoreSandboxTab', () => {
     await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
   });
 
+  it('says Revert works the scores out again and does not bring back old stored numbers', async () => {
+    render(<PowerScoreSandboxTab />);
+
+    const user = userEvent.setup();
+    const winInput = screen.getByLabelText(/match wins/i);
+    await user.clear(winInput);
+    await user.type(winInput, '50');
+    await user.click(screen.getByRole('button', { name: /balance sos/i }));
+    const saveButton = screen.getByRole('button', { name: /save & rescore/i });
+    await waitFor(() => expect(saveButton).toBeEnabled());
+
+    await user.click(saveButton);
+    const dialog = await screen.findByRole('alertdialog');
+    expect(
+      within(dialog).getByText(
+        /Revert goes back to the old weights\. It works the scores out again\. It does not bring back old stored numbers\./
+      )
+    ).toBeInTheDocument();
+    // A revert re-derives the scores from the live rules, so "fully reversible" would be false.
+    expect(within(dialog).queryByText(/fully reversible/i)).not.toBeInTheDocument();
+  });
+
+  it('says the same about Revert in the Revert dialog', async () => {
+    render(<PowerScoreSandboxTab />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /revert to 50\/35\/15/i }));
+    const dialog = await screen.findByRole('alertdialog');
+
+    expect(
+      within(dialog).getByText(/It does not bring back old stored numbers/)
+    ).toBeInTheDocument();
+    expect(within(dialog).queryByText(/fully reversible/i)).not.toBeInTheDocument();
+  });
+
+  it('says the scores were rewritten when a save reasserts the weights that were already live', async () => {
+    const applyMutation = mutationResult({
+      mutateAsync: vi.fn().mockResolvedValue({ status: 'reasserted', seasonRows: 116 }),
+    });
+    mockApply.mockReturnValue(applyMutation);
+    render(<PowerScoreSandboxTab />);
+
+    const user = userEvent.setup();
+    const winInput = screen.getByLabelText(/match wins/i);
+    await user.clear(winInput);
+    await user.type(winInput, '50');
+    await user.click(screen.getByRole('button', { name: /balance sos/i }));
+    const saveButton = screen.getByRole('button', { name: /save & rescore/i });
+    await waitFor(() => expect(saveButton).toBeEnabled());
+
+    await user.click(saveButton);
+    const dialog = await screen.findByRole('alertdialog');
+    await user.click(within(dialog).getByRole('button', { name: /^save$/i }));
+
+    const { toast } = await import('@/hooks/useToast');
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Same weights. Scores rewritten.',
+          description: expect.stringMatching(/worked out all 116 stored season rows again/i),
+        })
+      )
+    );
+    // The old text said the season rows were only "re-checked", which understated the effect.
+    expect(toast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ description: expect.stringMatching(/re-checked/i) })
+    );
+  });
+
   it('locks Save the moment an input is cleared, even after a valid edit', async () => {
     render(<PowerScoreSandboxTab />);
 

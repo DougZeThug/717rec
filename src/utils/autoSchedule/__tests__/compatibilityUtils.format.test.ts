@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { formatCompatibilityScore } from '../compatibilityUtils';
+import { formatCompatibilityScore, SKILL_STEPS_PER_UNIT } from '../compatibilityUtils';
 
 vi.mock('@/utils/logger', () => ({
   debugLog: vi.fn(),
@@ -15,6 +15,7 @@ describe('formatCompatibilityScore', () => {
       [9.5, '9.5'],
       [9.98828125, '10.0'],
       [9.99609375, '10.0'],
+      [9.9990234375, '10.0'],
       [7.25, '7.3'],
     ])('reads %d as %s', (score, text) => {
       expect(formatCompatibilityScore(score)).toBe(text);
@@ -28,6 +29,7 @@ describe('formatCompatibilityScore', () => {
       [4.6, '4.6'],
       [4.5, '4.5'],
       [4.98828125, '4.98'],
+      [4.9990234375, '4.99'],
       [4.99609375, '4.99'],
       [4.9921875, '4.99'],
       [4.953125, '4.95'],
@@ -51,10 +53,10 @@ describe('formatCompatibilityScore', () => {
       expect(formatCompatibilityScore(5 - Number.EPSILON * 8)).toBe('4.99');
     });
 
-    it('reads every 1/256 step under 5 as its value cut to two decimals, and never as 5', () => {
-      // 1279 / 256 is 4.99609375, the highest ON score under 5.
-      for (let step = 0; step < 5 * 256; step++) {
-        const score = step / 256;
+    it('reads every 1/1024 step under 5 as its value cut to two decimals, and never as 5', () => {
+      // 5119 / 1024 is 4.9990234375, the highest ON score under 5.
+      for (let step = 0; step < 5 * SKILL_STEPS_PER_UNIT; step++) {
+        const score = step / SKILL_STEPS_PER_UNIT;
         const text = formatCompatibilityScore(score);
 
         expect(text).toMatch(/^\d\.\d{1,2}$/);

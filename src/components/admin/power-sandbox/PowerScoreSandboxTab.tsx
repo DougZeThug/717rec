@@ -135,7 +135,8 @@ const ConfirmDialogHeader: React.FC<
     <AlertDialogDescription className="space-y-2">
       <span className="block">
         This rescores {seasonRowsHint}, archived seasons included, so Standings, Career and History
-        change for real. It is fully reversible — the previous weights stay one Revert away.
+        change for real. Revert goes back to the old weights. It works the scores out again. It does
+        not bring back old stored numbers.
       </span>
       <span className="block">
         Heads up: the homepage &quot;Movers&quot; section may look off for up to a week afterwards.
@@ -254,10 +255,12 @@ const PowerScoreSandboxTab: React.FC = () => {
         setDraft(null); // the candidate is the new baseline
         toast({
           title:
-            result.status === 'reasserted' ? 'Weights were already live' : 'New weights are live',
+            result.status === 'reasserted'
+              ? 'Same weights. Scores rewritten.'
+              : 'New weights are live',
           description:
             result.status === 'reasserted'
-              ? 'The database already used these weights; every season was re-checked.'
+              ? `These weights were already live. The app still worked out all ${result.seasonRows} stored season rows again, archived seasons included. Some scores may have changed.`
               : `${formatTriple(candidate)} now scores all ${result.seasonRows} stored season rows, archived seasons included.`,
         });
       } else {

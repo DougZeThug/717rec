@@ -275,10 +275,10 @@ describe('scheduleStandardPairings with Prioritize Match Quality ON and the real
       const on = await scheduleStandardPairings({ Early: teams }, ON, []);
       const off = await scheduleStandardPairings({ Early: teams }, OFF, []);
 
-      // Scores: one step apart 10 - 1/256, two steps 10 - 5/256, three steps 10 - 12/256.
+      // Scores: one step apart 10 - 5/1024, two steps 10 - 20/1024, three steps 10 - 46/1024.
       expect(describePairs(on.pairings.Early)).toEqual([
-        'A|B|9.99609375|false',
-        'C|D|9.99609375|false',
+        'A|B|9.9951171875|false',
+        'C|D|9.9951171875|false',
         'A|C|9.98046875|false',
         'B|D|9.98046875|false',
       ]);
