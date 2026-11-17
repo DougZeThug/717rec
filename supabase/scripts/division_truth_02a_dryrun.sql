@@ -199,5 +199,25 @@ FROM (
   SELECT 6, 'CHECK: script 02 would STOP', NULL, '', 'backup table',
          'missing: run script 01 first', NULL, NULL, NULL
   WHERE to_regclass('public.team_season_stats_pre_division_truth') IS NULL
+  UNION ALL
+  -- One of the 3 dropped-out teams is not in the teams table. The list above would
+  -- leave its explicit row out without a word, but script 02 stops.
+  SELECT 6, 'CHECK: script 02 would STOP (a dropped-out team is missing)', NULL, '', e.team_name,
+         'no team has the id ' || e.team_id, NULL, NULL, NULL
+  FROM (VALUES ('Shut Your Cornhole',  '5db6b718-81af-4bd0-a0cd-0a0eae4330ad'::uuid),
+               ('Red Roof Rockets',    'e91cb2d1-ef48-48e7-b15f-735c941f3679'::uuid),
+               ('The Tomato Saucers',  'accd6e20-f761-4769-8cdc-6c9495cc231c'::uuid)) e(team_name, team_id)
+  WHERE NOT EXISTS (SELECT 1 FROM public.teams t WHERE t.id = e.team_id)
+  UNION ALL
+  -- One of the 6 seasons is not in the seasons table. Script 02 stops.
+  SELECT 6, 'CHECK: script 02 would STOP (a season is missing)', NULL, '', v.season_name,
+         'no season has the id ' || v.season_id, NULL, NULL, NULL
+  FROM (VALUES ('Spring 2025',   'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a'::uuid),
+               ('Summer 1 2025', 'e537c594-3ba9-4d79-ba63-f6ed90c89e30'::uuid),
+               ('Summer 2 2025', 'd50bb12e-99be-4170-802a-695a402373ce'::uuid),
+               ('Fall 2025',     '34cd19e2-abf5-43b8-a16f-6d73a0e998ac'::uuid),
+               ('Winter 1 2026', '4b90a1d8-b90a-4e47-8e8c-b89a7b54e106'::uuid),
+               ('Winter 2 2026', '9cd55eb8-672c-4a43-a9df-3552a7759cca'::uuid)) v(season_name, season_id)
+  WHERE NOT EXISTS (SELECT 1 FROM public.seasons se WHERE se.id = v.season_id)
 ) r
 ORDER BY r.grp, lower(r.stored_label), r.team, r.season_date;

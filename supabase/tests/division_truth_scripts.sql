@@ -24,10 +24,17 @@
 --      BEFORE it deletes them, and a second run adds nothing; path 1 puts the saved
 --      scores back.
 --
+--   9. A missing dropped-out team, or a missing season, shows up in the dry run as a
+--      "CHECK: script 02 would STOP" row, and script 02 really does stop.
+--
 -- The fixture gives the six map divisions their own odd weights, so nothing depends
 -- on the live weights.
 
 BEGIN;
+-- The scripts run big read-only queries. With just-in-time compilation (on by
+-- default in Postgres 12 and later) this test takes about 40 seconds instead of
+-- under one. Nothing here needs it. SET LOCAL ends with the transaction.
+SET LOCAL jit = off;
 
 DO $$
 DECLARE
@@ -481,7 +488,83 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'undo path 1 did not put the saved scores back';
   END IF;
-  RAISE NOTICE 'division_truth_scripts smoke test passed';
 END $$;
+
+-- ---------------------------------------------------------------------------
+-- 8. A missing dropped-out team and a missing season. The dry run must say
+--    "script 02 would STOP", and script 02 must really stop. (Last, because it
+--    deletes The Tomato Saucers and Winter 2 2026 from the fixture.)
+-- ---------------------------------------------------------------------------
+DELETE FROM public.power_score_division_override WHERE season_id = '9cd55eb8-672c-4a43-a9df-3552a7759cca';
+DELETE FROM public.team_season_stats WHERE season_id = '9cd55eb8-672c-4a43-a9df-3552a7759cca';
+DELETE FROM public.matches_archive WHERE season_id = '9cd55eb8-672c-4a43-a9df-3552a7759cca';
+DELETE FROM public.power_score_snapshots WHERE season_id = '9cd55eb8-672c-4a43-a9df-3552a7759cca';
+DELETE FROM public.team_season_stats WHERE team_id = 'accd6e20-f761-4769-8cdc-6c9495cc231c';
+DELETE FROM public.teams WHERE id = 'accd6e20-f761-4769-8cdc-6c9495cc231c';
+DELETE FROM public.seasons WHERE id = '9cd55eb8-672c-4a43-a9df-3552a7759cca';
+
+\set dry3 `cat supabase/scripts/division_truth_02a_dryrun.sql`
+CREATE TEMP TABLE dt_dry3 AS :dry3
+;
+
+DO $$
+DECLARE
+  v_n bigint;
+BEGIN
+  SELECT count(*) INTO v_n FROM dt_dry3
+   WHERE action = 'CHECK: script 02 would STOP (a dropped-out team is missing)' AND team = 'The Tomato Saucers'
+     AND stored_label LIKE '%accd6e20-f761-4769-8cdc-6c9495cc231c%';
+  IF v_n <> 1 THEN
+    RAISE EXCEPTION 'the dry run should say that The Tomato Saucers is missing, found % rows', v_n;
+  END IF;
+  SELECT count(*) INTO v_n FROM dt_dry3
+   WHERE action = 'CHECK: script 02 would STOP (a season is missing)' AND team = 'Winter 2 2026';
+  IF v_n <> 1 THEN
+    RAISE EXCEPTION 'the dry run should say that Winter 2 2026 is missing, found % rows', v_n;
+  END IF;
+  SELECT count(*) INTO v_n FROM dt_dry3 WHERE action LIKE 'CHECK:%';
+  IF v_n <> 2 THEN
+    RAISE EXCEPTION 'the dry run should hold exactly these 2 CHECK rows, found %', v_n;
+  END IF;
+END $$;
+
+-- Run the first block of script 02 (its guard) inside a savepoint. It must raise
+-- "STOP". psql keeps the message in LAST_ERROR_MESSAGE (psql 12 and later). The
+-- "ERROR: STOP: ..." lines in the log are those expected errors.
+\set guard `sed -n '/^DO /,/^END .*;$/p' supabase/scripts/division_truth_02_data.sql`
+
+-- (a) the team is missing: the guard stops on the team.
+SAVEPOINT dt_guard;
+\set ON_ERROR_STOP off
+\o /dev/null
+:guard
+;
+\o
+ROLLBACK TO SAVEPOINT dt_guard;
+\set ON_ERROR_STOP on
+SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: only 2 of the 3 dropped-out teams' AS stopped \gset
+\if :stopped
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'script 02 did not stop for a missing dropped-out team'; END $$;
+\endif
+
+-- (b) the team is back, the season is still missing: the guard stops on the season.
+INSERT INTO public.teams (id, name, division_id, wins, losses, game_wins, game_losses)
+VALUES ('accd6e20-f761-4769-8cdc-6c9495cc231c', 'The Tomato Saucers', NULL, 0, 0, 0, 0);
+SAVEPOINT dt_guard2;
+\set ON_ERROR_STOP off
+\o /dev/null
+:guard
+;
+\o
+ROLLBACK TO SAVEPOINT dt_guard2;
+\set ON_ERROR_STOP on
+SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: only 5 of the 6 seasons' AS stopped \gset
+\if :stopped
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'script 02 did not stop for a missing season'; END $$;
+\endif
+
+DO $$ BEGIN RAISE NOTICE 'division_truth_scripts smoke test passed'; END $$;
 
 ROLLBACK;

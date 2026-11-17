@@ -34,6 +34,9 @@
 --     ON CONFLICT (team_id, season_id) DO NOTHING;
 --   (Each path 2 run appends only the rows it deleted. A second path 2 run has nothing
 --   to delete and adds nothing.) Drop the pre_undo table when it is no longer needed.
+--   The recipe puts the ROWS back, nothing else: the old view stays until the migration
+--   file 20261117130000_power_score_division_override.sql is run again, and the stored
+--   scores stay as path 2 left them (run script 04, one season per run, to rebuild them).
 --
 -- It takes the Sandbox weight-save lock, so the two never run together. The old
 -- view text below is copied from 20261003183939. If the migration file is still
