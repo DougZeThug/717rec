@@ -8,6 +8,7 @@ import {
   calculateDivisionOnlyCompatibility,
   createQualityCompatibility,
   LOWEST_NEIGHBOURING_DIVISION_SCORE,
+  SKILL_STEPS_PER_UNIT,
   type TeamRating,
 } from '../compatibilityUtils';
 
@@ -206,10 +207,38 @@ describe('createQualityCompatibility', () => {
       expect(level).toBe(10);
     });
 
-    it('does not tell two teams apart when their gap is under about 6 percent', () => {
-      // 1/256 is the smallest step. A gap g takes 0.5 x g^2 off, so it needs g of about 0.0625
-      // to reach half a step. 10 Power Score points, with the rest level, is a gap of 0.037.
-      expect(score(rating({ power_score: 60 }), rating({ power_score: 70 }))).toBe(10);
+    it('takes one step of 1/1024 off for a 10 point Power Score gap, with the rest level', () => {
+      // 10 Power Score points is a distance of 0.1. Only Power Score differs, so the gap is
+      // 5 x 0.1 / 13.5 = 0.037 and 0.5 x 0.037^2 = 0.000686 comes off. That is 0.70 of a step of
+      // 1/1024, so one step comes off. At 1/256 it was 0.18 of a step and changed nothing.
+      expect(score(rating({ power_score: 60 }), rating({ power_score: 70 }))).toBe(10 - 1 / 1024);
+    });
+
+    it('still scores a 5 point and a 4 point Power Score gap as exactly 10', () => {
+      // 5 points: the gap is 5 x 0.05 / 13.5 = 0.0185 and 0.5 x gap^2 = 0.000171, 0.18 of a step.
+      // 4 points: the gap is 5 x 0.04 / 13.5 = 0.0148 and 0.5 x gap^2 = 0.000110, 0.11 of a step.
+      expect(score(rating({ power_score: 60 }), rating({ power_score: 65 }))).toBe(10);
+      expect(score(rating({ power_score: 60 }), rating({ power_score: 64 }))).toBe(10);
+    });
+
+    it('counts a weighted gap of exactly 1/32 as one step, and a gap just under it as nothing', () => {
+      // Only Power Score has a weight here, so the gap is the Power Score distance itself. A gap
+      // of 1/32 = 0.03125 takes 0.5 x 0.03125^2 = 1/2048 off. That is exactly half a step of
+      // 1/1024, and half a step rounds up. A gap of 0.031 (3.1 points) is 0.49 of a step.
+      const powerOnly = { powerScoreWeight: 1, sosWeight: 0, recordWeight: 0, gameRecordWeight: 0 };
+
+      expect(score(rating({ power_score: 60 }), rating({ power_score: 63.125 }), powerOnly)).toBe(
+        10 - 1 / 1024
+      );
+      expect(score(rating({ power_score: 60 }), rating({ power_score: 63.1 }), powerOnly)).toBe(10);
+    });
+
+    it('needs about 8.4 Power Score points with the screen weights: 8 give 10, 9 give one step', () => {
+      // The gap is 5 x distance / 13.5. It reaches 1/32 at a distance of 0.084375: 8.4375 points.
+      // 8 points: gap 0.0296, 0.5 x gap^2 = 0.000439, which is 0.45 of a step.
+      // 9 points: gap 0.0333, 0.5 x gap^2 = 0.000556, which is 0.57 of a step.
+      expect(score(rating({ power_score: 60 }), rating({ power_score: 68 }))).toBe(10);
+      expect(score(rating({ power_score: 60 }), rating({ power_score: 69 }))).toBe(10 - 1 / 1024);
     });
   });
 
@@ -222,11 +251,12 @@ describe('createQualityCompatibility', () => {
       }
     });
 
-    it('gives a whole number of 1/256 for every score, so the matcher sums stay exact', () => {
+    it('gives a whole number of 1/1024 for every score, so the matcher sums stay exact', () => {
+      expect(SKILL_STEPS_PER_UNIT).toBe(1024);
       for (const { team1, team2, ratings } of randomPairs(1000)) {
         const result = createQualityCompatibility(ratings, SCREEN_WEIGHTS)(team1, team2);
 
-        expect(Number.isInteger(result * 256)).toBe(true);
+        expect(Number.isInteger(result * 1024)).toBe(true);
       }
     });
 
@@ -265,10 +295,10 @@ describe('createQualityCompatibility', () => {
     it('counts the four distances in proportion to their weights', () => {
       // Only Power Score differs: 20 points is 0.2. The weights are 5, 3, 3.5 and 2 (total 13.5),
       // so the gap is 5 x 0.2 / 13.5, and the amount taken off is 0.5 x gap^2 = 0.002743.
-      // In 1/256 steps that is 0.70, so one step comes off.
+      // In 1/1024 steps that is 2.81, so three steps come off.
       const result = score(rating({ power_score: 60 }), rating({ power_score: 80 }));
 
-      expect(result).toBe(10 - 1 / 256);
+      expect(result).toBe(10 - 3 / 1024);
     });
 
     it('reads each default weight when a key is missing, the same as the old scorer', () => {
@@ -388,8 +418,8 @@ describe('createQualityCompatibility', () => {
 
     it('does not dilute the gap with the measures it skipped', () => {
       // Neither team has played, so only Power Score is compared: 60 against 80 is a gap of 0.2
-      // and 0.5 x 0.2^2 = 0.02, which is 5.12 steps of 1/256. If the skipped measures were
-      // counted as 0 the gap would be 0.074 and one step would come off, not five.
+      // and 0.5 x 0.2^2 = 0.02, which is 20.48 steps of 1/1024. If the skipped measures were
+      // counted as 0 the gap would be 0.074 and three steps would come off, not twenty.
       const unplayed = { wins: 0, losses: 0, game_wins: 0, game_losses: 0 };
 
       const result = score(
@@ -397,7 +427,7 @@ describe('createQualityCompatibility', () => {
         rating({ ...unplayed, power_score: 80 })
       );
 
-      expect(result).toBe(10 - 5 / 256);
+      expect(result).toBe(10 - 20 / 1024);
     });
 
     it('scores a team that has no rating at all as the division-only score', () => {
@@ -438,8 +468,8 @@ describe('createQualityCompatibility', () => {
   describe('four Intermediate teams, each a step stronger than the one before', () => {
     // Each step is 10 Power Score points, 0.1 of strength of schedule, 0.1 of win rate and
     // 0.1 of game win rate, so the gap is 0.1 per step. A step takes 0.5 x 0.1^2 = 0.005 off,
-    // which is 1.28 steps of 1/256, so 1 comes off. Two steps: 0.02 = 5.12, so 5 come off.
-    // Three steps: 0.045 = 11.52, so 12 come off.
+    // which is 5.12 steps of 1/1024, so 5 come off. Two steps: 0.02 = 20.48, so 20 come off.
+    // Three steps: 0.045 = 46.08, so 46 come off.
     const teamA = teamOf('A', 'Intermediate');
     const teamB = teamOf('B', 'Intermediate');
     const teamC = teamOf('C', 'Intermediate');
@@ -464,17 +494,17 @@ describe('createQualityCompatibility', () => {
     ]);
     const scoreOf = createQualityCompatibility(ratings, SCREEN_WEIGHTS);
 
-    it('scores one step apart 9.99609375, two apart 9.98046875 and three apart 9.953125', () => {
-      expect(scoreOf(teamA, teamB)).toBe(10 - 1 / 256);
-      expect(scoreOf(teamB, teamC)).toBe(10 - 1 / 256);
-      expect(scoreOf(teamC, teamD)).toBe(10 - 1 / 256);
-      expect(scoreOf(teamA, teamC)).toBe(10 - 5 / 256);
-      expect(scoreOf(teamB, teamD)).toBe(10 - 5 / 256);
-      expect(scoreOf(teamA, teamD)).toBe(10 - 12 / 256);
+    it('scores one step apart 9.9951171875, two apart 9.98046875 and three apart 9.955078125', () => {
+      expect(scoreOf(teamA, teamB)).toBe(10 - 5 / 1024);
+      expect(scoreOf(teamB, teamC)).toBe(10 - 5 / 1024);
+      expect(scoreOf(teamC, teamD)).toBe(10 - 5 / 1024);
+      expect(scoreOf(teamA, teamC)).toBe(10 - 20 / 1024);
+      expect(scoreOf(teamB, teamD)).toBe(10 - 20 / 1024);
+      expect(scoreOf(teamA, teamD)).toBe(10 - 46 / 1024);
     });
 
     it('prefers A-B with C-D, then A-C with B-D, over the far pairs', () => {
-      // Round 1: A-B and C-D (19.9922) beat A-C and B-D (19.9609) and A-D and B-C (19.9492).
+      // Round 1: A-B and C-D (19.9902) beat A-C and B-D (19.9609) and A-D and B-C (19.9502).
       expect(scoreOf(teamA, teamB) + scoreOf(teamC, teamD)).toBeGreaterThan(
         scoreOf(teamA, teamC) + scoreOf(teamB, teamD)
       );
