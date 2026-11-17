@@ -82,6 +82,24 @@ so a non-zero exit code means drift was detected.
   archived seasons being frozen against routine recomputes while
   `admin_recompute_season_power()` can still move them, and a coverage floor of
   zero `unresolved` matches.
+- `power_score_division_override.sql` — pins `20261117130000`: one table that pins
+  an opponent's division for one season, read first by
+  `v_power_score_team_matches_rated` (`resolved_by = 'manual_override'`). With an
+  **empty** table the view is byte-for-byte the old view (md5 of every column of
+  every row, against the old body copied from `20261003183939`; the fixture reaches
+  all 8 old answers). Covers: an override changes the opponent division and weight of
+  that team-season only (winner, games, date and row count stay); it beats the
+  snapshot, the archive, the bracket, the division history and the current division,
+  and it rates a team that sits in Hidden now; an override to a Hidden or weightless
+  division is ignored; the weight is the one the division had on the game date; the
+  same team in another season is untouched; a score corrected to a tie keeps its
+  override; the Sandbox save path (`upsert_team_season_stats(true)`) keeps the
+  numbers and a second run changes nothing, while a routine run leaves an archived
+  season alone; anon can read the table and the view and cannot write; row-level
+  security is on; the view is still `security_invoker` with the same 14 columns; a
+  division an override uses cannot be deleted; `reason` cannot be empty. Worked by
+  hand in the file header. CI Postgres has no Supabase default grants, so the test
+  opens the other tables to anon inside its own rolled-back transaction.
 - `declined_request_team_change.sql` — asserts a refused join request may be
   aimed at a different team, and that every other lock on `team_memberships`
   still holds (pending rows immovable, no self-approval, no handing the row on,

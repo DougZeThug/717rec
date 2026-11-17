@@ -160,7 +160,16 @@ stops an archived season moving when the league re-tiers a team.
 Working out the historical division runs down a chain of seven sources, from the
 weekly snapshot nearest the match date down to the last division ever seen for
 that team. If every step fails, the match is dropped from the three weighted
-terms — **and only from them**. Wins, losses, games won and games lost always
+terms — **and only from them**.
+
+One more source sits **above** the chain: a division the league pinned by hand for
+one team in one season, with a written reason. It is used first. It exists for the
+three oldest seasons (Spring 2025, Summer 1 2025, Summer 2 2025), where the chain
+could not answer or could only guess from today's division, and for three teams that
+dropped out. A pinned division that is Hidden, or that has no weight, is ignored and
+the chain runs as before. It was built on 2026-11-17 and **was not yet applied to the
+live database** when this was written. Nothing on screen says that a game was rated
+this way. Wins, losses, games won and games lost always
 count every match, so a team's record and its rating can be built from slightly
 different sets of matches without anything saying so.
 
@@ -307,6 +316,10 @@ looks like a bug to anyone watching one team.
   the week the change shipped.
 - **A team's record and its rating can be built from different matches**, when a
   match's historical division cannot be resolved.
+- **Old seasons are rated more carefully, not perfectly.** A pinned division is the
+  league's best knowledge of that season, not a recorded fact. The old seasons use
+  **today's** division weights, because weight edits made before 2026-08-12 were
+  never recorded. A team has one division per season there, even if it moved.
 - **Re-weighting a division moves every active-season score at once**, including
   for teams that never played that division, through the schedule-strength term.
 - **An archived season and the current season can be rated by different
@@ -345,4 +358,6 @@ looks like a bug to anyone watching one team.
 
 Verified against `717rec` commit `ea5c8f4`, except the career score the King
 Slayer badge is decided by, which was changed after that commit — see
-[B-35](../bug-triage.md#b-35-a-stale-fourth-career-power-score-formula-decides-one-badge).
+[B-35](../bug-triage.md#b-35-a-stale-fourth-career-power-score-formula-decides-one-badge)
+— and the pinned division above, which was added after it (migration
+`20261117130000`, steps in [`OPERATIONS.md`](../../OPERATIONS.md) section 6g).

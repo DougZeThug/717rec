@@ -102,13 +102,22 @@ it holds synthetic strings like `'Intermediate 1'` that match no row in
 
 | Priority | Source                                                                   | `resolved_by`                 |
 | -------- | ------------------------------------------------------------------------ | ----------------------------- |
+| 0        | a row in `power_score_division_override` for that team and season        | `manual_override`             |
 | 1        | newest weekly snapshot at or before the match date                       | `snapshot_at_date`            |
 | 2        | earliest snapshot that season                                            | `snapshot_earliest_in_season` |
 | 3        | `team_details_archive.division_id`, cross-checked against `divisionname` | `archive_division_id`         |
 | 4        | playoff bracket participation                                            | `bracket_division_id`         |
+| 4b       | the division a team had before it was moved (`team_division_history`)    | `division_history`            |
 | 5        | current `teams.division_id`                                              | `current_division`            |
 | 6        | last division ever observed for that team                                | `last_known_division`         |
 | 7        | nothing resolves → dropped from the weighted terms only                  | `unresolved`                  |
+
+The override (priority 0) holds a real `divisions.id` and a written reason. Its
+division must be rateable, so a row pointing at a Hidden or weightless division is
+ignored and the chain runs as before. It was added for Spring 2025, Summer 1 2025,
+Summer 2 2025 and three dropped-out teams (`docs/OPERATIONS.md` section 6g; built
+2026-11-17, not yet applied). The rule above still holds for the view: it reads ids,
+never names. Doug's script is the one place a stored name becomes an id.
 
 Hidden and weightless divisions are filtered out by `v_division_rateable`, so
 the chain can never resolve to one. Seasons listed in
