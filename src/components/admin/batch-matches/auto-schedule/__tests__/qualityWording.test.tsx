@@ -54,7 +54,7 @@ describe('Match Creation screen text about match quality', () => {
     for (const promise of FALSE_PROMISES) expect(text).not.toMatch(promise);
   });
 
-  it('the preview says what the score means, and that a neighbouring-division pair can show just under 5 and count as a warning', () => {
+  it('the preview says what the score means, and that a neighbouring-division pair can show just under 5 in amber without counting as a warning', () => {
     const pairings: TeamPairingMap = {
       Early: [
         {
@@ -79,14 +79,16 @@ describe('Match Creation screen text about match quality', () => {
       '* Match score is 10 for teams in the same division and 5 for neighbouring divisions. Rematches are flagged'
     );
     expect(text).toContain(
-      '* With Prioritize Match Quality ON (Standard mode), a close power score and record are preferred, and a gap takes a little off the score. A neighbouring-division pair can then show just under 5 and count in the red Warnings badge'
+      '* With Prioritize Match Quality ON (Standard mode), a close power score and record are preferred, and a gap takes a little off the score. A neighbouring-division pair can then show just under 5 in amber, and it does not count in the red Warnings badge'
     );
+    expect(text).not.toContain('and count in the red Warnings badge');
     expect(text).not.toContain('Teams with similar skill levels are paired');
     for (const promise of FALSE_PROMISES) expect(text).not.toMatch(promise);
   });
-  it('counts a pair that scores just under 5 in the red Warnings badge, and a pair that scores exactly 5 not at all', () => {
+  it('does not count a pair that scores just under 5 in the red Warnings badge, and does not count a pair that scores exactly 5 either', () => {
     // With the switch ON, a neighbouring-division pair whose teams are not close scores a little
-    // under 5. With the switch OFF the same pair scores exactly 5.
+    // under 5 (4.5 to 5). With the switch OFF the same pair scores exactly 5. Neither is a
+    // warning. The amber card stays for the first one: see ScheduleMatchesPreview.warnings.test.tsx.
     const pairingsScoring = (score: number): TeamPairingMap => ({
       Early: [
         {
@@ -106,7 +108,7 @@ describe('Match Creation screen text about match quality', () => {
         isGenerating={false}
       />
     );
-    expect(on.getByText('1 Warnings')).toBeInTheDocument();
+    expect(on.queryByText(/^\d+ Warnings$/)).not.toBeInTheDocument();
     on.unmount();
 
     const off = render(

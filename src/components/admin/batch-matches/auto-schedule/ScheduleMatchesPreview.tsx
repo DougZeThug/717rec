@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { SchedulingDiagnostics, TeamPairingMap } from '@/types/autoSchedule';
+import { LOWEST_NEIGHBOURING_DIVISION_SCORE } from '@/utils/autoSchedule/compatibilityUtils';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 
 import { MatchPairingItem } from './MatchPairingItem';
@@ -42,11 +43,15 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
     0
   );
 
-  // Count warnings (low compatibility scores or previous matches)
+  // Count warnings (rematches and forbidden pairs). A neighbouring-division pair can score a
+  // little under 5 with Prioritize Match Quality ON. It shows amber on its card, not in this count.
   const warningCount = Object.values(pairings).reduce(
     (acc, blockPairings) =>
       acc +
-      blockPairings.filter((pair) => pair.compatibilityScore < 5 || pair.hasPlayedBefore).length,
+      blockPairings.filter(
+        (pair) =>
+          pair.compatibilityScore < LOWEST_NEIGHBOURING_DIVISION_SCORE || pair.hasPlayedBefore
+      ).length,
     0
   );
 
@@ -180,7 +185,7 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
         <p>
           * With Prioritize Match Quality ON (Standard mode), a close power score and record are
           preferred, and a gap takes a little off the score. A neighbouring-division pair can then
-          show just under 5 and count in the red Warnings badge
+          show just under 5 in amber, and it does not count in the red Warnings badge
         </p>
         {dualMatchMode && (
           <p>

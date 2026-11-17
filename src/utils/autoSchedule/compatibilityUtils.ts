@@ -83,6 +83,19 @@ export function calculateTeamCompatibility(team1: Team, team2: Team): number {
   return Math.max(0, Math.min(10, finalScore));
 }
 
+/** Score of two teams from neighbouring divisions, before any skill cut. */
+const ADJACENT_DIVISION_SCORE = 5;
+
+/** The most that a skill gap can take off a pair's score: 0.5 x gap squared, with a gap of 0 to 1. */
+const MAX_SKILL_CUT = 0.5;
+
+/**
+ * The lowest score a pair from neighbouring divisions can get (5 minus the largest skill cut).
+ * A pair below this can only be forbidden (0), so the batch preview counts only those and
+ * rematches in its red Warnings badge. A neighbouring-division pair is not counted there.
+ */
+export const LOWEST_NEIGHBOURING_DIVISION_SCORE = ADJACENT_DIVISION_SCORE - MAX_SKILL_CUT;
+
 /**
  * Simple division-only compatibility calculation
  * Returns predictable scores based solely on division tiers:
@@ -101,7 +114,7 @@ export function calculateDivisionOnlyCompatibility(team1: Team, team2: Team): nu
   if (tierDistance === 0) {
     return 10; // Same division - perfect match
   } else if (tierDistance === 1) {
-    return 5; // Adjacent divisions - decent match
+    return ADJACENT_DIVISION_SCORE; // Adjacent divisions - decent match
   } else {
     return 0; // Extreme difference - blocked/poor match
   }
@@ -209,8 +222,23 @@ export function createQualityCompatibility(
     }
     const gap = usedWeight > 0 ? weightedDiff / usedWeight : 0;
 
-    return base - Math.round(0.5 * gap * gap * 256) / 256;
+    return base - Math.round(MAX_SKILL_CUT * gap * gap * 256) / 256;
   };
+}
+
+/**
+ * The score as the batch preview prints it. From 5 up it has one decimal, as it always had. Below
+ * 5 it is cut (not rounded) to two decimals, so a neighbouring-division pair that scores 4.996
+ * reads 4.99 and never "5.0". A trailing zero is dropped (4.5, not 4.50), and 0 reads 0.0.
+ */
+export function formatCompatibilityScore(score: number): string {
+  if (score >= ADJACENT_DIVISION_SCORE) return score.toFixed(1);
+
+  // The small add-on stops 4.6 * 100 = 459.99999999999994 from being cut to 4.59. The cap keeps a
+  // score that is a hair under 5 from reaching 5.00. Real scores are whole 1/256 steps, which
+  // times 100 are exact, so neither guard changes them.
+  const hundredths = Math.min(499, Math.floor(score * 100 + 1e-9));
+  return (hundredths / 100).toFixed(2).replace(/0$/, '');
 }
 
 /**

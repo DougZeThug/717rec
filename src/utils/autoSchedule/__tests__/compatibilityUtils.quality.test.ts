@@ -7,6 +7,7 @@ import { createMockTeam } from '@/utils/test/autoSchedule/testHelpers';
 import {
   calculateDivisionOnlyCompatibility,
   createQualityCompatibility,
+  LOWEST_NEIGHBOURING_DIVISION_SCORE,
   type TeamRating,
 } from '../compatibilityUtils';
 
@@ -133,6 +134,29 @@ describe('createQualityCompatibility', () => {
       expect(scoreOf(teamOf('one', 'Competitive'), teamOf('two', 'Intermediate'))).toBe(4.5);
       expect(scoreOf(teamOf('one', 'Recreational'), teamOf('two', 'Intermediate'))).toBe(4.5);
       expect(scoreOf(teamOf('one', 'Competitive'), teamOf('two', 'Recreational'))).toBe(0);
+    });
+
+    it('names the lowest next-door score, and no next-door pair scores under it', () => {
+      const ratings = new Map([
+        ['one', widestApart[0]],
+        ['two', widestApart[1]],
+      ]);
+      const widest = createQualityCompatibility(ratings, SCREEN_WEIGHTS)(
+        teamOf('one', 'Competitive'),
+        teamOf('two', 'Intermediate')
+      );
+
+      // The batch preview counts a pair under this in its red Warnings badge. The widest gap
+      // gives exactly this score, so a next-door pair is never counted by the scorer alone.
+      expect(LOWEST_NEIGHBOURING_DIVISION_SCORE).toBe(4.5);
+      expect(widest).toBe(LOWEST_NEIGHBOURING_DIVISION_SCORE);
+      for (const { team1, team2, ratings: random } of randomPairs(1000)) {
+        if (calculateDivisionOnlyCompatibility(team1, team2) !== 5) continue;
+
+        expect(
+          createQualityCompatibility(random, SCREEN_WEIGHTS)(team1, team2)
+        ).toBeGreaterThanOrEqual(LOWEST_NEIGHBOURING_DIVISION_SCORE);
+      }
     });
 
     it('never lets the bands touch, for 3000 random pairs with holes in their ratings', () => {
