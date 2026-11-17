@@ -225,3 +225,47 @@ describe('a night made by the real generator, shown on the batch preview', () =>
     expect(container.querySelectorAll('.bg-amber-50')).toHaveLength(4);
   });
 });
+
+describe('the batch preview before a schedule is made', () => {
+  const EMPTY_NOTE = 'No match pairings have been generated yet';
+
+  const renderWithDate = (pairings: TeamPairingMap, date: Date | null) =>
+    render(<ScheduleMatchesPreview pairings={pairings} date={date} isGenerating={false} />);
+
+  /** Only the note shows: no heading, no match count, no pair card and no red badge. */
+  const expectOnlyTheNote = () => {
+    expect(screen.getByText(EMPTY_NOTE)).toBeInTheDocument();
+    expect(screen.queryByText('Generated Match Pairings')).not.toBeInTheDocument();
+    expect(screen.queryByText(/ Matches$/)).not.toBeInTheDocument();
+    expect(screen.queryAllByText(/^Score: /)).toHaveLength(0);
+    expect(screen.queryByText(WARNINGS)).not.toBeInTheDocument();
+  };
+
+  const emptyNights: [string, TeamPairingMap][] = [
+    ['no time blocks at all', {}],
+    ['one time block with no pairs', { Early: [] }],
+    ['every time block empty', { Early: [], Mid: [], Late: [] }],
+  ];
+
+  it.each(emptyNights)('with a date and %s: shows only the note', (_name, pairings) => {
+    renderWithDate(pairings, night);
+
+    expectOnlyTheNote();
+  });
+
+  it('with no date picked: hides a made schedule, even one that has a rematch', () => {
+    renderWithDate(onePair(10, true), null);
+
+    expectOnlyTheNote();
+    expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
+  });
+
+  it('with a date and one pair: shows the pair and not the note', () => {
+    renderWithDate(onePair(10), night);
+
+    expect(screen.queryByText(EMPTY_NOTE)).not.toBeInTheDocument();
+    expect(screen.getByText('Generated Match Pairings')).toBeInTheDocument();
+    expect(screen.getByText('1 Matches')).toBeInTheDocument();
+    expect(screen.getAllByText(/^Score: /)).toHaveLength(1);
+  });
+});
