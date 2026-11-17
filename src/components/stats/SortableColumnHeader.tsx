@@ -34,8 +34,7 @@ interface SortableColumnHeaderProps<F extends string> {
  *
  * Both rankings tables used bare clickable `<th>` elements and could not be
  * sorted from a keyboard at all — see B-34 in
- * `docs/product-description/bug-triage.md`. The shape here follows `SortButton`
- * in `HeadToHeadRecords.tsx`, which already did it this way.
+ * `docs/product-description/bug-triage.md`.
  */
 export function SortableColumnHeader<F extends string>({
   field,

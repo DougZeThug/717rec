@@ -2,7 +2,7 @@ import { TeamPairingConfig } from './types';
 
 /**
  * Check if two teams have played before using the pre-fetched Set (synchronous)
- * Falls back to async function call if Set is not available
+ * Returns false when the config has no played-pairs set (no lookup is made).
  */
 export function haveTeamsPlayedBeforeSync(
   team1Id: string,

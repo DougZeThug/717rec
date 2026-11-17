@@ -56,9 +56,8 @@ const formatPct = (value: number) => `${value.toFixed(1)}%`;
  * as 3. Ranking on the wins alone marked a 3-9 team ahead of a 2-0 one.
  *
  * A team with no games in the tier rates 0: it loses to any team with a win and
- * ties another team with none. Not reusing `calculateWinPercentage` from
- * rankingUtils on purpose -- that one logs on every call, and this runs eight
- * times per render.
+ * ties another team with none. Not reusing a shared win-percentage helper:
+ * this stays a small local ratio.
  */
 const winRate = (wins: number, losses: number) => (wins + losses > 0 ? wins / (wins + losses) : 0);
 
