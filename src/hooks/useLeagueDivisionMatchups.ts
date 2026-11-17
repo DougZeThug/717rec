@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { fetchRealDivisionOverrides } from '@/services/divisions/RealDivisionService';
 import { fetchLeagueDivisionMatchups } from '@/services/insights/LeagueDivisionMatchupsService';
 import { categorizeDivision } from '@/utils/career/calculateDivisionRecords';
 import type { DivisionTier } from '@/utils/career/types';
+import { applyRealDivisions } from '@/utils/divisions/realDivisionOverrides';
 
 export type { DivisionTier } from '@/utils/career/types';
 
@@ -40,11 +42,15 @@ export function computeDivisionMatchups(input: {
   matches: { winner_id: string; loser_id: string; season_id: string | null }[];
   archivedMatches: { winner_id: string; loser_id: string; season_id: string | null }[];
   teamSeasonDivisions: { team_id: string; season_id: string; division_name: string | null }[];
+  // Real division of a team that dropped out and was moved to Hidden ("teamId_seasonId").
+  realDivisions?: ReadonlyMap<string, string>;
 }): DivisionMatchupRecord[] {
-  const divisionMap = new Map<string, string | null>();
+  const storedDivisions = new Map<string, string | null>();
   for (const row of input.teamSeasonDivisions) {
-    divisionMap.set(`${row.team_id}_${row.season_id}`, row.division_name);
+    storedDivisions.set(`${row.team_id}_${row.season_id}`, row.division_name);
   }
+  // Used only where the stored name is Hidden or blank. A real stored name stays.
+  const divisionMap = applyRealDivisions(storedDivisions, input.realDivisions ?? new Map());
 
   const counts = new Map<string, { winsA: number; winsB: number }>();
   for (const [a, b] of PAIRINGS) counts.set(pairKey(a, b), { winsA: 0, winsB: 0 });
@@ -87,8 +93,12 @@ export function useLeagueDivisionMatchups() {
   return useQuery({
     queryKey: ['league-division-matchups'],
     queryFn: async () => {
-      const data = await fetchLeagueDivisionMatchups();
-      return computeDivisionMatchups(data);
+      // The real-division lookup never throws, so it runs beside the main read.
+      const [data, realDivisions] = await Promise.all([
+        fetchLeagueDivisionMatchups(),
+        fetchRealDivisionOverrides(),
+      ]);
+      return computeDivisionMatchups({ ...data, realDivisions });
     },
     staleTime: 5 * 60 * 1000,
   });

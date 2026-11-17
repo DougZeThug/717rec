@@ -18,7 +18,10 @@ interface DivisionRecordsInput {
 
 /**
  * Categorizes a division name into a tier.
- * Hidden/Hidden2 are excluded (return null) - they are administrative divisions.
+ * Hidden/Hidden2 are excluded (return null). Hidden holds teams that dropped out,
+ * so their games are filed under the team's REAL division before this runs (see
+ * utils/divisions/realDivisionOverrides.ts). A Hidden name that gets here means
+ * no real division is known, so the game is left out.
  */
 export const categorizeDivision = (divisionName: string | null): DivisionTier | null => {
   if (!divisionName) return null;

@@ -1,6 +1,8 @@
 import type { PostgrestError } from '@supabase/supabase-js';
 
+import { fetchRealDivisionOverrides } from '@/services/divisions/RealDivisionService';
 import { SeasonBreakdown, TeamAdvancedStats } from '@/types/teamAdvancedStats';
+import { applyRealDivisions } from '@/utils/divisions/realDivisionOverrides';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
 
@@ -17,13 +19,17 @@ import { fetchBracketsByIds, fetchSeasonBreakdownQueries } from './queries';
  * Returns null only when the primary season stats query succeeds with no rows.
  */
 export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvancedStats | null> => {
-  const {
-    seasonStatsResult,
-    allTeamSeasonStatsResult,
-    currentMatchesResult,
-    archivedMatchesResult,
-    playoffMatchesResult,
-  } = await fetchSeasonBreakdownQueries(teamId);
+  // The real-division lookup never throws, so it runs beside the queries.
+  const [
+    {
+      seasonStatsResult,
+      allTeamSeasonStatsResult,
+      currentMatchesResult,
+      archivedMatchesResult,
+      playoffMatchesResult,
+    },
+    realDivisions,
+  ] = await Promise.all([fetchSeasonBreakdownQueries(teamId), fetchRealDivisionOverrides()]);
 
   if (seasonStatsResult.error) {
     handleDatabaseError(
@@ -71,7 +77,11 @@ export const fetchSeasonBreakdown = async (teamId: string): Promise<TeamAdvanced
     return null;
   }
 
-  const teamDivisionMap = buildTeamDivisionMap(allTeamSeasonStatsResult.data);
+  // A team moved to Hidden after it dropped out is filed under its real division.
+  const teamDivisionMap = applyRealDivisions(
+    buildTeamDivisionMap(allTeamSeasonStatsResult.data),
+    realDivisions
+  );
 
   const bracketIds = [
     ...new Set((playoffMatchesRaw || []).map((match) => match.bracket_id).filter(Boolean)),

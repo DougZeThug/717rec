@@ -95,6 +95,24 @@ week's snapshot instead of today's standings, so a weekly grade and a team page
 grade cannot use different rules. They do use different populations, which is
 documented in `docs/product-description/stats/team-and-player-stats.md`.
 
+### Real division of a dropped-out team
+
+A team moved to Hidden after it dropped out keeps a stored division of "Hidden",
+but its games were played against a real division. Three small pieces file those
+games under the real one, on the Team page, in Career and on the Division
+Matchups card:
+
+- `constants/dropoutDivisions.ts` - Doug's list of 8 team-seasons and their real
+  division ("teamId_seasonId" to a name). It wins over the lookup.
+- `services/divisions/RealDivisionService.ts` - reads what the Power Score
+  decided for each Hidden team-season and adds the list. It never throws: on an
+  error it logs a warning and the list alone applies.
+- `utils/divisions/realDivisionOverrides.ts` - pure helpers. `applyRealDivisions`
+  sets a name only where the stored one is missing, blank or Hidden.
+
+Nothing is stored and no SQL changed. `categorizeDivision` (both copies) stays as
+the fallback.
+
 ## Layer rules
 
 **Direction**: Components → Hooks → Services → Supabase. A lower layer never imports a higher one.

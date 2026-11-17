@@ -121,7 +121,7 @@ can come out half a match wrong and is rounded.
 | **Std Deviation** | The spread of power scores, one decimal. |
 | **Top-Bottom Gap** | Best active team's power score minus the worst active team's. |
 | **Competitive Teams** | Active teams within ten power-score points of the league average. |
-| **Division Matchups** | Combined wins between each pair of different divisions, **across every season the league has ever played**. Matches played inside one division are not counted, and playoff matches never are — a bracket holds one division, so every playoff match is a same-division match. |
+| **Division Matchups** | Combined wins between each pair of different divisions, **across every season the league has ever played**. Matches played inside one division are not counted, and playoff matches never are — a bracket holds one division, so every playoff match is a same-division match. A team that dropped out and was moved to Hidden is counted under the division it played in; with no known division the match is left out. |
 | **Top Performers** | Six single-team superlatives, described below. |
 
 The six top performers, in order:
