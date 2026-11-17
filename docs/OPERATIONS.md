@@ -981,8 +981,9 @@ writes both.
   `v_division_rateable` exist.
 - **All six seasons** (Spring 2025, Summer 1 2025, Summer 2 2025, Fall 2025, Winter 1
   2026, Winter 2 2026) have `is_archived = true` and **0 games** with source
-  `regular`. So the 7 newer games are archived games, and the live standings do not
-  read them.
+  `regular`. (From the view text, the live standings read only regular games and the
+  playoff games of the current season, so they do not read these seasons. That is
+  reasoned from the code, not part of Doug's read.)
 - The six map divisions each have **exactly one** `division_weight_history` row.
   Weights: Competitive 1.00, Recreational 0.35, Intermediate High 0.80, Intermediate
   Low 0.60, Intermediate 0.70, Recreational High 0.60. So **today's weight applies
@@ -1016,14 +1017,24 @@ only the last result, so a note printed in the middle would not show.
 >   all six seasons `is_archived=true` and `regular_games=0`, and PASS on every
 >   row. If a row says CHECK, **STOP and tell the developer.**
 > - **(b) What step 3 does.** Step 3 changes the **view** at once. The **stored
->   numbers and the public screens change only at step 6** (the recompute), **IF**
+>   numbers and the public standings change only at step 6** (the recompute), **IF**
 >   the precheck passed. If a season is **not** archived, the next match scored in
 >   the league rewrites that season's stored numbers by itself (the function
 >   `upsert_team_season_stats()` with no argument rewrites every season that is not
->   archived), with no preview. (One screen reads the view directly: the Team page
->   split by opponent division, for dropped-out teams. The 3 explicit rows say what
->   Doug's list `src/constants/dropoutDivisions.ts` says, and that list wins there, so
->   it should not change. Not clicked through by the developer.)
+>   archived), with no preview.
+>   **Four places read the view's answers before step 6** (found by searching the
+>   code; **reasoned, not clicked through**):
+>   1. the Team page split by opponent division (`fetchSeasonBreakdown.ts`),
+>   2. Career and Compare, "Records by Division" (`CareerFetchService.ts` and
+>      `CareerBulkFetchService.ts`),
+>   3. the league Division Matchups card (`useLeagueDivisionMatchups.ts`).
+>      These three all call `fetchRealDivisionOverrides`. They read the view only for
+>      teams that are Hidden now. The 3 explicit rows say what Doug's list
+>      `src/constants/dropoutDivisions.ts` says, and that list wins there, so they
+>      should not change.
+>   4. the admin Sandbox preview. Its Career preview reads `v_power_score_components`
+>      (every team, every season), so it shows the new numbers from step 3 on. It
+>      stores nothing.
 > - **(c)** Run step 3 when **no match is being scored.**
 > - **(d)** Between step 3 and step 6, do **not** press the Sandbox **Save & rescore**
 >   or **Revert**, and do **not** press the §6a **Revert**. Each one rewrites every
@@ -1033,7 +1044,8 @@ only the last result, so a note printed in the middle would not show.
 > - **(f) Dry run.** Run `division_truth_02a_dryrun.sql` before script 02. It writes
 >   nothing. It lists the exact rows script 02 would write, sorted by stored name,
 >   then team. **Read the "Intermediate 1" and "Intermediate 2" lists.** That mapping
->   is believed, not proven.
+>   is believed, not proven. It also shows a "CHECK: script 02 would STOP" row if a
+>   dropped-out team, a season or the backup is missing, or a name matches two rows.
 > - **(g) Preview.** Script 03 also shows each team's **career** score before and
 >   after, and the career rank.
 > - **(h) Approval.** Approving the final preview table **also approves the about 62
@@ -1062,6 +1074,23 @@ Recompute order (step 6): type the season id on the line marked TYPE HERE in
 script 04. Start with one of the three newer seasons (Fall 2025, Winter 1 2026 or
 Winter 2 2026): only a few teams move. Check the result. Do the other two, then the
 three 2025 seasons. The season ids are listed at the top of script 04.
+
+### What the editor may ask
+
+- The Supabase dashboard may ask you to **confirm** a statement it calls destructive:
+  `DROP ... pg_temp...`, `DELETE FROM public.power_score_division_override` with no
+  WHERE (script 05 path 2), `CREATE OR REPLACE VIEW` (script 05 path 2),
+  `CREATE TABLE ... AS` (script 01) or `CREATE TABLE IF NOT EXISTS` (script 05 path 2).
+  **That is expected for those scripts.** Each one
+  is described in its header. If the question names something that is not in the
+  script you pasted, stop.
+- Scripts 04 and 05 need the **season id** (04) or the **path number** (05) typed on
+  the line marked TYPE HERE. If you leave the placeholder, the script **stops safely**
+  and changes nothing.
+- Scripts 03 to 06 make **temporary** tables and views (names start with
+  `division_truth_`). They vanish when the editor session ends. Nothing in the
+  database is left behind except what the scripts say they write (the backup, the
+  override rows, the recomputed scores, the pre_undo copy).
 
 ### Warnings
 
@@ -1133,9 +1162,9 @@ Drop the backup table when Doug accepts the new numbers:
   faced and won against a Recreational High team mixed up with Recreational
   (INFERRED, by hand).
 - The Intermediate 1 and 2 order is believed, not proven, in all three old seasons.
-- The 7 newer games are archived games (VERIFIED by Doug's live read, 2026-11-17: 0
-  regular games in the six seasons). If a season were un-archived, the standings
-  (`v_team_details`) would move for that team at step 3, not at step 6. Script 00
+- The six seasons are archived and have 0 regular games (VERIFIED by Doug's live read,
+  2026-11-17). If a season were un-archived or held a regular game, the standings
+  (`v_team_details`) could move for that team at step 3, not at step 6. Script 00
   and check L5 show it.
 
 The SQL tests `supabase/tests/power_score_division_override.sql` (the view and the

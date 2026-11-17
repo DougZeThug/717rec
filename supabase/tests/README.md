@@ -115,10 +115,15 @@ so a non-zero exit code means drift was detected.
   not in the map, no stored row) and leaves out a team-season a snapshot already
   answers. Pins Doug's exception ("Here for Fireball" = Recreational High), the 3
   explicit rows, a second run that writes 0, reasons that name no person and start
-  "League owner, 2026-11-17", the preview and checks scripts running, the recompute
+  "League owner, 2026-11-17", a missing dropped-out team or season (the dry run shows
+  a "CHECK: script 02 would STOP" row, and script 02 really stops), the preview and
+  checks scripts running, the recompute
   (moves one season only, only the score columns, second run 0) and both undo paths
   (path 2 saves the override rows first and a second run adds nothing; path 1 puts the
-  saved scores back).
+  saved scores back). The test sets `jit = off` for its transaction: with just-in-time
+  compilation on (the default) it takes about 44 s, without it under 1 s. Its "STOP"
+  checks catch the error in psql (`LAST_ERROR_MESSAGE`, psql 12 or later), so the log
+  shows two expected `ERROR:  STOP: ...` lines.
 - `declined_request_team_change.sql` — asserts a refused join request may be
   aimed at a different team, and that every other lock on `team_memberships`
   still holds (pending rows immovable, no self-approval, no handing the row on,

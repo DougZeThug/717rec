@@ -322,6 +322,11 @@ looks like a bug to anyone watching one team.
   2026-08-12; for the six divisions the old seasons use, the league's live read on
   2026-11-17 shows one history row each, so today's weight applies. A team has one
   division per season there, even if it moved.
+- **The Intermediate 1 / Intermediate 2 mapping is believed, not proven, in all three
+  old seasons.** The stored names "Intermediate 1" and "Intermediate 2" came from
+  alphabetical bracket titles, not from strength. The league chose Intermediate High
+  for the first and Intermediate Low for the second. Those seasons have no playoff
+  brackets, so nothing can confirm it.
 - **Re-weighting a division moves every active-season score at once**, including
   for teams that never played that division, through the schedule-strength term.
 - **An archived season and the current season can be rated by different
