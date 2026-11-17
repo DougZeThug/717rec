@@ -97,9 +97,15 @@ so a non-zero exit code means drift was detected.
   numbers and a second run changes nothing, while a routine run leaves an archived
   season alone; anon can read the table and the view and cannot write; row-level
   security is on; the view is still `security_invoker` with the same 14 columns; a
-  division an override uses cannot be deleted; `reason` cannot be empty. Worked by
-  hand in the file header. CI Postgres has no Supabase default grants, so the test
-  opens the other tables to anon inside its own rolled-back transaction.
+  division an override uses cannot be deleted; `reason` cannot be NULL, empty or
+  blank (a CHECK on the column). Worked by hand in the file header.
+  **Known blind spot:** CI Postgres has no Supabase default privileges, so a new
+  table starts with no grant for anon or signed-in users here. The test opens the
+  OTHER tables to anon inside its own rolled-back transaction, and asserts the new
+  table's grants as the migration wrote them. But it cannot catch a deleted
+  `REVOKE ALL ... FROM PUBLIC, anon, authenticated` line: on Supabase that line
+  removes the default write grants, and on CI there are none to remove. Read that
+  line in review. There is no fake test for it.
 - `declined_request_team_change.sql` — asserts a refused join request may be
   aimed at a different team, and that every other lock on `team_memberships`
   still holds (pending rows immovable, no self-approval, no handing the row on,

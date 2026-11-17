@@ -22,7 +22,8 @@
 --      numbers, and a second run changes nothing. A routine run leaves an
 --      archived season alone.
 --   8. A score entered and then corrected (to a tie) keeps its override.
---   9. A division an override uses cannot be deleted; reason cannot be empty.
+--   9. A division an override uses cannot be deleted; reason cannot be NULL, empty or
+--      blank (spaces only).
 --
 -- NO REAL WEIGHT APPEARS BELOW. The fixture divisions carry odd weights (0.40,
 -- 0.65, 0.90) and every expected number is worked out from them by hand, then fed
@@ -753,6 +754,20 @@ BEGIN
     VALUES (v_team_q, v_season_a, v_div_hi, NULL);
     RAISE EXCEPTION 'an override with no reason was accepted';
   EXCEPTION WHEN not_null_violation THEN
+    NULL;
+  END;
+  BEGIN
+    INSERT INTO public.power_score_division_override (team_id, season_id, division_id, reason)
+    VALUES (v_team_q, v_season_a, v_div_hi, '');
+    RAISE EXCEPTION 'an override with an empty reason was accepted';
+  EXCEPTION WHEN check_violation THEN
+    NULL;
+  END;
+  BEGIN
+    INSERT INTO public.power_score_division_override (team_id, season_id, division_id, reason)
+    VALUES (v_team_q, v_season_a, v_div_hi, '   ');
+    RAISE EXCEPTION 'an override with a blank reason (spaces) was accepted';
+  EXCEPTION WHEN check_violation THEN
     NULL;
   END;
   BEGIN

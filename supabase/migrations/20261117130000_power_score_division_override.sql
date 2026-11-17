@@ -49,7 +49,8 @@ CREATE TABLE IF NOT EXISTS public.power_score_division_override (
   team_id     uuid NOT NULL REFERENCES public.teams(id)     ON DELETE CASCADE,
   season_id   uuid NOT NULL REFERENCES public.seasons(id)   ON DELETE CASCADE,
   division_id uuid NOT NULL REFERENCES public.divisions(id) ON DELETE RESTRICT,
-  reason      text NOT NULL,
+  reason      text NOT NULL
+    CONSTRAINT power_score_division_override_reason_not_blank CHECK (btrim(reason) <> ''),
   created_at  timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (team_id, season_id)
 );
@@ -57,8 +58,10 @@ CREATE TABLE IF NOT EXISTS public.power_score_division_override (
 COMMENT ON TABLE public.power_score_division_override IS
   'The division a team had in one season, for rating its opponents'' games. '
   'Read FIRST by v_power_score_team_matches_rated (resolved_by = manual_override). '
-  'An override to a Hidden or weightless division is ignored. reason says who '
-  'decided and why. Written by hand (SQL editor / service_role) only.';
+  'An override to a Hidden or weightless division is ignored. reason says what '
+  'was decided and why, and cannot be blank. The table is publicly readable, so '
+  'keep the name of a person out of reason. Written by hand (SQL editor / '
+  'service_role) only.';
 
 ALTER TABLE public.power_score_division_override ENABLE ROW LEVEL SECURITY;
 
