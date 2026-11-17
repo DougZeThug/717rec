@@ -20,7 +20,7 @@ Quick reference for folder and file naming conventions in this project.
 When adding a new feature (e.g., "notifications"):
 
 > Example only, not real files. "notifications" stands in for your feature name.
-> The real notifications code uses different file names.
+> The real notifications code does not match these file names one for one.
 
 - [ ] `src/components/notifications/` - UI components
 - [ ] `src/components/notifications/index.ts` - Barrel export

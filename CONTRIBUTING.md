@@ -95,7 +95,7 @@ When adding a new feature (e.g., "notifications"):
 
 > Example only, not real files. Here and in "Barrel Exports" below,
 > "notifications" and its file names stand in for your own feature. The real
-> notifications code uses different file names.
+> notifications code does not match these file names one for one.
 
 1. **Components**: `src/components/notifications/`
    - Create feature-specific components
