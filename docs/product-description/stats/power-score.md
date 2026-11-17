@@ -138,10 +138,11 @@ Three consequences follow, and all three surprise people:
   holds, only a team that played Competitive opponents alone can reach 100. A
   team with one 2-0 win over a Competitive team does.
 
-**The three weights are not fixed.** 40/45/15 is the league's current setting,
-kept as data and changed through the admin sandbox. Changing them rewrites every
-season's stored score at once. The help page quotes whatever is live rather than
-the numbers above.
+**The three weights are not fixed.** 40/45/15 is the default. The live numbers
+read on 2026-11-17 were 40/50/10, applied 2026-09-03. They are kept as data and
+changed through the admin sandbox. A save rewrites every season's stored score at
+once, also when the numbers are the same as the live ones. The help page quotes
+whatever is live rather than the numbers above.
 
 ## Which division an opponent counts as
 

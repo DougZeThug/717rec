@@ -60,7 +60,7 @@ This works in Standard mode only. Dual Match Mode does not read the weights.
 
 The switch is ON when the screen sends weights. Both screens send the same four
 fixed numbers. No screen lets the admin change them. They are not the Power Score
-weights (40/45/15) and not the division weights.
+weights (default 40/45/15) and not the division weights.
 - `powerScoreWeight`: 5 - Balance team power scores
 - `sosWeight`: 3 - Consider strength of schedule
 - `recordWeight`: 3.5 - Match teams with similar records

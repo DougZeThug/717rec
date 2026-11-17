@@ -519,7 +519,8 @@ Two related tables are worth knowing about:
 
 The **Power Score Sandbox** (Admin → Scores & Stats → Power Score Sandbox)
 lets you change how much the three parts of the Power Score count — match
-wins, strength of schedule, game wins. The standard mix is 40/45/15. You can
+wins, strength of schedule, game wins. The standard (default) mix is 40/45/15.
+The mix that was live on 2026-11-17 is 40/50/10 (applied 2026-09-03). You can
 preview any mix safely: nothing changes until you press **Save & rescore**.
 
 ### One-time setup (its migration, applied by hand — see §6 for why)
@@ -562,8 +563,16 @@ preview any mix safely: nothing changes until you press **Save & rescore**.
   Who changed what, when, and any note you typed is recorded in
   `power_score_weight_history` (append-only — nothing is ever overwritten).
 - **Revert** goes back to the previous mix the same way, and reverting a
-  revert toggles back again. Saving the numbers that are already live changes
-  nothing — it just re-checks every season ("reasserted").
+  revert toggles back again.
+- **A save always rewrites the stored scores of every season** from the live
+  rules. This is also true when you save the numbers that are already live (the
+  screen says "reasserted"). A save changes nothing only if the stored scores
+  already match the live rules. A live check on 2026-11-17 showed that they do
+  not: a save would change 62 team-seasons (Spring 2025, Summer 1 2025 and
+  Summer 2 2025). **Do not press Save & rescore until the old-season fix is
+  decided.** No table backup exists, and Revert works the scores out again from
+  the live rules: it does not restore the old stored numbers. See
+  `docs/untangle-decision-log.md`, "Power Score check result (2026-11-17)".
 
 Caveats:
 
