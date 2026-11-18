@@ -123,7 +123,12 @@ so a non-zero exit code means drift was detected.
   saved scores back). The test sets `jit = off` for its transaction: with just-in-time
   compilation on (the default) it takes about 44 s, without it under 1 s. Its "STOP"
   checks catch the error in psql (`LAST_ERROR_MESSAGE`, psql 12 or later), so the log
-  shows two expected `ERROR:  STOP: ...` lines.
+  shows three expected `ERROR:  STOP: ...` lines (a missing team, a missing season,
+  an override row in a seventh season for undo path 2). It also pins script 00 (a
+  season with `is_active` or `playoffs_active` on is a CHECK), script 01 (the first
+  backup is never replaced; the verdict says OK, NOTE or CHECK from the keys and the
+  saved scores, not the row counts) and script 05 (still reports after the backup
+  table is dropped).
 - `declined_request_team_change.sql` — asserts a refused join request may be
   aimed at a different team, and that every other lock on `team_memberships`
   still holds (pending rows immovable, no self-approval, no handing the row on,

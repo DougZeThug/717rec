@@ -598,9 +598,10 @@ Caveats:
 - The §6a **Revert** control restores the old pre-unification views, which
   carry their own built-in numbers — while that state is active, sandbox
   weights have no effect. (Known, pre-existing, and not caused by the
-  sandbox: §6a's **Re-apply** has drifted from the newer
-  `career_power_score` column and would currently fail; it needs its own
-  fix before anyone uses the §6a controls again.)
+  sandbox: §6a's **Re-apply** lacked the newer `career_power_score` column
+  until migration `20260820184423` patched `admin_reapply_power_score_unification()`.
+  Confirm that migration is applied on the live database before anyone uses
+  the §6a controls.)
 
 ## 6c. Career power score: making the badge agree with the screen
 
@@ -1013,9 +1014,14 @@ only the last result, so a note printed in the middle would not show.
 
 > ### BEFORE step 3 (writing the override rows)
 >
-> - **(a) Precheck.** Run `division_truth_00_precheck.sql` right before step 3. **Want:**
->   all six seasons `is_archived=true` and `regular_games=0`, and PASS on every
->   row. If a row says CHECK, **STOP and tell the developer.**
+> - **(a) Precheck.** Run `division_truth_00_precheck.sql` right before step 3. **Want,
+>   for all six seasons:** `is_archived=true`, `is_active=false`, `playoffs_active=false`
+>   and `regular_games=0`, and PASS on every row. If a row says CHECK, **STOP and tell
+>   the developer.** Doug's live read on 2026-11-17 showed `is_archived` and the
+>   regular games only. It did **not** show `is_active` or `playoffs_active`, so
+>   **re-run script 00 right before step 3.** The live standings follow the season
+>   that is active (or, failing that, the one whose playoffs are active), whether or
+>   not it is archived.
 > - **(b) What step 3 does.** Step 3 changes the **view** at once. The **stored
 >   numbers and the public standings change only at step 6** (the recompute), **IF**
 >   the precheck passed. If a season is **not** archived, the next match scored in
@@ -1136,12 +1142,24 @@ line marked TYPE HERE.
   `20261003183939` back, and recomputes the six seasons. This gives
   **the numbers today's rules give**. It is **not** today's stored numbers: the 62
   team-seasons that differ today stay changed.
+- **Path 2 stops (and writes nothing) if the override table holds a row for a season
+  other than the six.** It recomputes only the six seasons, so the stored scores of
+  another season would stay worked out with a row it deletes. The error names the
+  season ids. Recompute those seasons by hand first, or remove those rows, then run
+  path 2 again. Its copy and delete of the override rows is one statement, so a row
+  is never deleted without being saved.
 - **To go all the way back:** run path 2, then path 1.
 - After undo, revert the pull request too. If the migration file stays in the repo,
   the next hand-apply of all migrations adds the override step again.
 
 Drop the backup table when Doug accepts the new numbers:
 `DROP TABLE public.team_season_stats_pre_division_truth;`
+(Script 05 still ends in its report after that: it says `backup unavailable` for the
+line that compares with the backup.) If you run script 01 again later, it **never**
+replaces the first backup. Its last line says OK (nothing changed), NOTE (stored
+scores changed since the backup, which is expected after a recompute) or CHECK (the
+team-seasons are not the same). In every case the first backup is the one to restore
+from.
 
 ### Honest limits
 

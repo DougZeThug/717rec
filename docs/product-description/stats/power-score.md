@@ -318,10 +318,14 @@ looks like a bug to anyone watching one team.
   match's historical division cannot be resolved.
 - **Old seasons are rated more carefully, not perfectly.** A pinned division is the
   league's best knowledge of that season, not a recorded fact. A game is rated by the
-  weight its division had **on the game date**. The weight history starts on
-  2026-08-12; for the six divisions the old seasons use, the league's live read on
-  2026-11-17 shows one history row each, so today's weight applies. A team has one
-  division per season there, even if it moved.
+  weight its division had **on the game date**. A team has one division per season
+  there, even if it moved.
+
+  > Technical note: the table that records division weights over time starts on
+  > 2026-08-12, so a weight edit made before that date is not recorded. For the six
+  > divisions the old seasons use, the league's live read on 2026-11-17 shows one row
+  > each, so today's weight applies to every old game date. The steps and the checks
+  > are in [`OPERATIONS.md`](../../OPERATIONS.md) section 6g.
 - **The Intermediate 1 / Intermediate 2 mapping is believed, not proven, in all three
   old seasons.** The stored names "Intermediate 1" and "Intermediate 2" came from
   alphabetical bracket titles, not from strength. The league chose Intermediate High
