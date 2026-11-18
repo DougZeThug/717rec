@@ -220,10 +220,12 @@ describe('useCareerRankings', () => {
 
   // The query function itself: the batch totals in, one ranking row per team out.
   // Teams are listed worst first on purpose, so the order can only come from the sort.
+  // Every count in the top row has its own value (12, 4, 27, 13, 6, 9, 2, 1, 5 and 3 finishes),
+  // so a field read from the wrong total cannot give the right number by chance.
   // Worked out by hand for "High Team" (the row checked in full):
   //   match win % = 12 / (12 + 4) = 0.75
   //   game win %  = 27 / (27 + 13) = 0.675
-  //   playoff win % = 2 / (2 + 3) = 0.4
+  //   playoff win % = 6 / (6 + 9) = 0.4
   //   playoffFinishes = the number of finishes listed (3), not the list itself
   // "Mid Team" played no playoff match, so its playoff win % is 0 (not NaN).
   it('builds one row per team with every field mapped, best career power score first', async () => {
@@ -272,8 +274,8 @@ describe('useCareerRankings', () => {
             career_match_losses: 4,
             career_game_wins: 27,
             career_game_losses: 13,
-            career_playoff_wins: 2,
-            career_playoff_losses: 3,
+            career_playoff_wins: 6,
+            career_playoff_losses: 9,
             championships: 2,
             runner_ups: 1,
             playoff_finishes: [
@@ -312,8 +314,8 @@ describe('useCareerRankings', () => {
       careerGameWins: 27,
       careerGameLosses: 13,
       careerGameWinPercentage: 0.675,
-      careerPlayoffWins: 2,
-      careerPlayoffLosses: 3,
+      careerPlayoffWins: 6,
+      careerPlayoffLosses: 9,
       careerPlayoffWinPercentage: 0.4,
       championships: 2,
       runnerUps: 1,

@@ -384,9 +384,10 @@ Service-level coverage is provided in `tests/bracketManagerSchema.test.ts`
 - ✅ Match updates and progression
 
 No automated test checks the table columns or the foreign key cascade rules
-above. They come from the migrations. (Eight tests in that file only counted a
-local list of column and key names. They checked nothing real, so they were
-deleted in Slice 8.)
+above. They come from the migrations. (Eight tests in that file checked nothing
+real, so they were deleted in Slice 8: seven only counted a local list of column
+or key names, and one was a placeholder, `expect(true).toBe(true)`, for the
+cascade rules.)
 
 Run tests with: `npm run test:file -- tests/bracketManagerSchema.test.ts`
 
