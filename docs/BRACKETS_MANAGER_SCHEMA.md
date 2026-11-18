@@ -375,14 +375,18 @@ The `round.stage_id` column is intentionally denormalized (duplicates data from 
 
 ## Testing
 
-Schema-level coverage is provided in `tests/bracketManagerSchema.test.ts`:
+Service-level coverage is provided in `tests/bracketManagerSchema.test.ts`
+(the database client and the library are mocked there):
 
-- ✅ Schema verification for all 6 tables
 - ✅ Single elimination bracket creation (4, 8 teams)
 - ✅ Double elimination bracket creation (4, 8 teams)
 - ✅ Edge cases (odd number of teams, BYE handling)
 - ✅ Match updates and progression
-- ✅ Foreign key cascade behavior
+
+No automated test checks the table columns or the foreign key cascade rules
+above. They come from the migrations. (Eight tests in that file only counted a
+local list of column and key names. They checked nothing real, so they were
+deleted in Slice 8.)
 
 Run tests with: `npm run test:file -- tests/bracketManagerSchema.test.ts`
 
