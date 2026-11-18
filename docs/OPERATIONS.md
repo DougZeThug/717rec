@@ -1038,7 +1038,7 @@ So the view (full precision) can never equal a stored value:
   stays exact: both sides are stored values with 3 decimals. Path 2's own recompute is
   the same UPDATE as script 04, so it rewrites about every row of the six seasons.
 - Archived seasons outside the six (Spring 2026, Summer 1 2026, Summer 2 2026) also
-  differ by up to 0.0005 for the same reason.
+  differ by up to 0.0005 for the same reason (Doug's L4 diagnostic query).
 
 ### The live season (Fall 2026) can drift
 

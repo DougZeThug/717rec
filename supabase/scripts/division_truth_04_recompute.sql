@@ -19,8 +19,10 @@
 -- 'power_score_weights'), so the two can never run at the same moment. If a
 -- weight save is running, this waits for it, then reads the new rules.
 --
--- SAFE TO RE-RUN: a second run changes 0 rows. Only the SIX seasons below are
--- allowed. Any other id stops the script and changes nothing.
+-- SAFE TO RE-RUN. A second run writes the same numbers again: it moves no team (the
+-- "moved" list is empty) and the last line stays 0. On the live database it still
+-- rewrites about every row, at rounding level (see ROUNDING below). Only the SIX
+-- seasons below are allowed. Any other id stops the script and changes nothing.
 --
 -- ROUNDING ON THE LIVE DATABASE. There, team_season_stats.power_score is
 -- numeric(8,3) and sos is numeric(6,3): 3 decimals (career_power_score is plain
@@ -35,7 +37,10 @@
 --
 -- HOW TO RUN IT
 --   1. Type ONE season id between the quotes on the line marked TYPE HERE.
---   2. Run. Read the result. "rows changed" is the number of teams that moved.
+--   2. Run. Read the result. The real signals are the "moved" lines (each team whose
+--      stored score really changed) and the last line, "rows still different from
+--      the rules by more than rounding (must be 0)". "ROWS CHANGED" counts the rows
+--      written: on the live database that is about every team in the season.
 --   3. Do the next season (change the id, run again). Start with one of the three
 --      newer seasons (only a few teams move), the three 2025 seasons last.
 --
