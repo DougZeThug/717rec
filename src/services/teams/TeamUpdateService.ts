@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
+import { BusinessLogicError } from '@/types/errors';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { teamLog } from '@/utils/logger';
 import { assertNonEmptyString, assertValidUuid } from '@/utils/validation';
@@ -14,23 +15,32 @@ const clearedLegacyLogo = (imageUrl: string | null | undefined): { logo_url?: nu
 
 /**
  * Update only a team's name and image_url (used by team members with edit access).
- * @throws {Error} When database operation fails
+ * @throws {DatabaseError} When database operation fails
+ * @throws {BusinessLogicError} When no row was updated (access to the team was
+ *   removed, so row-level security filtered it out without an error)
  */
 export const updateTeamNameAndImage = async (
   teamId: string,
   name: string,
   imageUrl: string | null
 ): Promise<void> => {
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from('teams')
     .update({
       name,
       image_url: imageUrl,
       ...clearedLegacyLogo(imageUrl),
     })
-    .eq('id', teamId);
+    .eq('id', teamId)
+    .select('id')
+    .maybeSingle();
 
   if (error) handleDatabaseError(error, 'Failed to update team name and image');
+  if (!updated) {
+    throw new BusinessLogicError(
+      'Nothing was saved. You may no longer be able to edit this team. Refresh the page and try again.'
+    );
+  }
 };
 
 /**
