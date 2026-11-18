@@ -3,8 +3,9 @@
 -- NOT A MIGRATION. Paste the WHOLE file into the Supabase SQL Editor and run it.
 -- It WRITES NOTHING. Run it AFTER the migration (step 2) and BEFORE script 02.
 -- Doug looks at the list. If it looks right, run script 02.
--- Once script 07 has retired the backup, this list ends with a CHECK row for the
--- missing backup table: script 02 was a one-time job and cannot run any more.
+-- If the backup table is missing, this list ends with a CHECK row for it. It says both
+-- possible reasons: first install (run script 01 before any override row) or retired by
+-- script 07 (do not recreate it; script 02 was a one-time job and cannot run any more).
 --
 -- It lists the exact rows script 02 would insert, and what script 02 would skip.
 -- It uses the SAME selection and the SAME map as script 02: both files hold one
@@ -199,7 +200,7 @@ FROM (
   WHERE n.n <> 1
   UNION ALL
   SELECT 6, 'CHECK: script 02 would STOP', NULL, '', 'backup table',
-         'the backup was retired; script 02 was a one-time job; later override rows are added by hand (see docs/OPERATIONS.md section 6g)', NULL, NULL, NULL
+         'the backup table is missing, and this script cannot tell why. First install (never taken): run script 01 BEFORE you write any override row. Retired (script 07 dropped it): do NOT recreate it; script 02 was a one-time job, and later override rows are added by hand (see docs/OPERATIONS.md section 6g)', NULL, NULL, NULL
   WHERE to_regclass('public.team_season_stats_pre_division_truth') IS NULL
   UNION ALL
   -- One of the 3 dropped-out teams is not in the teams table. The list above would

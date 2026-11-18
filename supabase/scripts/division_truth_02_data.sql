@@ -76,7 +76,7 @@ BEGIN
     RAISE EXCEPTION 'STOP: the migration 20261117130000 is not applied (no power_score_division_override table).';
   END IF;
   IF to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN
-    RAISE EXCEPTION 'STOP: the backup was retired; script 02 was a one-time job; later override rows are added by hand (see docs/OPERATIONS.md section 6g).';
+    RAISE EXCEPTION 'STOP: the backup table is missing, and this script cannot tell why. First install (the backup was never taken): run script 01 BEFORE you write any override row. Retired (script 07 dropped it): do NOT recreate it; script 02 was a one-time job, and later override rows are added by hand (see docs/OPERATIONS.md section 6g).';
   END IF;
 
   -- Each division name in the map must match exactly ONE rateable division.

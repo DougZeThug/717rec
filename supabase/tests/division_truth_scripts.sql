@@ -44,10 +44,13 @@
 --      prints the pre-check lines and the verdict, and a second run says "already
 --      gone". It fails, dropping nothing, when a view depends on the backup (no CASCADE).
 --      After the drop: script 06 runs (L6b, L6c, L6d, L7 say "skipped", L6a still
---      checks every team-season), 03 and 02 STOP with their "retired" message, the dry
+--      checks every team-season), 03 and 02 STOP with a message that names both reasons
+--      (first install: run script 01; retired: do not recreate it), the dry
 --      run (02a) lists one CHECK row for it, undo path 1 STOPs and path 2 still works
 --      and, with the override-aware view and the overrides back in the stored numbers,
 --      it puts the old-rule scores back (including a team the overrides had moved).
+--      A backup table that exists with 0 rows makes script 06 say "backup table is empty"
+--      (not "backup retired") in L6b, L6c, L6d and L7.
 --  13. The live columns keep 3 decimals (power_score numeric(8,3), sos numeric(6,3)):
 --      the recompute's last line, check L4 and undo path 2's report line that compares
 --      with the rules ignore a gap of 0.0006 or less in power_score and sos. A bigger
@@ -986,7 +989,7 @@ RELEASE SAVEPOINT dt_round;
 --           rows are byte for byte the same), its result lines are right, and a
 --           second run says "already gone";
 --       (c) after the drop, 06 still runs (L6b, L6c, L6d, L7 say "skipped"), and 03
---           and 02 STOP with their "retired" message, and the dry run (02a) says so.
+--           and 02 STOP with a message that names both reasons, and the dry run (02a) says so.
 -- ---------------------------------------------------------------------------
 SAVEPOINT dt_retire;
 
@@ -1486,6 +1489,50 @@ END $$;
 ROLLBACK TO SAVEPOINT dt_g4;
 RELEASE SAVEPOINT dt_g4;
 
+-- (a5) a backup table that EXISTS but holds 0 rows: script 06 says "backup table is empty",
+--      not "backup retired" (that wording is for a missing table). Normal rows keep their words.
+SAVEPOINT dt_g13;
+DELETE FROM public.team_season_stats_pre_division_truth;
+\o /dev/null
+\i supabase/scripts/division_truth_06_checks.sql
+\o
+CREATE TEMP TABLE dt_06empty AS :l4tail
+;
+DO $$
+DECLARE
+  v_n bigint;
+BEGIN
+  SELECT count(*) INTO v_n FROM dt_06empty
+   WHERE check_name IN ('L6b old scores re-derived', 'L6c no changed game, no change',
+                        'L6d three newer seasons: who moved', 'L7 records identical to backup')
+     AND result = 'INFO' AND (detail LIKE 'backup table is empty%') IS TRUE
+     AND (detail LIKE '%retired%') IS NOT TRUE;
+  IF v_n IS DISTINCT FROM 4 THEN
+    RAISE EXCEPTION 'script 06 with an empty (not missing) backup: L6b, L6c, L6d and L7 should each say INFO, backup table is empty; found % that do', v_n;
+  END IF;
+END $$;
+ROLLBACK TO SAVEPOINT dt_g13;
+RELEASE SAVEPOINT dt_g13;
+-- With the saved rows back, the same four checks run for real (no "skipped", no "empty").
+\o /dev/null
+\i supabase/scripts/division_truth_06_checks.sql
+\o
+CREATE TEMP TABLE dt_06full AS :l4tail
+;
+DO $$
+BEGIN
+  IF (SELECT count(*) FROM dt_06full
+       WHERE check_name IN ('L6b old scores re-derived', 'L6c no changed game, no change',
+                            'L6d three newer seasons: who moved', 'L7 records identical to backup')
+         AND ((detail LIKE 'skipped%') IS TRUE OR (detail LIKE 'backup table is empty%') IS TRUE)) IS DISTINCT FROM 0 THEN
+    RAISE EXCEPTION 'script 06 with a normal backup should not skip L6b, L6c, L6d or L7';
+  END IF;
+  IF (SELECT count(*) FROM dt_06full WHERE check_name LIKE 'L7 %' AND result = 'PASS') IS DISTINCT FROM 1 THEN
+    RAISE EXCEPTION 'script 06 with a normal backup: L7 should PASS';
+  END IF;
+END $$;
+DROP TABLE dt_06full;
+
 -- (b) the real run.
 CREATE TEMP TABLE dt_07_before AS
 SELECT (SELECT count(*) FROM public.team_season_stats_pre_division_truth) AS saved,
@@ -1632,13 +1679,14 @@ RELEASE SAVEPOINT dt_clear;
 \o
 ROLLBACK TO SAVEPOINT dt_s03;
 \set ON_ERROR_STOP on
-SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: the backup table was retired \(see docs/OPERATIONS\.md 6g\)\. This preview was a one-time step\.$' AS stopped \gset
+SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: the backup table is missing, and this script cannot tell why\. First install \(the backup was never taken\): run script 01 first\. Retired \(script 07 dropped it\): do NOT recreate it; this preview was a one-time step \(see docs/OPERATIONS\.md 6g\)\.$' AS stopped \gset
 \if :stopped
 \else
   DO $$ BEGIN RAISE EXCEPTION 'script 03 did not stop with the "retired" message after the backup was dropped'; END $$;
 \endif
 
--- 02 (data) STOPs with the reworded message: no "run script 01 first".
+-- 02 (data) STOPs with a message that names both reasons: first install (run script 01
+-- BEFORE any override row) and retired (do NOT recreate it).
 SAVEPOINT dt_s02;
 -- Wipe LAST_ERROR_MESSAGE first, so a message left by an earlier test cannot pass this one.
 SAVEPOINT dt_clear;
@@ -1655,7 +1703,7 @@ RELEASE SAVEPOINT dt_clear;
 \o
 ROLLBACK TO SAVEPOINT dt_s02;
 \set ON_ERROR_STOP on
-SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: the backup was retired; script 02 was a one-time job; later override rows are added by hand' AS stopped \gset
+SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: the backup table is missing, and this script cannot tell why\. First install \(the backup was never taken\): run script 01 BEFORE you write any override row\. Retired \(script 07 dropped it\): do NOT recreate it; script 02 was a one-time job, and later override rows are added by hand \(see docs/OPERATIONS\.md section 6g\)\.$' AS stopped \gset
 \if :stopped
 \else
   DO $$ BEGIN RAISE EXCEPTION 'script 02 did not stop with the "retired" message after the backup was dropped'; END $$;
@@ -1669,9 +1717,10 @@ DO $$
 BEGIN
   IF (SELECT count(*) FROM dt_dry_gone
        WHERE action = 'CHECK: script 02 would STOP' AND team = 'backup table'
-         AND (stored_label LIKE 'the backup was retired; script 02 was a one-time job%') IS TRUE
-         AND (stored_label LIKE '%run script 01%') IS NOT TRUE) IS DISTINCT FROM 1 THEN
-    RAISE EXCEPTION 'the dry run should list one CHECK row for the retired backup, with no "run script 01" advice';
+         AND (stored_label LIKE 'the backup table is missing, and this script cannot tell why.%') IS TRUE
+         AND (stored_label LIKE '%First install (never taken): run script 01 BEFORE you write any override row.%') IS TRUE
+         AND (stored_label LIKE '%Retired (script 07 dropped it): do NOT recreate it;%') IS TRUE) IS DISTINCT FROM 1 THEN
+    RAISE EXCEPTION 'the dry run should list one CHECK row for the missing backup, naming both reasons (first install, retired)';
   END IF;
 END $$;
 
