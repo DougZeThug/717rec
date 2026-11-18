@@ -1,10 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
 import { Award, Medal, Trophy } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SeasonalIcon } from '@/components/ui/seasonal-icon';
-import { fetchFinalStandings } from '@/services/brackets/BracketReadService';
+import { useFinalStandings } from '@/hooks/brackets/useFinalStandings';
 import { log } from '@/utils/logger';
 
 import FinalStandingsSkeleton from './FinalStandingsSkeleton';
@@ -60,11 +59,7 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
     };
   }, [bracketId]);
 
-  const { data: standings, isLoading } = useQuery({
-    queryKey: ['final-standings', bracketId],
-    queryFn: () => fetchFinalStandings(bracketId),
-    enabled: show && Boolean(bracketId),
-  });
+  const { data: standings, isLoading } = useFinalStandings(bracketId, show && Boolean(bracketId));
 
   if (!show) return null;
   if (isLoading) return <FinalStandingsSkeleton />;

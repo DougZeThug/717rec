@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useState } from 'react';
@@ -6,9 +5,9 @@ import React, { useState } from 'react';
 import BracketView from '@/components/playoffs/BracketView';
 import ChampionDisplay from '@/components/playoffs/ChampionDisplay';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useBracketParticipants } from '@/hooks/brackets/useBracketParticipants';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { cn } from '@/lib/utils';
-import { fetchBracketParticipants } from '@/services/brackets/BracketReadService';
 import { blueAmber } from '@/styles/design-system';
 import { PlayoffBracket, Team } from '@/types/playoffTypes';
 import { getDivisionSoftClasses } from '@/utils/colors/divisionColors';
@@ -85,11 +84,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Fetch current participants for seeding updates
-  const { data: participants } = useQuery({
-    queryKey: ['bracket-participants', bracketId],
-    queryFn: () => fetchBracketParticipants(bracketId),
-    enabled: Boolean(bracketId),
-  });
+  const { data: participants } = useBracketParticipants(bracketId);
 
   // Early return if bracket is not loaded
   if (!bracket) {
