@@ -1102,8 +1102,16 @@ only the last result, so a note printed in the middle would not show.
 >   or **Revert**, and do **not** press the §6a **Revert**. Each one rewrites every
 >   stored season (a Sandbox save would have written the override numbers and the
 >   catch-up changes in one go, with no per-season check).
-> - **(e) Back out before step 6:** `DELETE FROM public.power_score_division_override;`
->   Nothing stored has changed, and the view is identical to the old one again.
+> - **(e) Back out before step 6: FIRST INSTALL ONLY.** If the override table was
+>   **empty before step 3** (the first time, as on 2026-11-18), you can undo step 3 with
+>   `DELETE FROM public.power_score_division_override;`. Then nothing stored has changed
+>   and the view is identical to the old one again. **That sentence is true for a first
+>   install only.** After the 2026-11-18 rollout the table holds the 86 live rows. For a
+>   **re-run, do NOT run that DELETE:** it would remove every live override. Script 02
+>   does not record which rows a run added (the table keeps only a `created_at` time,
+>   no run id, and a re-run that finds nothing new adds 0 rows). So there is no scoped
+>   undo today. If a re-run added rows and they must go, ask the developer for a delete
+>   limited to those rows. Compare with the dry run (script 02a) you ran just before.
 > - **(f) Dry run.** Run `division_truth_02a_dryrun.sql` before script 02. It writes
 >   nothing. It lists the exact rows script 02 would write, sorted by stored name,
 >   then team. **Read the "Intermediate 1" and "Intermediate 2" lists.** That mapping
