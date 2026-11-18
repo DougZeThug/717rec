@@ -248,7 +248,10 @@ cleared the later matches. The four buttons are readable in the dark theme too.
 **Settings** is one field: the "Signup Confirmation Message" shown to a player
 after they sign up, capped at 100 characters with no counter. Save is dead until
 it differs from what is stored. A toast says "Saved — Confirmation message
-updated".
+updated". If the admin's access was removed in another tab, nothing is saved and a
+red toast reads "Error — Failed to update settings: Nothing was saved. Your admin
+access may have changed. Refresh the page and try again." Before this was fixed,
+the green "Saved" toast showed in that case.
 
 **Signups** is a numbered table of first name and last initial with the time
 each signed up, and a count. Each row has a bin, which asks "Remove Signup — Are

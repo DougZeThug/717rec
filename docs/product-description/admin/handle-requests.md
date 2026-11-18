@@ -136,8 +136,18 @@ the person it happened to, and is not kept as history for the league.
 | Delete | **Removes the request permanently, on the first press** | None on success |
 
 Failures raise "Failed to mark contact request as resolved", "Failed to reopen
-contact request", or "Failed to delete contact request" — a title with no
-explanation. Success says nothing at all; the list simply changes.
+contact request", or "Failed to delete contact request". The toast now adds a
+reason under the title. Support tickets work the same way, with the titles "Failed
+to mark support ticket as resolved" and "Failed to reopen support ticket". Success
+says nothing at all; the list simply changes.
+
+Mark resolved and Reopen have one new failure. If the request or ticket was
+deleted in another tab, or the admin's access changed, the change matches nothing.
+The reason then reads "Nothing was saved. This request may have been deleted, or
+your admin access may have changed. Refresh the page and try again." (for a
+ticket, "This ticket"). Before this was fixed, the same case showed no error and
+the list looked as if the change had worked. Delete is unchanged: deleting
+something that is already gone still counts as done.
 
 **Team requests** are written with the status, the notes, and who processed
 them. On success the dialog closes, everything is cleared, and a toast appears:

@@ -120,6 +120,14 @@ is whatever the database said, word for word**. This is unusual: most failures i
 717rec are collapsed into a friendly sentence, and this one is not. The dropdown
 keeps the chosen team and the button comes back.
 
+One failure has its own plain sentence. If the person already had a membership
+row and that row has since gone or changed (an admin removed it, or it changed in
+another tab), the request matches nothing. The toast then reads "Failed to submit
+request — Your request was not sent. Your team status may have changed. Refresh
+the page and try again." Before this was fixed, the same case showed the success
+toast although nothing was saved. After any failed request the panel now also
+reloads the membership by itself, so a stale card or dropdown corrects itself.
+
 ### Waiting for approval
 
 This is the part of the feature the user spends the most time in, and the app does

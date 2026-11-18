@@ -1008,8 +1008,54 @@ Doug asked for this fix. It is a deliberate behavior change.
     - `src/services/contact/ContactRequestService.ts:42-58` (`markResolved`, `reopen`).
     - `src/services/support/SupportTicketService.ts:99-107` (`markResolved`, `reopen`).
     - `src/services/BlindDrawService.ts:38-42` (confirmation message update).
+  - **DONE in Holes PR A (see "Holes PR A result" below):** everything on this list except the live-scoring pair (PR B).
 - **Slice 3 status.** Slice 3 is now done except 3H-3J (`SeedingUpdateDialog`, `BracketCreationDialog`, `MassScoreEntryTool`). Those need Doug's OK first.
 - **Rollback.** Revert the code commit. Nothing is stored.
+
+## Holes PR A result (the same "0 rows updated" hole, member and admin paths), built 2026-11-18 on `claude/adoring-bohr-waxxok`; 4 code commits + 1 docs commit
+
+Doug asked for the "same hole elsewhere" list from Slice 3 PR-3 to be fixed, except live scoring (that is PR B, kept apart so it can be reverted alone). Each fix is a deliberate behavior change: a silent no-op becomes an honest error. Same pattern as `updateTeamNameAndImage`: the database-error check runs first, then "no row came back" throws `BusinessLogicError`. No status or old-value filter was added anywhere. Payloads and filters did not change.
+
+- **What changed, per function (VERIFIED by reading the code and running the tests; the database behaviour is INFERRED from how PostgREST works, nothing was run against a real database).**
+  - `MessageService.updateMessage` (`src/services/messages/MessageService.ts`). `.select('id').maybeSingle()`. Message: "The message may have been deleted. Refresh the page and try again." It has no "Nothing was saved." start on purpose: `useMessageApi.ts` already toasts "Error updating message" with "Your message could not be updated: " in front. On a member's screen the edit box stays open.
+  - `joinTeamMembership`, update branch only (`src/services/teams/TeamMembershipService.ts`). `.select('id')` and an empty-list check (not `maybeSingle`), the same shape as `updateMembershipApproval`. Message: "Your request was not sent. Your team status may have changed. Refresh the page and try again." The insert branch and `leaveTeamMembership` did not change. One line was added in the `catch` of `joinTeam` in `src/hooks/useTeamMembership.ts`: it reloads the membership (`['team-membership', user.id]`, the key the success path uses), so a stale join form or card heals after the error. The success path did not change. The reload is not awaited, so the failure toast is not delayed.
+  - `BlindDrawService.updateBlindDrawSettings` (`src/services/BlindDrawService.ts`). `.select('id').maybeSingle()`. Message: "Nothing was saved. Your admin access may have changed. Refresh the page and try again." The hook `useBlindDrawSettings` already toasts the reason: no hook change.
+  - `ContactRequestService.markResolved` and `reopen` (`src/services/contact/ContactRequestService.ts`). `remove` did not change. Message: "Nothing was saved. This request may have been deleted, or your admin access may have changed. Refresh the page and try again."
+  - `SupportTicketService.markResolved` and `reopen` (`src/services/support/SupportTicketService.ts`). Same, with "This ticket". The hand-typed `UntypedFrom` type was widened in one place only: `update().eq()` now returns `{ select(...).maybeSingle() }` that gives `{ data: unknown; error }`. The narrow `as unknown as` cast stays. `types.ts` was not touched. No new export.
+  - Hooks `useContactRequests.ts` and `useSupportTickets.ts`: the Mark resolved and Reopen failure toasts showed only a title, so the new message would never have reached the admin. They now add `description: getUIErrorMessage(error)`, the way `useDeleteContactRequest` already did.
+- **Tests changed or added.**
+  - `MessageService.test.ts`: 3 new tests (the first tests for `updateMessage`): success returns nothing and asserts the chain, `select('id')` and both `eq` arguments; database error; 0 rows.
+  - `TeamMembershipService.test.ts`: the 3 `joinTeamMembership` update tests now use the chain `update -> eq -> select -> Promise`. Every old assertion stays; the success test also asserts `eq('user_id', ...)` and `select('id')`; the database-error test returns `data: null` plus the error. New: 0 rows for an empty list and for no list (2 cases).
+  - `useTeamMembership.test.ts`: 1 new test. After a rejected join the hook calls `invalidateQueries({ queryKey: ['team-membership', 'user-1'] })` and shows the failure toast. It uses its own `QueryClient` so it can spy on it.
+  - `BlindDrawService.test.ts`: the 2 `updateBlindDrawSettings` tests use the new chain; success also asserts `eq('id', ...)` and `select('id')`; 1 new 0-row test.
+  - `ContactRequestService.test.ts`: the 2 old write tests use a shared chain helper (same assertions, plus `select('id')`); 4 new tests (database error and 0 rows, for each of `markResolved` and `reopen`). The `remove` tests were not touched.
+  - `SupportTicketService.test.ts`: the `updateChain` helper builds the new chain; the 4 old tests keep every assertion (plus `select('id')`); 2 new 0-row tests.
+  - `useContactRequests.test.tsx` and `useSupportTickets.test.tsx`: the pinned reopen toast test now also pins `description: 'Something went wrong. Please try again.'` (what `getUIErrorMessage` gives a plain `Error`). Nothing was weakened. 1 new test each: a failed Mark resolved shows the authored reason in the toast.
+- **Mutation checks (each went red, then green after the file was restored byte for byte).**
+  - Remove the throw: the 0-row tests go red (`MessageService` 1, `TeamMembershipService` 2, `BlindDrawService` 1, contact and support 4 together).
+  - Move the null check above the `if (error)` line: the database-error tests go red (1, 1, 1, and 4 together).
+  - Drop `.select(...)`: red (3, 3, 3, and 12 together), because the mock chain has nothing to call.
+  - Remove the hook's reload line: the new `useTeamMembership` test goes red.
+  - Remove the toast descriptions: the 2 new and 3 pinned toast tests go red (the same edit also removed the `useDeleteContactRequest` description, so its old test went red too).
+- **What this means on league night.** A member whose team row was removed, a message that was deleted, a blind draw admin whose access changed, and a contact request or ticket that was deleted in another tab all now get a red message and "Refresh the page". Before, they got a success message or no message and nothing was saved.
+- **NOT changed.**
+  - `leaveTeamMembership`: 0 rows there means the membership is already gone, which is what the person wanted. A second press is legitimate.
+  - Live scoring (`LiveMatchService.completeGame` and `reopenGame`): PR B.
+  - `ContactRequestService.remove`: same reason as `leaveTeamMembership`.
+  - `TeamUpdateService` (PR #1756), `types.ts`, `supabase/`. No migration, so nothing to hand-apply. No history impact.
+  - `e2e/admin-confirmations.spec.ts` only covers contact-request Delete (the prompt, Cancel, and the delete itself). It does not touch Mark resolved or Reopen, so it was not edited.
+  - Docs: the failure wording in `join-a-team.md`, `handle-requests.md`, `post-and-reply.md` and `run-the-playoffs.md` (all in `docs/product-description/`). No row in `verification/` was changed and nothing was marked verified. The earlier line in `join-a-team.md` that the request failure text is "the database's own words" was left as it was: the hook runs the error through `getUIErrorMessage`, so that line (and `JOIN-21`, marked suspected bug) look out of date. Not checked by hand.
+- **Same hole elsewhere: REPORT ONLY, NOT fixed (every cite was read in the current files).** Each is a write that returns no error when no row matches.
+  - `src/services/brackets/manager/SupabaseSqlStorage.ts:181-230`: the bracket library's `update` and `delete`. It is generic storage for `brackets-manager`, and a comment in the file says its updates must be applied as the library sends them (an earlier guard broke slot moves), so a throw on 0 rows could break bracket builds (INFERRED, not tested). Needs its own look.
+  - `src/services/brackets/BracketWriteService.ts`: `updatePlayoffMatchScores` (118-123), `updatePlayoffMatchResult` (75-83; grep finds no production caller, so maybe dead), `updateBracket` (38), `deleteBracket` (50). `deleteBracket` is like `TeamDeleteService`: a second press is legitimate.
+  - `src/services/DivisionService.ts:65-73`: `updateDivision` (division weights). Admin-only. It does `.select(...).maybeSingle()` already but returns `data` (null) instead of throwing, so a missing row comes back as null (callers not checked). Leave for a later small PR: it touches the weights path and Doug should see it.
+  - `src/services/teams/TeamDeleteService.ts:39-43`: do NOT throw on 0 rows (a second click is legitimate). The real flaw is different: team images are removed from storage before the database delete, so a refused delete can leave a team with no images.
+  - `src/services/HeroCardService.ts:100-105`: visibility toggle.
+  - `src/services/ThemeSettingsService.ts:24-31`: theme on/off.
+  - `src/services/liveScoring/AdminCorrectionsService.ts:186`: `deleteRound`. 0 rows means the round is already gone; low risk.
+  - **Unfixed rule gap, needs a design choice from Doug:** a stale phone can complete a game again after an admin reopened it. `completeGame` has no status guard, and adding one is a rule change, not a hole fix. Not touched in PR A, and not touched by PR B either unless Doug decides.
+- **Counts.** 15 tests added (3 + 2 + 1 + 1 + 4 + 2 + 2), no files added or removed. CI coverage run (`CI=true VITEST_DEEPSOURCE=1 VITEST_CI_COVERAGE=1 VITEST_FAST_COVERAGE=1 npx vitest run --coverage`): exit 0, 898 files passed, 8,693 passed plus 15 expected-fail (8,708 total). `TESTING.md` now says 898 files / 8,708 tests in both places (was 8,693; the old number was the total including the 15 expected-fail cases). `coverage/deepsource/lcov.info` shows every new throw line and the new hook line covered. `npm run typecheck`, `npm run lint` and `npm run knip` were clean after each code commit.
+- **Rollback.** Revert the code commits one by one (each area is its own commit). Nothing is stored.
 
 ## Carry-over notes for later slices
 

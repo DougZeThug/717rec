@@ -140,7 +140,11 @@ there.
 Saving shows a green toast "Message updated — Your message has been updated", and
 the message comes back with "(edited)" after it. Hovering that word gives how long
 ago it was edited. Failure shows a red toast and **keeps the edit box open with
-the new text**, so nothing is lost.
+the new text**, so nothing is lost. If the message was deleted in the meantime,
+the toast reads "Error updating message — Your message could not be updated: The
+message may have been deleted. Refresh the page and try again." Before this was
+fixed, the same case showed the green "Message updated" toast although nothing
+was saved.
 
 **The edit box has no character counter and no length limit.** A message that
 could not have been posted at 700 characters can be edited to 700 characters.
