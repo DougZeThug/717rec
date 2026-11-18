@@ -111,7 +111,7 @@ Severity reflects *impact on a real league night*, and every finding was verifie
 
 `.single()` → 406 console noise where empty is legitimate (weeklyRecap/WeeklyRecapService.ts); `fetchPriority` prop warning (HeroSection.tsx:54,128); "Maximum update depth" warning on /schedule (desktop); Lovable editor script + Google Fonts on the production critical path (index.html:43-53); bracket realtime toast storm; brackets-viewer from CDN at runtime; playoff status-mapping trigger bug (3/5→'pending'); doc drift table (ARCHITECTURE.md tables, roadmap, 3 stale plan files, inert deno.lock); `updateScoreSubmissionStatus` lacks pending-status guard; admin approval UI doesn't group conflicting score submissions for the same match.
 
-**Explicitly re-checked and NOT problems:** score-submission dedupe (unique index works — tested); SECURITY DEFINER search_paths (0/70 unpinned); user FKs (landed, smoke-tested); bun.lock (intentional, documented); `capture-power-snapshots` (fails closed behind secret); public-user bracket editor (refuted — gated at BracketDetail.tsx:192); knip (clean); scoring math (exact to hand computation); anonymous public app makes zero write attempts across 43 page-loads.
+**Explicitly re-checked and NOT problems:** score-submission dedupe (unique index works — tested); SECURITY DEFINER search_paths (0/70 unpinned); user FKs (landed, smoke-tested); bun.lock (intentional, documented); `capture-power-snapshots` (fails closed behind secret); public-user bracket editor (refuted — gated at BracketDetail.tsx:138); knip (clean); scoring math (exact to hand computation); anonymous public app makes zero write attempts across 43 page-loads.
 
 ## 6. Hands-on browser results — public app
 

@@ -1,12 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
 import { m } from 'framer-motion';
 import { Crown, Trophy } from 'lucide-react';
 import React from 'react';
 
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { useChampionTeams } from '@/hooks/hero-cards/useChampionTeams';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { HeroCardService } from '@/services/HeroCardService';
 import { HeroCard } from '@/types/heroCard';
 
 import HeroCardBase from './HeroCardBase';
@@ -191,24 +190,8 @@ ChampionDisplay.displayName = 'ChampionDisplay';
 const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
   const championsMap = (card.metadata?.champions as Record<string, string>) || {};
-  const championIds = Object.values(championsMap);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['champions', championIds],
-    queryFn: async () => {
-      if (championIds.length === 0) return { teams: [], divisionMap: {} };
-
-      const teams = await HeroCardService.fetchChampionTeams(championIds);
-
-      const divisionMap: Record<string, string> = {};
-      Object.entries(championsMap).forEach(([division, teamId]) => {
-        divisionMap[teamId] = division;
-      });
-
-      return { teams, divisionMap };
-    },
-    enabled: championIds.length > 0,
-  });
+  const { data, isLoading, error } = useChampionTeams(championsMap);
 
   const baseShellClasses =
     'rounded-2xl shadow-2xl hover:shadow-3xl p-4 md:p-6 transition-shadow duration-200';

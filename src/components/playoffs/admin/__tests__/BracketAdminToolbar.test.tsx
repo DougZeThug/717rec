@@ -188,4 +188,19 @@ describe('BracketAdminToolbar', () => {
       ).not.toBeInTheDocument()
     );
   });
+
+  // The standings are only worth asking for once the bracket is finished.
+  it('does not ask for final standings while the bracket is not completed', async () => {
+    renderToolbar();
+
+    await screen.findByRole('button', { name: /repair bracket/i });
+    expect(fetchFinalStandings).not.toHaveBeenCalled();
+  });
+
+  it('asks once for the final standings of a completed bracket', async () => {
+    renderToolbar({ state: 'completed' } as Partial<PlayoffBracket>);
+
+    await waitFor(() => expect(fetchFinalStandings).toHaveBeenCalledTimes(1));
+    expect(fetchFinalStandings).toHaveBeenCalledWith('b-1');
+  });
 });

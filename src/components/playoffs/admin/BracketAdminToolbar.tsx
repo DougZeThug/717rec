@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import {
   Edit,
   ListOrdered,
@@ -18,10 +17,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useFinalStandings } from '@/hooks/brackets/useFinalStandings';
 import { useRecalculateStandings } from '@/hooks/useRecalculateStandings';
 import { useRepairBracket } from '@/hooks/useRepairBracket';
 import { cn } from '@/lib/utils';
-import { fetchFinalStandings } from '@/services/brackets/BracketReadService';
 import { PlayoffBracket } from '@/types/playoffTypes';
 
 interface BracketAdminToolbarProps {
@@ -108,11 +107,10 @@ const BracketAdminToolbar: React.FC<BracketAdminToolbarProps> = ({
 
   // Final standings are only worth checking once the bracket is finished; if
   // they are missing, an admin can trigger a manual recalculation.
-  const { data: existingStandings } = useQuery({
-    queryKey: ['final-standings', bracketId],
-    queryFn: () => fetchFinalStandings(bracketId),
-    enabled: Boolean(bracketId) && isCompleted,
-  });
+  const { data: existingStandings } = useFinalStandings(
+    bracketId,
+    Boolean(bracketId) && isCompleted
+  );
   const standingsMissing = isCompleted && (!existingStandings || existingStandings.length === 0);
 
   const { recalculate, isRecalculating } = useRecalculateStandings(bracketId);
