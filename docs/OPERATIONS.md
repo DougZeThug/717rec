@@ -1052,6 +1052,12 @@ changed), and override rows exist only in the six old seasons, so every input to
 scored match. Check L4 lists them on their own line ("in the live season") and does
 not fail on them.
 
+Check L4 counts a season as **live** when it is the season the live standings follow
+(the active season, else the season with playoffs active) **and** it is not archived.
+A gap in an archived season is a FAIL, even if that season is still marked active.
+**At a season change, archive the old season first.** Until then, check L4 can say
+FAIL because of the old season's drift.
+
 ### The steps (used on 2026-11-18; keep for a re-run or an undo)
 
 Do the steps in this order. Run each script as a whole: paste the full file and
@@ -1065,7 +1071,7 @@ only the last result, so a note printed in the middle would not show.
 | 3a   | Precheck (read-only), **right before 3**     | `supabase/scripts/division_truth_00_precheck.sql`                      | Every row says PASS in the last column. See the box below.                                                                                                                                  |
 | 3b   | Dry run (read-only), **right before 3**      | `supabase/scripts/division_truth_02a_dryrun.sql`                       | The list of rows script 02 would write. Doug reads the Intermediate 1 and 2 lists.                                                                                                          |
 | 3    | Write the override rows                      | `supabase/scripts/division_truth_02_data.sql`                          | "ROWS INSERTED NOW" (86 on 2026-11-18), the same rows as the dry run. Read the "NOT inserted" lines.                                                                                        |
-| 4    | Checks (read-only)                           | `supabase/scripts/division_truth_06_checks.sql`                        | No FAIL. On the FIRST run L4 says INFO (the six seasons still differ by more than rounding). On a re-run after a finished rollout nothing differs, so L4 says PASS.                         |
+| 4    | Checks (read-only)                           | `supabase/scripts/division_truth_06_checks.sql`                        | No FAIL. FIRST run: L4 says INFO (the six seasons still differ by more than rounding). Re-run: the SIX SEASONS no longer differ, so L4 says PASS (the live season has its own line).        |
 | 5    | Preview (read-only). **Doug approves here.** | `supabase/scripts/division_truth_03_preview.sql`                       | Every team in the six seasons (over 100 rows), then CAREER rows. Paste it to the developer.                                                                                                 |
 | 6    | Recompute, **one season per run**            | `supabase/scripts/division_truth_04_recompute.sql`                     | "moved" lines list the real changes. "ROWS CHANGED" can be about the number of teams in the season (rounding, see above). The last line, "still different ... by more than rounding", is 0. |
 | 7    | Checks again, after the last season          | `supabase/scripts/division_truth_06_checks.sql`                        | All PASS. L4 says PASS (0 in the six seasons; the live season is listed on its own line).                                                                                                   |
