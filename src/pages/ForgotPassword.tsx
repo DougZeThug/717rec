@@ -8,8 +8,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { usePasswordReset } from '@/hooks/auth/usePasswordReset';
 import { emailSchema } from '@/hooks/useAuthForm';
-import { resetPassword } from '@/services/auth/AuthService';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
@@ -20,6 +20,7 @@ import { errorLog } from '@/utils/logger';
  * at a URL and the sign-in form needs no new state. See UX audit X-04.
  */
 const ForgotPassword: React.FC = () => {
+  const { sendResetEmail } = usePasswordReset();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -39,7 +40,7 @@ const ForgotPassword: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await resetPassword(email, `${window.location.origin}/reset-password`);
+      await sendResetEmail(email, `${window.location.origin}/reset-password`);
       setSent(true);
     } catch (error) {
       errorLog('Password reset request failed:', error);

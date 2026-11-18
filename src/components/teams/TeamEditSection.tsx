@@ -8,15 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useUpdateTeamDetails } from '@/hooks/teams/useUpdateTeamDetails';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { useToast } from '@/hooks/useToast';
-import { updateTeamNameAndImage } from '@/services/teams/TeamUpdateService';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 const TeamEditSection: React.FC = () => {
   const { membership, refreshMembership } = useTeamMembership();
   const queryClient = useQueryClient();
+  const updateTeamDetails = useUpdateTeamDetails();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -45,7 +46,7 @@ const TeamEditSection: React.FC = () => {
     try {
       setIsLoading(true);
 
-      await updateTeamNameAndImage(
+      await updateTeamDetails(
         membership.team.id,
         formData.name.trim(),
         formData.image_url.trim() || null

@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth-context';
+import { useProfileActions } from '@/hooks/profile/useProfileActions';
 import { toast } from '@/hooks/useToast';
-import { checkUsernameAvailability, updateProfile } from '@/services/profile/ProfileService';
 import { errorLog } from '@/utils/logger';
 
 import { type ProfileFormData, profileSchema } from './profileSchema';
@@ -33,6 +33,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   onProfileUpdated,
 }) => {
   const { user } = useAuth();
+  const { checkUsername, saveProfile } = useProfileActions();
   // Each result keeps the name it was for. A bare boolean outlived the name:
   // after an edit it still said "available" for a value nobody had checked.
   const [availability, setAvailability] = useState<{
@@ -88,7 +89,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     latestCheckIdRef.current += 1;
     const checkId = latestCheckIdRef.current;
     setIsCheckingUsername(true);
-    const { available } = await checkUsernameAvailability({
+    const { available } = await checkUsername({
       username: value,
       currentUsername: initialUsername,
     });
@@ -168,7 +169,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     }
 
     try {
-      await updateProfile(user.id, data);
+      await saveProfile(user.id, data);
 
       toast({
         title: 'Profile updated',
