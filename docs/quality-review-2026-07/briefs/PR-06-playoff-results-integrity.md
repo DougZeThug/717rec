@@ -10,7 +10,7 @@ Three verified defects cluster in the playoff pipeline:
 2. **The match editor accepts tied scores.** `useMatchEditorState.ts:128-142`: a tie maps to loss/loss, which brackets-manager rejects — but only *after* a pre-update "unlock" write already mutated match status, with no rollback (src/components/playoffs/match-score-editor/).
 3. **Seed-management latch never resyncs.** `useSeedManagement.ts:36` initializes `processedTeams` behind a one-shot `isInitializedRef`; after "Reset to Auto" (or any server-side seed change) the UI keeps stale seed overrides which can flow into bracket creation. *(Flagged high by the investigation; the adversarial re-check could not run — treat step 3 as "verify then fix".)*
 
-Note: the suspected "public users can open the admin score editor" issue was **refuted** during verification — `BracketDetail.tsx:192` passes `onEditMatch` only when `isAdminAccessGranted`. No work needed there.
+Note: the suspected "public users can open the admin score editor" issue was **refuted** during verification — `BracketDetail.tsx:138` passes `onEditMatch` only when `isAdminAccessGranted`. No work needed there.
 
 ## 2. Objective
 
