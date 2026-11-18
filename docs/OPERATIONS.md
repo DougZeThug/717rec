@@ -1259,7 +1259,8 @@ of 2026-11-18). After the drop:
 
 - Undo path 1 (script 05) is gone. It STOPs and writes nothing.
 - Undo path 2 (script 05, type 2) still works. It deletes the override rows, puts the
-  old view back, and recomputes the six seasons by today's rules. It keeps a copy of
+  old view back, and recomputes the six seasons by the rules without the override
+  step (the old view). It keeps a copy of
   the override rows in `power_score_division_override_pre_undo`. It gives the numbers
   the **old rules** give, **not** the old stored numbers.
 - Scripts 02, 02a and 03 were one-time steps. Script 02 and 03 STOP ("the backup was
@@ -1272,32 +1273,36 @@ of 2026-11-18). After the drop:
 **Steps for Doug.**
 
 1. **Merge** this change first. (The scripts are in the repo. Nothing changes on the
-   live database until step 4.)
-2. **Optional: save a file copy.** In the Supabase dashboard, open the table
-   `team_season_stats_pre_division_truth` and export it as CSV. Keep the file. It is the
-   only way to see the old stored numbers after the drop.
-3. Open `supabase/scripts/division_truth_07_drop_backup.sql`. **Paste the WHOLE
+   live database until step 5.)
+2. **Run script 06** (paste the whole file) and check that **L4 and L7 say PASS**. L7
+   cannot run after the drop. (L4 lists the live season on its own line.)
+3. **Save a file copy. Do this.** In the Supabase dashboard, open the table
+   `team_season_stats_pre_division_truth` and export it as CSV. Keep the file. The
+   backup is the only copy of the old stored numbers, and it is only about 185 rows.
+4. Open `supabase/scripts/division_truth_07_drop_backup.sql`. **Paste the WHOLE
    script** into the Supabase SQL editor.
-4. **Run it.** The editor may ask you to confirm a "destructive" statement
+5. **Run it.** The editor may ask you to confirm a "destructive" statement
    (`DROP TABLE`). That is expected. If the question names a table other than
    `team_season_stats_pre_division_truth`, **stop**. Confirm.
-5. **Read the one result table.** Want:
+6. **Read the one result table.** Want:
    - six seasons: stored rows that differ from the rules NOW by more than rounding = **0**
-   - override rows = **86**
+   - saved rows with no live row = **0**
+   - override rows = **86** (more if you added rows by hand)
    - `table exists now` = **no**
    - `verdict` = **OK: backup dropped**
 
    The line "saved rows that differ from the stored numbers now" is the accepted change.
    It is information only. If the script says `STOP:` it dropped nothing: read the
    message and tell the developer.
-6. **Optional:** run script 06 again (paste the whole file). L6b, L6c, L6d and L7 say
+7. **Optional:** run script 06 again (paste the whole file). L6b, L6c, L6d and L7 say
    INFO, "skipped, backup retired". Every other row must be PASS (L4 lists the live
    season on its own line, as on 2026-11-18).
 
 A second run of script 07 is safe: it says "already gone" and changes nothing. The
 script stops (and drops nothing) if a stored score of the six seasons still differs
-from the rules by more than rounding, or if the override table has 0 rows: in both
-cases the backup would still be the way back.
+from the rules by more than rounding, if a saved row has no live row any more (its
+team-season was deleted), or if the override table has 0 rows: in each case the backup
+would still be the way back or the only record.
 
 If you run script 01 before script 07 (the backup still exists), it **never** replaces
 the first backup. Its last line says OK (nothing changed), NOTE (stored scores changed

@@ -115,10 +115,12 @@ On success the toast appears, the dropdown is cleared, and the panel goes back t
 the league for the membership it just created and redraws itself as the yellow
 waiting card.
 
-On failure a red toast appears headed "Failed to submit request", and **its text
-is whatever the database said, word for word**. This is unusual: most failures in
-717rec are collapsed into a friendly sentence, and this one is not. The dropdown
-keeps the chosen team and the button comes back.
+On failure a red toast appears headed "Failed to submit request", with a plain
+sentence under it. The app does **not** show the database's own words. A failure it
+cannot name reads "Something went wrong. Please try again." A few known causes get a
+sentence of their own, such as "You do not have permission to do this." or "Your
+session has expired. Please sign in again." The dropdown keeps the chosen team and
+the button comes back.
 
 One failure has its own plain sentence. If the person already had a membership
 row and that row has since gone or changed (an admin removed it, or it changed in
@@ -200,8 +202,8 @@ action. What an approved membership then unlocks is in
 still counts this season.
 
 **Validation and error display.** One rule, enforced by the greyed-out button.
-Everything else is reported as a toast, and the toast carries the database's own
-words rather than a friendly sentence.
+Everything else is reported as a toast headed "Failed to submit request", with a
+plain sentence under it, not the database's own words.
 
 **Unsaved changes.** Nothing to lose beyond the chosen team.
 
@@ -290,8 +292,8 @@ appear on the team's matches; see
 - **A refusal still leaves no history for the admin.** Asking again clears the
   mark, so a second request looks new. That follows from letting people ask again
   and was accepted deliberately.
-- **Failure toasts carry raw database text.** The user can be shown a constraint
-  name. **May be worth treating as a bug rather than documenting.**
+- Not confirmed by hand: the exact sentence under the failure toast for each cause
+  (it was read from the code, not seen on a screen).
 - Not confirmed by hand: how long an approval actually takes to appear in the
   waiting user's browser, and whether returning to the tab is enough.
 - Not confirmed by hand: whether teams in the Hidden division really do appear in

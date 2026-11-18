@@ -136,8 +136,9 @@ the person it happened to, and is not kept as history for the league.
 | Delete | **Removes the request permanently, on the first press** | None on success |
 
 Failures raise "Failed to mark contact request as resolved", "Failed to reopen
-contact request", or "Failed to delete contact request". The toast now adds a
-reason under the title. Support tickets work the same way, with the titles "Failed
+contact request", or "Failed to delete contact request". Each toast has a plain
+sentence under the title that says why. Mark resolved and Reopen now give that
+sentence too; before, they gave only the title. Support tickets work the same way, with the titles "Failed
 to mark support ticket as resolved" and "Failed to reopen support ticket". Success
 says nothing at all; the list simply changes.
 
