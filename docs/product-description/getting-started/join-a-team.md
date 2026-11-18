@@ -12,7 +12,7 @@ The whole feature is one panel, headed "Team Membership", which appears in two
 places and behaves identically in both: at the top of `/my-team`, and below the
 form on [`/setup-profile`](set-up-your-profile.md). This document owns the panel.
 [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#membership)
-owns what a membership *means*.
+owns what a membership _means_.
 
 **An unapproved membership grants nothing.** It is worth exactly as much as no
 membership at all, except that the user can see they have asked.
@@ -139,14 +139,14 @@ nothing during it.
   appears in the admin's list the next time they look at it.
 - **Nothing comes back.** There is no subscription on memberships, so an approval
   never reaches the waiting browser by itself. The card keeps saying "Pending
-  Approval" until the app refetches: after five minutes have passed *and* the user
+  Approval" until the app refetches: after five minutes have passed _and_ the user
   returns to the tab, or reopens the page, or reloads. See
   [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
 - **A refusal is shown.** Rejecting a request keeps the row and marks it
   refused, so the panel replaces the yellow "Pending Approval" card with a red
   **"Request declined"** one naming the team and the date, and puts the join form
   back underneath. There is still no subscription, so it appears on the same
-  schedule as an approval: after five minutes *and* a return to the tab, a
+  schedule as an approval: after five minutes _and_ a return to the tab, a
   reopen, or a reload.
 
 Approving is described in
@@ -155,7 +155,7 @@ Approving is described in
 ### Leaving
 
 **Leave Team** opens a confirmation: "Leave team? — Are you sure you want to leave
-*team*? You will lose your association with this team and any editing privileges."
+_team_? You will lose your association with this team and any editing privileges."
 Cancel closes it. Leave Team removes the membership, approved or not, and a toast
 says "Left Team — You've successfully left the team". The panel goes back to the
 dropdown.
@@ -166,28 +166,28 @@ again, losing their approval in the meantime.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role (visitor, player, admin) | A visitor gets the "No Teams Available" empty state, because the app asks for nothing when nobody is signed in. A player and an admin see the same panel; an admin cannot approve their own request. | Signing out in another tab leaves the panel on screen; pressing the button then gives "Authentication required — You must be logged in to join a team". |
-| The record's state | The membership decides which of the four panels is drawn. Approved adds "You can edit team details" and the team edit form below it on `/my-team`. | Nothing arrives on its own. The panel only changes state after the user's own action or a refetch. |
-| The season's state (active, archived, playoffs on) | No effect. A membership is not scoped to a season and carries into the next one. | No effect. |
-| Viewport | The card stacks on a phone: the team block first, the Leave Team button under it on the left. From 640 pixels the two share a row, and a long team name is cut with an ellipsis. | No effect beyond re-flowing on rotation. |
-| Keys the panel honours | Tab reaches the dropdown and then the button. Space or Enter opens the dropdown; arrows move through it; Enter chooses. | Enter on the button submits. Escape closes the dropdown or the confirmation dialog. |
+| Modifier                                           | Set at arrival                                                                                                                                                                                       | Changed while editing                                                                                                                                   |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The user's role (visitor, player, admin)           | A visitor gets the "No Teams Available" empty state, because the app asks for nothing when nobody is signed in. A player and an admin see the same panel; an admin cannot approve their own request. | Signing out in another tab leaves the panel on screen; pressing the button then gives "Authentication required — You must be logged in to join a team". |
+| The record's state                                 | The membership decides which of the four panels is drawn. Approved adds "You can edit team details" and the team edit form below it on `/my-team`.                                                   | Nothing arrives on its own. The panel only changes state after the user's own action or a refetch.                                                      |
+| The season's state (active, archived, playoffs on) | No effect. A membership is not scoped to a season and carries into the next one.                                                                                                                     | No effect.                                                                                                                                              |
+| Viewport                                           | The card stacks on a phone: the team block first, the Leave Team button under it on the left. From 640 pixels the two share a row, and a long team name is cut with an ellipsis.                     | No effect beyond re-flowing on rotation.                                                                                                                |
+| Keys the panel honours                             | Tab reaches the dropdown and then the button. Space or Enter opens the dropdown; arrows move through it; Enter chooses.                                                                              | Enter on the button submits. Escape closes the dropdown or the confirmation dialog.                                                                     |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. | Closes the dropdown, or closes the Leave Team confirmation without leaving. It does not clear the chosen team and does not abort a request in flight. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | The chosen team is lost. A request already sent still lands, and its toast appears on whatever page the user is now on — but the panel that would have redrawn is gone, so returning later is the only way to see the result. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Same as navigating away. |
-| Reload, or the tab closed | The panel is drawn again from the league's copy. | The chosen team is lost. A request already accepted survives and shows as pending. |
-| Network lost mid-request | The panel shows its spinner and, when the read fails, falls through to the join dropdown or the empty state **as though the user had no membership** — with no error shown anywhere. | The request fails and a red toast headed "Failed to submit request" appears, with "Something went wrong. Please try again." under it. Nothing is queued. |
-| The request fails or times out | As above: a failed read is silently drawn as "no membership". | Red toast headed "Failed to submit request". A failure the app cannot name reads "Something went wrong. Please try again." under it; a known cause gets its own sentence (for example "You do not have permission to do this."). The chosen team is kept and the button comes back. |
-| The session expires | The panel asks for nothing and draws the "No Teams Available" empty state. | The request fails. The toast is headed "Failed to submit request". When the database says the login token is bad or expired, it reads "Your session has expired. Please sign in again." under it; any other refusal gets a plain sentence too. |
-| The same record changed in another tab, or by another user | The panel shows whatever the app last fetched, which can be up to five minutes old. | **No effect and no notice.** An admin approving or rejecting in that moment does not reach the browser. A request made in another tab is not seen here either. |
-| Browser autofill or a password manager writes into the form | No effect. There is no text field on this panel for a manager to fill. | No effect. |
-| The window loses focus | No effect. | Returning to the tab refetches the membership if the app's copy is more than five minutes old, which is the usual way a user finds out they were approved. |
+| Event                                                       | Before the first edit                                                                                                                                                                | While editing or submitting                                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Nothing to cancel.                                                                                                                                                                   | Closes the dropdown, or closes the Leave Team confirmation without leaving. It does not clear the chosen team and does not abort a request in flight.                                                                                                                               |
+| In-app navigation away, or switching tab within the page    | Nothing is lost.                                                                                                                                                                     | The chosen team is lost. A request already sent still lands, and its toast appears on whatever page the user is now on — but the panel that would have redrawn is gone, so returning later is the only way to see the result.                                                       |
+| Browser back or forward                                     | Returns to the previous page. Nothing is recorded.                                                                                                                                   | Same as navigating away.                                                                                                                                                                                                                                                            |
+| Reload, or the tab closed                                   | The panel is drawn again from the league's copy.                                                                                                                                     | The chosen team is lost. A request already accepted survives and shows as pending.                                                                                                                                                                                                  |
+| Network lost mid-request                                    | The panel shows its spinner and, when the read fails, falls through to the join dropdown or the empty state **as though the user had no membership** — with no error shown anywhere. | The request fails and a red toast headed "Failed to submit request" appears, with "Something went wrong. Please try again." under it. Nothing is queued.                                                                                                                            |
+| The request fails or times out                              | As above: a failed read is silently drawn as "no membership".                                                                                                                        | Red toast headed "Failed to submit request". A failure the app cannot name reads "Something went wrong. Please try again." under it; a known cause gets its own sentence (for example "You do not have permission to do this."). The chosen team is kept and the button comes back. |
+| The session expires                                         | The panel asks for nothing and draws the "No Teams Available" empty state.                                                                                                           | The request fails. The toast is headed "Failed to submit request". When the database says the login token is bad or expired, it reads "Your session has expired. Please sign in again." under it; any other refusal gets a plain sentence too.                                      |
+| The same record changed in another tab, or by another user  | The panel shows whatever the app last fetched, which can be up to five minutes old.                                                                                                  | **No effect and no notice.** An admin approving or rejecting in that moment does not reach the browser. A request made in another tab is not seen here either.                                                                                                                      |
+| Browser autofill or a password manager writes into the form | No effect. There is no text field on this panel for a manager to fill.                                                                                                               | No effect.                                                                                                                                                                                                                                                                          |
+| The window loses focus                                      | No effect.                                                                                                                                                                           | Returning to the tab refetches the membership if the app's copy is more than five minutes old, which is the usual way a user finds out they were approved.                                                                                                                          |
 
 After any interrupt the user is left wherever the interrupt took them. Whatever
 reached the league stands; whatever did not is gone.
@@ -214,7 +214,7 @@ league has confirmed the request and the panel has read it back.
 [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md#realtime):
 the user is waiting for a change that will never be pushed to them.
 
-**Offline.** The request fails and a plain sentence appears in the toast ("Something went wrong. Please try again."). A failed *read* is
+**Offline.** The request fails and a plain sentence appears in the toast ("Something went wrong. Please try again."). A failed _read_ is
 worse: it is drawn as "you are not in a team".
 
 **Toasts and notifications.** One toast per action. No push notification is sent

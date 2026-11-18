@@ -51,11 +51,13 @@ The public form has an app-level rate limit: **5 submissions per 10 minutes per 
 **First: was it live-scored?** If the match is listed in **Admin → Live Corrections**, yes. Scores and Live Corrections take off the old result and put on the new one in the same save. You do not undo anything first.
 
 **Wrong winner or wrong 2–0 / 2–1 (not live-scored)**
+
 1. **Admin → Scores**. Pick the night with **Filter by Date**.
 2. On the match card, tap the correct button: **2–0**, **2–1**, **1–2** or **0–2**. "Edited" shows.
 3. Tap **Submit (1) Changes**. It does not ask first. Both teams' records and the standings change in that save.
 
 **Wrong result on a live-scored match.** Do not use Scores for this. Scores changes the result but not the rounds, so the match lands on **League Night → "Matches that disagree with their rounds"**, and a later re-save puts the old result back.
+
 1. **Admin → Live Corrections**. Check **Season** and **Night**, then tap the match.
 2. Fix the bad round (pencil → **Save changes**), or tap **Change winner** on the game → **Set winner**.
 3. Tap **Reopen & re-save result** → **Reopen & re-save**. Wait for "Result re-saved". If the games no longer give a winner, the match stays open. Fix the games and re-save.
@@ -63,6 +65,7 @@ The public form has an app-level rate limit: **5 submissions per 10 minutes per 
 **It should have been a tie.** **No button in the app does this.** Scores has no tie choice, and Live Corrections will not save a result with no winner. Leave the result as it is and get a developer: the fix is the database function `mark_match_as_tie`, run as an admin user. Do not run it yourself without help — a wrong match ID changes a different match. Afterwards, **Admin → Score approvals → Unresolved matches → It was a tie** clears it from that list.
 
 **Wrong teams.** A finished match has no Edit pencil.
+
 1. **Admin → Scores** → bin on the card → **Delete**. Both teams' records are reversed. Live rounds are deleted too.
 2. **Admin → Match Creation**. Pick the Thursday, both teams and a timeslot → **Create Matches**.
 3. **Admin → Scores**. Tap the result → **Submit (1) Changes**.
@@ -341,8 +344,9 @@ find the 'opponent1_position' column of 'match'".
 > applies a migration, compare its copy with the repo's, keep one, and call the
 > function with the parameter names in the regenerated `types.ts`.
 >
-> Verify in the SQL editor that `has_function_privilege('anon',
-> 'public.is_username_taken(text)', 'EXECUTE')` is false and the same check for
+> Verify in the SQL editor that
+> `has_function_privilege('anon', 'public.is_username_taken(text)', 'EXECUTE')` is
+> false and the same check for
 > `authenticated` is true. `supabase/tests/username_availability.sql` covers the
 > function in the `db-apply-and-smoke` CI job.
 
@@ -355,7 +359,7 @@ find the 'opponent1_position' column of 'match'".
 > release depends on.
 >
 > **The ordering is the transferable part: database first, code second.** The
-> migration only *adds* a function, so applying it early changes nothing for
+> migration only _adds_ a function, so applying it early changes nothing for
 > players. Merging first does not work the same way: the moment the code is
 > live it calls a function that may not exist, and Start Game fails — cleanly,
 > as "live scoring is not enabled" via `PGRST202`, but it fails.
@@ -863,6 +867,7 @@ screen and the King Slayer badge can disagree for a team with an unknown divisio
    `known` shows the live Competitive weight. `unknown` is empty. Run
    `check_unrated_divisions.sql` again. It must still return 0 rows, and now it
    also checks the past seasons.
+
 4. **If the md5 is different, or the check shows a row, stop.** A division is
    unknown, and a team's score moved. Use "If it needs undoing" below. Read the
    rows from the check first: they say which season, which team and which name.
@@ -955,8 +960,7 @@ division is ignored. **An empty table changes nothing.** The migration is
 - **Doug's exception wins over the map:** "Here for Fireball" was Recreational
   High in Summer 1 2025 and Summer 2 2025.
 - Three explicit rows for the 7 newer games: Shut Your Cornhole (Fall 2025) is
-  Competitive; Red Roof Rockets (Winter 1 2026) and The Tomato Saucers (Winter 2
-  2026) are Recreational. They match `src/constants/dropoutDivisions.ts`. That list
+  Competitive; Red Roof Rockets (Winter 1 2026) and The Tomato Saucers (Winter 2 2026) are Recreational. They match `src/constants/dropoutDivisions.ts`. That list
   still decides the Team page. The SQL row decides the Power Score. Check L8 compares
   them.
 
@@ -1294,6 +1298,7 @@ of 2026-11-18). After the drop:
    The line "saved rows that differ from the stored numbers now" is the accepted change.
    It is information only. If the script says `STOP:` it dropped nothing: read the
    message and tell the developer.
+
 7. **Optional:** run script 06 again (paste the whole file). L6b, L6c, L6d and L7 say
    INFO, "skipped, backup retired". Every other row must be PASS (L4 lists the live
    season on its own line, as on 2026-11-18).

@@ -5,12 +5,12 @@
 Three separate queues reach the league, and an admin clears them in three
 different places. This document owns all three.
 
-| Queue | Where | What arrives | Outcomes |
-| --- | --- | --- | --- |
-| **Membership requests** | `/admin` → **Teams** → **Member Approvals** | A signed-in person asked to join a team | Approve, or Reject — which **marks the request refused** |
-| **Contact requests** | `/admin` → **Contact Inbox** (filter: *League requests*) | A message from `/contact` about a timeslot, a score, joining the league, or a general question | Mark resolved, Reopen, or **Delete** |
-| **Support tickets** | `/admin` → **Contact Inbox** (filter: *Support*), same place | A message from `/contact` about a bug, an account, or an idea, which is also emailed to the league | Mark resolved or Reopen. **No Delete** — the table has no delete policy |
-| **Team requests** | `/admin` → **Requests** | A team asked for a time change, a bye, or an emergency cancellation | Approve or Reject, each with optional notes |
+| Queue                   | Where                                                        | What arrives                                                                                       | Outcomes                                                                |
+| ----------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Membership requests** | `/admin` → **Teams** → **Member Approvals**                  | A signed-in person asked to join a team                                                            | Approve, or Reject — which **marks the request refused**                |
+| **Contact requests**    | `/admin` → **Contact Inbox** (filter: _League requests_)     | A message from `/contact` about a timeslot, a score, joining the league, or a general question     | Mark resolved, Reopen, or **Delete**                                    |
+| **Support tickets**     | `/admin` → **Contact Inbox** (filter: _Support_), same place | A message from `/contact` about a bug, an account, or an idea, which is also emailed to the league | Mark resolved or Reopen. **No Delete** — the table has no delete policy |
+| **Team requests**       | `/admin` → **Requests**                                      | A team asked for a time change, a bye, or an emergency cancellation                                | Approve or Reject, each with optional notes                             |
 
 Contact requests and support tickets share one screen and one set of outcome
 words, but the rest share nothing: no common list, no common state words, no
@@ -129,11 +129,11 @@ the person it happened to, and is not kept as history for the league.
 
 **Contact requests** have three writes, none of them confirmed:
 
-| Button | What it does | Toast |
-| --- | --- | --- |
-| Mark resolved | Sets the request resolved and records who did it | None on success |
-| Reopen | Sets it back to new and clears who resolved it | None on success |
-| Delete | **Removes the request permanently, on the first press** | None on success |
+| Button        | What it does                                            | Toast           |
+| ------------- | ------------------------------------------------------- | --------------- |
+| Mark resolved | Sets the request resolved and records who did it        | None on success |
+| Reopen        | Sets it back to new and clears who resolved it          | None on success |
+| Delete        | **Removes the request permanently, on the first press** | None on success |
 
 Failures raise "Failed to mark contact request as resolved", "Failed to reopen
 contact request", or "Failed to delete contact request". Each toast has a plain
@@ -165,11 +165,11 @@ Every approval — all three kinds — replaces the generic toast with one heade
 "Request approved" that says what is left to do and carries an **Open
 Timeslots** button. There is still only one toast per action.
 
-| Request | What the toast says | Where the button goes |
-| --- | --- | --- |
-| Time change | "Open Timeslots to move The Baggers to the 8:00 + 8:30 PM block on Sep 17. Approving does not move it." | Timeslots, on that night, for that team, at that block |
-| Bye request | "Open Timeslots to give The Baggers a bye on Sep 17." | The same, with **BYE** chosen |
-| Emergency cancellation | The same as a bye — an approved cancellation means the team is not playing that night | The same, with **BYE** chosen |
+| Request                | What the toast says                                                                                     | Where the button goes                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Time change            | "Open Timeslots to move The Baggers to the 8:00 + 8:30 PM block on Sep 17. Approving does not move it." | Timeslots, on that night, for that team, at that block |
+| Bye request            | "Open Timeslots to give The Baggers a bye on Sep 17."                                                   | The same, with **BYE** chosen                          |
+| Emergency cancellation | The same as a bye — an approved cancellation means the team is not playing that night                   | The same, with **BYE** chosen                          |
 
 Two things can be missing, and the toast says which:
 
@@ -188,28 +188,28 @@ What happens on the other side is in
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | Admin only, all three, by the guard on `/admin`. See [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). | Losing admin leaves every button on screen; the writes then fail with each queue's generic message. |
-| The record's state | A membership is either waiting or gone from the list. A contact request is new or resolved, and a resolved one is dimmed and offers Reopen instead of Mark resolved. A team request that is not Pending shows no buttons at all. | A contact request resolved in another tab updates here **by itself** — it is the only queue with a live connection. |
-| The season's state | Memberships and contact requests are not season-scoped and survive a season changeover. Team requests carry a season but the list does not filter by it, so old seasons' requests stay in the list forever. | No effect. |
-| Viewport | All three are card lists that stack on a narrow screen. On a team request the card header wraps, so a long team name keeps readable lines and the "N pending" badge stays on the card. Approve and Reject sit side by side in one row and stay on screen. The status picker is 44 pixels high. A Member Approvals card is the width of the screen minus the page margins (it was 390 pixels wide on every phone, so its right side was cut off on a 320-pixel one): the person, the team and the date wrap onto more rows, and a long name with no spaces breaks. In the Contact Inbox a long email, name or team wraps inside its card, and the email is a link with a 44-pixel tap area. | No effect. |
-| Keys the form honours | Tab reaches every button. The membership reject dialog and the team-request dialog are proper dialogs; Escape closes them. | Escape closes a dialog without writing. It cannot stop the contact-request Delete, which has no dialog. |
+| Modifier              | Set at arrival                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Changed while editing                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| The user's role       | Admin only, all three, by the guard on `/admin`. See [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Losing admin leaves every button on screen; the writes then fail with each queue's generic message.                 |
+| The record's state    | A membership is either waiting or gone from the list. A contact request is new or resolved, and a resolved one is dimmed and offers Reopen instead of Mark resolved. A team request that is not Pending shows no buttons at all.                                                                                                                                                                                                                                                                                                                                                                                                                                                           | A contact request resolved in another tab updates here **by itself** — it is the only queue with a live connection. |
+| The season's state    | Memberships and contact requests are not season-scoped and survive a season changeover. Team requests carry a season but the list does not filter by it, so old seasons' requests stay in the list forever.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | No effect.                                                                                                          |
+| Viewport              | All three are card lists that stack on a narrow screen. On a team request the card header wraps, so a long team name keeps readable lines and the "N pending" badge stays on the card. Approve and Reject sit side by side in one row and stay on screen. The status picker is 44 pixels high. A Member Approvals card is the width of the screen minus the page margins (it was 390 pixels wide on every phone, so its right side was cut off on a 320-pixel one): the person, the team and the date wrap onto more rows, and a long name with no spaces breaks. In the Contact Inbox a long email, name or team wraps inside its card, and the email is a link with a 44-pixel tap area. | No effect.                                                                                                          |
+| Keys the form honours | Tab reaches every button. The membership reject dialog and the team-request dialog are proper dialogs; Escape closes them.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Escape closes a dialog without writing. It cannot stop the contact-request Delete, which has no dialog.             |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. | Closes the reject or approve/deny dialog and writes nothing. **There is nothing to cancel on a contact-request delete** — it is already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | Typed admin notes are lost with no warning. A write already sent still lands; the admin never sees the toast. Switching admin section is enough. |
-| Browser back or forward | As above. | As above. |
-| Reload, or the tab closed | Each queue reloads from the league. The team-request filter goes back to Pending. | Unsent notes are gone. A sent write may have landed; the reloaded list says which. |
-| Network lost mid-request | The membership queue shows its red failure panel. The contact list shows "Loading…" then nothing. The team-request list shows a spinner. | The write fails and the queue's generic red toast appears. Nothing is queued for later. |
-| The request fails or times out | As above. | As above. Membership and contact rows stay in place; the team-request dialog stays open with its notes. |
-| The session expires | Nothing loads. | Every write is refused, and the refusal is reported as that queue's generic failure. No queue mentions the session. |
-| The same record changed in another tab, or by another user | **Contact requests only:** the list re-reads itself when the table changes, so another admin's work appears without a reload. Memberships and team requests do not, and keep showing the old queue. | Two admins can act on the same membership or team request; the second write simply overwrites, or fails because the row has gone, with the generic message. |
-| Browser autofill or a password manager writes into the form | No effect. | The admin notes box is unnamed free text and is not a target for autofill. |
-| The window loses focus | No effect. | Returning to the tab refetches the team-request list and the two counts once they are stale. The membership and contact queues are refetched on the same rule. Numbers can change with no message. |
+| Event                                                       | Before the first edit                                                                                                                                                                               | While editing or submitting                                                                                                                                                                        |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Nothing to cancel.                                                                                                                                                                                  | Closes the reject or approve/deny dialog and writes nothing. **There is nothing to cancel on a contact-request delete** — it is already sent.                                                      |
+| In-app navigation away, or switching tab within the page    | Nothing is lost.                                                                                                                                                                                    | Typed admin notes are lost with no warning. A write already sent still lands; the admin never sees the toast. Switching admin section is enough.                                                   |
+| Browser back or forward                                     | As above.                                                                                                                                                                                           | As above.                                                                                                                                                                                          |
+| Reload, or the tab closed                                   | Each queue reloads from the league. The team-request filter goes back to Pending.                                                                                                                   | Unsent notes are gone. A sent write may have landed; the reloaded list says which.                                                                                                                 |
+| Network lost mid-request                                    | The membership queue shows its red failure panel. The contact list shows "Loading…" then nothing. The team-request list shows a spinner.                                                            | The write fails and the queue's generic red toast appears. Nothing is queued for later.                                                                                                            |
+| The request fails or times out                              | As above.                                                                                                                                                                                           | As above. Membership and contact rows stay in place; the team-request dialog stays open with its notes.                                                                                            |
+| The session expires                                         | Nothing loads.                                                                                                                                                                                      | Every write is refused, and the refusal is reported as that queue's generic failure. No queue mentions the session.                                                                                |
+| The same record changed in another tab, or by another user  | **Contact requests only:** the list re-reads itself when the table changes, so another admin's work appears without a reload. Memberships and team requests do not, and keep showing the old queue. | Two admins can act on the same membership or team request; the second write simply overwrites, or fails because the row has gone, with the generic message.                                        |
+| Browser autofill or a password manager writes into the form | No effect.                                                                                                                                                                                          | The admin notes box is unnamed free text and is not a target for autofill.                                                                                                                         |
+| The window loses focus                                      | No effect.                                                                                                                                                                                          | Returning to the tab refetches the team-request list and the two counts once they are stale. The membership and contact queues are refetched on the same rule. Numbers can change with no message. |
 
 After an interrupt each queue is the record: a request still listed was not
 acted on; a request gone was.
@@ -278,7 +278,7 @@ changes.
 ## Edge cases
 
 - **The Contact Inbox holds two kinds of message and says which is which.** The
-  segmented filter reads *All*, *League requests*, and *Support*, each with a
+  segmented filter reads _All_, _League requests_, and _Support_, each with a
   count. **Both now come from the one form at `/contact`**: what the sender said
   the message was about decides which list it lands in — timeslots, scores,
   joining the league and general questions are league requests; bugs, accounts
@@ -286,7 +286,7 @@ changes.
   emailed. The two stores keep their own fields and their own subject lists, so a
   support row shows an email address where a league row shows a team and may show
   a phone number. Fixed in B-10; before it, `/contact` messages reached no admin
-  screen at all. The two *forms* were merged into one by W7 (UX audit H-02); the
+  screen at all. The two _forms_ were merged into one by W7 (UX audit H-02); the
   two stores were deliberately not.
 - **A support ticket cannot be deleted.** Its table grants admins read and update
   only, so the row offers Mark resolved and Reopen but no Delete. Deleting is

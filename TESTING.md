@@ -26,25 +26,24 @@ Single source of truth: script values in `package.json` are authoritative; this 
 After `test:coverage:full`, open `coverage/index.html` in a browser to see
 per-file percentages with line-by-line highlighting.
 
-
 ## End-to-end tests (Playwright)
 
 E2E specs live in `e2e/` (separate from Vitest, which only picks up
 `__tests__/` and `tests/` folders). There are currently eleven specs:
 
-| Spec                        | What it checks                                                          |
-| --------------------------- | ----------------------------------------------------------------------- |
-| `smoke.spec.ts`             | App loads; main shell and primary navigation render                     |
-| `score-submission.spec.ts`  | Public score-submission workflow in the browser                         |
-| `admin-access.spec.ts`      | Admin route gating for admin vs non-admin users                         |
-| `admin-mass-score.spec.ts`  | Admin mass score entry flow                                             |
-| `playoff-bracket.spec.ts`   | Bracket advances semifinal winners into the final and crowns a champion |
-| `a11y.spec.ts`              | axe WCAG 2 A/AA scan of six public routes (blocking step in CI's `browser` job) |
-| `admin-confirmations.spec.ts` | Destructive admin actions ask first: deleting a contact request or a notification, removing a Challonge fallback bracket, changing a team's division |
-| `navigation-scroll.spec.ts` | A linked page opens at the top; scroll resets going forward but is restored going back |
-| `toast-messages.spec.ts`    | Three toasts stack rather than replacing one another; a failed write shows the edge function's own reason, never supabase-js's placeholder |
-| `offline.spec.ts`           | Offline banner appears when the connection drops, an in-app navigation to an undownloaded page keeps the header and shows the recovery screen, and the page loads itself on reconnect |
-| `real-backend.spec.ts`      | Optional live Supabase golden path: logs in, views the schedule, submits a score for a seeded pending match, and verifies the submission row in `score_submissions`; skipped unless `E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`, `E2E_TEST_USER_EMAIL`, and `E2E_TEST_USER_PASSWORD` are set |
+| Spec                          | What it checks                                                                                                                                                                                                                                                                                                                |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `smoke.spec.ts`               | App loads; main shell and primary navigation render                                                                                                                                                                                                                                                                           |
+| `score-submission.spec.ts`    | Public score-submission workflow in the browser                                                                                                                                                                                                                                                                               |
+| `admin-access.spec.ts`        | Admin route gating for admin vs non-admin users                                                                                                                                                                                                                                                                               |
+| `admin-mass-score.spec.ts`    | Admin mass score entry flow                                                                                                                                                                                                                                                                                                   |
+| `playoff-bracket.spec.ts`     | Bracket advances semifinal winners into the final and crowns a champion                                                                                                                                                                                                                                                       |
+| `a11y.spec.ts`                | axe WCAG 2 A/AA scan of six public routes (blocking step in CI's `browser` job)                                                                                                                                                                                                                                               |
+| `admin-confirmations.spec.ts` | Destructive admin actions ask first: deleting a contact request or a notification, removing a Challonge fallback bracket, changing a team's division                                                                                                                                                                          |
+| `navigation-scroll.spec.ts`   | A linked page opens at the top; scroll resets going forward but is restored going back                                                                                                                                                                                                                                        |
+| `toast-messages.spec.ts`      | Three toasts stack rather than replacing one another; a failed write shows the edge function's own reason, never supabase-js's placeholder                                                                                                                                                                                    |
+| `offline.spec.ts`             | Offline banner appears when the connection drops, an in-app navigation to an undownloaded page keeps the header and shows the recovery screen, and the page loads itself on reconnect                                                                                                                                         |
+| `real-backend.spec.ts`        | Optional live Supabase golden path: logs in, views the schedule, submits a score for a seeded pending match, and verifies the submission row in `score_submissions`; skipped unless `E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`, `E2E_TEST_USER_EMAIL`, and `E2E_TEST_USER_PASSWORD` are set |
 
 **Honest caveat:** most specs intercept and mock all Supabase network calls
 (`page.route`) — they exercise the real UI in a real browser, but against
@@ -95,7 +94,6 @@ separate workflow marked non-blocking; that escape hatch is gone.)
 
 The axe a11y scan (`e2e/a11y.spec.ts`) runs as a **blocking** step in the same
 `browser` job.
-
 
 ## Coverage troubleshooting (hangs/timeouts)
 
@@ -266,20 +264,20 @@ doc and the config disagree, the config wins and this doc needs a sync.
 These floors sit ~3 points below the 2026-08-11 measured coverage for each
 area, so they catch regressions without blocking normal work:
 
-| Folder glob | Lines | Statements | Functions | Branches |
-| --- | --- | --- | --- | --- |
-| `src/services/**` | 86% | 83% | 87% | 70% |
-| `src/services/brackets/viewer/**` | 82% | 81% | 82% | 63% |
-| `src/hooks/**` | 59% | 57% | 52% | 45% |
-| `src/hooks/auth/**` | 69% | 67% | 60% | 55% |
-| `src/hooks/scheduling/**` | 61% | 60% | 62% | 43% |
-| `src/components/**` | 58% | 57% | 55% | 47% |
-| `src/components/admin/**` | 58% | 57% | 51% | 47% |
-| `src/components/admin/live-corrections/**` | 91% | 88% | 81% | 72% |
-| `src/pages/**` | 70% | 70% | 68% | 62% |
-| `src/utils/**` | 77% | 76% | 76% | 68% |
-| `src/utils/autoSchedule/**` | 68% | 67% | 66% | 54% |
-| `src/utils/autoSchedule/blossom/**` | 60% | 58% | 56% | 47% |
+| Folder glob                                | Lines | Statements | Functions | Branches |
+| ------------------------------------------ | ----- | ---------- | --------- | -------- |
+| `src/services/**`                          | 86%   | 83%        | 87%       | 70%      |
+| `src/services/brackets/viewer/**`          | 82%   | 81%        | 82%       | 63%      |
+| `src/hooks/**`                             | 59%   | 57%        | 52%       | 45%      |
+| `src/hooks/auth/**`                        | 69%   | 67%        | 60%       | 55%      |
+| `src/hooks/scheduling/**`                  | 61%   | 60%        | 62%       | 43%      |
+| `src/components/**`                        | 58%   | 57%        | 55%       | 47%      |
+| `src/components/admin/**`                  | 58%   | 57%        | 51%       | 47%      |
+| `src/components/admin/live-corrections/**` | 91%   | 88%        | 81%       | 72%      |
+| `src/pages/**`                             | 70%   | 70%        | 68%       | 62%      |
+| `src/utils/**`                             | 77%   | 76%        | 76%       | 68%      |
+| `src/utils/autoSchedule/**`                | 68%   | 67%        | 66%       | 54%      |
+| `src/utils/autoSchedule/blossom/**`        | 60%   | 58%        | 56%       | 47%      |
 
 Nested globs are cumulative, not exclusive. A file under
 `src/hooks/scheduling/**` is also measured by `src/hooks/**` and by the global
@@ -311,6 +309,7 @@ as a floor, not a final target.
   being edited no longer discards the admin's unsaved input — with regression
   tests covering same-round refetch, different-round reset, and reopen. This is
   the only product change in the ratchet.
+
 - **2026-07-02**: Documentation audit. Re-synced this doc with reality: the
   late-June ratchets (below) had raised enforced thresholds without updating
   this file, the E2E section still claimed a single smoke spec (there are
@@ -380,33 +379,33 @@ column is the enforced threshold from `vitest.config.ts` — blank means the
 area has no floor of its own and is covered only by a parent glob and the
 global gate.
 
-| Area                                       | Lines today | Floor | Target | Notes                                          |
-| ------------------------------------------ | ----------- | ----- | ------ | ---------------------------------------------- |
-| `src/services/**`                          | 89%         | 86%   | 70%    | Data access layer — well above target          |
-| `src/services/auth`                        | 100%        | —     | 70%    | On target                                      |
-| `src/services/brackets/viewer`             | 86%         | 82%   | 70%    | New floor this ratchet                         |
+| Area                                       | Lines today | Floor | Target | Notes                                           |
+| ------------------------------------------ | ----------- | ----- | ------ | ----------------------------------------------- |
+| `src/services/**`                          | 89%         | 86%   | 70%    | Data access layer — well above target           |
+| `src/services/auth`                        | 100%        | —     | 70%    | On target                                       |
+| `src/services/brackets/viewer`             | 86%         | 82%   | 70%    | New floor this ratchet                          |
 | `src/hooks/**`                             | 62%         | 59%   | 60%    | React Query hooks wrapping services — at target |
-| `src/hooks/matches`                        | 92%         | —     | 60%    | Well above target                              |
-| `src/hooks/auth`                           | 72%         | 69%   | 60%    | Above target                                   |
-| `src/hooks/scheduling`                     | 65%         | 61%   | 60%    | New floor this ratchet                         |
-| `src/utils/**` (aggregate)                 | 81%         | 77%   | 85%    | Strong gains from logic-heavy utility tests    |
-| `src/utils/career`                         | 89%         | —     | 85%    | On target                                      |
-| `src/utils/rankingUtils`                   | 100%        | —     | 85%    | On target                                      |
-| `src/utils/predictions`                    | 96%         | —     | 85%    | On target                                      |
-| `src/utils/playoffs`                       | 100%        | —     | 85%    | On target                                      |
-| `src/utils/auth`                           | 90%         | —     | 85%    | On target                                      |
-| `src/utils/autoSchedule`                   | 72%         | 68%   | 85%    | Complex scheduling algorithms — gradual        |
-| `src/utils/autoSchedule/dualBlock`         | 89%         | —     | 85%    | On target                                      |
-| `src/utils/autoSchedule/blossom`           | 63%         | 60%   | 85%    | New floor; weakest autoSchedule sub-area       |
-| `src/utils/scheduling/greedy`              | 86%         | —     | 85%    | On target                                      |
-| `src/utils/colors`                         | 90%         | —     | 60%    | On target                                      |
-| `src/utils/timezone`                       | 90%         | —     | 60%    | On target                                      |
-| `src/utils/teamDetailsUtils`               | 92%         | —     | 60%    | On target                                      |
-| `src/pages/**`                             | 73%         | 70%   | 40%    | New floor this ratchet — above target          |
-| `src/components/**` (non-UI)               | 62%         | 58%   | 40%    | New floor this ratchet; still uneven by folder |
-| `src/components/admin/**`                  | 62%         | 58%   | 40%    | Floor raised from a token 5% to match reality  |
-| `src/components/admin/live-corrections/**` | 94%         | 91%   | 60%    | Now above target — closed PR-09's last gap     |
-| `src/types`                                | 100%        | —     | —      | Types only — no target                         |
+| `src/hooks/matches`                        | 92%         | —     | 60%    | Well above target                               |
+| `src/hooks/auth`                           | 72%         | 69%   | 60%    | Above target                                    |
+| `src/hooks/scheduling`                     | 65%         | 61%   | 60%    | New floor this ratchet                          |
+| `src/utils/**` (aggregate)                 | 81%         | 77%   | 85%    | Strong gains from logic-heavy utility tests     |
+| `src/utils/career`                         | 89%         | —     | 85%    | On target                                       |
+| `src/utils/rankingUtils`                   | 100%        | —     | 85%    | On target                                       |
+| `src/utils/predictions`                    | 96%         | —     | 85%    | On target                                       |
+| `src/utils/playoffs`                       | 100%        | —     | 85%    | On target                                       |
+| `src/utils/auth`                           | 90%         | —     | 85%    | On target                                       |
+| `src/utils/autoSchedule`                   | 72%         | 68%   | 85%    | Complex scheduling algorithms — gradual         |
+| `src/utils/autoSchedule/dualBlock`         | 89%         | —     | 85%    | On target                                       |
+| `src/utils/autoSchedule/blossom`           | 63%         | 60%   | 85%    | New floor; weakest autoSchedule sub-area        |
+| `src/utils/scheduling/greedy`              | 86%         | —     | 85%    | On target                                       |
+| `src/utils/colors`                         | 90%         | —     | 60%    | On target                                       |
+| `src/utils/timezone`                       | 90%         | —     | 60%    | On target                                       |
+| `src/utils/teamDetailsUtils`               | 92%         | —     | 60%    | On target                                       |
+| `src/pages/**`                             | 73%         | 70%   | 40%    | New floor this ratchet — above target           |
+| `src/components/**` (non-UI)               | 62%         | 58%   | 40%    | New floor this ratchet; still uneven by folder  |
+| `src/components/admin/**`                  | 62%         | 58%   | 40%    | Floor raised from a token 5% to match reality   |
+| `src/components/admin/live-corrections/**` | 94%         | 91%   | 60%    | Now above target — closed PR-09's last gap      |
+| `src/types`                                | 100%        | —     | —      | Types only — no target                          |
 
 This table is a manual snapshot and drifts as code lands. Only the top-level
 baseline table above is auto-synced by `npm run test:coverage:sync-docs`; when
