@@ -33,6 +33,7 @@
 --
 --   TO GO ALL THE WAY BACK to the state before this fix: run PATH 2, then run
 --   PATH 1. (Path 2 first, so path 1 has the last word on the stored numbers.)
+--   (Only before script 07 retires the backup: after that there is no path 1.)
 --
 --   TO PUT THE OVERRIDE ROWS BACK after path 2 (rows saved in the pre_undo table):
 --     INSERT INTO public.power_score_division_override

@@ -31,8 +31,8 @@
 --  12. Script 05 path 2 STOPS, writing nothing, when an override row belongs to a
 --      season outside the six; and it still reports after the backup table is gone.
 --  14. Script 07 (retire the backup) STOPs, and drops nothing, when a stored six-season
---      score is off by more than rounding (power, sos or career) or when the override
---      table is empty; a gap of 0.0004 is rounding and passes. The real run drops ONLY
+--      score is off by more than rounding (power, sos or career), when a saved row has no
+--      live row any more (its team-season was deleted), or when the override table is empty; a gap of 0.0004 is rounding and passes. The real run drops ONLY
 --      the backup (team_season_stats, the override rows and the view are the same),
 --      prints the pre-check lines and the verdict, and a second run says "already
 --      gone". After the drop: script 06 runs (L6b, L6c, L6d, L7 say "skipped", L6a still
@@ -1119,6 +1119,43 @@ BEGIN
   END IF;
 END $$;
 
+-- (a3b) a saved row whose team-season is gone from team_season_stats: STOP, the table stays.
+SAVEPOINT dt_g5;
+DELETE FROM public.team_season_stats
+ WHERE season_id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a' AND team_id = '00000000-0000-0000-0000-0000000dd012';
+:s07head
+;
+-- Wipe LAST_ERROR_MESSAGE first, so a message left by an earlier test cannot pass this one.
+SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+SELECT 1 / 0;
+\o
+ROLLBACK TO SAVEPOINT dt_clear;
+RELEASE SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+:s07do
+;
+\o
+ROLLBACK TO SAVEPOINT dt_g5;
+\set ON_ERROR_STOP on
+SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: 1 saved row\(s\) have no live row in team_season_stats any more\..* Nothing was dropped\.$' AS stopped \gset
+\if :stopped
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'script 07 did not stop for a saved row with no live row'; END $$;
+\endif
+DO $$
+BEGIN
+  IF to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN
+    RAISE EXCEPTION 'script 07 stopped on a saved row with no live row, but the backup table is gone';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.team_season_stats
+                  WHERE season_id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a' AND team_id = '00000000-0000-0000-0000-0000000dd012') THEN
+    RAISE EXCEPTION 'the savepoint did not bring the deleted team-season back';
+  END IF;
+END $$;
+
 -- (a4) a gap of 0.0004 is rounding: the guard lets it through (the drop is rolled back).
 SAVEPOINT dt_g4;
 UPDATE public.team_season_stats SET power_score = power_score + 0.0004
@@ -1205,6 +1242,9 @@ BEGIN
   IF (SELECT val::bigint FROM dt_07a WHERE what LIKE 'six seasons: saved rows that differ from the stored numbers now%') IS NULL
      OR (SELECT val::bigint FROM dt_07a WHERE what LIKE 'six seasons: saved rows that differ from the stored numbers now%') < 1 THEN
     RAISE EXCEPTION 'script 07, the accepted change should count at least 1 saved row (the fixture saved empty scores)';
+  END IF;
+  IF (SELECT val FROM dt_07a WHERE what = 'saved rows with no live row (must be 0)') IS DISTINCT FROM '0' THEN
+    RAISE EXCEPTION 'script 07, saved rows with no live row should say 0';
   END IF;
   IF (SELECT val FROM dt_07a WHERE what LIKE 'override rows%') IS DISTINCT FROM b.overrides::text THEN
     RAISE EXCEPTION 'script 07, override rows should say %, got %', b.overrides, (SELECT val FROM dt_07a WHERE what LIKE 'override rows%');
@@ -1530,7 +1570,7 @@ SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: only 5 of the 6 seasons' AS stopped \gset
 --    override rows in place. Section 7 and 8 left neither, so build it: path 2 once
 --    more (it recomputes the six seasons by the old rules), then put the override rows
 --    back with the recipe in the header of script 05 (rows of seasons and teams that
---    still exist: section 8 deleted one season).
+--    still exist: section 8 deleted one season, so its saved rows leave the backup too).
 -- ---------------------------------------------------------------------------
 \o /dev/null
 :s05b
@@ -1542,6 +1582,10 @@ FROM public.power_score_division_override_pre_undo p
 WHERE p.season_id IN (SELECT id FROM public.seasons) AND p.team_id IN (SELECT id FROM public.teams)
 ORDER BY p.team_id, p.season_id, p.saved_at DESC
 ON CONFLICT (team_id, season_id) DO NOTHING;
+-- Section 8 deleted Winter 2 2026 and its team-seasons. Script 07 refuses to drop a
+-- backup that is the only record of them (6c tests that), so take those saved rows out.
+DELETE FROM public.team_season_stats_pre_division_truth b
+ WHERE NOT EXISTS (SELECT 1 FROM public.team_season_stats s WHERE s.season_id = b.season_id AND s.team_id = b.team_id);
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.power_score_division_override) THEN

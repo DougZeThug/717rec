@@ -1,8 +1,8 @@
 -- Division truth, script 06: THE CHECKS (hand-apply steps 4 and 7, read-only).
 --
 -- NOT A MIGRATION. Paste the WHOLE file into the Supabase SQL Editor and run it.
--- It changes no stored number. (It makes one temporary view that vanishes with the
--- session.) Run it at three moments:
+-- It changes no stored number. (It makes one temporary view and one temporary table;
+-- both vanish with the session.) Run it at three moments:
 --   a. right after the data script (02), before the recompute: L4 shows the six
 --      seasons still differ (that is expected), everything else must be PASS;
 --   b. after each recompute: the same;

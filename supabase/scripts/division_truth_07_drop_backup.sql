@@ -18,13 +18,19 @@
 --     give, NOT the old stored numbers.
 --   * script 03 (the preview) STOPs, because it reads the backup. It was a one-time step.
 --   * script 06 still runs. Its checks L6b, L6c, L6d and L7 say INFO, "skipped".
--- Optional, BEFORE you run this: in the Supabase dashboard open the table
--- team_season_stats_pre_division_truth and export it as CSV, if you want a file copy.
+-- BEFORE you run this: (1) run script 06 and check that L4 and L7 say PASS (L7 cannot
+-- run after the drop); (2) in the Supabase dashboard open the table
+-- team_season_stats_pre_division_truth and export it as CSV. Do this: the backup is the
+-- only copy of the old stored numbers, and it is only about 185 rows.
 --
 -- THE GUARD. The script STOPS (nothing dropped) if either is true:
 --   * a stored score of the six seasons still differs from what the rules give now
 --     by more than rounding (the same test as check L4 of script 06): the recompute
 --     is not finished, so the backup could still matter;
+--   * a saved row has no live row any more (its team-season was deleted from
+--     team_season_stats since the backup): the backup is then the only record of that
+--     team-season (wins, losses, champion, rank). Check L7 of script 06 reads the same
+--     thing as "rows missing", and it cannot run after the drop;
 --   * the override table has 0 rows: the new numbers have nothing under them, so the
 --     backup would be the only way back.
 -- It does not ask you to type anything. The editor may ask you to confirm a
@@ -38,7 +44,8 @@
 -- HOW TO READ THE RESULT (one table, at the bottom; the editor shows only the last
 -- result). Want, on the live database of 2026-11-18:
 --   * "six seasons: stored rows that differ from the rules NOW ..." = 0
---   * "override rows" = 86
+--   * "saved rows with no live row" = 0
+--   * "override rows" = 86 (more if rows were added by hand)
 --   * "table exists now" = no
 --   * verdict = OK: backup dropped
 -- The line "saved rows that differ from the stored numbers now" is the accepted change
@@ -50,6 +57,7 @@ CREATE TEMP TABLE division_truth_drop (ord int, what text, val text);
 DO $drop$
 DECLARE
   v_diff     bigint;
+  v_lost     bigint;
   v_override bigint := 0;
 BEGIN
   IF to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN
@@ -112,6 +120,15 @@ BEGIN
       OR s.career_power_score IS DISTINCT FROM b.career_power_score
       OR s.sos IS DISTINCT FROM b.sos;
 
+  -- Saved rows whose team-season is gone from team_season_stats (the same key and the
+  -- same definition as "lost" in check L7 of script 06).
+  SELECT count(*) INTO v_lost
+    FROM public.team_season_stats_pre_division_truth b
+    LEFT JOIN public.team_season_stats s ON s.season_id = b.season_id AND s.team_id = b.team_id
+   WHERE s.team_id IS NULL;
+  INSERT INTO division_truth_drop VALUES
+    (8, 'saved rows with no live row (must be 0)', v_lost::text);
+
   -- EXECUTE, so a database with no override table gives 0 (and stops below).
   IF to_regclass('public.power_score_division_override') IS NOT NULL THEN
     EXECUTE 'SELECT count(*) FROM public.power_score_division_override' INTO v_override;
@@ -121,6 +138,9 @@ BEGIN
   -- THE GUARD. Nothing is dropped if it fires.
   IF v_diff > 0 THEN
     RAISE EXCEPTION 'STOP: % stored score(s) in the six seasons still differ from the rules now by more than rounding. The backup is still the only copy of the old numbers and the recompute is not finished. Nothing was dropped.', v_diff;
+  END IF;
+  IF v_lost > 0 THEN
+    RAISE EXCEPTION 'STOP: % saved row(s) have no live row in team_season_stats any more. The backup is the only record of those team-seasons (wins, losses, champion, rank). Nothing was dropped.', v_lost;
   END IF;
   IF v_override = 0 THEN
     RAISE EXCEPTION 'STOP: the override table has 0 rows. The new numbers have nothing under them, so the backup is the only way back. Nothing was dropped.';
