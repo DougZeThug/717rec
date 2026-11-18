@@ -31,16 +31,23 @@
 --  12. Script 05 path 2 STOPS, writing nothing, when an override row belongs to a
 --      season outside the six; and it still reports after the backup table is gone.
 --  14. Script 07 (retire the backup) STOPs, and drops nothing, when a stored six-season
---      score is off by more than rounding (power, sos or career), when a saved row has no
---      live row any more (its team-season was deleted; the test deletes one of two
---      team-seasons of the same team), or when the override table is empty; a gap of
---      0.0004 is rounding and passes. The real run drops ONLY the backup
+--      score is off by more than rounding (power, sos or career: one case each), when a saved
+--      row has no live row any more (its team-season was deleted; the test deletes one of two
+--      team-seasons of the same team), when a saved row's record differs from its live row
+--      (wins, or a playoff rank that was empty), when the old rated view is installed (it
+--      stops before any score is compared), when an override row is for a season outside the
+--      six, or when the override table is empty; a gap of 0.0004 is rounding and passes, and
+--      so does the accepted change (power, sos and career far from the saved ones, records
+--      the same). It takes the weight-save lock, then a share lock on team_season_stats,
+--      before it looks for the backup. The real run drops ONLY the backup
 --      (team_season_stats, the override rows and the view are the same),
 --      prints the pre-check lines and the verdict, and a second run says "already
 --      gone". It fails, dropping nothing, when a view depends on the backup (no CASCADE).
 --      After the drop: script 06 runs (L6b, L6c, L6d, L7 say "skipped", L6a still
 --      checks every team-season), 03 and 02 STOP with their "retired" message, the dry
---      run (02a) lists one CHECK row for it, undo path 1 STOPs and path 2 still works.
+--      run (02a) lists one CHECK row for it, undo path 1 STOPs and path 2 still works
+--      and, with the override-aware view and the overrides back in the stored numbers,
+--      it puts the old-rule scores back (including a team the overrides had moved).
 --  13. The live columns keep 3 decimals (power_score numeric(8,3), sos numeric(6,3)):
 --      the recompute's last line, check L4 and undo path 2's report line that compares
 --      with the rules ignore a gap of 0.0006 or less in power_score and sos. A bigger
@@ -970,9 +977,11 @@ RELEASE SAVEPOINT dt_round;
 --     real run: every one of the six seasons recomputed, the override rows in place.
 --     Everything here runs inside a savepoint that is rolled back at the end,
 --     because sections 7 and 8 still need the backup.
---       (a) the GUARD: a stored six-season score off by more than rounding, a stored
---           career score off, or 0 override rows: 07 STOPs and the table stays;
---           a gap of 0.0004 is rounding and does NOT stop it;
+--       (a) the GUARD: a stored six-season score off by more than rounding (power, sos or
+--           career), a saved row with no live row, a saved row with a changed record, the
+--           old rated view, an override row outside the six seasons, or 0 override rows:
+--           07 STOPs and the table stays; a gap of 0.0004 is rounding, and the accepted
+--           change (power, sos, career) does NOT stop it;
 --       (b) the real run drops ONLY the backup (team_season_stats and the override
 --           rows are byte for byte the same), its result lines are right, and a
 --           second run says "already gone";
@@ -1203,6 +1212,259 @@ BEGIN
   END IF;
 END $$;
 
+-- (a1b) a stored SOS 0.01 off, power and career equal to the rules: STOP too. (Without
+--       the sos comparison in script 07 only this case would catch it.)
+SAVEPOINT dt_g7;
+UPDATE public.team_season_stats SET sos = sos + 0.01
+ WHERE ctid = (SELECT ctid FROM public.team_season_stats
+                WHERE season_id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a' AND sos IS NOT NULL
+                ORDER BY team_id LIMIT 1);
+DO $$
+BEGIN
+  -- Only sos is off, by a material amount: power and career still match the rules.
+  IF (SELECT count(*) FROM public.team_season_stats s
+        JOIN public.v_team_season_agg a ON a.season_id = s.season_id AND a.team_id = s.team_id
+       WHERE abs(COALESCE(s.sos, -1) - COALESCE(a.sos, -1)) > 0.0006) IS DISTINCT FROM 1
+     OR EXISTS (SELECT 1 FROM public.team_season_stats s
+                  JOIN public.v_team_season_agg a ON a.season_id = s.season_id AND a.team_id = s.team_id
+                 WHERE abs(COALESCE(s.power_score, -1) - COALESCE(a.power_score, -1)) > 0.0006
+                    OR s.career_power_score IS DISTINCT FROM a.career_power_score) THEN
+    RAISE EXCEPTION 'the sos-only case is wrong: exactly one sos should be off, and no power or career score';
+  END IF;
+END $$;
+:s07head
+;
+-- Wipe LAST_ERROR_MESSAGE first, so a message left by an earlier test cannot pass this one.
+SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+SELECT 1 / 0;
+\o
+ROLLBACK TO SAVEPOINT dt_clear;
+RELEASE SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+:s07do
+;
+\o
+ROLLBACK TO SAVEPOINT dt_g7;
+\set ON_ERROR_STOP on
+SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: 1 stored score\(s\) in the six seasons still differ from the rules now by more than rounding\..* Nothing was dropped\.$' AS stopped \gset
+\if :stopped
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'script 07 did not stop for a stored sos that is off by 0.01'; END $$;
+\endif
+DO $$
+BEGIN
+  IF to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN
+    RAISE EXCEPTION 'script 07 stopped on an sos gap, but the backup table is gone';
+  END IF;
+END $$;
+
+-- (a3d) a saved row whose live row is still there but whose RECORD changed (wins): STOP.
+--       Power, sos and career are equal to the rules, so only the record guard can fire.
+SAVEPOINT dt_g8;
+UPDATE public.team_season_stats SET match_wins = match_wins + 1
+ WHERE ctid = (SELECT s.ctid FROM public.team_season_stats s
+                 JOIN public.team_season_stats_pre_division_truth b ON b.season_id = s.season_id AND b.team_id = s.team_id
+                WHERE s.season_id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a'
+                ORDER BY s.team_id LIMIT 1);
+:s07head
+;
+-- Wipe LAST_ERROR_MESSAGE first, so a message left by an earlier test cannot pass this one.
+SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+SELECT 1 / 0;
+\o
+ROLLBACK TO SAVEPOINT dt_clear;
+RELEASE SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+:s07do
+;
+\o
+ROLLBACK TO SAVEPOINT dt_g8;
+\set ON_ERROR_STOP on
+SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: 1 saved row\(s\) have a different record in team_season_stats now \(wins, losses, games, division, champion, runner-up or playoff rank\)\..* Nothing was dropped\.$' AS stopped \gset
+\if :stopped
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'script 07 did not stop for a saved row whose wins changed'; END $$;
+\endif
+DO $$
+BEGIN
+  IF to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN
+    RAISE EXCEPTION 'script 07 stopped on a changed record, but the backup table is gone';
+  END IF;
+END $$;
+
+-- (a3e) the same with a playoff rank that was empty when saved and is set now (NULL against
+--       a number must count as a change).
+SAVEPOINT dt_g9;
+UPDATE public.team_season_stats SET playoff_rank = 1
+ WHERE ctid = (SELECT s.ctid FROM public.team_season_stats s
+                 JOIN public.team_season_stats_pre_division_truth b ON b.season_id = s.season_id AND b.team_id = s.team_id
+                WHERE s.season_id = 'e537c594-3ba9-4d79-ba63-f6ed90c89e30' AND b.playoff_rank IS NULL
+                ORDER BY s.team_id LIMIT 1);
+:s07head
+;
+-- Wipe LAST_ERROR_MESSAGE first, so a message left by an earlier test cannot pass this one.
+SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+SELECT 1 / 0;
+\o
+ROLLBACK TO SAVEPOINT dt_clear;
+RELEASE SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+:s07do
+;
+\o
+ROLLBACK TO SAVEPOINT dt_g9;
+\set ON_ERROR_STOP on
+SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: 1 saved row\(s\) have a different record in team_season_stats now' AS stopped \gset
+\if :stopped
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'script 07 did not stop for a saved row whose playoff rank went from empty to a number'; END $$;
+\endif
+
+-- (a3f) the OLD rated view is installed (undo path 2 puts it back): STOP before any score
+--       is compared. The stored scores are the new ones, so without this guard the score
+--       test would fail with another message: this case also proves the view comes first.
+\set s05oldview `sed -n '/^    CREATE OR REPLACE VIEW public.v_power_score_team_matches_rated/,/^      LEFT JOIN public.v_division_rateable dw ON dw.id = r.opp_division_id;$/p' supabase/scripts/division_truth_05_undo.sql`
+SAVEPOINT dt_g10;
+:s05oldview
+;
+DO $$
+BEGIN
+  IF position('manual_override' IN pg_get_viewdef('public.v_power_score_team_matches_rated'::regclass, true)) > 0 THEN
+    RAISE EXCEPTION 'the old-view case is wrong: the test view still has the override step';
+  END IF;
+END $$;
+:s07head
+;
+-- Wipe LAST_ERROR_MESSAGE first, so a message left by an earlier test cannot pass this one.
+SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+SELECT 1 / 0;
+\o
+ROLLBACK TO SAVEPOINT dt_clear;
+RELEASE SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+:s07do
+;
+\o
+ROLLBACK TO SAVEPOINT dt_g10;
+\set ON_ERROR_STOP on
+SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: the rated view is not the override-aware version \(undo path 2 puts the old view back\)\. Nothing was dropped\.$' AS stopped \gset
+\if :stopped
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'script 07 did not stop when the old rated view is installed'; END $$;
+\endif
+DO $$
+BEGIN
+  IF to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN
+    RAISE EXCEPTION 'script 07 stopped on the old view, but the backup table is gone';
+  END IF;
+  IF position('manual_override' IN pg_get_viewdef('public.v_power_score_team_matches_rated'::regclass, true)) = 0 THEN
+    RAISE EXCEPTION 'the savepoint did not bring the override-aware view back';
+  END IF;
+END $$;
+
+-- (a3g) an override row for a season OUTSIDE the six: STOP (undo path 2 would refuse to
+--       run, so retiring the backup would leave no way back).
+SAVEPOINT dt_g11;
+INSERT INTO public.seasons (id, name, start_date, is_active, is_archived)
+VALUES ('00000000-0000-0000-0000-0000000dd0f8', 'DT Eighth 2026', '2026-07-01', false, true);
+INSERT INTO public.power_score_division_override (team_id, season_id, division_id, reason)
+VALUES ('00000000-0000-0000-0000-0000000dd001', '00000000-0000-0000-0000-0000000dd0f8',
+        (SELECT id FROM public.divisions WHERE lower(btrim(name)) = 'competitive'),
+        'League owner, test: a row outside the six seasons');
+:s07head
+;
+-- Wipe LAST_ERROR_MESSAGE first, so a message left by an earlier test cannot pass this one.
+SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+SELECT 1 / 0;
+\o
+ROLLBACK TO SAVEPOINT dt_clear;
+RELEASE SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+:s07do
+;
+\o
+ROLLBACK TO SAVEPOINT dt_g11;
+\set ON_ERROR_STOP on
+SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: 1 override row\(s\) are for seasons outside the six\. Undo path 2 would refuse to run\. Resolve them first \(see OPERATIONS 6g\)\. Nothing was dropped\.$' AS stopped \gset
+\if :stopped
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'script 07 did not stop for an override row outside the six seasons'; END $$;
+\endif
+DO $$
+BEGIN
+  IF to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN
+    RAISE EXCEPTION 'script 07 stopped on an override row outside the six, but the backup table is gone';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.power_score_division_override WHERE season_id = '00000000-0000-0000-0000-0000000dd0f8') THEN
+    RAISE EXCEPTION 'the savepoint did not remove the test override row';
+  END IF;
+END $$;
+
+-- (a3h) the ACCEPTED change passes: every saved power score, sos and career score is far from
+--       the stored one (+0.5, +0.2, +0.3), the records are the same. 07 drops the table.
+--       It also holds the two locks: a share lock on team_season_stats (no live row can be
+--       deleted between the guards and the drop), and it takes the weight-save lock and that
+--       table lock BEFORE it looks for the backup (read from the order of the lines).
+SAVEPOINT dt_g12;
+UPDATE public.team_season_stats_pre_division_truth
+   SET power_score = COALESCE(power_score, 0) + 0.5,
+       sos = COALESCE(sos, 0) + 0.2,
+       career_power_score = COALESCE(career_power_score, 0) + 0.3;
+:s07head
+;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_locks WHERE locktype = 'relation' AND granted AND pid = pg_backend_pid()
+                AND relation = 'public.team_season_stats'::regclass AND mode = 'ShareLock') THEN
+    RAISE EXCEPTION 'a share lock was held before script 07 ran, so the lock check below would prove nothing';
+  END IF;
+END $$;
+\o /dev/null
+:s07do
+;
+\o
+DO $$
+BEGIN
+  IF to_regclass('public.team_season_stats_pre_division_truth') IS NOT NULL THEN
+    RAISE EXCEPTION 'script 07 stopped although only the accepted change (power, sos, career) differs';
+  END IF;
+  IF (SELECT val FROM division_truth_drop WHERE what = 'saved rows whose record differs from the live row (must be 0)') IS DISTINCT FROM '0' THEN
+    RAISE EXCEPTION 'script 07 should count 0 saved rows with a changed record';
+  END IF;
+  IF (SELECT val::bigint FROM division_truth_drop WHERE what LIKE 'six seasons: saved rows that differ from the stored numbers now%') IS NULL
+     OR (SELECT val::bigint FROM division_truth_drop WHERE what LIKE 'six seasons: saved rows that differ from the stored numbers now%') < 1 THEN
+    RAISE EXCEPTION 'script 07 should count the accepted change';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_locks WHERE locktype = 'relation' AND granted AND pid = pg_backend_pid()
+                    AND relation = 'public.team_season_stats'::regclass AND mode = 'ShareLock') THEN
+    RAISE EXCEPTION 'script 07 did not hold a share lock on team_season_stats';
+  END IF;
+END $$;
+ROLLBACK TO SAVEPOINT dt_g12;
+RELEASE SAVEPOINT dt_g12;
+
+\set s07order `awk '$0 !~ /^[ \t]*--/ { if ($0 ~ /pg_advisory_xact_lock\(hashtext\(.power_score_weights.\)\)/ && !a) a = NR; if ($0 ~ /LOCK TABLE public\.team_season_stats IN SHARE MODE/ && !l) l = NR; if ($0 ~ /IF to_regclass\(.public\.team_season_stats_pre_division_truth.\) IS NULL THEN/ && !e) e = NR } END { print (a > 0 && l > a && e > l) ? "ok" : "bad" }' supabase/scripts/division_truth_07_drop_backup.sql`
+SELECT :'s07order' = 'ok' AS ordered \gset
+\if :ordered
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'script 07 must take the advisory lock, then the table lock, then look for the backup'; END $$;
+\endif
+
 -- (a4) a gap of 0.0004 is rounding: the guard lets it through (the drop is rolled back).
 SAVEPOINT dt_g4;
 UPDATE public.team_season_stats SET power_score = power_score + 0.0004
@@ -1292,6 +1554,15 @@ BEGIN
   END IF;
   IF (SELECT val FROM dt_07a WHERE what = 'saved rows with no live row (must be 0)') IS DISTINCT FROM '0' THEN
     RAISE EXCEPTION 'script 07, saved rows with no live row should say 0';
+  END IF;
+  IF (SELECT val FROM dt_07a WHERE what = 'saved rows whose record differs from the live row (must be 0)') IS DISTINCT FROM '0' THEN
+    RAISE EXCEPTION 'script 07, saved rows whose record differs from the live row should say 0';
+  END IF;
+  IF (SELECT val FROM dt_07a WHERE what = 'rows for seasons outside the six, in the override table (must be 0)') IS DISTINCT FROM '0' THEN
+    RAISE EXCEPTION 'script 07, override rows for seasons outside the six should say 0';
+  END IF;
+  IF (SELECT val FROM dt_07a WHERE what = 'rated view has the override step') IS DISTINCT FROM 'yes' THEN
+    RAISE EXCEPTION 'script 07, the rated view line should say yes';
   END IF;
   IF (SELECT val FROM dt_07a WHERE what LIKE 'override rows%') IS DISTINCT FROM b.overrides::text THEN
     RAISE EXCEPTION 'script 07, override rows should say %, got %', b.overrides, (SELECT val FROM dt_07a WHERE what LIKE 'override rows%');
@@ -1612,13 +1883,21 @@ SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: only 5 of the 6 seasons' AS stopped \gset
 -- ---------------------------------------------------------------------------
 -- 9. Script 07 retires the backup for real. Undo path 1 then STOPs (it needs the
 --    backup) and path 2 must still end in its report (it used to fail on a missing
---    table).
---    The guard of 07 needs a state it accepts: stored scores equal to the rules, and
---    override rows in place. Section 7 and 8 left neither, so build it: path 2 once
---    more (it recomputes the six seasons by the old rules), then put the override rows
---    back with the recipe in the header of script 05 (rows of seasons and teams that
---    still exist: section 8 deleted one season, so its saved rows leave the backup too).
+--    table), and it must undo a correction that is really in the stored numbers.
+--    The guard of 07 needs a state it accepts: the override-aware view in place, stored
+--    scores equal to the rules, and override rows in place. Sections 7 and 8 left none
+--    of them, so build it like the real run did: path 2 once more (old view, override
+--    rows gone, six seasons recomputed by the old rules: these are the OLD-RULE scores),
+--    put the override rows back with the recipe in the header of script 05, put the
+--    override-aware view back (the view part of migration 20261117130000) and recompute
+--    the six seasons with script 04. The subject team gets a team-season row first, so a
+--    stored score exists that the overrides really change (its opponents are the
+--    overridden teams). Rows of seasons and teams that still exist only: section 8
+--    deleted one season, so its saved rows leave the backup too.
 -- ---------------------------------------------------------------------------
+INSERT INTO public.team_season_stats (season_id, team_id, match_wins, match_losses, game_wins, game_losses, division_name)
+VALUES ('d6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a', '00000000-0000-0000-0000-0000000dd001', 3, 0, 6, 0, 'Competitive')
+ON CONFLICT (season_id, team_id) DO NOTHING;
 \o /dev/null
 :s05b
 ;
@@ -1629,6 +1908,45 @@ FROM public.power_score_division_override_pre_undo p
 WHERE p.season_id IN (SELECT id FROM public.seasons) AND p.team_id IN (SELECT id FROM public.teams)
 ORDER BY p.team_id, p.season_id, p.saved_at DESC
 ON CONFLICT (team_id, season_id) DO NOTHING;
+-- The scores the OLD rules give (path 2 has just recomputed them). The override rows are
+-- not back yet.
+CREATE TEMP TABLE dt_old_rule_scores AS
+SELECT season_id, team_id, power_score, sos, career_power_score FROM public.team_season_stats
+ WHERE season_id IN ('d6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a', 'e537c594-3ba9-4d79-ba63-f6ed90c89e30',
+                     'd50bb12e-99be-4170-802a-695a402373ce', '34cd19e2-abf5-43b8-a16f-6d73a0e998ac',
+                     '4b90a1d8-b90a-4e47-8e8c-b89a7b54e106', '9cd55eb8-672c-4a43-a9df-3552a7759cca');
+-- The override-aware view, taken from the migration file, and the six seasons recomputed.
+\set s09newview `sed -n '/^CREATE OR REPLACE VIEW public.v_power_score_team_matches_rated/,/^LEFT JOIN public.v_division_rateable dw ON dw.id = r.opp_division_id;$/p' supabase/migrations/20261117130000_power_score_division_override.sql`
+:s09newview
+;
+-- (Winter 2 2026 is gone since section 8, so script 04 would refuse it: five seasons.)
+\o /dev/null
+:s04r2
+;
+:s04r3
+;
+:s04r4
+;
+:s04r5
+;
+:s04r6
+;
+\o
+DO $$
+BEGIN
+  IF position('manual_override' IN pg_get_viewdef('public.v_power_score_team_matches_rated'::regclass, true)) = 0 THEN
+    RAISE EXCEPTION 'the override-aware view did not come back';
+  END IF;
+  -- The correction is in the stored numbers: the subject team's score is not the old-rule score.
+  IF NOT EXISTS (
+    SELECT 1 FROM public.team_season_stats s
+    JOIN dt_old_rule_scores o ON o.season_id = s.season_id AND o.team_id = s.team_id
+    WHERE s.team_id = '00000000-0000-0000-0000-0000000dd001'
+      AND abs(COALESCE(s.power_score, -1) - COALESCE(o.power_score, -1)) > 0.0006
+  ) THEN
+    RAISE EXCEPTION 'with the overrides back, the subject team should hold a score that is not the old-rule score';
+  END IF;
+END $$;
 -- Section 8 deleted Winter 2 2026 and its team-seasons. Script 07 refuses to drop a
 -- backup that is the only record of them (6c tests that), so take those saved rows out.
 DELETE FROM public.team_season_stats_pre_division_truth b
@@ -1701,6 +2019,20 @@ CREATE TEMP TABLE dt_rep AS :s05tail
 ;
 DO $$
 BEGIN
+  -- The correction is undone: every stored score is the old-rule score again, and that
+  -- includes the subject team, whose score the overrides had moved.
+  IF EXISTS (
+    SELECT 1 FROM public.team_season_stats s
+    JOIN dt_old_rule_scores o ON o.season_id = s.season_id AND o.team_id = s.team_id
+    WHERE s.power_score IS DISTINCT FROM o.power_score OR s.sos IS DISTINCT FROM o.sos
+       OR s.career_power_score IS DISTINCT FROM o.career_power_score
+  ) THEN
+    RAISE EXCEPTION 'undo path 2, after the backup was retired, did not bring the old-rule scores back';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.power_score_division_override)
+     OR position('manual_override' IN pg_get_viewdef('public.v_power_score_team_matches_rated'::regclass, true)) > 0 THEN
+    RAISE EXCEPTION 'undo path 2, after the backup was retired, left override rows or the new view';
+  END IF;
   IF (SELECT count(*) FROM dt_rep) < 8 THEN
     RAISE EXCEPTION 'the undo report came back with % rows', (SELECT count(*) FROM dt_rep);
   END IF;
