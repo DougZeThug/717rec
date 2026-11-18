@@ -39,7 +39,7 @@ vi.mock('@/hooks/useMobile', () => ({
   useIsMobile: () => isMobileMock(),
 }));
 
-vi.mock('@/hooks/useSeasonalThemeBase', () => ({
+vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalThemeBase: () => ({ isWinterTheme: false }),
 }));
 
