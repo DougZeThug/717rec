@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError, NotFoundError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError, NotFoundError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
@@ -609,18 +609,29 @@ describe('updateTeamApi', () => {
 describe('updateTeamNameAndImage', () => {
   const TEAM_ID = '77777777-7777-4777-8777-777777777777';
 
+  // Chain: update(payload) -> eq(col, val) -> select(arg) -> maybeSingle() -> result
+  const mockUpdateChain = (result: { data: { id: string } | null; error: unknown }) => {
+    const updates: Record<string, unknown>[] = [];
+    const eq = vi.fn();
+    const select = vi.fn();
+    const maybeSingle = vi.fn().mockResolvedValue(result);
+    eq.mockReturnValue({ select });
+    select.mockReturnValue({ maybeSingle });
+    mockFrom.mockImplementation(() => ({
+      update: (payload: Record<string, unknown>) => {
+        updates.push(payload);
+        return { eq };
+      },
+    }));
+    return { updates, eq, select, maybeSingle };
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('writes the name and image and resolves', async () => {
-    const updates: Record<string, unknown>[] = [];
-    mockFrom.mockImplementation(() => ({
-      update: (payload: Record<string, unknown>) => {
-        updates.push(payload);
-        return { eq: () => Promise.resolve({ error: null }) };
-      },
-    }));
+    const { updates, eq, select } = mockUpdateChain({ data: { id: TEAM_ID }, error: null });
 
     await expect(
       updateTeamNameAndImage(TEAM_ID, 'Renamed', 'https://img.example.com/a.png')
@@ -628,16 +639,12 @@ describe('updateTeamNameAndImage', () => {
 
     expect(mockFrom).toHaveBeenCalledWith('teams');
     expect(updates).toEqual([{ name: 'Renamed', image_url: 'https://img.example.com/a.png' }]);
+    expect(eq).toHaveBeenCalledWith('id', TEAM_ID);
+    expect(select).toHaveBeenCalledWith('id');
   });
 
   it('clears the legacy logo too, so a cleared image stays cleared', async () => {
-    const updates: Record<string, unknown>[] = [];
-    mockFrom.mockImplementation(() => ({
-      update: (payload: Record<string, unknown>) => {
-        updates.push(payload);
-        return { eq: () => Promise.resolve({ error: null }) };
-      },
-    }));
+    const { updates } = mockUpdateChain({ data: { id: TEAM_ID }, error: null });
 
     await updateTeamNameAndImage(TEAM_ID, 'Renamed', null);
 
@@ -645,10 +652,17 @@ describe('updateTeamNameAndImage', () => {
   });
 
   it('throws DatabaseError when the write fails', async () => {
-    mockFrom.mockImplementation(() => ({
-      update: () => ({ eq: () => Promise.resolve({ error: pgError('write refused') }) }),
-    }));
+    mockUpdateChain({ data: null, error: pgError('write refused') });
 
     await expect(updateTeamNameAndImage(TEAM_ID, 'Renamed', null)).rejects.toThrow(DatabaseError);
+  });
+
+  it('throws BusinessLogicError when no row was updated (row-level security hid the team)', async () => {
+    mockUpdateChain({ data: null, error: null });
+
+    const attempt = updateTeamNameAndImage(TEAM_ID, 'Renamed', null);
+
+    await expect(attempt).rejects.toThrow(BusinessLogicError);
+    await expect(attempt).rejects.toThrow(/Nothing was saved/);
   });
 });
