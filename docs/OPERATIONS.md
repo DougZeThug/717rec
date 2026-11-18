@@ -467,11 +467,11 @@ Caveats:
   rebuild the views from text saved in `20260812171710`, which still counts a
   tie as a loss in Win % and the Power Score. Either one quietly undoes §6e.
   This is a pre-existing problem with those controls and needs its own fix.
-- **Do not press Revert after §6g is applied.** It puts back the old formula, which
-  never reads `power_score_division_override`, and rewrites every stored season
-  with it. The override step in the rated view stays, but nothing reads it. See §6g.
-  (The Sandbox weights **Revert** in §6b is a different button. It also rewrites
-  every stored season, from the live rules.)
+- **Do not press this Revert (the §6a one). §6g is applied.** It puts back the old
+  formula, which never reads `power_score_division_override`, and rewrites every
+  stored season with it. The override step in the rated view stays, but nothing
+  reads it. See §6g. (The Sandbox weights **Revert** in §6b is a different button:
+  it only goes back to the previous three weights, and it keeps the fix.)
 - The homepage **Movers** section diffs against last week's
   `power_score_snapshots` row, so it can look skewed for up to a week after a
   revert or re-apply. It self-corrects at the next weekly snapshot (or run the
@@ -520,7 +520,7 @@ Three related tables are worth knowing about:
   values. Add a row (with a reason) rather than editing a view if another season
   turns out to be affected.
 - `power_score_division_override` — the division one team had in one season,
-  read first by the rated view. Built 2026-11-17, **not yet applied**. See §6g.
+  read first by the rated view. **Applied on 2026-11-18.** See §6g.
 
 ## 6b. Power score weight sandbox: preview, save, revert
 
@@ -578,15 +578,17 @@ preview any mix safely: nothing changes until you press **Save & rescore**.
 - **Revert** goes back to the previous mix the same way, and reverting a
   revert toggles back again.
 - **Any save rewrites the stored scores of every season** from the live rules.
-  A save changes nothing only if the stored scores already match the live rules.
-  A live check on 2026-11-17 showed that they do not: any save would change 62
-  team-seasons (Spring 2025, Summer 1 2025 and Summer 2 2025). **Do not press
-  Save & rescore until the old-season fix (§6g) is finished or dropped.** The Save
-  button is off when the typed numbers equal the live numbers, so a save with the
-  same weights (the screen says "reasserted") needs a stale tab or a second admin.
-  No table backup exists until §6g step 1 is run, and Revert works the scores out
-  again from the live rules: it does not restore the old stored numbers. See
-  `docs/untangle-decision-log.md`, "Power Score check result (2026-11-17)".
+  Before 2026-11-18 a save would have changed 62 team-seasons in the three oldest
+  seasons (older rule changes never recomputed). **That warning is gone: §6g was
+  applied on 2026-11-18 and those seasons are recomputed. A save now uses the new
+  rules** (the rated view reads the override table), so **it keeps the fix.** It
+  still rewrites every season, and on the live database it writes `power_score` and
+  `sos` with 3 decimals (see §6g, "Rounding"). The Save button is off when the typed
+  numbers equal the live numbers, so a save with the same weights (the screen says
+  "reasserted") needs a stale tab or a second admin. Revert works the scores out
+  again from the live rules: it does not restore old stored numbers. See
+  `docs/untangle-decision-log.md`, "Power Score check result (2026-11-17)" and "Job
+  C result".
 
 Caveats:
 
@@ -900,9 +902,10 @@ reads it. Real names do not have these.
 
 ## 6g. Old Power Scores: rate each game by the opponent's division in THAT season
 
-> **Status: NOT YET APPLIED to the live database** (written 2026-11-17). The code
-> and the scripts are in the repo. Doug has run none of them. When he has run a
-> step, change this line to say which.
+> **Status: APPLIED to the live database on 2026-11-18.** Doug ran every step himself
+> in the Supabase SQL editor, and every final check passed (see "What was run on
+> 2026-11-18" below). The steps further down stay as the runbook for a re-run (each
+> script is safe to run again) and for the undo.
 
 **Doug's rule (2026-11-17): "I want numbers to be accurate."** A game is rated by
 the division the opponent had in **that season**, not today's division.
@@ -951,28 +954,34 @@ division is ignored. **An empty table changes nothing.** The migration is
   still decides the Team page. The SQL row decides the Power Score. Check L8 compares
   them.
 
-**What players will notice.** Many scores in the three old seasons move, some by
-10 points or more (an earlier what-if: Buttery Nips Summer 2 2025 65.6 to 50.4,
-Mailmen 54.7 to 64.8). **Career rankings can move too**, because the career number
-reads the stored season scores. Seven teams in the three newer seasons move a
-little (+1.73, +1.69, +1.22, +0.65, -0.60, -0.46, -0.14, from Doug's check on
-2026-11-17; the preview gives the final numbers). Win-loss records, champions,
-playoff ranks and the weekly snapshots do **not** change. The homepage Movers
-section is not affected.
+**What players see.** Many scores in the three old seasons moved. **23 of the 100 old
+team-seasons moved 5 points or more** (Spring 2025 2, Summer 1 2025 9, Summer 2 2025
+12). Examples, stored to after: Buttery Nips Summer 2 2025 65.6 to 51.9 (rank 9 to
+22); Burning Holes & Taking Souls Summer 2 2025 60.2 to 47.4; Mailmen Summer 2 2025
+54.7 to 66.0 (rank 23 to 10); Bag Babies Summer 2 2025 56.8 to 66.3; The Great
+Cornholios Summer 1 2025 45.4 to 33.7; Seize the Maize Summer 1 2025 67.7 to 77.0.
+**Career rankings can move too**, because the career number reads the stored season
+scores. Seven teams in the three newer seasons moved a little: Pepperoni Cheesers
++1.73, Came from Dicks +1.69, Jager Bombers +1.22 and Cuzzo's Clinic +0.65 (Fall
+2025); Buttery Nips -0.60 (Winter 1 2026); Buttery Nips -0.46 and Happy Valley Hole
+Hunters -0.14 (Winter 2 2026). Win-loss records, champions, playoff ranks and the
+weekly snapshots did **not** change. The homepage Movers section is not affected.
+**The site keeps pages in memory for 5 to 10 minutes**, so a screen can show the old
+number until it reloads after that.
 
-**Part of the change is NOT this fix.** A live check on 2026-11-17 found 62
-team-seasons whose stored score already differs from today's rules (Spring 2025 20,
-Summer 1 2025 21, Summer 2 2025 21). Older rule changes were never recomputed.
-The recompute catches those up too. The tie backup table
+**Part of the change was NOT this fix.** A live check on 2026-11-17 found 62
+team-seasons whose stored score already differed from the rules of that day (Spring
+2025 20, Summer 1 2025 21, Summer 2 2025 21). Older rule changes were never
+recomputed. The recompute caught those up too. The tie backup table
 `team_season_stats_pre_tie_exclusion` was NOT FOUND on the live database, so
 nothing says how much is the tie rule. The preview (script 03) separates the
 parts with three numbers per team: **stored** (the site today), **live_rules** (what
 today's rules give) and **after** (the fix).
 
-**When Doug approves the final preview table, he ALSO approves those catch-up
-changes** (about 62 team-seasons; they show in the `live_rules` column, not in
-`fix_part`). They come from older rule changes, not from this fix. The recompute
-writes both.
+**When Doug approved the final preview table (2026-11-18, "approved"), he ALSO
+approved those catch-up changes** (about 62 team-seasons; they show in the
+`live_rules` column, not in `fix_part`). They come from older rule changes, not from
+this fix. The recompute wrote both.
 
 **Checked on the live database (VERIFIED by Doug's live read, 2026-11-17).**
 
@@ -991,28 +1000,75 @@ writes both.
   exactly** to them for every old game date.
 - Every old team-season has a stored name that is in the map (no unmapped row).
 
-**Re-run script 00 right before step 3.** Time passes, and a season could be
-un-archived.
+**Re-run script 00 right before step 3** (if you ever repeat it). Time passes, and a
+season could be un-archived.
 
-### Applying it (Supabase SQL Editor, not Lovable)
+### What was run on 2026-11-18 (Doug, in the Supabase SQL editor)
+
+| Step  | What                                      | Result                                                                                                                                                                                                                                                                                                                                                                       |
+| ----- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Backup (script 01)                        | 185 rows saved = 185 live (Fall 2025 34, Spring 2025 31, Summer 1 2025 36, Summer 2 2025 33, Winter 1 2026 27, Winter 2 2026 24). All 185 carry a live-rules number. Verdict OK.                                                                                                                                                                                             |
+| 2     | Migration `20261117130000`                | Applied. The fingerprint was the same before and after: 4,344 games, md5 `3043ab1d09f73f3f7889bc0b010b355f`. Every `resolved_by` count was the same (371 unresolved = 364 old + 7 newer).                                                                                                                                                                                    |
+| 3a    | Precheck (script 00)                      | Every row PASS: the six seasons archived, not active, 0 regular games; the six divisions have one history row each.                                                                                                                                                                                                                                                          |
+| 3b, 3 | Dry run (02a), then the data script (02)  | 83 candidate team-seasons. **86 rows inserted** (83 and the 3 explicit rows). By season: Fall 2025 1, Spring 2025 14, Summer 1 2025 36, Summer 2 2025 33, Winter 1 2026 1, Winter 2 2026 1. By division: Competitive 22, Intermediate High 23, Intermediate Low 23, Recreational 16, Recreational High 2 (Here for Fireball in Summer 1 and Summer 2 2025). Nothing skipped. |
+| 4     | Checks (script 06)                        | L1 PASS (0 of 3,048 solid answers changed). L2, L3 (86 rows; 1,287 games rated by an override; 0 unrated), L3b (0 of 1,287), L5 (`v_team_details` fingerprint `69499fd9ba63c0c58ff644859035fced`, 51 rows), L6a, L6b, L6c, L6d (the 7 teams above), L7, L8 all PASS. L4 said FAIL: see "Rounding" below.                                                                     |
+| 5     | Preview (script 03)                       | Doug approved the table, with the about 62 catch-up changes.                                                                                                                                                                                                                                                                                                                 |
+| 6     | Recompute (script 04), one season per run | Winter 2 2026 (24 rows written), Winter 1 2026 (25), Fall 2025 (33), Spring 2025 (31), Summer 1 2025 (36), Summer 2 2025 (33). Every "moved" line matched the preview.                                                                                                                                                                                                       |
+| 7     | Checks again                              | All PASS: L1, L2, L3, L3b, L4 (0 in the six seasons; 0 elsewhere, not counting the live season; 27 in the live season), L5 (same fingerprint), L6a to L6d, L7, L8.                                                                                                                                                                                                           |
+
+### Rounding on the live database (found 2026-11-18)
+
+On the live database `team_season_stats.power_score` is `numeric(8,3)` and `sos` is
+`numeric(6,3)`: **3 decimals**. `career_power_score` is plain `numeric`. **The repo
+migrations do not say this** (live differs from the repo; CI keeps full precision).
+So the view (full precision) can never equal a stored value:
+
+- After a recompute, a strict "rows still different from the rules" count showed
+  the number of team-seasons (24, 25, 33 ...), although the numbers were right. The
+  biggest gap was 0.000453 in power_score, 0.000500 in sos and 0.000000 in
+  career_power_score.
+- The recompute (script 04) writes about **every** row of the season (the rounded
+  value), even where the real change is below rounding. So "ROWS CHANGED" can be about
+  the number of teams in the season. The "moved" lines list only real changes.
+- **Fixed in the scripts:** script 04's last line ("rows still different from the
+  rules by more than rounding") and check L4 in script 06 now ignore a gap of 0.0006
+  or less in `power_score` and `sos`. Anything bigger is still counted.
+- Script 05's two comparison lines at the bottom compare exactly. On the live
+  database the one that compares with the rules ("0 after path 2") shows about the
+  number of rows, because of this rounding. Read a gap of 0.0006 or less as zero. The
+  line that compares with the backup is fine (both are stored with 3 decimals).
+- Archived seasons outside the six (Spring 2026, Summer 1 2026, Summer 2 2026) also
+  differ by up to 0.0005 for the same reason.
+
+### The live season (Fall 2026) can drift
+
+The **live** season's stored numbers can differ from the view between scored matches.
+On 2026-11-18, 27 to 28 team-seasons differed, by up to about 0.06. **This is not
+caused by the override.** Check L2 passed (no game row outside the override rows
+changed), and override rows exist only in the six old seasons, so every input to Fall
+2026 is the same as before. Its stored numbers refresh by themselves at the next
+scored match. Check L4 lists them on their own line ("in the live season") and does
+not fail on them.
+
+### The steps (used on 2026-11-18; keep for a re-run or an undo)
 
 Do the steps in this order. Run each script as a whole: paste the full file and
 Run. Each one ends with one result table that says what happened. The editor shows
 only the last result, so a note printed in the middle would not show.
 
-| Step | What                                         | File                                                                   | Success looks like                                                                                       |
-| ---- | -------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| 1    | Backup, **before** the migration             | `supabase/scripts/division_truth_01_backup.sql`                        | "OK: saved = live"                                                                                       |
-| 2    | Migration (table + view), table still empty  | `supabase/migrations/20261117130000_power_score_division_override.sql` | The fingerprint below is **the same** before and after                                                   |
-| 3a   | Precheck (read-only), **right before 3**     | `supabase/scripts/division_truth_00_precheck.sql`                      | Every row says PASS in the last column. See the box below.                                               |
-| 3b   | Dry run (read-only), **right before 3**      | `supabase/scripts/division_truth_02a_dryrun.sql`                       | The list of rows script 02 would write. Doug reads the Intermediate 1 and 2 lists.                       |
-| 3    | Write the override rows                      | `supabase/scripts/division_truth_02_data.sql`                          | "ROWS INSERTED NOW" about 85 (an estimate), the same rows as the dry run. Read the "NOT inserted" lines. |
-| 4    | Checks (read-only)                           | `supabase/scripts/division_truth_06_checks.sql`                        | No FAIL. L4 says INFO (the six seasons still differ).                                                    |
-| 5    | Preview (read-only). **Doug approves here.** | `supabase/scripts/division_truth_03_preview.sql`                       | Every team in the six seasons (over 100 rows), then CAREER rows. Paste it to the developer.              |
-| 6    | Recompute, **one season per run**            | `supabase/scripts/division_truth_04_recompute.sql`                     | "ROWS CHANGED" is the number of teams that moved. "still different" is 0. A second run changes 0.        |
-| 7    | Checks again, after the last season          | `supabase/scripts/division_truth_06_checks.sql`                        | All PASS. L4 says PASS.                                                                                  |
+| Step | What                                         | File                                                                   | Success looks like                                                                                                                                                                          |
+| ---- | -------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Backup, **before** the migration             | `supabase/scripts/division_truth_01_backup.sql`                        | "OK: saved = live"                                                                                                                                                                          |
+| 2    | Migration (table + view), table still empty  | `supabase/migrations/20261117130000_power_score_division_override.sql` | The fingerprint below is **the same** before and after                                                                                                                                      |
+| 3a   | Precheck (read-only), **right before 3**     | `supabase/scripts/division_truth_00_precheck.sql`                      | Every row says PASS in the last column. See the box below.                                                                                                                                  |
+| 3b   | Dry run (read-only), **right before 3**      | `supabase/scripts/division_truth_02a_dryrun.sql`                       | The list of rows script 02 would write. Doug reads the Intermediate 1 and 2 lists.                                                                                                          |
+| 3    | Write the override rows                      | `supabase/scripts/division_truth_02_data.sql`                          | "ROWS INSERTED NOW" (86 on 2026-11-18), the same rows as the dry run. Read the "NOT inserted" lines.                                                                                        |
+| 4    | Checks (read-only)                           | `supabase/scripts/division_truth_06_checks.sql`                        | No FAIL. L4 says INFO (the six seasons still differ by more than rounding).                                                                                                                 |
+| 5    | Preview (read-only). **Doug approves here.** | `supabase/scripts/division_truth_03_preview.sql`                       | Every team in the six seasons (over 100 rows), then CAREER rows. Paste it to the developer.                                                                                                 |
+| 6    | Recompute, **one season per run**            | `supabase/scripts/division_truth_04_recompute.sql`                     | "moved" lines list the real changes. "ROWS CHANGED" can be about the number of teams in the season (rounding, see above). The last line, "still different ... by more than rounding", is 0. |
+| 7    | Checks again, after the last season          | `supabase/scripts/division_truth_06_checks.sql`                        | All PASS. L4 says PASS (0 in the six seasons; the live season is listed on its own line).                                                                                                   |
 
-> ### BEFORE step 3 (writing the override rows)
+> ### BEFORE step 3 (writing the override rows; done on 2026-11-18, keep for a re-run)
 >
 > - **(a) Precheck.** Run `division_truth_00_precheck.sql` right before step 3. **Want,
 >   for all six seasons:** `is_archived=true`, `is_active=false`, `playoffs_active=false`
@@ -1044,7 +1100,8 @@ only the last result, so a note printed in the middle would not show.
 > - **(c)** Run step 3 when **no match is being scored.**
 > - **(d)** Between step 3 and step 6, do **not** press the Sandbox **Save & rescore**
 >   or **Revert**, and do **not** press the §6a **Revert**. Each one rewrites every
->   stored season.
+>   stored season (a Sandbox save would have written the override numbers and the
+>   catch-up changes in one go, with no per-season check).
 > - **(e) Back out before step 6:** `DELETE FROM public.power_score_division_override;`
 >   Nothing stored has changed, and the view is identical to the old one again.
 > - **(f) Dry run.** Run `division_truth_02a_dryrun.sql` before script 02. It writes
@@ -1077,9 +1134,10 @@ the cause: a missing backup, a division name that matches two divisions, or a te
 name that matches two teams.
 
 Recompute order (step 6): type the season id on the line marked TYPE HERE in
-script 04. Start with one of the three newer seasons (Fall 2025, Winter 1 2026 or
-Winter 2 2026): only a few teams move. Check the result. Do the other two, then the
-three 2025 seasons. The season ids are listed at the top of script 04.
+script 04. Doug did Winter 2 2026, Winter 1 2026, Fall 2025, Spring 2025, Summer 1
+2025 and Summer 2 2025, in that order: the three newer seasons first (only a few
+teams really move), the three 2025 seasons last. Check the result of each run. The
+season ids are listed at the top of script 04.
 
 ### What the editor may ask
 
@@ -1100,15 +1158,18 @@ three 2025 seasons. The season ids are listed at the top of script 04.
 
 ### Warnings
 
-- **Do not press "Save & rescore" in the Power Score Sandbox until step 7 is done
-  (or Doug drops the fix).** A save recomputes **every** season at once, with no
-  preview and no per-season check. Before step 6 is finished it would write the
-  override numbers and the 62 catch-up changes in one go. Scripts 04 and 05 take the
-  same lock as a save, so they never run at the same moment. After step 7 a save with
-  the **same** weights changes nothing in the old seasons. A save with **new**
-  weights moves every season, as before (on purpose). **The Sandbox Revert button
-  does the same:** it also rewrites every stored season.
-- **Do not press Revert in §6a.** It does not touch the rated view, so the override
+- **The Sandbox "Save & rescore" now keeps the fix.** The old warning ("do not press
+  it until the old-season fix is done") is gone: the fix is done. The rated view reads
+  the override table, so a save works every season out WITH the overrides. A save
+  with the **same** weights changes nothing in the old seasons except rounding (it
+  rewrites every season; on the live database `power_score` and `sos` keep 3
+  decimals). A save with **new** weights moves every season, as before (on purpose).
+  Scripts 04 and 05 take the same lock as a save, so they never run at the same
+  moment.
+- **The Sandbox weights "Revert" button also keeps the fix.** It only goes back to the
+  previous three weights, then works every stored season out again from the live
+  rules (the overrides included). It does not put back the old formula.
+- **Do NOT press Revert in §6a.** It does not touch the rated view, so the override
   step stays. But it puts back the **old formula**, which rates every opponent by
   today's division and **never reads the override table**. It then rewrites the stored
   score of **every** season, archived ones included. That would undo this fix in the
@@ -1132,16 +1193,16 @@ line marked TYPE HERE.
 
 - **Path 1: put the saved numbers back.** It copies `power_score`,
   `career_power_score`, `sos` and `recorded_at` of the six seasons from the backup
-  (`team_season_stats_pre_division_truth`). This gives back **today's stored
-  numbers, exactly.** It is safe because those six seasons are closed: no match is
-  scored in them, so it cannot lose a newer score. It does **not** stop the
+  (`team_season_stats_pre_division_truth`). This gives back **the stored numbers from
+  before step 6, exactly.** It is safe because those six seasons are closed: no match
+  is scored in them, so it cannot lose a newer score. It does **not** stop the
   overrides. The next recompute or Sandbox save writes the new numbers again.
 - **Path 2: stop using the overrides.** It first copies the override rows to the
   locked table `power_score_division_override_pre_undo` (so a row added by hand is
   not lost). Then it deletes the override rows, puts the view text of migration
   `20261003183939` back, and recomputes the six seasons. This gives
-  **the numbers today's rules give**. It is **not** today's stored numbers: the 62
-  team-seasons that differ today stay changed.
+  **the numbers the old rules give (no overrides)**. It is **not** the stored numbers
+  from before step 6: the 62 team-seasons that differed then stay changed.
 - **Path 2 stops (and writes nothing) if the override table holds a row for a season
   other than the six.** It recomputes only the six seasons, so the stored scores of
   another season would stay worked out with a row it deletes. The error names the
@@ -1152,7 +1213,9 @@ line marked TYPE HERE.
 - After undo, revert the pull request too. If the migration file stays in the repo,
   the next hand-apply of all migrations adds the override step again.
 
-Drop the backup table when Doug accepts the new numbers:
+**Drop the backup table only when Doug accepts the new numbers. Doug decides, not the
+developer.** Until then keep `team_season_stats_pre_division_truth` (it is the source
+for undo path 1) and keep the undo script in the repo:
 `DROP TABLE public.team_season_stats_pre_division_truth;`
 (Script 05 still ends in its report after that: it says `backup unavailable` for the
 line that compares with the backup.) If you run script 01 again later, it **never**
@@ -1184,6 +1247,10 @@ from.
   2026-11-17). If a season were un-archived or held a regular game, the standings
   (`v_team_details`) could move for that team at step 3, not at step 6. Script 00
   and check L5 show it.
+- Stored `power_score` and `sos` have 3 decimals on the live database (see
+  "Rounding" above), so a stored number differs from the view by up to about 0.0005.
+  The live season's stored numbers can also drift from the view between scored
+  matches, by more than that. That is not caused by the override.
 
 The SQL tests `supabase/tests/power_score_division_override.sql` (the view and the
 table) and `supabase/tests/division_truth_scripts.sql` (the real script files on a

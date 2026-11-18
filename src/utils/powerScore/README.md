@@ -116,7 +116,7 @@ The override (priority 0) holds a real `divisions.id` and a written reason. Its
 division must be rateable, so a row pointing at a Hidden or weightless division is
 ignored and the chain runs as before. It was added for Spring 2025, Summer 1 2025,
 Summer 2 2025 and three dropped-out teams (`docs/OPERATIONS.md` section 6g; built
-2026-11-17, not yet applied). The rule above still holds for the view: it reads ids,
+2026-11-17, applied to the live database on 2026-11-18: 86 rows). The rule above still holds for the view: it reads ids,
 never names. Doug's script is the one place a stored name becomes an id. A row added
 by hand later can silently replace a snapshot, archive or bracket answer: run check L1
 (`supabase/scripts/division_truth_06_checks.sql`) after any hand-written row.
