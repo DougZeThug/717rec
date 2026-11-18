@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useAuth } from '@/contexts/auth-context';
+import { useUpdatePassword } from '@/hooks/auth/useUpdatePassword';
 import { passwordSchema } from '@/hooks/useAuthForm';
 import { toast } from '@/hooks/useToast';
-import { updatePassword } from '@/services/auth/AuthService';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
@@ -77,6 +77,7 @@ const PasswordField: React.FC<PasswordFieldProps> = ({
 const ResetPassword: React.FC = () => {
   const { user, authInitialized, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { setNewPassword } = useUpdatePassword();
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -108,7 +109,7 @@ const ResetPassword: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await updatePassword(password);
+      await setNewPassword(password);
       toast({
         title: 'Password updated',
         description: 'You are signed in with your new password.',
