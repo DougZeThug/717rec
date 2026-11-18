@@ -286,10 +286,10 @@ BEGIN
   FROM public.v_power_score_team_matches_rated x;
 
   SELECT count(*) INTO v_rows FROM dt_old_rated WHERE season_id = ANY(v_all_seas);
-  IF v_rows <> 26 THEN
+  IF v_rows IS DISTINCT FROM 26 THEN
     RAISE EXCEPTION 'the fixture should give 26 view rows (13 matches, 2 sides each), got %', v_rows;
   END IF;
-  IF v_n2 <> v_n THEN
+  IF v_n2 IS DISTINCT FROM v_n THEN
     RAISE EXCEPTION 'empty table: row count changed % -> %', v_n, v_n2;
   END IF;
   IF v_md5_new IS DISTINCT FROM v_md5_old THEN
@@ -305,7 +305,7 @@ BEGIN
     'snapshot_at_date', 'snapshot_earliest_in_season', 'archive_division_id',
     'bracket_division_id', 'division_history', 'current_division',
     'last_known_division', 'unresolved');
-  IF v_n <> 8 THEN
+  IF v_n IS DISTINCT FROM 8 THEN
     RAISE EXCEPTION 'the fixture should reach all 8 old answers, reached %', v_n;
   END IF;
   IF EXISTS (SELECT 1 FROM public.v_power_score_team_matches_rated WHERE resolved_by = 'manual_override') THEN
@@ -320,7 +320,7 @@ BEGIN
                                 (v_w_lo + v_w_mid) / 2,
                                 (2 * v_w_lo + v_w_mid) / (2 * v_w_lo + 3 * v_w_mid)) / 100.0
     INTO v_exp;
-  IF abs(v_stored_old - v_exp) > 1e-9 THEN
+  IF NOT COALESCE(abs(v_stored_old - v_exp) <= 1e-9, false) THEN
     RAISE EXCEPTION 'Team X old-rule score should be % (by hand), got %', v_exp, v_stored_old;
   END IF;
 
@@ -333,7 +333,7 @@ BEGIN
   SELECT resolved_by, opp_division_id, opp_weight INTO STRICT v_by_seen, v_div_seen, v_wt_seen
   FROM public.v_power_score_team_matches_rated
   WHERE season_id = v_season_a AND team_id = v_team_x AND opponent_id = v_team_p;
-  IF v_by_seen <> 'manual_override' OR v_div_seen <> v_div_hi OR v_wt_seen IS DISTINCT FROM v_w_hi THEN
+  IF v_by_seen IS DISTINCT FROM 'manual_override' OR v_div_seen IS DISTINCT FROM v_div_hi OR v_wt_seen IS DISTINCT FROM v_w_hi THEN
     RAISE EXCEPTION 'P override: expected manual_override / High / %, got % / % / %',
       v_w_hi, v_by_seen, v_div_seen, v_wt_seen;
   END IF;
@@ -341,7 +341,7 @@ BEGIN
   -- Who won, the games and the date are the old row's, and so is the row count.
   SELECT count(*) INTO v_n FROM public.v_power_score_team_matches_rated;
   SELECT count(*) INTO v_n2 FROM dt_old_rated;
-  IF v_n <> v_n2 THEN
+  IF v_n IS DISTINCT FROM v_n2 THEN
     RAISE EXCEPTION 'an override must not add or drop a row: % vs %', v_n2, v_n;
   END IF;
   SELECT count(*) INTO v_n
@@ -353,7 +353,7 @@ BEGIN
         IS NOT DISTINCT FROM
         (od.season_id, od.source, od.opponent_id, od.is_win, od.is_loss,
          od.game_wins, od.game_losses, od.match_date);
-  IF v_n <> 1 THEN
+  IF v_n IS DISTINCT FROM 1 THEN
     RAISE EXCEPTION 'P override: the row of Team X v P should keep winner, games and date, % did', v_n;
   END IF;
 
@@ -378,19 +378,19 @@ BEGIN
     INTO v_exp;
   SELECT power_score INTO STRICT v_num3
   FROM public.v_team_season_agg WHERE season_id = v_season_a AND team_id = v_team_x;
-  IF abs(v_num - v_exp) > 1e-9 OR abs(v_num3 - v_exp) > 1e-9 THEN
+  IF NOT COALESCE(abs(v_num - v_exp) <= 1e-9 AND abs(v_num3 - v_exp) <= 1e-9, false) THEN
     RAISE EXCEPTION 'Team X after the override should score % (by hand), got % and %', v_exp, v_num, v_num3;
   END IF;
-  IF v_exp <= v_stored_old THEN
+  IF NOT COALESCE(v_exp > v_stored_old, false) THEN
     RAISE EXCEPTION 'the override should lift Team X (Low -> High opponent): % -> %', v_stored_old, v_exp;
   END IF;
-  IF abs(v_num2 - (v_w_hi + v_w_mid) / 2) > 1e-9 THEN
+  IF NOT COALESCE(abs(v_num2 - (v_w_hi + v_w_mid) / 2) <= 1e-9, false) THEN
     RAISE EXCEPTION 'Team X SOS should be (High + Mid) / 2, got %', v_num2;
   END IF;
   SELECT c.matches_played, c.wins, c.losses INTO STRICT v_n, v_n2, v_n3
   FROM public.v_power_score_components c
   WHERE c.season_id = v_season_a AND c.team_id = v_team_x;
-  IF v_n <> 2 OR v_n2 <> 1 OR v_n3 <> 1 THEN
+  IF v_n IS DISTINCT FROM 2 OR v_n2 IS DISTINCT FROM 1 OR v_n3 IS DISTINCT FROM 1 THEN
     RAISE EXCEPTION 'Team X should still read 2 played, 1-1, got % played, %-%', v_n, v_n2, v_n3;
   END IF;
 
@@ -398,14 +398,14 @@ BEGIN
   SELECT resolved_by, opp_weight INTO STRICT v_by_seen, v_wt_seen
   FROM public.v_power_score_team_matches_rated
   WHERE season_id = v_season_c AND opponent_id = v_team_p;
-  IF v_by_seen <> 'current_division' OR v_wt_seen IS DISTINCT FROM v_w_lo THEN
+  IF v_by_seen IS DISTINCT FROM 'current_division' OR v_wt_seen IS DISTINCT FROM v_w_lo THEN
     RAISE EXCEPTION 'P in the other season must stay current_division / Low, got % / %', v_by_seen, v_wt_seen;
   END IF;
   -- ...and Q (no override row) in the old season is unchanged.
   SELECT resolved_by, opp_weight INTO STRICT v_by_seen, v_wt_seen
   FROM public.v_power_score_team_matches_rated
   WHERE season_id = v_season_a AND opponent_id = v_team_q;
-  IF v_by_seen <> 'current_division' OR v_wt_seen IS DISTINCT FROM v_w_mid THEN
+  IF v_by_seen IS DISTINCT FROM 'current_division' OR v_wt_seen IS DISTINCT FROM v_w_mid THEN
     RAISE EXCEPTION 'Q (no override) must stay current_division / Mid, got % / %', v_by_seen, v_wt_seen;
   END IF;
 
@@ -417,12 +417,12 @@ BEGIN
   WHERE season_id = v_season_a AND opponent_id = v_team_s;
   SELECT resolved_by INTO STRICT v_text2 FROM dt_old_rated
   WHERE season_id = v_season_a AND opponent_id = v_team_ar;
-  IF v_text <> 'snapshot_at_date' OR v_text2 <> 'archive_division_id' THEN
+  IF v_text IS DISTINCT FROM 'snapshot_at_date' OR v_text2 IS DISTINCT FROM 'archive_division_id' THEN
     RAISE EXCEPTION 'fixture: S should be snapshot_at_date and A archive_division_id, got % and %', v_text, v_text2;
   END IF;
   SELECT resolved_by INTO STRICT v_text FROM dt_old_rated
   WHERE season_id = v_season_a AND opponent_id = v_team_h;
-  IF v_text <> 'unresolved' THEN
+  IF v_text IS DISTINCT FROM 'unresolved' THEN
     RAISE EXCEPTION 'fixture: H (Hidden today) should be unresolved before the override, got %', v_text;
   END IF;
 
@@ -436,7 +436,7 @@ BEGIN
   WHERE season_id = v_season_a AND team_id = v_team_k
     AND opponent_id IN (v_team_s, v_team_ar, v_team_h)
     AND resolved_by = 'manual_override' AND opp_division_id = v_div_hi AND opp_weight = v_w_hi AND rates;
-  IF v_n <> 3 THEN
+  IF v_n IS DISTINCT FROM 3 THEN
     RAISE EXCEPTION 'S, A and H should all be manual_override / High / rated, % were', v_n;
   END IF;
 
@@ -448,7 +448,7 @@ BEGIN
   WHERE season_id = v_season_a AND opponent_id IN (v_team_t1, v_team_t2, v_team_t3, v_team_t4)
     AND resolved_by IN ('snapshot_earliest_in_season', 'bracket_division_id',
                         'division_history', 'last_known_division');
-  IF v_n <> 4 THEN
+  IF v_n IS DISTINCT FROM 4 THEN
     RAISE EXCEPTION 'fixture: T1 to T4 should use 4 different old answers, got %', v_n;
   END IF;
   IF (SELECT opp_weight FROM dt_old_rated
@@ -468,13 +468,13 @@ BEGIN
   WHERE season_id = v_season_a AND team_id = v_team_m
     AND opponent_id IN (v_team_t1, v_team_t2, v_team_t3, v_team_t4)
     AND resolved_by = 'manual_override' AND opp_division_id = v_div_hi AND opp_weight = v_w_hi AND rates;
-  IF v_n <> 4 THEN
+  IF v_n IS DISTINCT FROM 4 THEN
     RAISE EXCEPTION 'T1 to T4 should all be manual_override / High / rated, % were', v_n;
   END IF;
   SELECT resolved_by, opp_division_id, opp_weight INTO STRICT v_by_seen, v_div_seen, v_wt_seen
   FROM public.v_power_score_team_matches_rated
   WHERE season_id = v_season_a AND team_id = v_team_m AND opponent_id = v_team_t5;
-  IF v_by_seen <> 'manual_override' OR v_div_seen <> v_div_ret OR v_wt_seen IS DISTINCT FROM v_w_ret_then THEN
+  IF v_by_seen IS DISTINCT FROM 'manual_override' OR v_div_seen IS DISTINCT FROM v_div_ret OR v_wt_seen IS DISTINCT FROM v_w_ret_then THEN
     RAISE EXCEPTION 'T5 should be manual_override / Retuned / the weight AT THE GAME DATE %, got % / % / %',
       v_w_ret_then, v_by_seen, v_div_seen, v_wt_seen;
   END IF;
@@ -492,7 +492,7 @@ BEGIN
     AND nw.resolved_by = 'current_division' AND nw.opp_division_id = v_div_lo
     AND nw.opp_weight = v_w_lo
     AND nw::text = od::text;
-  IF v_n <> 2 THEN
+  IF v_n IS DISTINCT FROM 2 THEN
     RAISE EXCEPTION 'an override to a Hidden/unweighted division must be ignored; % of 2 rows were', v_n;
   END IF;
 
@@ -513,7 +513,7 @@ BEGIN
   SELECT c.wins, c.losses, c.game_wins, c.game_losses INTO STRICT v_n, v_n2, v_gw, v_gl
   FROM public.v_power_score_components c
   WHERE c.season_id = v_season_a AND c.team_id = v_team_k;
-  IF v_n <> 3 OR v_n2 <> 2 OR v_gw <> 7 OR v_gl <> 5 THEN
+  IF v_n IS DISTINCT FROM 3 OR v_n2 IS DISTINCT FROM 2 OR v_gw IS DISTINCT FROM 7 OR v_gl IS DISTINCT FROM 5 THEN
     RAISE EXCEPTION 'Team K record should stay 3-2 (games 7-5), got %-% (%-%)', v_n, v_n2, v_gw, v_gl;
   END IF;
 
@@ -523,11 +523,12 @@ BEGIN
   UPDATE public.matches
      SET team1_game_wins = 1, team2_game_wins = 1, winner_id = NULL, loser_id = NULL
    WHERE id = v_match_h;
+  -- (For a tie the view gives is_win NULL and is_loss false: neither may be TRUE.)
   SELECT is_win, is_loss, game_wins, game_losses, resolved_by, opp_weight
     INTO STRICT v_win, v_loss, v_gw, v_gl, v_by_seen, v_wt_seen
   FROM public.v_power_score_team_matches_rated
   WHERE match_id = v_match_h AND team_id = v_team_k;
-  IF v_win OR v_loss OR v_gw <> 1 OR v_gl <> 1 OR v_by_seen <> 'manual_override'
+  IF v_win IS TRUE OR v_loss IS TRUE OR v_gw IS DISTINCT FROM 1 OR v_gl IS DISTINCT FROM 1 OR v_by_seen IS DISTINCT FROM 'manual_override'
      OR v_wt_seen IS DISTINCT FROM v_w_hi THEN
     RAISE EXCEPTION 'a corrected score (now a tie) should keep manual_override / High, got % % % % % %',
       v_win, v_loss, v_gw, v_gl, v_by_seen, v_wt_seen;
@@ -535,7 +536,7 @@ BEGIN
   SELECT c.wins, c.losses INTO STRICT v_n, v_n2
   FROM public.v_power_score_components c
   WHERE c.season_id = v_season_a AND c.team_id = v_team_k;
-  IF v_n <> 2 OR v_n2 <> 2 THEN
+  IF v_n IS DISTINCT FROM 2 OR v_n2 IS DISTINCT FROM 2 THEN
     RAISE EXCEPTION 'after the correction Team K should read 2-2 with a tie left out, got %-%', v_n, v_n2;
   END IF;
 
@@ -554,7 +555,7 @@ BEGIN
   PERFORM public.upsert_team_season_stats(true);
   SELECT power_score INTO STRICT v_num
   FROM public.team_season_stats WHERE season_id = v_season_a AND team_id = v_team_x;
-  IF abs(v_num - v_exp) > 1e-9 THEN
+  IF NOT COALESCE(abs(v_num - v_exp) <= 1e-9, false) THEN
     RAISE EXCEPTION 'the Sandbox save should keep the override score % for Team X, got %', v_exp, v_num;
   END IF;
 
@@ -566,7 +567,7 @@ BEGIN
   WHERE s.power_score IS DISTINCT FROM a.power_score
      OR s.career_power_score IS DISTINCT FROM a.career_power_score
      OR s.sos IS DISTINCT FROM a.sos;
-  IF v_n <> 0 THEN
+  IF v_n IS DISTINCT FROM 0 THEN
     RAISE EXCEPTION 'after the Sandbox save % stored rows still differ from the live numbers', v_n;
   END IF;
   SELECT md5(string_agg(s::text, '|' ORDER BY s.season_id, s.team_id)) INTO v_md5_old
@@ -589,7 +590,7 @@ BEGIN
           OR tss.career_power_score IS DISTINCT FROM agg.career_power_score
           OR tss.sos IS DISTINCT FROM agg.sos);
   GET DIAGNOSTICS v_rows = ROW_COUNT;
-  IF v_rows <> 0 THEN
+  IF v_rows IS DISTINCT FROM 0 THEN
     RAISE EXCEPTION 'the narrow recompute should find nothing to change, changed %', v_rows;
   END IF;
 
@@ -644,7 +645,7 @@ BEGIN
   SELECT count(*) INTO v_n2 FROM public.power_score_division_override;
   SELECT count(*) INTO v_rows FROM public.v_power_score_team_matches_rated WHERE resolved_by = 'manual_override';
   RESET ROLE;
-  IF v_n < 16 OR v_n2 <> 11 OR v_rows <> 9 THEN
+  IF NOT COALESCE(v_n >= 16, false) OR v_n2 IS DISTINCT FROM 11 OR v_rows IS DISTINCT FROM 9 THEN
     RAISE EXCEPTION 'anon should read the view (>= 16 rows), 11 override rows and 9 manual_override games, got %, %, %',
       v_n, v_n2, v_rows;
   END IF;
@@ -685,7 +686,7 @@ BEGIN
     RESET ROLE;
   END;
   SELECT count(*) INTO v_n FROM public.power_score_division_override;
-  IF v_n <> 11 THEN
+  IF v_n IS DISTINCT FROM 11 THEN
     RAISE EXCEPTION 'a refused write left % override rows (expected 11)', v_n;
   END IF;
 
@@ -709,7 +710,7 @@ BEGIN
   IF v_cols_new IS DISTINCT FROM v_cols_old THEN
     RAISE EXCEPTION 'view columns changed: % vs %', v_cols_old, v_cols_new;
   END IF;
-  IF v_cols_new <> 'match_id:uuid,season_id:uuid,source:text,team_id:uuid,opponent_id:uuid,is_win:boolean,is_loss:boolean,game_wins:numeric,game_losses:numeric,match_date:timestamp with time zone,opp_division_id:uuid,opp_weight:numeric,rates:boolean,resolved_by:text' THEN
+  IF v_cols_new IS DISTINCT FROM 'match_id:uuid,season_id:uuid,source:text,team_id:uuid,opponent_id:uuid,is_win:boolean,is_loss:boolean,game_wins:numeric,game_losses:numeric,match_date:timestamp with time zone,opp_division_id:uuid,opp_weight:numeric,rates:boolean,resolved_by:text' THEN
     RAISE EXCEPTION 'view columns are not the expected 14: %', v_cols_new;
   END IF;
 
@@ -722,7 +723,7 @@ BEGIN
   FROM pg_constraint c
   JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY (c.conkey)
   WHERE c.conrelid = 'public.power_score_division_override'::regclass AND c.contype = 'f';
-  IF v_text <> 'division_id:r,season_id:c,team_id:c' THEN
+  IF v_text IS DISTINCT FROM 'division_id:r,season_id:c,team_id:c' THEN
     RAISE EXCEPTION 'foreign keys should be division RESTRICT, team and season CASCADE, got %', v_text;
   END IF;
 
@@ -733,7 +734,7 @@ BEGIN
     RAISE EXCEPTION 'a division that an override uses was deleted';
   EXCEPTION WHEN foreign_key_violation THEN
     GET STACKED DIAGNOSTICS v_con = CONSTRAINT_NAME;
-    IF v_con <> 'power_score_division_override_division_id_fkey' THEN
+    IF v_con IS DISTINCT FROM 'power_score_division_override_division_id_fkey' THEN
       RAISE EXCEPTION 'the delete was refused by % (expected the override foreign key)', v_con;
     END IF;
   END;

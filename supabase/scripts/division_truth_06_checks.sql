@@ -116,7 +116,10 @@ newer(season_id) AS (VALUES
   ('4b90a1d8-b90a-4e47-8e8c-b89a7b54e106'::uuid),
   ('9cd55eb8-672c-4a43-a9df-3552a7759cca'::uuid)
 ),
--- L1
+-- L1. A team-season is either all strong (a snapshot, the archive or a bracket answers
+-- it for every game) or all weak: those steps depend on the opponent and the season,
+-- never on the game. So an override can only replace a strong answer if someone wrote
+-- a row for a strong team-season by hand. L1 is SUPPOSED to FAIL then. Do not weaken it.
 l1 AS (
   SELECT count(*) AS bad
   FROM public.v_power_score_team_matches_rated n

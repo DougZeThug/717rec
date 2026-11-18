@@ -26,6 +26,11 @@
 --
 --   9. A missing dropped-out team, or a missing season, shows up in the dry run as a
 --      "CHECK: script 02 would STOP" row, and script 02 really does stop.
+--  10. Script 00 (precheck): a season with playoffs_active or is_active on is a CHECK.
+--  11. Script 01 keeps the FIRST backup, and its verdict compares the team-season
+--      keys and the saved scores: OK, NOTE (scores changed), CHECK (keys differ).
+--  12. Script 05 path 2 STOPS, writing nothing, when an override row belongs to a
+--      season outside the six; and it still reports after the backup table is gone.
 --
 -- The fixture gives the six map divisions their own odd weights, so nothing depends
 -- on the live weights.
@@ -176,6 +181,130 @@ END $$;
 \o /dev/null
 \i supabase/scripts/division_truth_01_backup.sql
 \o
+
+-- ---------------------------------------------------------------------------
+-- 1a. Script 01 never overwrites the first backup. Its verdict compares the
+--     team-season keys and the saved scores, not only the row counts.
+-- ---------------------------------------------------------------------------
+CREATE TEMP TABLE dt_bk_md5 AS
+SELECT count(*) AS n, md5(string_agg(b::text, '|' ORDER BY b.season_id, b.team_id)) AS m
+FROM public.team_season_stats_pre_division_truth b;
+\set bk `sed -n '/^-- ONE result/,$p' supabase/scripts/division_truth_01_backup.sql`
+CREATE TEMP TABLE dt_bk1 AS :bk
+;
+
+-- (a) nothing changed: OK.
+-- (b) a stored score changed: NOTE (the first backup is kept).
+UPDATE public.team_season_stats SET power_score = 0.123
+ WHERE season_id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a' AND team_id = '00000000-0000-0000-0000-0000000dd011';
+\o /dev/null
+\i supabase/scripts/division_truth_01_backup.sql
+\o
+CREATE TEMP TABLE dt_bk2 AS :bk
+;
+UPDATE public.team_season_stats SET power_score = NULL
+ WHERE season_id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a' AND team_id = '00000000-0000-0000-0000-0000000dd011';
+
+-- (c) a live team-season is added: CHECK, 1 only in the live table.
+INSERT INTO public.team_season_stats (season_id, team_id, match_wins, match_losses, game_wins, game_losses, division_name)
+VALUES ('d6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a', '00000000-0000-0000-0000-0000000dd018', 0, 0, 0, 0, 'x');
+\o /dev/null
+\i supabase/scripts/division_truth_01_backup.sql
+\o
+CREATE TEMP TABLE dt_bk3 AS :bk
+;
+DELETE FROM public.team_season_stats
+ WHERE season_id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a' AND team_id = '00000000-0000-0000-0000-0000000dd018';
+
+-- (d) a live team-season is removed: CHECK, 1 only in the backup.
+DELETE FROM public.team_season_stats
+ WHERE season_id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a' AND team_id = '00000000-0000-0000-0000-0000000dd017';
+\o /dev/null
+\i supabase/scripts/division_truth_01_backup.sql
+\o
+CREATE TEMP TABLE dt_bk4 AS :bk
+;
+INSERT INTO public.team_season_stats (season_id, team_id, match_wins, match_losses, game_wins, game_losses, division_name)
+VALUES ('d6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a', '00000000-0000-0000-0000-0000000dd017', 0, 1, 0, 2, 'Intermediate 3');
+
+-- (e) everything back as it was: OK again.
+\o /dev/null
+\i supabase/scripts/division_truth_01_backup.sql
+\o
+CREATE TEMP TABLE dt_bk5 AS :bk
+;
+
+DO $$
+DECLARE
+  v1 text; v2 text; v3 text; v4 text; v5 text;
+BEGIN
+  SELECT value INTO STRICT v1 FROM dt_bk1 WHERE what = 'verdict';
+  SELECT value INTO STRICT v2 FROM dt_bk2 WHERE what = 'verdict';
+  SELECT value INTO STRICT v3 FROM dt_bk3 WHERE what = 'verdict';
+  SELECT value INTO STRICT v4 FROM dt_bk4 WHERE what = 'verdict';
+  SELECT value INTO STRICT v5 FROM dt_bk5 WHERE what = 'verdict';
+  IF v1 IS DISTINCT FROM 'OK: saved = live. The backup is complete.' THEN
+    RAISE EXCEPTION 'script 01, unchanged: expected OK, got %', v1;
+  END IF;
+  IF v2 NOT LIKE 'NOTE: stored scores changed since the backup (expected after a recompute). The first backup is kept and is the one to restore from.' THEN
+    RAISE EXCEPTION 'script 01, a stored score changed: expected NOTE, got %', v2;
+  END IF;
+  IF v3 NOT LIKE 'CHECK: the team-seasons in the backup and in the live table are not the same (0 only in the backup, 1 only in the live table)%' THEN
+    RAISE EXCEPTION 'script 01, a team-season added: expected CHECK (0 / 1), got %', v3;
+  END IF;
+  IF v4 NOT LIKE 'CHECK: the team-seasons in the backup and in the live table are not the same (1 only in the backup, 0 only in the live table)%' THEN
+    RAISE EXCEPTION 'script 01, a team-season removed: expected CHECK (1 / 0), got %', v4;
+  END IF;
+  IF v5 IS DISTINCT FROM 'OK: saved = live. The backup is complete.' THEN
+    RAISE EXCEPTION 'script 01, after the changes were undone: expected OK, got %', v5;
+  END IF;
+  -- The first backup was never overwritten, by any of the five runs.
+  IF (SELECT m FROM dt_bk_md5) IS DISTINCT FROM
+     (SELECT md5(string_agg(b::text, '|' ORDER BY b.season_id, b.team_id))
+        FROM public.team_season_stats_pre_division_truth b)
+     OR (SELECT n FROM dt_bk_md5) IS DISTINCT FROM (SELECT count(*) FROM public.team_season_stats_pre_division_truth) THEN
+    RAISE EXCEPTION 'script 01 changed the first backup';
+  END IF;
+END $$;
+
+-- ---------------------------------------------------------------------------
+-- 1b. Script 00 (precheck): a season that is_active or playoffs_active is a CHECK.
+--     (current_standings_season_id() ignores is_archived.)
+-- ---------------------------------------------------------------------------
+\set pre `cat supabase/scripts/division_truth_00_precheck.sql`
+CREATE TEMP TABLE dt_pre1 AS :pre
+;
+UPDATE public.seasons SET playoffs_active = true WHERE id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a';
+CREATE TEMP TABLE dt_pre2 AS :pre
+;
+UPDATE public.seasons SET playoffs_active = false WHERE id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a';
+UPDATE public.seasons SET is_active = true WHERE id = 'e537c594-3ba9-4d79-ba63-f6ed90c89e30';
+CREATE TEMP TABLE dt_pre3 AS :pre
+;
+UPDATE public.seasons SET is_active = false WHERE id = 'e537c594-3ba9-4d79-ba63-f6ed90c89e30';
+
+DO $$
+DECLARE
+  v_n bigint;
+BEGIN
+  -- Good state: the six season rows all PASS and show the two flags.
+  SELECT count(*) INTO v_n FROM dt_pre1
+   WHERE check_name LIKE 'U2 DT %' AND verdict = 'PASS'
+     AND result LIKE 'is_archived=true is_active=false playoffs_active=false regular_games=0';
+  IF v_n IS DISTINCT FROM 6 THEN
+    RAISE EXCEPTION 'precheck, closed seasons: expected 6 PASS rows with both flags shown, found %', v_n;
+  END IF;
+  -- playoffs_active=true on one season: that row is CHECK, the other five still PASS.
+  SELECT count(*) INTO v_n FROM dt_pre2
+   WHERE check_name = 'U2 DT Spring 2025' AND verdict = 'CHECK' AND result LIKE '%playoffs_active=true%';
+  IF v_n IS DISTINCT FROM 1 THEN RAISE EXCEPTION 'precheck: playoffs_active=true should give CHECK, found % rows', v_n; END IF;
+  SELECT count(*) INTO v_n FROM dt_pre2 WHERE check_name LIKE 'U2 DT %' AND verdict = 'PASS';
+  IF v_n IS DISTINCT FROM 5 THEN RAISE EXCEPTION 'precheck: the other 5 seasons should still PASS, found %', v_n; END IF;
+  -- is_active=true on one (archived) season: CHECK.
+  SELECT count(*) INTO v_n FROM dt_pre3
+   WHERE check_name = 'U2 DT Summer 1 2025' AND verdict = 'CHECK' AND result LIKE '%is_active=true%';
+  IF v_n IS DISTINCT FROM 1 THEN RAISE EXCEPTION 'precheck: is_active=true should give CHECK, found % rows', v_n; END IF;
+END $$;
 
 -- ---------------------------------------------------------------------------
 -- 1 and 2. The dry run writes nothing and says what script 02 would do.
@@ -418,6 +547,48 @@ CREATE TEMP TABLE dt_override_before AS
 SELECT team_id, season_id, division_id, reason FROM public.power_score_division_override;
 
 \set s05b `sed "s/TYPE-1-OR-2-HERE/2/" supabase/scripts/division_truth_05_undo.sql`
+
+-- A row for a season outside the six: path 2 must STOP and write nothing.
+INSERT INTO public.seasons (id, name, start_date, is_active, is_archived)
+VALUES ('00000000-0000-0000-0000-0000000dd0f7', 'DT Seventh 2026', '2026-06-01', false, true);
+INSERT INTO public.power_score_division_override (team_id, season_id, division_id, reason)
+VALUES ('00000000-0000-0000-0000-0000000dd001', '00000000-0000-0000-0000-0000000dd0f7',
+        (SELECT id FROM public.divisions WHERE lower(btrim(name)) = 'competitive'),
+        'League owner, test: a row outside the six seasons');
+CREATE TEMP TABLE dt_before_stop AS SELECT count(*) AS n FROM public.power_score_division_override;
+-- Only the first block of the script (the DO block that does the work) runs here, so
+-- the STOP is the last error psql sees. psql sends each statement of a variable
+-- separately, and a later statement would overwrite LAST_ERROR_MESSAGE.
+\set s05b_do `sed "s/TYPE-1-OR-2-HERE/2/" supabase/scripts/division_truth_05_undo.sql | sed -n '/^DO /,/^END .*;$/p'`
+SAVEPOINT dt_undo_stop;
+\set ON_ERROR_STOP off
+\o /dev/null
+:s05b_do
+;
+\o
+ROLLBACK TO SAVEPOINT dt_undo_stop;
+\set ON_ERROR_STOP on
+SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: the override table holds rows for season\(s\) outside the six: 00000000-0000-0000-0000-0000000dd0f7\.' AS stopped \gset
+\if :stopped
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'undo path 2 did not stop for a row in a seventh season'; END $$;
+\endif
+DO $$
+BEGIN
+  IF (SELECT count(*) FROM public.power_score_division_override) IS DISTINCT FROM (SELECT n FROM dt_before_stop) THEN
+    RAISE EXCEPTION 'undo path 2 stopped but still changed the override rows';
+  END IF;
+  IF to_regclass('public.power_score_division_override_pre_undo') IS NOT NULL THEN
+    RAISE EXCEPTION 'undo path 2 stopped but still created the pre_undo table';
+  END IF;
+  IF position('manual_override' IN pg_get_viewdef('public.v_power_score_team_matches_rated'::regclass)) = 0 THEN
+    RAISE EXCEPTION 'undo path 2 stopped but still changed the view';
+  END IF;
+END $$;
+DELETE FROM public.power_score_division_override WHERE season_id = '00000000-0000-0000-0000-0000000dd0f7';
+DELETE FROM public.seasons WHERE id = '00000000-0000-0000-0000-0000000dd0f7';
+
+-- Rows only in the six seasons: path 2 works.
 \o /dev/null
 :s05b
 ;
@@ -564,6 +735,29 @@ SELECT :'LAST_ERROR_MESSAGE' ~ '^STOP: only 5 of the 6 seasons' AS stopped \gset
 \else
   DO $$ BEGIN RAISE EXCEPTION 'script 02 did not stop for a missing season'; END $$;
 \endif
+
+-- ---------------------------------------------------------------------------
+-- 9. The runbook says to drop the backup table later. Path 2 must still end in its
+--    report (it used to fail on a missing table).
+-- ---------------------------------------------------------------------------
+DROP TABLE public.team_season_stats_pre_division_truth;
+\set s05tail `sed -n '/^-- ONE result/,$p' supabase/scripts/division_truth_05_undo.sql`
+\o /dev/null
+:s05b
+;
+\o
+CREATE TEMP TABLE dt_rep AS :s05tail
+;
+DO $$
+BEGIN
+  IF (SELECT count(*) FROM dt_rep) < 8 THEN
+    RAISE EXCEPTION 'the undo report came back with % rows', (SELECT count(*) FROM dt_rep);
+  END IF;
+  IF (SELECT val FROM dt_rep WHERE what LIKE 'six seasons: rows that differ from the SAVED BACKUP%')
+       IS DISTINCT FROM 'backup unavailable' THEN
+    RAISE EXCEPTION 'with no backup table the report should say "backup unavailable"';
+  END IF;
+END $$;
 
 DO $$ BEGIN RAISE NOTICE 'division_truth_scripts smoke test passed'; END $$;
 

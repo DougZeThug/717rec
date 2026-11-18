@@ -4,10 +4,12 @@
 -- It reads only. It changes nothing. Run it again right before step 3 (writing the
 -- override rows): a season could have been un-archived since you last looked.
 --
--- WHY. The fix is safe because the six seasons are CLOSED (archived) and hold no
--- regular-season games. Then the stored scores change only when you run the
--- recompute (step 6). If a season is NOT archived, the next match scored in the
--- league rewrites that season's stored numbers by itself, with no preview.
+-- WHY. The fix is safe because the six seasons are CLOSED (archived), are not the
+-- live season, and hold no regular-season games. Then the stored scores change only
+-- when you run the recompute (step 6). If a season is NOT archived, the next match
+-- scored in the league rewrites that season's stored numbers by itself, with no
+-- preview. The live standings read the season that is_active (else the one with
+-- playoffs_active), whether or not it is archived, so those two flags must be off.
 --
 -- WHAT TO WANT. Every row ends with PASS in the last column. CHECK means stop and
 -- tell the developer. If any row says CHECK, do NOT go on to step 3.
@@ -15,9 +17,10 @@
 --   U1 editor and view   role=postgres   bypass_rls=true   view_owner=postgres
 --                        options={security_invoker=on}     has_history_step=true
 --                        history_table=true  distrust_table=true  rateable_view=true
---   U2 <season>          is_archived=true  regular_games=0   (one row per season,
---                        six rows: Spring 2025, Summer 1 2025, Summer 2 2025,
---                        Fall 2025, Winter 1 2026, Winter 2 2026)
+--   U2 <season>          is_archived=true is_active=false playoffs_active=false
+--                        regular_games=0   (one row per season, six rows: Spring
+--                        2025, Summer 1 2025, Summer 2 2025, Fall 2025, Winter 1
+--                        2026, Winter 2 2026)
 --   U4 <division>        a weight (not empty) and history_rows=1. Six divisions:
 --                        Competitive, Recreational, Intermediate High,
 --                        Intermediate Low, Intermediate, Recreational High.
@@ -56,9 +59,13 @@ FROM (
   UNION ALL
   SELECT 2, se.start_date, 'U2 ' || se.name,
          'is_archived=' || COALESCE(se.is_archived::text, 'null') ||
+         ' is_active=' || COALESCE(se.is_active::text, 'null') ||
+         ' playoffs_active=' || COALESCE(se.playoffs_active::text, 'null') ||
          ' regular_games=' || (SELECT count(*) FROM public.v_power_score_team_matches m
                                 WHERE m.season_id = se.id AND m.source = 'regular')::text,
          COALESCE(se.is_archived, false)
+           AND COALESCE(se.is_active, false) = false
+           AND COALESCE(se.playoffs_active, false) = false
            AND (SELECT count(*) FROM public.v_power_score_team_matches m
                  WHERE m.season_id = se.id AND m.source = 'regular') = 0
   FROM public.seasons se

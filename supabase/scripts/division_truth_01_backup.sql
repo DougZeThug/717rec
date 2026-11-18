@@ -88,6 +88,20 @@ saved AS (
   SELECT count(*) AS n, min(backed_up_at) AS taken_at,
          count(*) FILTER (WHERE live_power_score IS NOT NULL) AS with_live
   FROM public.team_season_stats_pre_division_truth
+),
+-- The same team-seasons? And do the stored scores still equal the backed-up ones?
+cmp AS (
+  SELECT count(*) FILTER (WHERE l.team_id IS NULL) AS only_in_backup,
+         count(*) FILTER (WHERE b.team_id IS NULL) AS only_in_live,
+         count(*) FILTER (WHERE b.team_id IS NOT NULL AND l.team_id IS NOT NULL
+                            AND (b.power_score        IS DISTINCT FROM l.power_score
+                              OR b.career_power_score IS DISTINCT FROM l.career_power_score
+                              OR b.sos                IS DISTINCT FROM l.sos
+                              OR b.recorded_at        IS DISTINCT FROM l.recorded_at)) AS scores_changed
+  FROM public.team_season_stats_pre_division_truth b
+  FULL JOIN (SELECT s.season_id, s.team_id, s.power_score, s.career_power_score, s.sos, s.recorded_at
+             FROM public.team_season_stats s JOIN six ON six.season_id = s.season_id) l
+         ON l.season_id = b.season_id AND l.team_id = b.team_id
 )
 SELECT x.what, x.value
 FROM (
@@ -115,9 +129,15 @@ FROM (
    GROUP BY se.name
   UNION ALL
   SELECT 99, 'verdict',
-         CASE WHEN saved.n = live.n THEN 'OK: saved = live. The backup is complete.'
-              ELSE 'CHECK: saved and live counts differ. Expected only if a team-season was added after the first backup; the first backup was kept.'
+         CASE WHEN cmp.only_in_backup > 0 OR cmp.only_in_live > 0 THEN
+                'CHECK: the team-seasons in the backup and in the live table are not the same ('
+                || cmp.only_in_backup || ' only in the backup, ' || cmp.only_in_live || ' only in the live table'
+                || CASE WHEN cmp.scores_changed > 0 THEN '; the stored scores of ' || cmp.scores_changed || ' also changed' ELSE '' END
+                || '). Expected only if a team-season was added or removed after the first backup. The first backup is kept and is the one to restore from.'
+              WHEN cmp.scores_changed > 0 THEN
+                'NOTE: stored scores changed since the backup (expected after a recompute). The first backup is kept and is the one to restore from.'
+              ELSE 'OK: saved = live. The backup is complete.'
          END
-    FROM saved, live
+    FROM cmp
 ) x
 ORDER BY x.ord, x.what;

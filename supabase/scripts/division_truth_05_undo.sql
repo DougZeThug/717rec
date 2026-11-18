@@ -21,6 +21,11 @@
 --     numbers: 62 team-seasons already differ today, because older rule changes
 --     were never recomputed (see docs/OPERATIONS.md section 6g). The empty table
 --     can stay; nothing reads it once the old view is back.
+--     IT STOPS (nothing written) if the override table holds a row for a season that
+--     is NOT one of the six: path 2 recomputes only the six seasons, so the stored
+--     scores of that other season would stay worked out with a row path 2 deletes.
+--     The error names the season ids. Recompute those seasons by hand first, or
+--     remove those rows, then run path 2 again.
 --
 --   TO GO ALL THE WAY BACK to the state before this fix: run PATH 2, then run
 --   PATH 1. (Path 2 first, so path 1 has the last word on the stored numbers.)
@@ -54,6 +59,7 @@ DECLARE
   v_rows integer;
   v_del  bigint;
   v_saved bigint;
+  v_other text;
 BEGIN
   IF v_path NOT IN ('1', '2') THEN
     RAISE EXCEPTION 'STOP: type 1 or 2 on the line marked TYPE HERE. Nothing was changed.';
@@ -87,6 +93,18 @@ BEGIN
       RAISE EXCEPTION 'STOP: the override table does not exist, so there is nothing to undo. Nothing was changed.';
     END IF;
 
+    -- Path 2 recomputes only the six seasons. A row for any other season would be
+    -- deleted while that season's stored scores stay worked out with it. Stop.
+    SELECT string_agg(DISTINCT o.season_id::text, ', ' ORDER BY o.season_id::text)
+      INTO v_other
+      FROM public.power_score_division_override o
+     WHERE o.season_id NOT IN ('d6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a', 'e537c594-3ba9-4d79-ba63-f6ed90c89e30',
+                               'd50bb12e-99be-4170-802a-695a402373ce', '34cd19e2-abf5-43b8-a16f-6d73a0e998ac',
+                               '4b90a1d8-b90a-4e47-8e8c-b89a7b54e106', '9cd55eb8-672c-4a43-a9df-3552a7759cca');
+    IF v_other IS NOT NULL THEN
+      RAISE EXCEPTION 'STOP: the override table holds rows for season(s) outside the six: %. Path 2 recomputes only the six seasons, so the stored scores of those seasons would stay worked out with rows that path 2 deletes. Recompute those seasons by hand first, or remove those rows, then run path 2 again. Nothing was changed.', v_other;
+    END IF;
+
     -- Save a copy first, so nothing added by hand is lost. Append-only; locked like
     -- the other backup tables (service_role only).
     CREATE TABLE IF NOT EXISTS public.power_score_division_override_pre_undo (
@@ -101,14 +119,16 @@ BEGIN
     ALTER TABLE public.power_score_division_override_pre_undo ENABLE ROW LEVEL SECURITY;
     GRANT ALL ON public.power_score_division_override_pre_undo TO service_role;
 
+    -- ONE statement: every deleted row is saved by the same statement that deletes it.
+    WITH removed AS (
+      DELETE FROM public.power_score_division_override o
+      RETURNING o.team_id, o.season_id, o.division_id, o.reason, o.created_at
+    )
     INSERT INTO public.power_score_division_override_pre_undo
       (team_id, season_id, division_id, reason, created_at)
-    SELECT o.team_id, o.season_id, o.division_id, o.reason, o.created_at
-    FROM public.power_score_division_override o;
+    SELECT team_id, season_id, division_id, reason, created_at FROM removed;
     GET DIAGNOSTICS v_saved = ROW_COUNT;
-
-    DELETE FROM public.power_score_division_override;
-    GET DIAGNOSTICS v_del = ROW_COUNT;
+    v_del := v_saved;
 
     -- The view, exactly as migration 20261003183939 wrote it (no override step).
     CREATE OR REPLACE VIEW public.v_power_score_team_matches_rated
@@ -219,12 +239,17 @@ FROM (
               THEN 'yes' ELSE 'no (old view)' END
   UNION ALL
   SELECT 12, 'six seasons: rows that differ from the SAVED BACKUP (0 after path 1)',
-         count(*)::text
-    FROM public.team_season_stats s
-    JOIN public.team_season_stats_pre_division_truth b ON b.season_id = s.season_id AND b.team_id = s.team_id
-   WHERE s.power_score        IS DISTINCT FROM b.power_score
-      OR s.career_power_score IS DISTINCT FROM b.career_power_score
-      OR s.sos                IS DISTINCT FROM b.sos
+         -- The backup table may have been dropped since (the runbook says to drop it
+         -- once the new numbers are accepted). query_to_xml reads it only if the
+         -- CASE reaches it.
+         CASE WHEN to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN 'backup unavailable'
+              ELSE (xpath('/row/c/text()', query_to_xml(
+                      'SELECT count(*) AS c FROM public.team_season_stats s '
+                      || 'JOIN public.team_season_stats_pre_division_truth b ON b.season_id = s.season_id AND b.team_id = s.team_id '
+                      || 'WHERE s.power_score IS DISTINCT FROM b.power_score '
+                      || 'OR s.career_power_score IS DISTINCT FROM b.career_power_score '
+                      || 'OR s.sos IS DISTINCT FROM b.sos',
+                      false, true, '')))[1]::text END
   UNION ALL
   SELECT 13, 'six seasons: rows that differ from the RULES NOW (0 after path 2)',
          count(*)::text
