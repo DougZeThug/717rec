@@ -1,13 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError } from '@/types/errors';
 
-const { mockFrom, mockSelect, mockOrder, mockLimit, mockNeq } = vi.hoisted(() => ({
+const {
+  mockFrom,
+  mockSelect,
+  mockOrder,
+  mockLimit,
+  mockNeq,
+  mockUpdate,
+  mockEqId,
+  mockEqUser,
+  mockSelectUpdated,
+  mockMaybeSingle,
+} = vi.hoisted(() => ({
   mockFrom: vi.fn(),
   mockSelect: vi.fn(),
   mockOrder: vi.fn(),
   mockLimit: vi.fn(),
   mockNeq: vi.fn(),
+  mockUpdate: vi.fn(),
+  mockEqId: vi.fn(),
+  mockEqUser: vi.fn(),
+  mockSelectUpdated: vi.fn(),
+  mockMaybeSingle: vi.fn(),
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -74,5 +90,45 @@ describe('MessageService.fetchMessages', () => {
     setupFetchMessages({ data: [], error: null });
     const result = await MessageService.fetchMessages();
     expect(result).toEqual([]);
+  });
+});
+
+// update -> eq(id) -> eq(user_id) -> select('id') -> maybeSingle()
+const setupUpdateMessage = (result: { data: unknown; error: unknown | null }) => {
+  mockMaybeSingle.mockResolvedValue(result);
+  mockSelectUpdated.mockReturnValue({ maybeSingle: mockMaybeSingle });
+  mockEqUser.mockReturnValue({ select: mockSelectUpdated });
+  mockEqId.mockReturnValue({ eq: mockEqUser });
+  mockUpdate.mockReturnValue({ eq: mockEqId });
+  mockFrom.mockReturnValue({ update: mockUpdate });
+};
+
+describe('MessageService.updateMessage', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('updates the content of your own message and returns nothing', async () => {
+    setupUpdateMessage({ data: { id: 'm1' }, error: null });
+
+    await expect(MessageService.updateMessage('m1', 'u1', 'New text')).resolves.toBeUndefined();
+
+    expect(mockFrom).toHaveBeenCalledWith('messages');
+    expect(mockUpdate).toHaveBeenCalledWith({ content: 'New text' });
+    expect(mockEqId).toHaveBeenCalledWith('id', 'm1');
+    expect(mockEqUser).toHaveBeenCalledWith('user_id', 'u1');
+    expect(mockSelectUpdated).toHaveBeenCalledWith('id');
+  });
+
+  it('throws DatabaseError when Supabase returns an error', async () => {
+    setupUpdateMessage({ data: null, error: pgError() });
+    await expect(MessageService.updateMessage('m1', 'u1', 'New text')).rejects.toThrow(
+      DatabaseError
+    );
+  });
+
+  it('throws BusinessLogicError when no row was updated (message deleted)', async () => {
+    setupUpdateMessage({ data: null, error: null });
+    const result = MessageService.updateMessage('m1', 'u1', 'New text');
+    await expect(result).rejects.toThrow(BusinessLogicError);
+    await expect(result).rejects.toThrow(/may have been deleted/);
   });
 });
