@@ -45,7 +45,7 @@
 --     The Tomato Saucers  Winter 2 2026   Recreational (2 games)
 --
 -- IT STOPS (error, nothing written) if: the migration is not applied; the backup
--- (01) is missing; a division name in the map matches anything but exactly ONE
+-- (01) is missing (script 07 retires it, see below); a division name in the map matches anything but exactly ONE
 -- rateable division; "Here for Fireball" matches anything but exactly ONE team;
 -- one of the 3 teams or one of the 6 seasons is missing.
 --
@@ -58,6 +58,9 @@
 --
 -- The reason text on each row holds no person's name, because the table can be
 -- read through the public API. It starts with "League owner, 2026-11-17".
+--
+-- AFTER THE BACKUP IS RETIRED (script 07), this script cannot run any more: it was a
+-- one-time job. A later override row is written by hand (docs/OPERATIONS.md section 6g).
 --
 -- UNDO: supabase/scripts/division_truth_05_undo.sql.
 --
@@ -73,7 +76,7 @@ BEGIN
     RAISE EXCEPTION 'STOP: the migration 20261117130000 is not applied (no power_score_division_override table).';
   END IF;
   IF to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN
-    RAISE EXCEPTION 'STOP: there is no backup. Run division_truth_01_backup.sql first.';
+    RAISE EXCEPTION 'STOP: the backup was retired; script 02 was a one-time job; later override rows are added by hand (see docs/OPERATIONS.md section 6g).';
   END IF;
 
   -- Each division name in the map must match exactly ONE rateable division.

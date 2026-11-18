@@ -20,9 +20,12 @@
 -- keeps the first one and says so. It STOPS (nothing saved) if an override row
 -- already exists, because the "live rules" numbers would then include the fix.
 --
--- The table is locked like the other backups (service_role only). Drop it only
--- when Doug has accepted the new numbers:
---   DROP TABLE public.team_season_stats_pre_division_truth;
+-- The table is locked like the other backups (service_role only). Doug accepted the
+-- new numbers on 2026-11-18. Script 07 (division_truth_07_drop_backup.sql) retires
+-- the table; Doug runs it by hand after the merge. Once the table is gone, do NOT
+-- run this script again: the override rows exist, so it would STOP ("override rows
+-- already exist") and save nothing. That is on purpose: the "live rules" numbers it
+-- saves would include the fix.
 --
 -- The result at the bottom is the only thing the editor shows. Read it.
 

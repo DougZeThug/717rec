@@ -3,6 +3,10 @@
 -- NOT A MIGRATION. Paste the WHOLE file into the Supabase SQL Editor and run it.
 -- Type 1 or 2 on the line marked TYPE HERE. Read the result at the bottom.
 --
+--   PATH 1 NEEDS THE BACKUP TABLE (script 01). Script 07 retires that table (Doug runs
+--   it by hand). After that, path 1 STOPs and writes nothing, and only PATH 2 remains.
+--   Path 2 gives the numbers the OLD RULES give, not the old stored numbers.
+--
 --   PATH 1 = PUT THE SAVED NUMBERS BACK.
 --     Sets power_score, career_power_score, sos and recorded_at of the six seasons
 --     back to what the backup (script 01) holds. This gives back TODAY's stored
