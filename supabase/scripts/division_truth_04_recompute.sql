@@ -27,7 +27,8 @@
 -- ROUNDING ON THE LIVE DATABASE. There, team_season_stats.power_score is
 -- numeric(8,3) and sos is numeric(6,3): 3 decimals (career_power_score is plain
 -- numeric). The repo migrations do not say so; the live columns differ. So the view
--- (full precision) can never equal the stored value, and:
+-- (full precision) can differ from the stored value (storage rounds it to 3
+-- decimals), and:
 --   * the UPDATE below writes about every row of the season (the rounded value), even
 --     for a team whose real change is below rounding. "ROWS CHANGED" can therefore be
 --     about the number of teams in the season. The "moved" lines list only teams
