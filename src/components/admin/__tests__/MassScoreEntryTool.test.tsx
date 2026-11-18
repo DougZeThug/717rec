@@ -73,7 +73,6 @@ vi.mock('@/components/admin/mass-score-entry/components/ScoreEntryToolbar', asyn
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
   useSeasonalThemeBase: () => ({ theme: 'light' }),
-  default: () => ({ isWinterTheme: false }),
 }));
 
 vi.mock('framer-motion', () => ({

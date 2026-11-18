@@ -9,7 +9,6 @@ import { Team } from '@/types';
 vi.mock('@/services/divisionWeightsCache', () => ({
   fetchDivisionWeightsByName: vi.fn(() => Promise.resolve(new Map<string, number>())),
   fetchDivisionWeights: vi.fn(() => Promise.resolve(new Map<string, number>())),
-  getDefaultDivisionWeight: () => 0.85,
   clearDivisionWeightsCache: vi.fn(),
 }));
 

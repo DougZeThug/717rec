@@ -43,7 +43,6 @@ vi.mock('@/hooks/useToast', () => ({
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
   useSeasonalThemeBase: () => ({ theme: 'light' }),
-  default: () => ({ isWinterTheme: false }),
 }));
 
 vi.mock('@/components/teams/TeamForm', () => ({

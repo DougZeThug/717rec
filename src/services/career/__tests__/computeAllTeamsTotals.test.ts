@@ -18,7 +18,6 @@ vi.mock('@/services/divisionWeightsCache', () => ({
   fetchDivisionWeightsByName: () => mockFetchDivisionWeightsByName(),
   fetchDivisionWeights: () => mockFetchDivisionWeightsByName(),
   clearDivisionWeightsCache: vi.fn(),
-  getDefaultDivisionWeight: () => 0.85,
 }));
 
 vi.mock('@/utils/logger', () => ({

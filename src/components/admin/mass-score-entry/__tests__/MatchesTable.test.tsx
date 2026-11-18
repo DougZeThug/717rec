@@ -29,7 +29,6 @@ vi.mock('@/components/admin/mass-score-entry/MatchesTableSkeleton', () => ({
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
   useSeasonalThemeBase: () => ({ theme: 'light' }),
-  default: () => ({ isWinterTheme: false }),
 }));
 
 // EmptyState is in components/ui — mock it to keep output simple

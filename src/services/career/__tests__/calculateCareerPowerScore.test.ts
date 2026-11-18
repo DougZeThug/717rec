@@ -19,7 +19,6 @@ const DEFAULT_WEIGHTS = new Map(weightState.byName);
 
 vi.mock('@/services/divisionWeightsCache', () => ({
   fetchDivisionWeightsByName: vi.fn(() => Promise.resolve(weightState.byName)),
-  getDefaultDivisionWeight: () => 0.85,
 }));
 
 // The database path (no prefetched data) goes through CareerQueryService.

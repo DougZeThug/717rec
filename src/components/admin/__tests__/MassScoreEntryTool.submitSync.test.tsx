@@ -58,7 +58,6 @@ vi.mock('@/components/admin/AdminSectionWrapper', () => ({
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
   useSeasonalThemeBase: () => ({ theme: 'light' }),
-  default: () => ({ isWinterTheme: false }),
 }));
 
 // framer-motion primitives -> plain DOM elements. Use a Proxy so ANY tag

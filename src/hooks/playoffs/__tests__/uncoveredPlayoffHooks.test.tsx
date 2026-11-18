@@ -4,7 +4,6 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  bracket: vi.fn(),
   bmMatch: vi.fn(),
   teams: vi.fn(),
   participants: vi.fn(),
@@ -23,7 +22,6 @@ const mocks = vi.hoisted(() => ({
   error: vi.fn(),
 }));
 vi.mock('@/services/brackets/BracketReadService', () => ({
-  fetchPlayoffBracketData: mocks.bracket,
   fetchBracketsManagerMatchData: mocks.bmMatch,
   fetchPlayoffTeams: mocks.teams,
   fetchBmMatchData: mocks.bmMatch,
