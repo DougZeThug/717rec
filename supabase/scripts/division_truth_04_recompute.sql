@@ -22,6 +22,17 @@
 -- SAFE TO RE-RUN: a second run changes 0 rows. Only the SIX seasons below are
 -- allowed. Any other id stops the script and changes nothing.
 --
+-- ROUNDING ON THE LIVE DATABASE. There, team_season_stats.power_score is
+-- numeric(8,3) and sos is numeric(6,3): 3 decimals (career_power_score is plain
+-- numeric). The repo migrations do not say so; the live columns differ. So the view
+-- (full precision) can never equal the stored value, and:
+--   * the UPDATE below writes about every row of the season (the rounded value), even
+--     for a team whose real change is below rounding. "ROWS CHANGED" can therefore be
+--     about the number of teams in the season. The "moved" lines list only teams
+--     whose stored value really changed.
+--   * the last line, "rows still different from the rules by more than rounding",
+--     ignores a gap of 0.0006 or less in power_score and sos. It must be 0.
+--
 -- HOW TO RUN IT
 --   1. Type ONE season id between the quotes on the line marked TYPE HERE.
 --   2. Run. Read the result. "rows changed" is the number of teams that moved.
@@ -100,15 +111,17 @@ BEGIN
       OR s.career_power_score IS DISTINCT FROM b.career_power_score
       OR s.sos                IS DISTINCT FROM b.sos);
 
-  -- Still different from the rules after the update? Must be 0.
+  -- Still different from the rules after the update, by more than rounding? Must be 0.
+  -- (On the live database power_score and sos keep 3 decimals, so a gap up to 0.0006
+  -- is rounding, not a difference.)
   INSERT INTO division_truth_recompute
-  SELECT 4, 'rows still different from the rules (must be 0)', '', count(*)::text
+  SELECT 4, 'rows still different from the rules by more than rounding (must be 0)', '', count(*)::text
   FROM public.team_season_stats s
   JOIN public.v_team_season_agg a ON a.season_id = s.season_id AND a.team_id = s.team_id
   WHERE s.season_id = v_id
-    AND (s.power_score        IS DISTINCT FROM a.power_score
-      OR s.career_power_score IS DISTINCT FROM a.career_power_score
-      OR s.sos                IS DISTINCT FROM a.sos);
+    AND (abs(COALESCE(s.power_score, -1) - COALESCE(a.power_score, -1)) > 0.0006
+      OR abs(COALESCE(s.sos, -1) - COALESCE(a.sos, -1)) > 0.0006
+      OR s.career_power_score IS DISTINCT FROM a.career_power_score);
 END $$;
 
 SELECT what, detail, val

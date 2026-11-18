@@ -29,6 +29,9 @@
 --  10. Script 00 (precheck): a season with playoffs_active or is_active on is a CHECK.
 --  11. Script 01 keeps the FIRST backup, and its verdict compares the team-season
 --      keys and the saved scores: OK, NOTE (scores changed), CHECK (keys differ).
+--  13. The live columns keep 3 decimals (power_score numeric(8,3), sos numeric(6,3)):
+--      the recompute's last line and check L4 ignore a gap of 0.0006 or less, still
+--      fail on a bigger one in a closed season, and only count it in the live season.
 --  12. Script 05 path 2 STOPS, writing nothing, when an override row belongs to a
 --      season outside the six; and it still reports after the backup table is gone.
 --
@@ -539,6 +542,178 @@ BEGIN
     RAISE EXCEPTION 'the recompute of one season changed another season';
   END IF;
 END $$;
+
+-- ---------------------------------------------------------------------------
+-- 6b. The LIVE columns keep 3 decimals (power_score numeric(8,3), sos numeric(6,3);
+--     career_power_score is plain numeric). The repo migrations do not say so, so a CI
+--     database holds full precision. Mimic live inside a savepoint (rolled back):
+--       (a) the recompute's last line ignores rounding and reads 0, while the strict
+--           comparison still counts rows (so the test can tell the two apart);
+--       (b) check L4 says PASS for the six seasons after the recompute;
+--       (c) a stored value in a closed season OUTSIDE the six that is wrong by more
+--           than 0.0006 makes L4 FAIL ("elsewhere");
+--       (d) the same difference in the ACTIVE season does not fail L4: it is counted
+--           as "live season" (it refreshes by itself when the next match is scored).
+-- ---------------------------------------------------------------------------
+SAVEPOINT dt_round;
+
+-- A clean slate outside the six seasons (a CI database seeds stored scores there).
+DELETE FROM public.team_season_stats
+ WHERE season_id NOT IN ('d6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a', 'e537c594-3ba9-4d79-ba63-f6ed90c89e30',
+                         'd50bb12e-99be-4170-802a-695a402373ce', '34cd19e2-abf5-43b8-a16f-6d73a0e998ac',
+                         '4b90a1d8-b90a-4e47-8e8c-b89a7b54e106', '9cd55eb8-672c-4a43-a9df-3552a7759cca');
+ALTER TABLE public.team_season_stats
+  ALTER COLUMN power_score TYPE numeric(8,3),
+  ALTER COLUMN sos TYPE numeric(6,3);
+-- A weight with more than 3 decimals, so the view's numbers cannot be stored exactly.
+UPDATE public.divisions SET division_weight = 0.9637 WHERE lower(btrim(name)) = 'competitive';
+
+CREATE TEMP TABLE dt_round_log (season text, still_different bigint, moved bigint, label text);
+
+\set s04r1 `sed "s/TYPE-THE-SEASON-ID-HERE/9cd55eb8-672c-4a43-a9df-3552a7759cca/" supabase/scripts/division_truth_04_recompute.sql`
+\set s04r2 `sed "s/TYPE-THE-SEASON-ID-HERE/4b90a1d8-b90a-4e47-8e8c-b89a7b54e106/" supabase/scripts/division_truth_04_recompute.sql`
+\set s04r3 `sed "s/TYPE-THE-SEASON-ID-HERE/34cd19e2-abf5-43b8-a16f-6d73a0e998ac/" supabase/scripts/division_truth_04_recompute.sql`
+\set s04r4 `sed "s/TYPE-THE-SEASON-ID-HERE/d6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a/" supabase/scripts/division_truth_04_recompute.sql`
+\set s04r5 `sed "s/TYPE-THE-SEASON-ID-HERE/e537c594-3ba9-4d79-ba63-f6ed90c89e30/" supabase/scripts/division_truth_04_recompute.sql`
+\set s04r6 `sed "s/TYPE-THE-SEASON-ID-HERE/d50bb12e-99be-4170-802a-695a402373ce/" supabase/scripts/division_truth_04_recompute.sql`
+
+\o /dev/null
+:s04r1
+;
+\o
+INSERT INTO dt_round_log SELECT 'Winter 2 2026', (SELECT val::bigint FROM division_truth_recompute WHERE ord = 4),
+       (SELECT count(*) FROM division_truth_recompute WHERE what = 'moved'), (SELECT what FROM division_truth_recompute WHERE ord = 4);
+\o /dev/null
+:s04r2
+;
+\o
+INSERT INTO dt_round_log SELECT 'Winter 1 2026', (SELECT val::bigint FROM division_truth_recompute WHERE ord = 4),
+       (SELECT count(*) FROM division_truth_recompute WHERE what = 'moved'), (SELECT what FROM division_truth_recompute WHERE ord = 4);
+\o /dev/null
+:s04r3
+;
+\o
+INSERT INTO dt_round_log SELECT 'Fall 2025', (SELECT val::bigint FROM division_truth_recompute WHERE ord = 4),
+       (SELECT count(*) FROM division_truth_recompute WHERE what = 'moved'), (SELECT what FROM division_truth_recompute WHERE ord = 4);
+\o /dev/null
+:s04r4
+;
+\o
+INSERT INTO dt_round_log SELECT 'Spring 2025', (SELECT val::bigint FROM division_truth_recompute WHERE ord = 4),
+       (SELECT count(*) FROM division_truth_recompute WHERE what = 'moved'), (SELECT what FROM division_truth_recompute WHERE ord = 4);
+\o /dev/null
+:s04r5
+;
+\o
+INSERT INTO dt_round_log SELECT 'Summer 1 2025', (SELECT val::bigint FROM division_truth_recompute WHERE ord = 4),
+       (SELECT count(*) FROM division_truth_recompute WHERE what = 'moved'), (SELECT what FROM division_truth_recompute WHERE ord = 4);
+\o /dev/null
+:s04r6
+;
+\o
+INSERT INTO dt_round_log SELECT 'Summer 2 2025', (SELECT val::bigint FROM division_truth_recompute WHERE ord = 4),
+       (SELECT count(*) FROM division_truth_recompute WHERE what = 'moved'), (SELECT what FROM division_truth_recompute WHERE ord = 4);
+-- A second run of one season: the stored numbers are already the rounded ones, so no
+-- team really moves (the UPDATE itself may still rewrite the rows; that is rounding).
+\o /dev/null
+:s04r1
+;
+\o
+INSERT INTO dt_round_log SELECT 'Winter 2 2026 (second run)', (SELECT val::bigint FROM division_truth_recompute WHERE ord = 4),
+       (SELECT count(*) FROM division_truth_recompute WHERE what = 'moved'), (SELECT what FROM division_truth_recompute WHERE ord = 4);
+
+DO $$
+DECLARE
+  v_strict bigint;
+  v_n bigint;
+BEGIN
+  -- (a) the new last line is 0 on every run, with its new label.
+  SELECT count(*) INTO v_n FROM dt_round_log;
+  IF v_n IS DISTINCT FROM 7 THEN RAISE EXCEPTION 'expected 7 recompute runs, found %', v_n; END IF;
+  IF EXISTS (SELECT 1 FROM dt_round_log WHERE still_different IS DISTINCT FROM 0) THEN
+    RAISE EXCEPTION 'a recompute ended with rows still different by more than rounding: %',
+      (SELECT string_agg(season || '=' || COALESCE(still_different::text, 'NULL'), ', ') FROM dt_round_log WHERE still_different IS DISTINCT FROM 0);
+  END IF;
+  IF EXISTS (SELECT 1 FROM dt_round_log
+              WHERE label IS DISTINCT FROM 'rows still different from the rules by more than rounding (must be 0)') THEN
+    RAISE EXCEPTION 'the last line of script 04 has another label';
+  END IF;
+  -- ...but a strict comparison (the old last line) would count rows: the test sees the difference.
+  SELECT count(*) INTO v_strict
+  FROM public.team_season_stats s
+  JOIN public.v_team_season_agg a ON a.season_id = s.season_id AND a.team_id = s.team_id
+  WHERE s.power_score IS DISTINCT FROM a.power_score OR s.sos IS DISTINCT FROM a.sos
+     OR s.career_power_score IS DISTINCT FROM a.career_power_score;
+  IF v_strict < 1 THEN
+    RAISE EXCEPTION 'the strict comparison finds no row: the 3-decimal columns are not mimicked';
+  END IF;
+  -- career_power_score is plain numeric on live: it matches the view exactly.
+  IF EXISTS (SELECT 1 FROM public.team_season_stats s
+              JOIN public.v_team_season_agg a ON a.season_id = s.season_id AND a.team_id = s.team_id
+             WHERE s.career_power_score IS DISTINCT FROM a.career_power_score) THEN
+    RAISE EXCEPTION 'career_power_score differs from the view after the recompute';
+  END IF;
+  -- Rows really are 3 decimals, and the gap is rounding only.
+  IF EXISTS (SELECT 1 FROM public.team_season_stats s
+              JOIN public.v_team_season_agg a ON a.season_id = s.season_id AND a.team_id = s.team_id
+             WHERE abs(s.power_score - a.power_score) > 0.0006 OR abs(s.sos - a.sos) > 0.0006) THEN
+    RAISE EXCEPTION 'a gap bigger than rounding is left after the recompute';
+  END IF;
+  -- The second run moved no team.
+  IF (SELECT moved FROM dt_round_log WHERE season LIKE '%second run%') IS DISTINCT FROM 0 THEN
+    RAISE EXCEPTION 'the second run of the recompute moved a team';
+  END IF;
+END $$;
+
+-- (b) check L4 after the recompute of all six seasons.
+\o /dev/null
+\i supabase/scripts/division_truth_06_checks.sql
+\o
+\set l4tail `sed -n '/^WITH$/,$p' supabase/scripts/division_truth_06_checks.sql`
+CREATE TEMP TABLE dt_l4b AS :l4tail
+;
+
+-- (c) a closed season outside the six, wrong by more than rounding.
+INSERT INTO public.seasons (id, name, start_date, is_active, is_archived)
+VALUES ('00000000-0000-0000-0000-0000000dd0e8', 'DT Eighth 2026', '2026-04-01', false, true);
+INSERT INTO public.matches_archive
+  (id, team1_id, team2_id, season_id, team1_game_wins, team2_game_wins, winner_id, loser_id, date, iscompleted, round_number)
+VALUES (gen_random_uuid(), '00000000-0000-0000-0000-0000000dd001', '00000000-0000-0000-0000-0000000dd016',
+        '00000000-0000-0000-0000-0000000dd0e8', 2, 0, '00000000-0000-0000-0000-0000000dd001',
+        '00000000-0000-0000-0000-0000000dd016', '2026-04-08 18:00:00+00', true, 1);
+INSERT INTO public.team_season_stats
+  (season_id, team_id, match_wins, match_losses, game_wins, game_losses, division_name, power_score, sos, career_power_score)
+SELECT a.season_id, a.team_id, 1, 0, 2, 0, 'Competitive', a.power_score + 0.01, a.sos, a.career_power_score
+FROM public.v_team_season_agg a
+WHERE a.season_id = '00000000-0000-0000-0000-0000000dd0e8' AND a.team_id = '00000000-0000-0000-0000-0000000dd001';
+CREATE TEMP TABLE dt_l4c AS :l4tail
+;
+
+-- (d) the same season is now the ACTIVE one.
+UPDATE public.seasons SET is_active = true WHERE id = '00000000-0000-0000-0000-0000000dd0e8';
+CREATE TEMP TABLE dt_l4d AS :l4tail
+;
+
+DO $$
+DECLARE
+  v_b record; v_c record; v_d record;
+BEGIN
+  SELECT result, detail INTO STRICT v_b FROM dt_l4b WHERE check_name = 'L4 stored vs rules now';
+  SELECT result, detail INTO STRICT v_c FROM dt_l4c WHERE check_name = 'L4 stored vs rules now';
+  SELECT result, detail INTO STRICT v_d FROM dt_l4d WHERE check_name = 'L4 stored vs rules now';
+  IF v_b.result IS DISTINCT FROM 'PASS' OR v_b.detail NOT LIKE '0 team-seasons in the six seasons still differ by more than rounding%' THEN
+    RAISE EXCEPTION 'L4 after the recompute: expected PASS with 0 in the six seasons, got % / %', v_b.result, v_b.detail;
+  END IF;
+  IF v_c.result IS DISTINCT FROM 'FAIL' OR v_c.detail NOT LIKE '%; 1 elsewhere, not counting the live season (must be 0); 0 in the live season%' THEN
+    RAISE EXCEPTION 'L4, a closed season outside the six is wrong: expected FAIL (1 elsewhere), got % / %', v_c.result, v_c.detail;
+  END IF;
+  IF v_d.result IS DISTINCT FROM 'PASS' OR v_d.detail NOT LIKE '%; 0 elsewhere, not counting the live season (must be 0); 1 in the live season%' THEN
+    RAISE EXCEPTION 'L4, the same gap in the ACTIVE season: expected PASS (1 in the live season), got % / %', v_d.result, v_d.detail;
+  END IF;
+END $$;
+
+ROLLBACK TO SAVEPOINT dt_round;
+RELEASE SAVEPOINT dt_round;
 
 -- ---------------------------------------------------------------------------
 -- 7. Undo. Path 2 saves the rows first, removes them, puts the old view back.

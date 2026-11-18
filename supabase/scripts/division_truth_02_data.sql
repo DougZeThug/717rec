@@ -45,8 +45,8 @@
 -- rateable division; "Here for Fireball" matches anything but exactly ONE team;
 -- one of the 3 teams or one of the 6 seasons is missing.
 --
--- SAFE TO RE-RUN: ON CONFLICT DO NOTHING. Expect about 85 rows (an estimate; the
--- result below gives the real number).
+-- SAFE TO RE-RUN: ON CONFLICT DO NOTHING. The live run on 2026-11-18 wrote 86 rows (83
+-- team-seasons and the 3 explicit rows). The result below gives the real number.
 --
 -- LOOK FIRST: script 02a (division_truth_02a_dryrun.sql) lists, without writing
 -- anything, the exact rows this script would insert. Run it before this one. The
