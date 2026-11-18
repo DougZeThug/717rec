@@ -1001,9 +1001,9 @@ Doug asked for this fix. It is a deliberate behavior change.
   - No automatic refresh after the failure (recommendation: not for now).
 - **Same hole elsewhere (NOT fixed; list only).** Each cite was read in the current files. A write whose row is hidden by row-level security, or whose id no longer matches, returns no error and does nothing.
   - Member paths:
-    - `src/services/messages/MessageService.ts:86-94` (`updateMessage`, edit your own message).
+    - `src/services/messages/MessageService.ts:85-93` (`updateMessage`, edit your own message).
     - `src/services/teams/TeamMembershipService.ts:79-92` (a member re-requests or switches team).
-    - `src/services/liveScoring/LiveMatchService.ts:154-173` (`completeGame`, `reopenGame`).
+    - `src/services/liveScoring/LiveMatchService.ts:149-175` (`completeGame`, `reopenGame`).
   - Admin-only paths:
     - `src/services/contact/ContactRequestService.ts:42-58` (`markResolved`, `reopen`).
     - `src/services/support/SupportTicketService.ts:99-107` (`markResolved`, `reopen`).
