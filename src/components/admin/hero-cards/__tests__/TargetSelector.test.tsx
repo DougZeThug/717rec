@@ -1,11 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { openRadixTrigger } from '@/test/radix';
 import type { HeroCardTargetType } from '@/types/heroCard';
 
-import { TargetEntitySelector } from '../TargetSelector';
+import { TargetEntitySelector, TargetTypeSelector } from '../TargetSelector';
 
 const mocks = vi.hoisted(() => ({
   fetchTeamsForSelector: vi.fn(),
@@ -19,18 +21,23 @@ vi.mock('@/services/selectors/SelectorService', () => ({
   fetchSeasonsForSelector: mocks.fetchSeasonsForSelector,
 }));
 
-const renderSelector = (targetType: HeroCardTargetType) => {
+const renderSelector = (targetType: HeroCardTargetType, onChange = vi.fn()) => {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return render(
     <QueryClientProvider client={client}>
-      <TargetEntitySelector targetType={targetType} value="" onChange={vi.fn()} />
+      <TargetEntitySelector targetType={targetType} value="" onChange={onChange} />
     </QueryClientProvider>
   );
 };
 
-// The picker is closed in every test below. Opening a Radix Select needs
-// pointer capture, which jsdom does not have, and the lists are not the point:
-// the point is that only the list for the chosen audience is asked for.
+// jsdom has no pointer capture or scrollIntoView, and Radix Select uses both.
+beforeAll(() => {
+  HTMLElement.prototype.setPointerCapture = vi.fn();
+  HTMLElement.prototype.releasePointerCapture = vi.fn();
+  HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
+  HTMLElement.prototype.scrollIntoView = vi.fn();
+});
+
 describe('TargetEntitySelector', () => {
   beforeEach(() => {
     mocks.fetchTeamsForSelector.mockResolvedValue([{ id: 'team-1', name: 'Team One' }]);
@@ -65,6 +72,17 @@ describe('TargetEntitySelector', () => {
     expect(mocks.fetchDivisionsForSelector).not.toHaveBeenCalled();
   });
 
+  it('lists the loaded teams and passes the chosen team id to onChange', async () => {
+    const onChange = vi.fn();
+    renderSelector('team', onChange);
+    await waitFor(() => expect(mocks.fetchTeamsForSelector).toHaveBeenCalledTimes(1));
+
+    await openRadixTrigger(screen.getByRole('combobox'));
+    await userEvent.click(await screen.findByRole('option', { name: 'Team One' }));
+
+    expect(onChange).toHaveBeenCalledWith('team-1');
+  });
+
   it('shows nothing and asks for nothing when the card has no target', async () => {
     const { container } = renderSelector('none');
 
@@ -72,5 +90,18 @@ describe('TargetEntitySelector', () => {
     expect(mocks.fetchTeamsForSelector).not.toHaveBeenCalled();
     expect(mocks.fetchDivisionsForSelector).not.toHaveBeenCalled();
     expect(mocks.fetchSeasonsForSelector).not.toHaveBeenCalled();
+  });
+});
+
+describe('TargetTypeSelector', () => {
+  it('passes the chosen audience type to onChange', async () => {
+    const onChange = vi.fn();
+    render(<TargetTypeSelector value="team" onChange={onChange} />);
+
+    await openRadixTrigger(screen.getByRole('combobox'));
+    await userEvent.click(await screen.findByRole('option', { name: /Highlight a Division/ }));
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith('division');
   });
 });
