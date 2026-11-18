@@ -119,16 +119,23 @@ On failure a red toast appears headed "Failed to submit request", with a plain
 sentence under it. The app does **not** show the database's own words. A failure it
 cannot name reads "Something went wrong. Please try again." A few known causes get a
 sentence of their own, such as "You do not have permission to do this." or "Your
-session has expired. Please sign in again." The dropdown keeps the chosen team and
-the button comes back.
+session has expired. Please sign in again." The button comes back. **The dropdown is
+cleared after a failure too**: the panel clears it after every attempt, whatever the
+outcome, because the code that sends the request catches the failure itself and
+returns normally. So the user has to pick the team again.
 
 One failure has its own plain sentence. If the person already had a membership
-row and that row has since gone or changed (an admin removed it, or it changed in
-another tab), the request matches nothing. The toast then reads "Failed to submit
-request — Your request was not sent. Your team status may have changed. Refresh
-the page and try again." Before this was fixed, the same case showed the success
-toast although nothing was saved. After any failed request the panel now also
-reloads the membership by itself, so a stale card or dropdown corrects itself.
+row and the request now matches no row, nothing is saved. That happens when the row
+is gone (an admin removed it), or when it is no longer one the user may edit: the
+database lets a user edit only their own row while it is **not approved**, so a row
+an admin has since approved does not match for the user. A change to a row that is
+still editable (for example it was refused or edited in another tab) does **not**
+block the request: it matches that row and overwrites it. The toast for the no-row
+case reads "Failed to submit request — Your request was not sent. Your team status
+may have changed. Refresh the page and try again." Before this was fixed, the same
+case showed the success toast although nothing was saved. After any failed request
+the panel now also reloads the membership by itself, so a stale card or dropdown
+corrects itself.
 
 ### Waiting for approval
 

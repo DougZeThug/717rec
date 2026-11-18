@@ -1136,8 +1136,10 @@ only the last result, so a note printed in the middle would not show.
 >   then team. **Read the "Intermediate 1" and "Intermediate 2" lists.** That mapping
 >   is believed, not proven. It also shows a "CHECK: script 02 would STOP" row if a
 >   dropped-out team, a season or the backup is missing, or a name matches two rows.
->   Once script 07 has retired the backup, that CHECK row always shows (script 02 was a
->   one-time job; later override rows are added by hand).
+>   When the backup table is missing, that CHECK row shows and names both reasons: first
+>   install (run script 01 **before** you write any override row) or retired by script 07
+>   (do **not** recreate it; script 02 was a one-time job, and later override rows are
+>   added by hand).
 > - **(g) Preview.** Script 03 also shows each team's **career** score before and
 >   after, and the career rank.
 > - **(h) Approval.** Approving the final preview table **also approves the about 62
@@ -1161,7 +1163,10 @@ SELECT resolved_by, count(*) FROM public.v_power_score_team_matches_rated GROUP 
 **If a script stops with "STOP:", it changed nothing.** Read the message. It names
 the cause: a missing backup, a division name that matches two divisions, or a team
 name that matches two teams. **After script 07, a missing backup is expected:** scripts
-02 and 03 stop on purpose ("the backup was retired"), and so does path 1 of script 05.
+02 and 03 stop on purpose, and so does path 1 of script 05. The message of 02 and 03
+says "the backup table is missing" and names both reasons, because the script cannot
+tell which one it is: first install (run script 01 first) or retired (do **not**
+recreate it).
 
 Recompute order (step 6): type the season id on the line marked TYPE HERE in
 script 04. Doug did Winter 2 2026, Winter 1 2026, Fall 2025, Spring 2025, Summer 1
@@ -1239,15 +1244,21 @@ line marked TYPE HERE.
   **the numbers the old rules give (no overrides)**. It is **not** the stored numbers
   from before step 6: the 62 team-seasons that differed then stay changed. Path 2 does
   not need the backup, so it still works after script 07.
-- **Path 2 stops (and writes nothing) if the override table holds a row for a season
+- **Path 2 stops (and writes nothing) while the override table holds a row for a season
   other than the six.** It recomputes only the six seasons, so the stored scores of
   another season would stay worked out with a row it deletes. The error names the
-  season ids. Recompute those seasons by hand first, or remove those rows, then run
-  path 2 again. Its copy and delete of the override rows is one statement, so a row
-  is never deleted without being saved.
+  season ids. Before path 2, in this order: **(1)** save those override rows (copy them
+  somewhere), **(2)** remove them, **(3)** recompute **those** seasons without the rows
+  (script 04 takes only the six seasons, so ask the developer). Then run path 2.
+  Recompute first, with the rows still there, and path 2 still stops. Remove the rows
+  and do **not** recompute, and the stored scores of those seasons stay worked out from
+  the deleted overrides: the undo is then incomplete. Script 07 refuses to retire the
+  backup while such a row exists (see below). Path 2's copy and delete of the override
+  rows is one statement, so a row is never deleted without being saved.
 - **To go all the way back:** run path 2, then path 1. (**After script 07 this is no
-  longer possible**: there is no path 1. The old stored numbers exist then only in a CSV
-  file, if Doug exported one before the drop. See "How Doug retires the backup".)
+  longer possible**: there is no path 1. The old stored numbers exist then only in the
+  CSV file Doug exports before the drop, which is required. See "How Doug retires the
+  backup".)
 - After undo, revert the pull request too. If the migration file stays in the repo,
   the next hand-apply of all migrations adds the override step again.
 
@@ -1267,12 +1278,17 @@ of 2026-11-18). After the drop:
   step (the old view). It keeps a copy of
   the override rows in `power_score_division_override_pre_undo`. It gives the numbers
   the **old rules** give, **not** the old stored numbers.
-- Scripts 02, 02a and 03 were one-time steps. Script 02 and 03 STOP ("the backup was
-  retired"). The dry run (02a) lists one CHECK row. A later override row is added by
-  hand (see "Warnings" above), then run script 04 for that season.
+- Scripts 02, 02a and 03 were one-time steps. Script 02 and 03 STOP ("the backup table
+  is missing"). Their message names both reasons, because they cannot tell which one it
+  is: first install (run script 01 first) or retired (do **not** recreate the table).
+  The dry run (02a) lists one CHECK row with the same two reasons. A later override row
+  is added by hand (see "Warnings" above), then run script 04 for that season.
 - Script 06 still runs. Its checks L6b, L6c, L6d and L7 say INFO, "skipped, backup
   retired". The other checks run as before.
-- Do not run script 01 again. It would STOP, because override rows exist.
+- **Do not run script 01 again.** It STOPs only while override rows exist. After undo
+  path 2 has deleted them, a rerun would **not** stop: it would make a NEW snapshot
+  under the same backup name, taken after the recompute. That snapshot **cannot**
+  restore the original numbers.
 
 **Steps for Doug.**
 
@@ -1280,7 +1296,7 @@ of 2026-11-18). After the drop:
    live database until step 5.)
 2. **Run script 06** (paste the whole file) and check that **L4 and L7 say PASS**. L7
    cannot run after the drop. (L4 lists the live season on its own line.)
-3. **Save a file copy. Do this.** In the Supabase dashboard, open the table
+3. **Save a file copy. This step is required.** In the Supabase dashboard, open the table
    `team_season_stats_pre_division_truth` and export it as CSV. Keep the file. The
    backup is the only copy of the old stored numbers, and it is only about 185 rows.
 4. Open `supabase/scripts/division_truth_07_drop_backup.sql`. **Paste the WHOLE
@@ -1291,7 +1307,10 @@ of 2026-11-18). After the drop:
 6. **Read the one result table.** Want:
    - six seasons: stored rows that differ from the rules NOW by more than rounding = **0**
    - saved rows with no live row = **0**
+   - saved rows whose record differs from the live row = **0**
    - override rows = **86** (more if you added rows by hand)
+   - rows for seasons outside the six, in the override table = **0**
+   - rated view has the override step = **yes**
    - `table exists now` = **no**
    - `verdict` = **OK: backup dropped**
 
@@ -1304,10 +1323,24 @@ of 2026-11-18). After the drop:
    season on its own line, as on 2026-11-18).
 
 A second run of script 07 is safe: it says "already gone" and changes nothing. The
-script stops (and drops nothing) if a stored score of the six seasons still differs
-from the rules by more than rounding, if a saved row has no live row any more (its
-team-season was deleted), or if the override table has 0 rows: in each case the backup
-would still be the way back or the only record.
+script stops (and drops nothing) in these cases; each time the backup would still be
+the way back or the only record:
+
+- the rated view is not the override-aware one (undo path 2 puts the old view back, and
+  the score test would then pass for the wrong reason);
+- a stored score of the six seasons still differs from the rules by more than rounding
+  (power score, strength of schedule or career score);
+- a saved row has no live row any more (its team-season was deleted);
+- a saved row has a live row but a different record (wins, losses, games, division,
+  champion, runner-up or playoff rank: the same test as check L7 of script 06; the
+  accepted change in the scores does not count);
+- the override table has 0 rows;
+- an override row is for a season outside the six (undo path 2 would refuse to run).
+
+The script takes the same lock as a weight save, then blocks writes to
+`team_season_stats` until it ends (reads stay open). So no team-season can be deleted
+between its checks and the drop. If a weight save or a recompute is running, the script
+waits for it, then reads the new state.
 
 If you run script 01 before script 07 (the backup still exists), it **never** replaces
 the first backup. Its last line says OK (nothing changed), NOTE (stored scores changed

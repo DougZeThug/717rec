@@ -123,23 +123,33 @@ so a non-zero exit code means drift was detected.
   saved scores back). The test sets `jit = off` for its transaction: with just-in-time
   compilation on (the default) it takes about 44 s, without it under 1 s. Its "STOP"
   checks catch the error in psql (`LAST_ERROR_MESSAGE`, psql 12 or later), so the log
-  shows nine expected `ERROR:  STOP: ...` lines (a missing team, a missing season,
-  an override row in a seventh season for undo path 2, and six for script 07 and the
-  scripts after the drop: see below) and six expected `ERROR:  division by zero` lines
-  (a deliberate `SELECT 1 / 0` that wipes `LAST_ERROR_MESSAGE` before each of those
-  six, so an old message cannot pass a new test). It also pins script 00 (a
+  shows fifteen expected `ERROR:  STOP: ...` lines (a missing team, a missing season,
+  an override row in a seventh season for undo path 2, and twelve for script 07 and the
+  scripts after the drop: see below), one expected `ERROR:  cannot drop table ...
+because other objects depend on it` (script 07 never uses CASCADE) and thirteen
+  expected `ERROR:  division by zero` lines (a deliberate `SELECT 1 / 0` that wipes
+  `LAST_ERROR_MESSAGE` before each of those thirteen, so an old message cannot pass a
+  new test). It also pins script 00 (a
   season with `is_active` or `playoffs_active` on is a CHECK), script 01 (the first
   backup is never replaced; the verdict says OK, NOTE or CHECK from the keys and the
   saved scores, not the row counts) and script 07, which retires the backup table
   (hand-apply; Doug runs it after the merge, see `docs/OPERATIONS.md` section 6g).
   Script 07 STOPs and drops nothing when a stored six-season score is off by more than
-  rounding (power, sos or career) or the override table is empty; a gap of 0.0004
-  passes. The real run drops ONLY the backup (the stored scores, the override rows and
+  rounding (power, sos or career: one case each), a saved row has no live row or a
+  different record (wins, or a playoff rank that was empty), the old rated view is
+  installed, an override row is for a season outside the six, or the override table is
+  empty; a gap of 0.0004 passes, and so does the accepted change (power, sos and career
+  far from the saved ones, records the same). It also holds the weight-save lock and a
+  share lock on `team_season_stats` before it looks for the backup (the test reads the
+  line order and `pg_locks`). The real run drops ONLY the backup (the stored scores, the override rows and
   the rated view are the same afterwards), prints the pre-check lines and the verdict,
   and a second run says "already gone". After the drop the test checks that script 06
-  still runs (L6b, L6c, L6d and L7 say INFO, "skipped, backup retired"), that scripts
-  03 and 02 STOP with their "retired" message, that the dry run (02a) lists a CHECK
-  row, that undo path 1 STOPs, and that path 2 still reports ("backup unavailable").
+  still runs (L6b, L6c, L6d and L7 say INFO, "skipped, backup retired"; with an existing
+  but empty backup they say "backup table is empty"), that scripts 03 and 02 STOP with a
+  message that names both reasons (first install, retired), that the dry run (02a)
+  lists a CHECK row, that undo path 1 STOPs, and that path 2 still reports ("backup
+  unavailable") and, with the override-aware view and the overrides in the stored
+  numbers, puts the old-rule scores back.
   Everything about 07 before the final section runs in a rolled-back savepoint, because
   the sections after it still need the backup. A section also mimics the LIVE columns (`power_score`
   `numeric(8,3)`, `sos` `numeric(6,3)`, found 2026-11-18; the repo migrations do not
