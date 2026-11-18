@@ -127,60 +127,6 @@ describe('Bracket Manager Schema Integration Tests', () => {
     (supabase.from as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockSupabaseFrom);
   });
 
-  describe('Schema Verification - All Required Columns Present', () => {
-    it('should have all required columns in stage table', () => {
-      const requiredColumns = ['id', 'tournament_id', 'name', 'type', 'number', 'settings'];
-      // This test validates schema structure matches brackets-manager requirements
-      expect(requiredColumns).toHaveLength(6);
-    });
-
-    it('should have all required columns in group table', () => {
-      const requiredColumns = ['id', 'stage_id', 'number', 'name'];
-      expect(requiredColumns).toHaveLength(4);
-    });
-
-    it('should have all required columns in round table', () => {
-      const requiredColumns = ['id', 'group_id', 'number', 'name', 'stage_id'];
-      expect(requiredColumns).toHaveLength(5);
-    });
-
-    it('should have all required columns in match table', () => {
-      const requiredColumns = [
-        'id',
-        'stage_id',
-        'group_id',
-        'round_id',
-        'number',
-        'status',
-        'opponent1_id',
-        'opponent2_id',
-        'opponent1_score',
-        'opponent2_score',
-        'opponent1_result',
-        'opponent2_result',
-        'child_count',
-      ];
-      expect(requiredColumns).toHaveLength(13);
-    });
-
-    it('should have all required columns in match_game table', () => {
-      const requiredColumns = [
-        'id',
-        'match_id',
-        'number',
-        'opponent1_score',
-        'opponent2_score',
-        'status',
-      ];
-      expect(requiredColumns).toHaveLength(6);
-    });
-
-    it('should have all required columns in participant table', () => {
-      const requiredColumns = ['id', 'tournament_id', 'name'];
-      expect(requiredColumns).toHaveLength(3);
-    });
-  });
-
   describe('Bracket Creation - Single Elimination', () => {
     it('should create a 4-team single elimination bracket', async () => {
       const bracketId = 'test-bracket-4';
@@ -408,30 +354,6 @@ describe('Bracket Manager Schema Integration Tests', () => {
           },
         })
       ).resolves.not.toThrow();
-    });
-  });
-
-  describe('Foreign Key Integrity', () => {
-    it('should cascade delete when bracket is deleted', () => {
-      // This validates that CASCADE rules are properly set
-      // In production: Deleting a bracket should delete all stages, groups, rounds, matches, and participants
-      expect(true).toBe(true); // Placeholder - FK constraints are verified in migration
-    });
-
-    it('should maintain referential integrity across all relationships', () => {
-      // Validates that all FK relationships are properly defined
-      const relationships = [
-        'stage.tournament_id -> brackets.id',
-        'group.stage_id -> stage.id',
-        'round.group_id -> group.id',
-        'round.stage_id -> stage.id',
-        'match.stage_id -> stage.id',
-        'match.group_id -> group.id',
-        'match.round_id -> round.id',
-        'match_game.match_id -> match.id',
-        'participant.tournament_id -> brackets.id',
-      ];
-      expect(relationships).toHaveLength(9);
     });
   });
 });

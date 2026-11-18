@@ -57,25 +57,4 @@ describe('HistoryPage', () => {
     // Check that the loading state appears initially
     expect(screen.getByText('Loading historical data...')).toBeInTheDocument();
   });
-
-  it('displays champion badge when team is champion', () => {
-    const mockTeam = {
-      team_id: '1',
-      season_id: '1',
-      match_wins: 10,
-      match_losses: 2,
-      game_wins: 25,
-      game_losses: 8,
-      sos: 0.75,
-      power_score: 85.5,
-      champion: true,
-      division_name: 'Competitive',
-      team_name: 'Test Champions',
-      team_logo_url: null,
-      team_image_url: null,
-    };
-
-    // This would be expanded in a more comprehensive test
-    expect(mockTeam.champion).toBe(true);
-  });
 });

@@ -11,7 +11,6 @@ import { Team } from '@/types';
 // none of these fixtures earn bonuses, and tests must not hit the network.
 vi.mock('@/services/divisionWeightsCache', () => ({
   fetchDivisionWeightsByName: vi.fn(() => Promise.resolve(new Map<string, number>())),
-  getDefaultDivisionWeight: () => 0.85,
 }));
 
 import { buildCareerWeightPreview } from '../buildCareerWeightPreview';

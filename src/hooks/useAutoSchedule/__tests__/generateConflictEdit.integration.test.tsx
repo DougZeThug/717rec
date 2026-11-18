@@ -75,7 +75,6 @@ vi.mock('../storage', () => ({
   saveAutoScheduleState: vi.fn(),
   clearAutoScheduleState: vi.fn(),
   deserializeMatches: (matches: unknown) => matches,
-  serializeMatches: (matches: unknown) => matches,
 }));
 
 // Team loader seam (Supabase-backed) -> known teams for the block.

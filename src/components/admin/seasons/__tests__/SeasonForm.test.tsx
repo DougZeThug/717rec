@@ -26,7 +26,6 @@ vi.mock('@/hooks/useToast', () => ({
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
   useSeasonalThemeBase: () => ({ theme: 'light' }),
-  default: () => ({ isWinterTheme: false }),
 }));
 
 // ─── Import after mocks ───────────────────────────────────────────────────────

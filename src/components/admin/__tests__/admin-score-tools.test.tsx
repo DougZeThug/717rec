@@ -55,7 +55,6 @@ vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ isWinterTheme: false }),
   useSeasonalThemeBase: () => ({ theme: 'light' }),
-  default: () => ({ isWinterTheme: false }),
 }));
 vi.mock('framer-motion', () => ({
   m: {

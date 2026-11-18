@@ -68,25 +68,19 @@ describe('handleDatabaseError', () => {
 
   it('includes context and original message in the thrown error', () => {
     const error = makePostgrestError({ message: 'null value' });
-    try {
-      handleDatabaseError(error, 'Insert record');
-    } catch (e) {
-      expect((e as DatabaseError).message).toContain('Insert record');
-      expect((e as DatabaseError).message).toContain('null value');
-    }
+    const callHandler = () => handleDatabaseError(error, 'Insert record');
+    expect(callHandler).toThrow('Insert record');
+    expect(callHandler).toThrow('null value');
   });
 
   it('preserves code, details, and hint in the error details', () => {
     const error = makePostgrestError({ code: '23505', details: 'dup key', hint: 'try again' });
-    try {
-      handleDatabaseError(error, 'ctx');
-    } catch (e) {
-      const dbErr = e as DatabaseError;
-      const details = dbErr.details as Record<string, string>;
-      expect(details.code).toBe('23505');
-      expect(details.details).toBe('dup key');
-      expect(details.hint).toBe('try again');
-    }
+    // One call, one thrown error: that same error must carry all three.
+    expect(() => handleDatabaseError(error, 'ctx')).toThrow(
+      expect.objectContaining({
+        details: expect.objectContaining({ code: '23505', details: 'dup key', hint: 'try again' }),
+      })
+    );
   });
 
   it('has return type never (always throws)', () => {
@@ -119,27 +113,15 @@ describe('ensureFound', () => {
   });
 
   it('includes resource name in the error message', () => {
-    try {
-      ensureFound(null, 'Division');
-    } catch (e) {
-      expect((e as NotFoundError).message).toContain('Division');
-    }
+    expect(() => ensureFound(null, 'Division')).toThrow('Division');
   });
 
   it('includes identifier in the error message when provided', () => {
-    try {
-      ensureFound(null, 'Team', 'abc-123');
-    } catch (e) {
-      expect((e as NotFoundError).message).toContain('abc-123');
-    }
+    expect(() => ensureFound(null, 'Team', 'abc-123')).toThrow('abc-123');
   });
 
   it('omits identifier segment when not provided', () => {
-    try {
-      ensureFound(null, 'Match');
-    } catch (e) {
-      expect((e as NotFoundError).message).toContain('Match not found');
-    }
+    expect(() => ensureFound(null, 'Match')).toThrow('Match not found');
   });
 });
 
