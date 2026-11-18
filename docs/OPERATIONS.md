@@ -467,6 +467,11 @@ Caveats:
   rebuild the views from text saved in `20260812171710`, which still counts a
   tie as a loss in Win % and the Power Score. Either one quietly undoes §6e.
   This is a pre-existing problem with those controls and needs its own fix.
+- **Do not press Revert after §6g is applied.** It puts back the old formula, which
+  never reads `power_score_division_override`, and rewrites every stored season
+  with it. The override step in the rated view stays, but nothing reads it. See §6g.
+  (The Sandbox weights **Revert** in §6b is a different button. It also rewrites
+  every stored season, from the live rules.)
 - The homepage **Movers** section diffs against last week's
   `power_score_snapshots` row, so it can look skewed for up to a week after a
   revert or re-apply. It self-corrects at the next weekly snapshot (or run the
@@ -503,7 +508,7 @@ Consequences to know:
   was true that week and rewriting them would erase the trend history. It
   self-corrects at the next weekly snapshot.
 
-Two related tables are worth knowing about:
+Three related tables are worth knowing about:
 
 - `division_weight_history` — every division's weight over time, maintained by a
   trigger on `divisions`. A match is rated with the weight in effect on its
@@ -514,6 +519,8 @@ Two related tables are worth knowing about:
   are seeded, because theirs were backfilled in Jan 2026 from then-current
   values. Add a row (with a reason) rather than editing a view if another season
   turns out to be affected.
+- `power_score_division_override` — the division one team had in one season,
+  read first by the rated view. Built 2026-11-17, **not yet applied**. See §6g.
 
 ## 6b. Power score weight sandbox: preview, save, revert
 
@@ -574,11 +581,11 @@ preview any mix safely: nothing changes until you press **Save & rescore**.
   A save changes nothing only if the stored scores already match the live rules.
   A live check on 2026-11-17 showed that they do not: any save would change 62
   team-seasons (Spring 2025, Summer 1 2025 and Summer 2 2025). **Do not press
-  Save & rescore until the old-season fix is decided.** The Save button is off
-  when the typed numbers equal the live numbers, so a save with the same weights
-  (the screen says "reasserted") needs a stale tab or a second admin. No table
-  backup exists, and Revert works the scores out again from the live rules: it
-  does not restore the old stored numbers. See
+  Save & rescore until the old-season fix (§6g) is finished or dropped.** The Save
+  button is off when the typed numbers equal the live numbers, so a save with the
+  same weights (the screen says "reasserted") needs a stale tab or a second admin.
+  No table backup exists until §6g step 1 is run, and Revert works the scores out
+  again from the live rules: it does not restore the old stored numbers. See
   `docs/untangle-decision-log.md`, "Power Score check result (2026-11-17)".
 
 Caveats:
@@ -591,9 +598,10 @@ Caveats:
 - The §6a **Revert** control restores the old pre-unification views, which
   carry their own built-in numbers — while that state is active, sandbox
   weights have no effect. (Known, pre-existing, and not caused by the
-  sandbox: §6a's **Re-apply** has drifted from the newer
-  `career_power_score` column and would currently fail; it needs its own
-  fix before anyone uses the §6a controls again.)
+  sandbox: §6a's **Re-apply** lacked the newer `career_power_score` column
+  until migration `20260820184423` patched `admin_reapply_power_score_unification()`.
+  Confirm that migration is applied on the live database before anyone uses
+  the §6a controls.)
 
 ## 6c. Career power score: making the badge agree with the screen
 
@@ -889,3 +897,296 @@ migrations by hand rolls forward again, and the app and the database disagree.
 One difference is known and left as it is: a division name with a **tab** or a
 **non-breaking space** in it counts as unknown in the database, but the app still
 reads it. Real names do not have these.
+
+## 6g. Old Power Scores: rate each game by the opponent's division in THAT season
+
+> **Status: NOT YET APPLIED to the live database** (written 2026-11-17). The code
+> and the scripts are in the repo. Doug has run none of them. When he has run a
+> step, change this line to say which.
+
+**Doug's rule (2026-11-17): "I want numbers to be accurate."** A game is rated by
+the division the opponent had in **that season**, not today's division.
+
+**Why.** Of 1,536 team-games in Spring 2025, Summer 1 2025 and Summer 2 2025,
+364 are unrated and 916 are rated by a guess (the opponent's division today).
+Seven newer games are unrated too: Fall 2025 x4 against Shut Your Cornhole,
+Winter 1 2026 x1 against Red Roof Rockets, Winter 2 2026 x2 against The Tomato
+Saucers. A team that changed division since 2025 is credited at the wrong weight.
+
+**How.** One small table, `power_score_division_override` (team, season, the
+division, the reason). The rated view reads it **first**. A game against a team
+with a row is rated by that row's division. The weight is the weight that
+division had on the game date. A row that points to a Hidden or an unweighted
+division is ignored. **An empty table changes nothing.** The migration is
+`supabase/migrations/20261117130000_power_score_division_override.sql`.
+
+**Which rows (script 02).**
+
+- Each opponent team-season of the three old seasons that has at least one game
+  rated by a guess or not at all. A team-season answered by a weekly snapshot, the
+  archive or a bracket gets **no** row.
+- The division comes from the team's stored name for that season, through Doug's
+  map. The stored name is a **label**, not a division: "Competitive" can hide
+  Competitive Low, "Recreational" can hide Recreational High, and "Intermediate 1"
+  and "Intermediate 2" come from alphabetical bracket titles. So Doug chose by hand:
+
+  | Stored name    | Division          | Weight (read 2026-11-17) |
+  | -------------- | ----------------- | ------------------------ |
+  | Competitive    | Competitive       | 1.00                     |
+  | Recreational   | Recreational      | 0.35                     |
+  | Intermediate 1 | Intermediate High | 0.80                     |
+  | Intermediate 2 | Intermediate Low  | 0.60                     |
+  | Intermediate   | Intermediate      | 0.70                     |
+
+  The Intermediate 1 and 2 order is **believed, not proven**, in **all three**
+  old seasons (Spring 2025, Summer 1 2025 and Summer 2 2025). They have no playoff
+  brackets, so nothing can confirm it. Any other stored name gets **no row** and is
+  listed in the result.
+
+- **Doug's exception wins over the map:** "Here for Fireball" was Recreational
+  High in Summer 1 2025 and Summer 2 2025.
+- Three explicit rows for the 7 newer games: Shut Your Cornhole (Fall 2025) is
+  Competitive; Red Roof Rockets (Winter 1 2026) and The Tomato Saucers (Winter 2
+  2026) are Recreational. They match `src/constants/dropoutDivisions.ts`. That list
+  still decides the Team page. The SQL row decides the Power Score. Check L8 compares
+  them.
+
+**What players will notice.** Many scores in the three old seasons move, some by
+10 points or more (an earlier what-if: Buttery Nips Summer 2 2025 65.6 to 50.4,
+Mailmen 54.7 to 64.8). **Career rankings can move too**, because the career number
+reads the stored season scores. Seven teams in the three newer seasons move a
+little (+1.73, +1.69, +1.22, +0.65, -0.60, -0.46, -0.14, from Doug's check on
+2026-11-17; the preview gives the final numbers). Win-loss records, champions,
+playoff ranks and the weekly snapshots do **not** change. The homepage Movers
+section is not affected.
+
+**Part of the change is NOT this fix.** A live check on 2026-11-17 found 62
+team-seasons whose stored score already differs from today's rules (Spring 2025 20,
+Summer 1 2025 21, Summer 2 2025 21). Older rule changes were never recomputed.
+The recompute catches those up too. The tie backup table
+`team_season_stats_pre_tie_exclusion` was NOT FOUND on the live database, so
+nothing says how much is the tie rule. The preview (script 03) separates the
+parts with three numbers per team: **stored** (the site today), **live_rules** (what
+today's rules give) and **after** (the fix).
+
+**When Doug approves the final preview table, he ALSO approves those catch-up
+changes** (about 62 team-seasons; they show in the `live_rules` column, not in
+`fix_part`). They come from older rule changes, not from this fix. The recompute
+writes both.
+
+**Checked on the live database (VERIFIED by Doug's live read, 2026-11-17).**
+
+- The editor role is `postgres`. It bypasses row-level security and owns the rated
+  view. The view has `security_invoker=on` and has the `division_history` step. The
+  tables `team_division_history` and `division_archive_distrust` and the view
+  `v_division_rateable` exist.
+- **All six seasons** (Spring 2025, Summer 1 2025, Summer 2 2025, Fall 2025, Winter 1
+  2026, Winter 2 2026) have `is_archived = true` and **0 games** with source
+  `regular`. (From the view text, the live standings read only regular games and the
+  playoff games of the current season, so they do not read these seasons. That is
+  reasoned from the code, not part of Doug's read.)
+- The six map divisions each have **exactly one** `division_weight_history` row.
+  Weights: Competitive 1.00, Recreational 0.35, Intermediate High 0.80, Intermediate
+  Low 0.60, Intermediate 0.70, Recreational High 0.60. So **today's weight applies
+  exactly** to them for every old game date.
+- Every old team-season has a stored name that is in the map (no unmapped row).
+
+**Re-run script 00 right before step 3.** Time passes, and a season could be
+un-archived.
+
+### Applying it (Supabase SQL Editor, not Lovable)
+
+Do the steps in this order. Run each script as a whole: paste the full file and
+Run. Each one ends with one result table that says what happened. The editor shows
+only the last result, so a note printed in the middle would not show.
+
+| Step | What                                         | File                                                                   | Success looks like                                                                                       |
+| ---- | -------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1    | Backup, **before** the migration             | `supabase/scripts/division_truth_01_backup.sql`                        | "OK: saved = live"                                                                                       |
+| 2    | Migration (table + view), table still empty  | `supabase/migrations/20261117130000_power_score_division_override.sql` | The fingerprint below is **the same** before and after                                                   |
+| 3a   | Precheck (read-only), **right before 3**     | `supabase/scripts/division_truth_00_precheck.sql`                      | Every row says PASS in the last column. See the box below.                                               |
+| 3b   | Dry run (read-only), **right before 3**      | `supabase/scripts/division_truth_02a_dryrun.sql`                       | The list of rows script 02 would write. Doug reads the Intermediate 1 and 2 lists.                       |
+| 3    | Write the override rows                      | `supabase/scripts/division_truth_02_data.sql`                          | "ROWS INSERTED NOW" about 85 (an estimate), the same rows as the dry run. Read the "NOT inserted" lines. |
+| 4    | Checks (read-only)                           | `supabase/scripts/division_truth_06_checks.sql`                        | No FAIL. L4 says INFO (the six seasons still differ).                                                    |
+| 5    | Preview (read-only). **Doug approves here.** | `supabase/scripts/division_truth_03_preview.sql`                       | Every team in the six seasons (over 100 rows), then CAREER rows. Paste it to the developer.              |
+| 6    | Recompute, **one season per run**            | `supabase/scripts/division_truth_04_recompute.sql`                     | "ROWS CHANGED" is the number of teams that moved. "still different" is 0. A second run changes 0.        |
+| 7    | Checks again, after the last season          | `supabase/scripts/division_truth_06_checks.sql`                        | All PASS. L4 says PASS.                                                                                  |
+
+> ### BEFORE step 3 (writing the override rows)
+>
+> - **(a) Precheck.** Run `division_truth_00_precheck.sql` right before step 3. **Want,
+>   for all six seasons:** `is_archived=true`, `is_active=false`, `playoffs_active=false`
+>   and `regular_games=0`, and PASS on every row. If a row says CHECK, **STOP and tell
+>   the developer.** Doug's live read on 2026-11-17 showed `is_archived` and the
+>   regular games only. It did **not** show `is_active` or `playoffs_active`, so
+>   **re-run script 00 right before step 3.** The live standings follow the season
+>   that is active (or, failing that, the one whose playoffs are active), whether or
+>   not it is archived.
+> - **(b) What step 3 does.** Step 3 changes the **view** at once. The **stored
+>   numbers and the public standings change only at step 6** (the recompute), **IF**
+>   the precheck passed. If a season is **not** archived, the next match scored in
+>   the league rewrites that season's stored numbers by itself (the function
+>   `upsert_team_season_stats()` with no argument rewrites every season that is not
+>   archived), with no preview.
+>   **Four places read the view's answers before step 6** (found by searching the
+>   code; **reasoned, not clicked through**):
+>   1. the Team page split by opponent division (`fetchSeasonBreakdown.ts`),
+>   2. Career and Compare, "Records by Division" (`CareerFetchService.ts` and
+>      `CareerBulkFetchService.ts`),
+>   3. the league Division Matchups card (`useLeagueDivisionMatchups.ts`).
+>      These three all call `fetchRealDivisionOverrides`. They read the view only for
+>      teams that are Hidden now. The 3 explicit rows say what Doug's list
+>      `src/constants/dropoutDivisions.ts` says, and that list wins there, so they
+>      should not change.
+>   4. the admin Sandbox preview. Its Career preview reads `v_power_score_components`
+>      (every team, every season), so it shows the new numbers from step 3 on. It
+>      stores nothing.
+> - **(c)** Run step 3 when **no match is being scored.**
+> - **(d)** Between step 3 and step 6, do **not** press the Sandbox **Save & rescore**
+>   or **Revert**, and do **not** press the §6a **Revert**. Each one rewrites every
+>   stored season.
+> - **(e) Back out before step 6:** `DELETE FROM public.power_score_division_override;`
+>   Nothing stored has changed, and the view is identical to the old one again.
+> - **(f) Dry run.** Run `division_truth_02a_dryrun.sql` before script 02. It writes
+>   nothing. It lists the exact rows script 02 would write, sorted by stored name,
+>   then team. **Read the "Intermediate 1" and "Intermediate 2" lists.** That mapping
+>   is believed, not proven. It also shows a "CHECK: script 02 would STOP" row if a
+>   dropped-out team, a season or the backup is missing, or a name matches two rows.
+> - **(g) Preview.** Script 03 also shows each team's **career** score before and
+>   after, and the career rank.
+> - **(h) Approval.** Approving the final preview table **also approves the about 62
+>   catch-up score changes** from older rule changes (the `live_rules` column).
+
+The fingerprint for step 2. Run it just before the migration and just after, and
+**save the two numbers**. They must be identical. Do not score a match between the
+two runs, or the live season changes the count.
+
+```sql
+SELECT count(*) AS games, md5(string_agg(x::text, '|' ORDER BY x::text)) AS fingerprint
+FROM public.v_power_score_team_matches_rated x;
+```
+
+Also run this before and after. Every `resolved_by` count must be the same:
+
+```sql
+SELECT resolved_by, count(*) FROM public.v_power_score_team_matches_rated GROUP BY 1 ORDER BY 1;
+```
+
+**If a script stops with "STOP:", it changed nothing.** Read the message. It names
+the cause: a missing backup, a division name that matches two divisions, or a team
+name that matches two teams.
+
+Recompute order (step 6): type the season id on the line marked TYPE HERE in
+script 04. Start with one of the three newer seasons (Fall 2025, Winter 1 2026 or
+Winter 2 2026): only a few teams move. Check the result. Do the other two, then the
+three 2025 seasons. The season ids are listed at the top of script 04.
+
+### What the editor may ask
+
+- The Supabase dashboard may ask you to **confirm** a statement it calls destructive:
+  `DROP ... pg_temp...`, `DELETE FROM public.power_score_division_override` with no
+  WHERE (script 05 path 2), `CREATE OR REPLACE VIEW` (script 05 path 2),
+  `CREATE TABLE ... AS` (script 01) or `CREATE TABLE IF NOT EXISTS` (script 05 path 2).
+  **That is expected for those scripts.** Each one
+  is described in its header. If the question names something that is not in the
+  script you pasted, stop.
+- Scripts 04 and 05 need the **season id** (04) or the **path number** (05) typed on
+  the line marked TYPE HERE. If you leave the placeholder, the script **stops safely**
+  and changes nothing.
+- Scripts 03 to 06 make **temporary** tables and views (names start with
+  `division_truth_`). They vanish when the editor session ends. Nothing in the
+  database is left behind except what the scripts say they write (the backup, the
+  override rows, the recomputed scores, the pre_undo copy).
+
+### Warnings
+
+- **Do not press "Save & rescore" in the Power Score Sandbox until step 7 is done
+  (or Doug drops the fix).** A save recomputes **every** season at once, with no
+  preview and no per-season check. Before step 6 is finished it would write the
+  override numbers and the 62 catch-up changes in one go. Scripts 04 and 05 take the
+  same lock as a save, so they never run at the same moment. After step 7 a save with
+  the **same** weights changes nothing in the old seasons. A save with **new**
+  weights moves every season, as before (on purpose). **The Sandbox Revert button
+  does the same:** it also rewrites every stored season.
+- **Do not press Revert in §6a.** It does not touch the rated view, so the override
+  step stays. But it puts back the **old formula**, which rates every opponent by
+  today's division and **never reads the override table**. It then rewrites the stored
+  score of **every** season, archived ones included. That would undo this fix in the
+  stored numbers. (Checked in `20260812171710`: it rebuilds `v_team_details`,
+  `v_team_match_stats` and `v_team_season_agg`. It ends with
+  `upsert_team_season_stats(true)`.) The §6a Re-apply button puts the new formula
+  back and keeps the overrides.
+- The overrides are rows, not code. A new season does not need one. A team that
+  drops out **later** is rated by the weekly snapshot and by the division history,
+  as before. Add an override row only if those cannot answer.
+- To add one row by hand later, run an `INSERT` into `power_score_division_override`
+  with a `reason` (no person's name in it: the table can be read through the public
+  API). Then run the recompute for that season. **A row added by hand can silently
+  replace a solid answer** (a weekly snapshot, the archive or a bracket). After any
+  hand-written row, run script 06 and read **L1**.
+
+### If it needs undoing
+
+`supabase/scripts/division_truth_05_undo.sql` has **two paths**. Type 1 or 2 on the
+line marked TYPE HERE.
+
+- **Path 1: put the saved numbers back.** It copies `power_score`,
+  `career_power_score`, `sos` and `recorded_at` of the six seasons from the backup
+  (`team_season_stats_pre_division_truth`). This gives back **today's stored
+  numbers, exactly.** It is safe because those six seasons are closed: no match is
+  scored in them, so it cannot lose a newer score. It does **not** stop the
+  overrides. The next recompute or Sandbox save writes the new numbers again.
+- **Path 2: stop using the overrides.** It first copies the override rows to the
+  locked table `power_score_division_override_pre_undo` (so a row added by hand is
+  not lost). Then it deletes the override rows, puts the view text of migration
+  `20261003183939` back, and recomputes the six seasons. This gives
+  **the numbers today's rules give**. It is **not** today's stored numbers: the 62
+  team-seasons that differ today stay changed.
+- **Path 2 stops (and writes nothing) if the override table holds a row for a season
+  other than the six.** It recomputes only the six seasons, so the stored scores of
+  another season would stay worked out with a row it deletes. The error names the
+  season ids. Recompute those seasons by hand first, or remove those rows, then run
+  path 2 again. Its copy and delete of the override rows is one statement, so a row
+  is never deleted without being saved.
+- **To go all the way back:** run path 2, then path 1.
+- After undo, revert the pull request too. If the migration file stays in the repo,
+  the next hand-apply of all migrations adds the override step again.
+
+Drop the backup table when Doug accepts the new numbers:
+`DROP TABLE public.team_season_stats_pre_division_truth;`
+(Script 05 still ends in its report after that: it says `backup unavailable` for the
+line that compares with the backup.) If you run script 01 again later, it **never**
+replaces the first backup. Its last line says OK (nothing changed), NOTE (stored
+scores changed since the backup, which is expected after a recompute) or CHECK (the
+team-seasons are not the same). In every case the first backup is the one to restore
+from.
+
+### Honest limits
+
+**More correct, not perfect.**
+
+- A game is rated by **the weight on the game date**. The weight history starts on
+  2026-08-12, so an edit before that is not recorded. For the six map divisions
+  Doug's live read (2026-11-17) shows one history row each, so **today's weight
+  applies**.
+- A team has **one** division per season here. A team that played in two divisions
+  in one season gets one.
+- Old playoff games use a best-effort date for the weight. The three old seasons
+  have no playoff brackets, so check L9 (a team in two brackets of different
+  divisions) cannot run.
+- The stored name is a label. The map is Doug's decision, not proof. If a label hides
+  the wrong division, a team moves by about 0.2 for each game it faced against a
+  Competitive Low team mixed up with Competitive, and by about 1 for each game it
+  faced and won against a Recreational High team mixed up with Recreational
+  (INFERRED, by hand).
+- The Intermediate 1 and 2 order is believed, not proven, in all three old seasons.
+- The six seasons are archived and have 0 regular games (VERIFIED by Doug's live read,
+  2026-11-17). If a season were un-archived or held a regular game, the standings
+  (`v_team_details`) could move for that team at step 3, not at step 6. Script 00
+  and check L5 show it.
+
+The SQL tests `supabase/tests/power_score_division_override.sql` (the view and the
+table) and `supabase/tests/division_truth_scripts.sql` (the real script files on a
+fixture; the dry run lists exactly the rows script 02 writes) cover the mechanism
+in the `db-apply-and-smoke` CI job. They prove the mechanism, not the live numbers.
+The live numbers are Doug's checks above.

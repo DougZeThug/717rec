@@ -82,6 +82,53 @@ so a non-zero exit code means drift was detected.
   archived seasons being frozen against routine recomputes while
   `admin_recompute_season_power()` can still move them, and a coverage floor of
   zero `unresolved` matches.
+- `power_score_division_override.sql` — pins `20261117130000`: one table that pins
+  an opponent's division for one season, read first by
+  `v_power_score_team_matches_rated` (`resolved_by = 'manual_override'`). With an
+  **empty** table the view is byte-for-byte the old view (md5 of every column of
+  every row, against the old body copied from `20261003183939`; the fixture reaches
+  all 8 old answers). Covers: an override changes the opponent division and weight of
+  that team-season only (winner, games, date and row count stay); it beats the
+  snapshot, the archive, the bracket, the division history and the current division,
+  and it rates a team that sits in Hidden now; an override to a Hidden or weightless
+  division is ignored; the weight is the one the division had on the game date; the
+  same team in another season is untouched; a score corrected to a tie keeps its
+  override; the Sandbox save path (`upsert_team_season_stats(true)`) keeps the
+  numbers and a second run changes nothing, while a routine run leaves an archived
+  season alone; anon can read the table and the view and cannot write; row-level
+  security is on; the view is still `security_invoker` with the same 14 columns; a
+  division an override uses cannot be deleted; `reason` cannot be NULL, empty or
+  blank (a CHECK on the column). Worked by hand in the file header.
+  **Known blind spot:** CI Postgres has no Supabase default privileges, so a new
+  table starts with no grant for anon or signed-in users here. The test opens the
+  OTHER tables to anon inside its own rolled-back transaction, and asserts the new
+  table's grants as the migration wrote them. But it cannot catch a deleted
+  `REVOKE ALL ... FROM PUBLIC, anon, authenticated` line: on Supabase that line
+  removes the default write grants, and on CI there are none to remove. Read that
+  line in review. There is no fake test for it.
+- `division_truth_scripts.sql` — runs the REAL hand-apply scripts
+  `supabase/scripts/division_truth_*.sql` on a small league fixture, inside one
+  rolled-back transaction (it must run from the repo root: it uses `\i` and `cat` with
+  `supabase/scripts/...` paths, as CI does). The dry run (`02a`) writes nothing, and
+  the rows it lists as INSERT are exactly the rows script `02` then writes (set
+  equality on season, team, division); it lists what it would skip (a stored name
+  not in the map, no stored row) and leaves out a team-season a snapshot already
+  answers. Pins Doug's exception ("Here for Fireball" = Recreational High), the 3
+  explicit rows, a second run that writes 0, reasons that name no person and start
+  "League owner, 2026-11-17", a missing dropped-out team or season (the dry run shows
+  a "CHECK: script 02 would STOP" row, and script 02 really stops), the preview and
+  checks scripts running, the recompute
+  (moves one season only, only the score columns, second run 0) and both undo paths
+  (path 2 saves the override rows first and a second run adds nothing; path 1 puts the
+  saved scores back). The test sets `jit = off` for its transaction: with just-in-time
+  compilation on (the default) it takes about 44 s, without it under 1 s. Its "STOP"
+  checks catch the error in psql (`LAST_ERROR_MESSAGE`, psql 12 or later), so the log
+  shows three expected `ERROR:  STOP: ...` lines (a missing team, a missing season,
+  an override row in a seventh season for undo path 2). It also pins script 00 (a
+  season with `is_active` or `playoffs_active` on is a CHECK), script 01 (the first
+  backup is never replaced; the verdict says OK, NOTE or CHECK from the keys and the
+  saved scores, not the row counts) and script 05 (still reports after the backup
+  table is dropped).
 - `declined_request_team_change.sql` — asserts a refused join request may be
   aimed at a different team, and that every other lock on `team_memberships`
   still holds (pending rows immovable, no self-approval, no handing the row on,
