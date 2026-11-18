@@ -157,7 +157,7 @@ PR C moves the files beside the Career Power Score and head-to-head code into `s
 - **Slice 3 plan (the rest of the approved list; each PR gets its own short plan and approval):**
   - **3B (DONE, see "Slice 3 PR 3B result" below):** layer-direction lint rule (utils and types must not import services, hooks, components or pages; services must not import hooks or components; hooks must not import components). The 18 wrong-direction edges that remain go on a short, commented exception list that shrinks over time: `routePrefetch` x14, `adminTabs`, `matchHistoryService`, `compatibilityUtils`, and the `useToast` type import. It must merge with the Supabase ban in `eslint.config.js`: a later config block replaces an earlier block's setting for the same rule. (routePrefetch: done in design PR D2) (`matchHistoryService` and `compatibilityUtils`: done in design PR D3)
   - **3C (DONE, see "Slice 3 PR 3C result" below):** expose the `BracketAdmin` index helpers (`simulateRearrange` and 6 type imports used by 3 dialogs, `RearrangeBoard.tsx` and `dropLogic.ts`). Types and one pure function.
-  - **3D (DONE, see "Slice 3D + 3G result" below):** hero-card reads into hooks (`TargetSelector`, `ChampionsEditor`, `ChampionsHeroCard`). **3E:** auth pages (`ForgotPassword`, `ResetPassword`). **3F:** `ProfileForm` and `TeamEditSection`. **3G (DONE, see "Slice 3D + 3G result" below):** playoff reads (`FinalStandings`, `BracketDetail`, `BracketAdminToolbar`; query keys unchanged).
+  - **3D (DONE, see "Slice 3D + 3G result" below):** hero-card reads into hooks (`TargetSelector`, `ChampionsEditor`, `ChampionsHeroCard`). **3E (DONE, see "Slice 3E + 3F result" below):** auth pages (`ForgotPassword`, `ResetPassword`). **3F (DONE, see "Slice 3E + 3F result" below):** `ProfileForm` and `TeamEditSection`. **3G (DONE, see "Slice 3D + 3G result" below):** playoff reads (`FinalStandings`, `BracketDetail`, `BracketAdminToolbar`; query keys unchanged).
   - **3H-3J:** the league-night write paths: `SeedingUpdateDialog`, `BracketCreationDialog` and the `MassScoreEntryTool` delete. **Ask Doug again before starting these.** A components-to-hooks lint rule comes only after 3D-3G land.
   - **Count correction:** the real number of components and pages that call a service with their own query or mutation is **13 files**. The earlier "~29" also counted 10 colocated hook files (allowed) and 6 pure-helper and constant files. None of the 13 can be fixed by repointing to an existing hook: each needs a new hook, so 3D-3J change code, not only paths.
 
@@ -959,6 +959,27 @@ Doug decided on 2026-11-16 (he took every recommendation). **Later the same day 
 - **Not checked (no browser here).** Nobody has looked at these screens since the move: home hero card (Champions) at 360 px and 1280 px, the hero-card admin form with each audience type, a completed playoff bracket as admin (the "Recalculate Standings" button), and the Final Standings card. The unit tests cover the wiring, not the look.
 - **Rollback.** Revert 3G alone, or 3D alone: keys are unchanged, so nothing is left stale in the cache. Merge outside a league or playoff night.
 
+## Slice 3E + 3F result (2026-11-18)
+
+- **What moved.** Four screens stopped importing a service. Each call now goes through a tiny hook that returns the service function itself.
+  - `ForgotPassword` -> `src/hooks/auth/usePasswordReset.ts` (`{ sendResetEmail }`).
+  - `ResetPassword` -> `src/hooks/auth/useUpdatePassword.ts` (`{ setNewPassword }`). The hook is called above the early returns.
+  - `ProfileForm` -> `src/hooks/profile/useProfileActions.ts` (`{ checkUsername, saveProfile }`). New folder `src/hooks/profile/`.
+  - `TeamEditSection` -> `src/hooks/teams/useUpdateTeamDetails.ts` (returns `updateTeamNameAndImage`). Called above the early `return null`. Not added to the `src/hooks/teams/index.ts` barrel (it exports only `useTeamsQuery`; the new hook is imported by file path).
+- **Plain pass-through on purpose: no `useMutation`, no `useQuery`.**
+  - `useMutation` pauses while the phone is offline. A password change would then fire late, when the network came back.
+  - `useMutation` keeps its variables in the mutation cache. That would keep the new password in memory.
+  - `ForgotPassword`, `ResetPassword` and `ProfileForm` tests render with no `QueryClientProvider`. A mutation hook would crash them.
+  - The hooks import only the service: no react-query, no logger, no `useToast`.
+- **What stayed in the components.** All state, validation, `try/catch/finally`, toasts, `navigate`, error text and double-submit guards. In `ProfileForm`: the 500 ms debounce, `latestCheckIdRef`, the `useEffectEvent` handler, `recheckCount`, the derived flags, `form.setError` / `clearErrors`, the awaited save and the un-awaited `onProfileUpdated()`. In `TeamEditSection`: its own `useQueryClient` and the same order (service, toast, `setIsEditing(false)`, `await refreshMembership()`, invalidate `['teams']`, invalidate `['team-details', id]`).
+- **Keys unchanged.** The two invalidate keys in `TeamEditSection` are byte for byte the same. No other cache key is touched. No service file changed.
+- **Tests.** None added, none edited. `ForgotPassword.test.tsx`, `ResetPassword.test.tsx`, `ProfileForm.test.tsx` and `TeamEditSection.test.tsx` already mock the same service paths and pin the wiring; they pass as they were. `TESTING.md` counts do not change.
+- **Not changed on purpose.**
+  - `updateTeamNameAndImage` still has no row check (a blocked row can show "Team Updated" with nothing saved). That is the next PR (PR-3), a behavior change on its own.
+  - 3H-3J (`SeedingUpdateDialog`, `BracketCreationDialog`, `MassScoreEntryTool`) are still pending and need Doug's OK first.
+- **Recount.** 44 non-test files in `src/components` and `src/pages` still import `@/services` (48 before this slice). 23 of the 44 import only types; 21 import a real value (INFERRED mix, not sorted: the 3H-3J files, bracket-admin helpers, colocated hooks and helpers). The lint rule "components must not import services" still cannot go on.
+- **Rollback.** Revert either commit. Nothing is stored, nothing to hand-apply.
+
 ## Carry-over notes for later slices
 
 - **Follow-ups from the tests-only DeepSource PR (2026-11-13):** the "Looks wrong, NOT fixed here" list (6 items, 2 need Doug first: scheduling skip in item 1, head-to-head weighting in item 4) and the uncovered dead-code lines are recorded in the section "Tests-only PR for the DeepSource coverage lines" above.
@@ -986,6 +1007,6 @@ Doug decided on 2026-11-16 (he took every recommendation). **Later the same day 
 
 ## Later slices (see the approved plan)
 
-2 import direction, shims, name twins (done: PR A, T, B, C; the leftovers move to the 3B exception list) - 3 layer rule (PRs 3A, 3B, 3C, 3D and 3G done, see "Slice 3D + 3G result"; 3E, 3F and 3H-3J planned in the 3A section above; 3H-3J need Doug's OK first) -
+2 import direction, shims, name twins (done: PR A, T, B, C; the leftovers move to the 3B exception list) - 3 layer rule (PRs 3A, 3B, 3C, 3D, 3E, 3F and 3G done, see "Slice 3D + 3G result" and "Slice 3E + 3F result"; 3H-3J planned in the 3A section above and need Doug's OK first) -
 4 league constants (done in Slice 4 (lite): see "Slice 4 result") - 5 scoring-adjacent copies (pin first; built 2026-11-16, QA PARTIAL: no defect, see "Slice 5 result") - 6 special cases (built 2026-11-16, see "Slice 6 result") - 7 comments (done 2026-11-17, see "Slice 7 result") - 8 tests (done 2026-11-18, see "Slice 8 result") - 9 re-scan and delete this file.
 Also pending from Slice 1: ~60 dead exports that only tests use, `rankingUtils/sortAndUpdateRankings.ts` (its sibling barrel `index.ts` went in Slice 2 PR A), `GameRules.hardCap`, the `matchesCreated` listener, unused config keys (`enableAuditLog`, `sessionTimeout` in `src/config/admin.ts`; unused tiers in `src/config/cache.ts`).
