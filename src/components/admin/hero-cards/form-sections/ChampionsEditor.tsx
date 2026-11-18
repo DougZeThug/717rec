@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { Trophy } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
 
@@ -10,8 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useTeamsForChampions } from '@/hooks/hero-cards/useTeamsForChampions';
 import { useDivisions } from '@/hooks/useDivisions';
-import { HeroCardService } from '@/services/HeroCardService';
 import { tryParseHeroCardMetadata } from '@/utils/parseMetadata';
 
 import { SectionHeader } from './SectionHeader';
@@ -60,11 +59,7 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({
   );
 
   // Fetch all non-hidden teams
-  const { data: teams = [] } = useQuery({
-    queryKey: ['teams-for-champions', hiddenDivisionIds],
-    queryFn: () => HeroCardService.fetchTeamsForChampions(hiddenDivisionIds),
-    enabled: divisions.length > 0,
-  });
+  const { data: teams = [] } = useTeamsForChampions(hiddenDivisionIds, divisions.length > 0);
 
   // Auto-clean stale division keys from previous seasons.
   // Use refs to read latest formData/onChange without re-running on every parent

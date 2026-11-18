@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import React, { useCallback } from 'react';
 
 import { Label } from '@/components/ui/label';
@@ -10,11 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { TARGET_TYPE_OPTIONS } from '@/constants/heroCardPresets';
-import {
-  fetchDivisionsForSelector,
-  fetchSeasonsForSelector,
-  fetchTeamsForSelector,
-} from '@/services/selectors/SelectorService';
+import { useTargetEntityOptions } from '@/hooks/hero-cards/useTargetEntityOptions';
 import { HeroCardTargetType } from '@/types/heroCard';
 
 interface TargetTypeSelectorProps {
@@ -65,23 +60,11 @@ export const TargetEntitySelector: React.FC<TargetEntitySelectorProps> = ({
   value,
   onChange,
 }) => {
-  const { data: teams } = useQuery({
-    queryKey: ['teams-for-selector'],
-    queryFn: fetchTeamsForSelector,
-    enabled: targetType === 'team',
-  });
-
-  const { data: divisions } = useQuery({
-    queryKey: ['divisions-for-selector'],
-    queryFn: fetchDivisionsForSelector,
-    enabled: targetType === 'division',
-  });
-
-  const { data: seasons } = useQuery({
-    queryKey: ['seasons-for-selector'],
-    queryFn: fetchSeasonsForSelector,
-    enabled: targetType === 'season',
-  });
+  const {
+    teams: { data: teams },
+    divisions: { data: divisions },
+    seasons: { data: seasons },
+  } = useTargetEntityOptions(targetType);
 
   if (targetType === 'none') return null;
 
