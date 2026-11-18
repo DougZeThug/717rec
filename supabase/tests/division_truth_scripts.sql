@@ -32,10 +32,13 @@
 --      season outside the six; and it still reports after the backup table is gone.
 --  14. Script 07 (retire the backup) STOPs, and drops nothing, when a stored six-season
 --      score is off by more than rounding (power, sos or career), when a saved row has no
---      live row any more (its team-season was deleted), or when the override table is empty; a gap of 0.0004 is rounding and passes. The real run drops ONLY
---      the backup (team_season_stats, the override rows and the view are the same),
+--      live row any more (its team-season was deleted; the test deletes one of two
+--      team-seasons of the same team), or when the override table is empty; a gap of
+--      0.0004 is rounding and passes. The real run drops ONLY the backup
+--      (team_season_stats, the override rows and the view are the same),
 --      prints the pre-check lines and the verdict, and a second run says "already
---      gone". After the drop: script 06 runs (L6b, L6c, L6d, L7 say "skipped", L6a still
+--      gone". It fails, dropping nothing, when a view depends on the backup (no CASCADE).
+--      After the drop: script 06 runs (L6b, L6c, L6d, L7 say "skipped", L6a still
 --      checks every team-season), 03 and 02 STOP with their "retired" message, the dry
 --      run (02a) lists one CHECK row for it, undo path 1 STOPs and path 2 still works.
 --  13. The live columns keep 3 decimals (power_score numeric(8,3), sos numeric(6,3)):
@@ -1120,9 +1123,12 @@ BEGIN
 END $$;
 
 -- (a3b) a saved row whose team-season is gone from team_season_stats: STOP, the table stays.
+--       The team is "Here for Fireball": it has a team-season in Summer 1 AND Summer 2 2025.
+--       Only the Summer 1 row goes, so a test of the team alone would still find a live row.
 SAVEPOINT dt_g5;
 DELETE FROM public.team_season_stats
- WHERE season_id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a' AND team_id = '00000000-0000-0000-0000-0000000dd012';
+ WHERE season_id = 'e537c594-3ba9-4d79-ba63-f6ed90c89e30'
+   AND team_id = (SELECT id FROM public.teams WHERE lower(btrim(name)) = 'here for fireball');
 :s07head
 ;
 -- Wipe LAST_ERROR_MESSAGE first, so a message left by an earlier test cannot pass this one.
@@ -1151,8 +1157,49 @@ BEGIN
     RAISE EXCEPTION 'script 07 stopped on a saved row with no live row, but the backup table is gone';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.team_season_stats
-                  WHERE season_id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a' AND team_id = '00000000-0000-0000-0000-0000000dd012') THEN
+                  WHERE season_id = 'e537c594-3ba9-4d79-ba63-f6ed90c89e30'
+                    AND team_id = (SELECT id FROM public.teams WHERE lower(btrim(name)) = 'here for fireball')) THEN
     RAISE EXCEPTION 'the savepoint did not bring the deleted team-season back';
+  END IF;
+  IF (SELECT count(*) FROM public.team_season_stats_pre_division_truth
+       WHERE team_id = (SELECT id FROM public.teams WHERE lower(btrim(name)) = 'here for fireball')) < 2 THEN
+    RAISE EXCEPTION 'the fixture team should have two saved team-seasons';
+  END IF;
+END $$;
+
+-- (a3c) no CASCADE: a view that depends on the backup makes the drop fail, and nothing goes.
+SAVEPOINT dt_g6;
+CREATE VIEW public.dt_depends_on_backup AS
+SELECT season_id, team_id FROM public.team_season_stats_pre_division_truth;
+:s07head
+;
+-- Wipe LAST_ERROR_MESSAGE first, so a message left by an earlier test cannot pass this one.
+SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+SELECT 1 / 0;
+\o
+ROLLBACK TO SAVEPOINT dt_clear;
+RELEASE SAVEPOINT dt_clear;
+\set ON_ERROR_STOP off
+\o /dev/null
+:s07do
+;
+\o
+ROLLBACK TO SAVEPOINT dt_g6;
+\set ON_ERROR_STOP on
+SELECT :'LAST_ERROR_MESSAGE' ~ '^cannot drop table team_season_stats_pre_division_truth because other objects depend on it' AS stopped \gset
+\if :stopped
+\else
+  DO $$ BEGIN RAISE EXCEPTION 'script 07 did not fail on a view that depends on the backup (CASCADE?)'; END $$;
+\endif
+DO $$
+BEGIN
+  IF to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN
+    RAISE EXCEPTION 'script 07 failed on a dependent view, but the backup table is gone';
+  END IF;
+  IF to_regclass('public.dt_depends_on_backup') IS NOT NULL THEN
+    RAISE EXCEPTION 'the savepoint did not remove the test view';
   END IF;
 END $$;
 
