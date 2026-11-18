@@ -36,8 +36,9 @@
 --      gap still counts, and so does any gap in career_power_score (plain numeric on
 --      live). L4 is INFO before the recompute (N still differ) and PASS after. It
 --      FAILS for a closed season outside the six (power, sos or career off) and for an
---      ARCHIVED season even when it is marked active. It counts the LIVE season (the
---      active one, else the one with playoffs active, and NOT archived) on its own line.
+--      ARCHIVED season even when it is marked active, and when NO season is live at
+--      all and a not archived season has a gap. It counts the LIVE season (the active
+--      one, else the one with playoffs active, and NOT archived) on its own line.
 --
 -- The fixture gives the six map divisions their own odd weights, so nothing depends
 -- on the live weights.
@@ -562,6 +563,8 @@ END $$;
 --       (c3) the recompute's last line counts a real gap in career_power_score;
 --       (d3) a season with playoffs_active (no season active), not archived, is the
 --           live standings season too: exempt;
+--       (d4) NO live season (nothing active, no playoffs: the live-season function
+--           returns NULL) and a gap in a NOT archived season: FAIL, not a false PASS;
 --       (d2) a season that is active AND archived is NOT exempt: FAIL;
 --       (c) a stored value in a closed season OUTSIDE the six that is wrong by more
 --           than 0.0006 makes L4 FAIL ("elsewhere"); (c2) so does a gap in
@@ -759,6 +762,16 @@ UPDATE public.seasons SET is_active = false, playoffs_active = true WHERE id = '
 CREATE TEMP TABLE dt_l4d3 AS :l4tail
 ;
 
+-- (d4) NO live season at all: nothing active, no playoffs, so current_standings_season_id()
+--      is NULL. The extra season is NOT archived and its gap is real: L4 must FAIL.
+--      (This pins the COALESCE in script 06: without it the NULL comparison would
+--      count the row neither as "elsewhere" nor as "live", and L4 would say PASS.)
+UPDATE public.seasons SET is_active = false, playoffs_active = false
+ WHERE id = '00000000-0000-0000-0000-0000000dd0e8';
+CREATE TEMP TABLE dt_d4_live AS SELECT public.current_standings_season_id() AS season_id;
+CREATE TEMP TABLE dt_l4d4 AS :l4tail
+;
+
 -- (d2) active AND archived: an archived season is never refreshed by itself.
 UPDATE public.seasons SET is_active = true, playoffs_active = false, is_archived = true
  WHERE id = '00000000-0000-0000-0000-0000000dd0e8';
@@ -811,7 +824,7 @@ CREATE TEMP TABLE dt_l4e3 AS :l4tail
 
 DO $$
 DECLARE
-  v_a record; v_b record; v_b2 record; v_d3 record; v_d2 record; v_c record; v_c2 record;
+  v_a record; v_b record; v_b2 record; v_d3 record; v_d4 record; v_d2 record; v_c record; v_c2 record;
   v_e1 record; v_e2 record; v_e3 record; v_n bigint;
   -- the tails of the L4 detail text (unchanged by the script, so the docs stay right)
   c_live1 constant text := '%; 0 elsewhere, not counting the live season (must be 0); 1 in the live season%';
@@ -822,6 +835,7 @@ BEGIN
   SELECT result, detail INTO STRICT v_b  FROM dt_l4b  WHERE check_name = 'L4 stored vs rules now';
   SELECT result, detail INTO STRICT v_b2 FROM dt_l4b2 WHERE check_name = 'L4 stored vs rules now';
   SELECT result, detail INTO STRICT v_d3 FROM dt_l4d3 WHERE check_name = 'L4 stored vs rules now';
+  SELECT result, detail INTO STRICT v_d4 FROM dt_l4d4 WHERE check_name = 'L4 stored vs rules now';
   SELECT result, detail INTO STRICT v_d2 FROM dt_l4d2 WHERE check_name = 'L4 stored vs rules now';
   SELECT result, detail INTO STRICT v_c  FROM dt_l4c  WHERE check_name = 'L4 stored vs rules now';
   SELECT result, detail INTO STRICT v_c2 FROM dt_l4c2 WHERE check_name = 'L4 stored vs rules now';
@@ -858,6 +872,13 @@ BEGIN
   -- (d3) no active season, playoffs_active on, not archived: the live standings season.
   IF v_d3.result IS DISTINCT FROM 'PASS' OR (v_d3.detail LIKE c_live1) IS NOT TRUE THEN
     RAISE EXCEPTION 'L4, playoffs_active-only season (live standings season): expected PASS (1 in the live season), got % / %', v_d3.result, v_d3.detail;
+  END IF;
+  -- (d4) no live season at all (current_standings_season_id() is NULL), not archived: FAIL.
+  IF (SELECT season_id FROM dt_d4_live) IS NOT NULL THEN
+    RAISE EXCEPTION 'case (d4) needs current_standings_season_id() to be NULL, got %', (SELECT season_id FROM dt_d4_live);
+  END IF;
+  IF v_d4.result IS DISTINCT FROM 'FAIL' OR (v_d4.detail LIKE c_els1) IS NOT TRUE THEN
+    RAISE EXCEPTION 'L4, no live season at all and a gap in a not archived season: expected FAIL (1 elsewhere, 0 in the live season), got % / %', v_d4.result, v_d4.detail;
   END IF;
   -- (d2) active AND archived: never refreshed by itself, so not exempt.
   IF v_d2.result IS DISTINCT FROM 'FAIL' OR (v_d2.detail LIKE c_els1) IS NOT TRUE THEN

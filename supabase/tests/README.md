@@ -133,9 +133,11 @@ so a non-zero exit code means drift was detected.
   have these limits) with an `ALTER TABLE` inside a rolled-back savepoint: script 04's
   last line, check L4 of script 06 and undo path 2's report line that compares with the
   rules ignore a gap of 0.0006 or less, and still count or fail a bigger one (L4 fails
-  for a closed season outside the six, whether power, sos or career is off, and for an
-  ARCHIVED season even when it is marked active; it counts on its own line the live
-  season: the active one, else the one with playoffs active, and not archived;
+  for a closed season outside the six, whether power, sos or career is off, for an
+  ARCHIVED season even when it is marked active, and when NO season is live at all
+  (the live-season function returns NULL) and a not archived season has a gap; it
+  counts on its own line the live season: the active one, else the one with playoffs
+  active, and not archived;
   before the recompute L4 says INFO with N team-seasons still different; a gap in
   `career_power_score` alone counts in L4 and in script 04's last line). The sos
   cases use a weight with 4 decimals (0.9637): a stored 0.964 does not count, a stored
