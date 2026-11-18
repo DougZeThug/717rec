@@ -182,9 +182,9 @@ again, losing their approval in the meantime.
 | In-app navigation away, or switching tab within the page | Nothing is lost. | The chosen team is lost. A request already sent still lands, and its toast appears on whatever page the user is now on — but the panel that would have redrawn is gone, so returning later is the only way to see the result. |
 | Browser back or forward | Returns to the previous page. Nothing is recorded. | Same as navigating away. |
 | Reload, or the tab closed | The panel is drawn again from the league's copy. | The chosen team is lost. A request already accepted survives and shows as pending. |
-| Network lost mid-request | The panel shows its spinner and, when the read fails, falls through to the join dropdown or the empty state **as though the user had no membership** — with no error shown anywhere. | The request fails and the raw database or network message appears in a red toast. Nothing is queued. |
-| The request fails or times out | As above: a failed read is silently drawn as "no membership". | Red toast with the raw message. The chosen team is kept and the button comes back. |
-| The session expires | The panel asks for nothing and draws the "No Teams Available" empty state. | The request fails. The toast carries the refusal in the database's words. |
+| Network lost mid-request | The panel shows its spinner and, when the read fails, falls through to the join dropdown or the empty state **as though the user had no membership** — with no error shown anywhere. | The request fails and a red toast headed "Failed to submit request" appears, with "Something went wrong. Please try again." under it. Nothing is queued. |
+| The request fails or times out | As above: a failed read is silently drawn as "no membership". | Red toast headed "Failed to submit request". A failure the app cannot name reads "Something went wrong. Please try again." under it; a known cause gets its own sentence (for example "You do not have permission to do this."). The chosen team is kept and the button comes back. |
+| The session expires | The panel asks for nothing and draws the "No Teams Available" empty state. | The request fails. The toast is headed "Failed to submit request". When the database says the login token is bad or expired, it reads "Your session has expired. Please sign in again." under it; any other refusal gets a plain sentence too. |
 | The same record changed in another tab, or by another user | The panel shows whatever the app last fetched, which can be up to five minutes old. | **No effect and no notice.** An admin approving or rejecting in that moment does not reach the browser. A request made in another tab is not seen here either. |
 | Browser autofill or a password manager writes into the form | No effect. There is no text field on this panel for a manager to fill. | No effect. |
 | The window loses focus | No effect. | Returning to the tab refetches the membership if the app's copy is more than five minutes old, which is the usual way a user finds out they were approved. |
@@ -214,7 +214,7 @@ league has confirmed the request and the panel has read it back.
 [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md#realtime):
 the user is waiting for a change that will never be pushed to them.
 
-**Offline.** The request fails and the raw message appears. A failed *read* is
+**Offline.** The request fails and a plain sentence appears in the toast ("Something went wrong. Please try again."). A failed *read* is
 worse: it is drawn as "you are not in a team".
 
 **Toasts and notifications.** One toast per action. No push notification is sent

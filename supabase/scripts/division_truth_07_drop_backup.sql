@@ -23,7 +23,7 @@
 -- team_season_stats_pre_division_truth and export it as CSV. Do this: the backup is the
 -- only copy of the old stored numbers, and it is only about 185 rows.
 --
--- THE GUARD. The script STOPS (nothing dropped) if either is true:
+-- THE GUARD. The script STOPS (nothing dropped) if any of these is true:
 --   * a stored score of the six seasons still differs from what the rules give now
 --     by more than rounding (the same test as check L4 of script 06): the recompute
 --     is not finished, so the backup could still matter;
