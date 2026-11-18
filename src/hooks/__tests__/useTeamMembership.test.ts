@@ -158,6 +158,33 @@ describe('useTeamMembership', () => {
     });
   });
 
+  // A join that matched no row means the screen was stale. The service says so;
+  // the hook must also reload the membership so the screen heals by itself.
+  it('reloads the membership after a join that fails', async () => {
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({ user: { id: 'user-1' } });
+    (fetchTeamMembership as ReturnType<typeof vi.fn>).mockResolvedValue(mockMembership);
+    (fetchAvailableTeams as ReturnType<typeof vi.fn>).mockResolvedValue(mockTeams);
+    (joinTeamMembership as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('no row'));
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0 } },
+    });
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
+    const { result } = renderHook(() => useTeamMembership(), { wrapper });
+    await waitFor(() => expect(result.current.isFetching).toBe(false));
+
+    await act(async () => {
+      await result.current.joinTeam('team-2');
+    });
+
+    expect(toast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Failed to submit request', variant: 'destructive' })
+    );
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['team-membership', 'user-1'] });
+  });
+
   it('guards joinTeam when there is no user', async () => {
     (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({ user: null });
 

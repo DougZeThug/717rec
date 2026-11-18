@@ -64,6 +64,10 @@ export const fetchTeamMembership = async (userId: string): Promise<TeamMembershi
 /**
  * Join a team (or switch teams). If hasMembership is true, updates existing record.
  * If false, inserts a new record. Both cases set is_approved to false (pending admin).
+ * @throws {DatabaseError} When the database operation fails
+ * @throws {BusinessLogicError} When the user already has a request (insert), or when
+ *   the update changed no row (the membership is gone, so nothing matched and the
+ *   database reports no error)
  */
 export const joinTeamMembership = async (
   userId: string,
@@ -76,7 +80,7 @@ export const joinTeamMembership = async (
     // Clearing rejected_at is what turns it back into a pending request, and
     // joined_at is restamped so the admin sees when they asked, not when they
     // first asked months ago.
-    const { error } = await supabase
+    const { data: rows, error } = await supabase
       .from('team_memberships')
       .update({
         team_id: teamId,
@@ -87,9 +91,15 @@ export const joinTeamMembership = async (
         rejected_by: null,
         joined_at: new Date().toISOString(),
       })
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .select('id');
 
     if (error) handleDatabaseError(error, 'Failed to update team membership');
+    if (!rows || rows.length === 0) {
+      throw new BusinessLogicError(
+        'Your request was not sent. Your team status may have changed. Refresh the page and try again.'
+      );
+    }
   } else {
     const { error } = await supabase.from('team_memberships').insert({
       user_id: userId,
