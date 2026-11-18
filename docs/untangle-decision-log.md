@@ -975,10 +975,41 @@ Doug decided on 2026-11-16 (he took every recommendation). **Later the same day 
 - **Keys unchanged.** The two invalidate keys in `TeamEditSection` are byte for byte the same. No other cache key is touched. No service file changed.
 - **Tests.** None added, none edited. `ForgotPassword.test.tsx`, `ResetPassword.test.tsx`, `ProfileForm.test.tsx` and `TeamEditSection.test.tsx` already mock the same service paths and pin the wiring; they pass as they were. `TESTING.md` counts do not change.
 - **Not changed on purpose.**
-  - `updateTeamNameAndImage` still has no row check (a blocked row can show "Team Updated" with nothing saved). That is the next PR (PR-3), a behavior change on its own.
+  - **DONE in PR-3 (see "Slice 3 PR-3 result" below):** `updateTeamNameAndImage` had no row check (a blocked row could show "Team Updated" with nothing saved). It now throws when no row was updated. A behavior change on its own.
   - 3H-3J (`SeedingUpdateDialog`, `BracketCreationDialog`, `MassScoreEntryTool`) are still pending and need Doug's OK first.
 - **Recount.** 44 non-test files in `src/components` and `src/pages` still import `@/services` (48 before this slice). 23 of the 44 import only types; 21 import a real value (INFERRED mix, not sorted: the 3H-3J files, bracket-admin helpers, colocated hooks and helpers). The lint rule "components must not import services" still cannot go on.
 - **Rollback.** Revert either commit. Nothing is stored, nothing to hand-apply.
+
+## Slice 3 PR-3 result (team edit save checks the row), built 2026-11-18 on `claude/adoring-bohr-waxxok`; 1 code commit + 1 docs commit
+
+Doug asked for this fix. It is a deliberate behavior change.
+
+- **What changed.** One function: `updateTeamNameAndImage` in `src/services/teams/TeamUpdateService.ts`. It now asks the database for the updated row back (`.select('id').maybeSingle()`). If no row comes back, it throws `BusinessLogicError`. The database-error check still runs first.
+- **Why.** Row-level security can hide the team row from a member whose approval was removed in another tab. In that case the database returns no error and 0 rows. The old code only looked at the error, so the screen said "Team Updated" and nothing was saved. (VERIFIED by reading the code and the tests. The database behaviour is INFERRED from how PostgREST works; nothing was run against a real database.)
+- **What the member sees now.** The existing red toast headed "Couldn't update team" reads: "Failed to update team details: Nothing was saved. You may no longer be able to edit this team. Refresh the page and try again." The editor stays open. `refreshMembership` is not called. The existing `TeamEditSection` test already pins that for any thrown error.
+- **Tests.** In `src/services/teams/__tests__/TeamUpdateService.test.ts` the 3 `updateTeamNameAndImage` tests now use a mock chain `update -> eq -> select -> maybeSingle`. Every old assertion stays. New: the happy path also asserts `eq('id', teamId)` and `select('id')`. New test: `{ data: null, error: null }` rejects with `BusinessLogicError` matching /Nothing was saved/. The database-error test returns `{ data: null, error }`, so it also proves the error check runs before the null check.
+- **Mutation checks (red, then green after restore).**
+  - Remove the `if (!updated)` throw: the new 0-row test goes red ("promise resolved instead of rejecting").
+  - Move the null check above the `if (error)` line: the database-error test goes red (it gets `BusinessLogicError`, not `DatabaseError`).
+  - Drop `.select('id')`: 4 tests go red, because the mock chain has no `maybeSingle` on the result of `eq`. The `select('id')` assertion is covered by the same change, but the first failure is a broken chain, not that assertion.
+- **Counts.** One test added. `TESTING.md`: 898 files / 8,693 tests (was 8,692).
+- **Docs.** `docs/product-description/teams/my-team.md` said the failure toast was headed "Update Failed". The real heading is "Couldn't update team". Fixed, plus one sentence for the new case, and the reason wording now says a plain database failure reads "Failed to update team details. Please try again." (checked against `getUIErrorMessage`). Row MYTEAM-27 in `verification/home-and-teams.md` got the same heading fix. Its status is unchanged and nothing was marked verified. The other "Update Failed" mentions in the product description belong to other screens and were left alone.
+- **NOT changed.**
+  - `TeamEditSection.tsx`, `useUpdateTeamDetails.ts` and the admin `updateTeamApi`.
+  - No migration, so nothing to hand-apply. No history impact.
+  - No SQL RLS test (optional; it needs `SET LOCAL ROLE authenticated`) and no new component test for the message text.
+  - No automatic refresh after the failure (recommendation: not for now).
+- **Same hole elsewhere (NOT fixed; list only).** Each cite was read in the current files. A write whose row is hidden by row-level security, or whose id no longer matches, returns no error and does nothing.
+  - Member paths:
+    - `src/services/messages/MessageService.ts:86-94` (`updateMessage`, edit your own message).
+    - `src/services/teams/TeamMembershipService.ts:79-92` (a member re-requests or switches team).
+    - `src/services/liveScoring/LiveMatchService.ts:154-173` (`completeGame`, `reopenGame`).
+  - Admin-only paths:
+    - `src/services/contact/ContactRequestService.ts:42-58` (`markResolved`, `reopen`).
+    - `src/services/support/SupportTicketService.ts:99-107` (`markResolved`, `reopen`).
+    - `src/services/BlindDrawService.ts:38-42` (confirmation message update).
+- **Slice 3 status.** Slice 3 is now done except 3H-3J (`SeedingUpdateDialog`, `BracketCreationDialog`, `MassScoreEntryTool`). Those need Doug's OK first.
+- **Rollback.** Revert the code commit. Nothing is stored.
 
 ## Carry-over notes for later slices
 

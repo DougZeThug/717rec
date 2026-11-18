@@ -113,8 +113,12 @@ appears. On failure a red toast carries the reason through.
 reads "Saving...". On success a toast says "Team Updated — Team details have been
 successfully updated", the form closes back to the card, and the team lists and
 the team's own page are marked stale so they show the new name next time they are
-looked at. On failure a red toast says "Update Failed" with the reason, and the
-form stays open with everything typed.
+looked at. On failure a red toast headed "Couldn't update team" gives the reason
+when the app knows it. For a plain database failure it reads "Failed to update
+team details. Please try again." The form stays open with everything typed. If
+the member can no longer edit the team (for example, an admin removed their
+approval), the save does not succeed, and the red message says nothing was saved
+and asks them to refresh the page.
 
 **Leave Team** asks first. A dialog reads "Leave team? — Are you sure you want to
 leave *team*? You will lose your association with this team and any editing
