@@ -1021,7 +1021,9 @@ season could be un-archived.
 On the live database `team_season_stats.power_score` is `numeric(8,3)` and `sos` is
 `numeric(6,3)`: **3 decimals**. `career_power_score` is plain `numeric`. **The repo
 migrations do not say this** (live differs from the repo; CI keeps full precision).
-So the view (full precision) can never equal a stored value:
+So the view (full precision) can differ from a stored value, because storage rounds
+the view's number to 3 decimals (the two are equal only when the view's number has no
+more than 3 decimals):
 
 - After a recompute, a strict "rows still different from the rules" count showed
   the number of team-seasons (24, 25, 33 ...), although the numbers were right. The
@@ -1063,7 +1065,7 @@ only the last result, so a note printed in the middle would not show.
 | 3a   | Precheck (read-only), **right before 3**     | `supabase/scripts/division_truth_00_precheck.sql`                      | Every row says PASS in the last column. See the box below.                                                                                                                                  |
 | 3b   | Dry run (read-only), **right before 3**      | `supabase/scripts/division_truth_02a_dryrun.sql`                       | The list of rows script 02 would write. Doug reads the Intermediate 1 and 2 lists.                                                                                                          |
 | 3    | Write the override rows                      | `supabase/scripts/division_truth_02_data.sql`                          | "ROWS INSERTED NOW" (86 on 2026-11-18), the same rows as the dry run. Read the "NOT inserted" lines.                                                                                        |
-| 4    | Checks (read-only)                           | `supabase/scripts/division_truth_06_checks.sql`                        | No FAIL. L4 says INFO (the six seasons still differ by more than rounding).                                                                                                                 |
+| 4    | Checks (read-only)                           | `supabase/scripts/division_truth_06_checks.sql`                        | No FAIL. On the FIRST run L4 says INFO (the six seasons still differ by more than rounding). On a re-run after a finished rollout nothing differs, so L4 says PASS.                         |
 | 5    | Preview (read-only). **Doug approves here.** | `supabase/scripts/division_truth_03_preview.sql`                       | Every team in the six seasons (over 100 rows), then CAREER rows. Paste it to the developer.                                                                                                 |
 | 6    | Recompute, **one season per run**            | `supabase/scripts/division_truth_04_recompute.sql`                     | "moved" lines list the real changes. "ROWS CHANGED" can be about the number of teams in the season (rounding, see above). The last line, "still different ... by more than rounding", is 0. |
 | 7    | Checks again, after the last season          | `supabase/scripts/division_truth_06_checks.sql`                        | All PASS. L4 says PASS (0 in the six seasons; the live season is listed on its own line).                                                                                                   |
