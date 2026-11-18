@@ -131,9 +131,9 @@ so a non-zero exit code means drift was detected.
   table is dropped). A section also mimics the LIVE columns (`power_score`
   `numeric(8,3)`, `sos` `numeric(6,3)`, found 2026-11-18; the repo migrations do not
   have these limits) with an `ALTER TABLE` inside a rolled-back savepoint: script 04's
-  last line and check L4 of script 06 ignore a gap of 0.0006 or less, still fail on a
-  bigger one in a closed season outside the six, and count it on its own line for the
-  active season. The strict comparison, put back, turns those cases red.
+  last line, check L4 of script 06 and undo path 2's report line that compares with the
+  rules ignore a gap of 0.0006 or less, and still count or fail a bigger one (L4 fails
+  for a closed season outside the six and counts the active season on its own line). The strict comparison, put back, turns those cases red.
 - `declined_request_team_change.sql` — asserts a refused join request may be
   aimed at a different team, and that every other lock on `team_memberships`
   still holds (pending rows immovable, no self-approval, no handing the row on,

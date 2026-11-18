@@ -32,6 +32,7 @@
 --  13. The live columns keep 3 decimals (power_score numeric(8,3), sos numeric(6,3)):
 --      the recompute's last line and check L4 ignore a gap of 0.0006 or less, still
 --      fail on a bigger one in a closed season, and only count it in the live season.
+--      Undo path 2's report line that compares with the rules does the same.
 --  12. Script 05 path 2 STOPS, writing nothing, when an override row belongs to a
 --      season outside the six; and it still reports after the backup table is gone.
 --
@@ -709,6 +710,51 @@ BEGIN
   END IF;
   IF v_d.result IS DISTINCT FROM 'PASS' OR v_d.detail NOT LIKE '%; 0 elsewhere, not counting the live season (must be 0); 1 in the live season%' THEN
     RAISE EXCEPTION 'L4, the same gap in the ACTIVE season: expected PASS (1 in the live season), got % / %', v_d.result, v_d.detail;
+  END IF;
+END $$;
+
+-- (e) Undo path 2 on the 3-decimal columns. Its report line that compares with the
+--     rules ignores rounding, so it reads 0, while the strict comparison would not.
+--     A real gap (more than 0.0006) still counts.
+\set s05r `sed "s/TYPE-1-OR-2-HERE/2/" supabase/scripts/division_truth_05_undo.sql`
+\set s05rtail `sed -n '/^-- ONE result/,$p' supabase/scripts/division_truth_05_undo.sql`
+\o /dev/null
+:s05r
+;
+\o
+CREATE TEMP TABLE dt_rep13 AS :s05rtail
+;
+CREATE TEMP TABLE dt_strict13 AS
+SELECT count(*) AS n
+FROM public.team_season_stats s
+JOIN public.v_team_season_agg a ON a.season_id = s.season_id AND a.team_id = s.team_id
+WHERE s.season_id IN ('d6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a', 'e537c594-3ba9-4d79-ba63-f6ed90c89e30',
+                      'd50bb12e-99be-4170-802a-695a402373ce', '34cd19e2-abf5-43b8-a16f-6d73a0e998ac',
+                      '4b90a1d8-b90a-4e47-8e8c-b89a7b54e106', '9cd55eb8-672c-4a43-a9df-3552a7759cca')
+  AND (s.power_score IS DISTINCT FROM a.power_score OR s.career_power_score IS DISTINCT FROM a.career_power_score
+    OR s.sos IS DISTINCT FROM a.sos);
+-- one real gap: a stored score 0.01 off in a closed season
+UPDATE public.team_season_stats SET power_score = power_score + 0.01
+ WHERE ctid = (SELECT ctid FROM public.team_season_stats
+                WHERE season_id = 'd6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a' AND power_score IS NOT NULL
+                ORDER BY team_id LIMIT 1);
+CREATE TEMP TABLE dt_rep13b AS :s05rtail
+;
+
+DO $$
+DECLARE
+  v_label constant text := 'six seasons: rows that differ from the RULES NOW by more than rounding (0 after path 2)';
+BEGIN
+  IF (SELECT val FROM dt_rep13 WHERE what = v_label) IS DISTINCT FROM '0' THEN
+    RAISE EXCEPTION 'undo path 2 on 3-decimal columns: the RULES NOW line should read 0, got %',
+      (SELECT string_agg(what || ' = ' || val, '; ') FROM dt_rep13 WHERE what LIKE '%RULES NOW%');
+  END IF;
+  IF (SELECT n FROM dt_strict13) IS NULL OR (SELECT n FROM dt_strict13) < 1 THEN
+    RAISE EXCEPTION 'the strict comparison finds no row after path 2: the 3-decimal columns are not mimicked';
+  END IF;
+  IF (SELECT val FROM dt_rep13b WHERE what = v_label) IS DISTINCT FROM '1' THEN
+    RAISE EXCEPTION 'a real gap of 0.01 should be counted once, got %',
+      (SELECT val FROM dt_rep13b WHERE what LIKE '%RULES NOW%');
   END IF;
 END $$;
 

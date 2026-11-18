@@ -1031,12 +1031,12 @@ So the view (full precision) can never equal a stored value:
   value), even where the real change is below rounding. So "ROWS CHANGED" can be about
   the number of teams in the season. The "moved" lines list only real changes.
 - **Fixed in the scripts:** script 04's last line ("rows still different from the
-  rules by more than rounding") and check L4 in script 06 now ignore a gap of 0.0006
-  or less in `power_score` and `sos`. Anything bigger is still counted.
-- Script 05's two comparison lines at the bottom compare exactly. On the live
-  database the one that compares with the rules ("0 after path 2") shows about the
-  number of rows, because of this rounding. Read a gap of 0.0006 or less as zero. The
-  line that compares with the backup is fine (both are stored with 3 decimals).
+  rules by more than rounding"), check L4 in script 06 and the line in script 05 that
+  compares with the rules ("... differ from the RULES NOW by more than rounding (0
+  after path 2)") now ignore a gap of 0.0006 or less in `power_score` and `sos`.
+  Anything bigger is still counted. Script 05's line that compares with the backup
+  stays exact: both sides are stored values with 3 decimals. Path 2's own recompute is
+  the same UPDATE as script 04, so it rewrites about every row of the six seasons.
 - Archived seasons outside the six (Spring 2026, Summer 1 2026, Summer 2 2026) also
   differ by up to 0.0005 for the same reason.
 
