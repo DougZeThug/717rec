@@ -1,6 +1,9 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { Team } from '@/types';
+import type { TeamTotals } from '@/utils/career/types';
+
 const mockUseTeamsQuery = vi.fn();
 const mockUseQuery = vi.fn();
 
@@ -12,13 +15,16 @@ vi.mock('@tanstack/react-query', () => ({
   useQuery: (options: unknown) => mockUseQuery(options),
 }));
 
-// A guard, not a fixture: useQuery is mocked above, so the query function
-// never runs. This keeps the real module — and the Supabase client it imports —
-// out of the file. The path must be the alias; a relative one resolves against
-// this test's own directory and silently matches nothing.
+// useQuery is mocked above, so the query function does not run by itself. This
+// keeps the real module — and the Supabase client it imports — out of the file.
+// Only the last test takes the query function and runs it, with the totals it
+// sets here. The path must be the alias; a relative one resolves against this
+// test's own directory and silently matches nothing.
 vi.mock('@/services/career/computeAllTeamsTotals', () => ({
   computeAllTeamsTotals: vi.fn(),
 }));
+
+import { computeAllTeamsTotals } from '@/services/career/computeAllTeamsTotals';
 
 import { useCareerRankings } from '../useCareerRankings';
 
@@ -210,5 +216,114 @@ describe('useCareerRankings', () => {
     const { result } = renderHook(() => useCareerRankings());
 
     expect(result.current.error).toBe(queryError);
+  });
+
+  // The query function itself: the batch totals in, one ranking row per team out.
+  // Teams are listed worst first on purpose, so the order can only come from the sort.
+  // Worked out by hand for "High Team" (the row checked in full):
+  //   match win % = 12 / (12 + 4) = 0.75
+  //   game win %  = 27 / (27 + 13) = 0.675
+  //   playoff win % = 2 / (2 + 3) = 0.4
+  //   playoffFinishes = the number of finishes listed (3), not the list itself
+  // "Mid Team" played no playoff match, so its playoff win % is 0 (not NaN).
+  it('builds one row per team with every field mapped, best career power score first', async () => {
+    const totalsFor = (fields: Partial<TeamTotals>): TeamTotals =>
+      ({
+        career_match_wins: 0,
+        career_match_losses: 0,
+        career_game_wins: 0,
+        career_game_losses: 0,
+        career_playoff_wins: 0,
+        career_playoff_losses: 0,
+        championships: 0,
+        runner_ups: 0,
+        playoff_finishes: [],
+        career_power_score: 0,
+        career_sweep_rate: 0,
+        career_clutch_win_pct: 0,
+        career_clutch_game3s: 0,
+        career_sos: 0,
+        ...fields,
+      }) as TeamTotals;
+    const teams = [
+      { id: 'team-low', name: 'Low Team', divisionName: 'Recreational' },
+      {
+        id: 'team-high',
+        name: 'High Team',
+        logoUrl: 'high-logo.png',
+        imageUrl: 'high-image.png',
+        divisionName: 'Competitive',
+      },
+      { id: 'team-mid', name: 'Mid Team', divisionName: 'Intermediate' },
+    ] as unknown as Team[];
+    mockUseTeamsQuery.mockReturnValue({
+      data: teams,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    vi.mocked(computeAllTeamsTotals).mockResolvedValue(
+      new Map([
+        ['team-low', totalsFor({ career_power_score: 41.2 })],
+        [
+          'team-high',
+          totalsFor({
+            career_match_wins: 12,
+            career_match_losses: 4,
+            career_game_wins: 27,
+            career_game_losses: 13,
+            career_playoff_wins: 2,
+            career_playoff_losses: 3,
+            championships: 2,
+            runner_ups: 1,
+            playoff_finishes: [
+              { rank: 1, season_name: 'Spring 2025', division_name: 'Competitive' },
+              { rank: 2, season_name: 'Fall 2025', division_name: 'Competitive' },
+              { rank: 3, season_name: 'Spring 2026', division_name: 'Competitive' },
+            ],
+            career_power_score: 88.6,
+            career_sweep_rate: 0.5,
+            career_clutch_win_pct: 0.6,
+            career_clutch_game3s: 5,
+            career_sos: 0.55,
+          }),
+        ],
+        ['team-mid', totalsFor({ career_power_score: 63.4, career_match_wins: 3 })],
+      ])
+    );
+
+    renderHook(() => useCareerRankings());
+    const rankings = await mockUseQuery.mock.calls[0][0].queryFn();
+
+    expect(rankings.map((row: { teamId: string }) => row.teamId)).toEqual([
+      'team-high',
+      'team-mid',
+      'team-low',
+    ]);
+    expect(rankings[0]).toEqual({
+      teamId: 'team-high',
+      teamName: 'High Team',
+      logoUrl: 'high-logo.png',
+      imageUrl: 'high-image.png',
+      divisionName: 'Competitive',
+      careerMatchWins: 12,
+      careerMatchLosses: 4,
+      careerWinPercentage: 0.75,
+      careerGameWins: 27,
+      careerGameLosses: 13,
+      careerGameWinPercentage: 0.675,
+      careerPlayoffWins: 2,
+      careerPlayoffLosses: 3,
+      careerPlayoffWinPercentage: 0.4,
+      championships: 2,
+      runnerUps: 1,
+      careerSweepRate: 0.5,
+      careerClutchWinPct: 0.6,
+      careerClutchGame3s: 5,
+      careerPowerScore: 88.6,
+      careerSos: 0.55,
+      playoffFinishes: 3,
+    });
+    expect(rankings[1].careerPlayoffWinPercentage).toBe(0);
   });
 });

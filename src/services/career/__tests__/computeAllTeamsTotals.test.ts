@@ -99,6 +99,35 @@ const bulkFor = (id: string): BulkTeamCareerData =>
 
 const bulkMapFor = (ids: string[]) => new Map(ids.map((id) => [id, bulkFor(id)]));
 
+/** A team as the Teams list hands it over: with its current-season row. */
+const teamWithCurrentSeason = (
+  id: string,
+  current: { power_score: number; career_power_score: number | null; wins: number; losses: number }
+): Team => ({ ...team(id), ...current }) as unknown as Team;
+
+/**
+ * The same two old seasons, plus a stored row for the current season
+ * ('season-3'). That row is stale on purpose: the live numbers for the current
+ * season come from the Teams list, so the stored row must not count twice.
+ */
+const bulkWithCurrentSeason = (id: string): BulkTeamCareerData => {
+  const base = bulkFor(id);
+  return {
+    ...base,
+    currentSeasonId: 'season-3',
+    seasonPowerScores: [
+      ...base.seasonPowerScores,
+      {
+        power_score: 0.2,
+        career_power_score: 0.2,
+        match_wins: 1,
+        match_losses: 9,
+        season_id: 'season-3',
+      },
+    ],
+  };
+};
+
 describe('computeAllTeamsTotals', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -118,6 +147,47 @@ describe('computeAllTeamsTotals', () => {
     expect(t1?.runner_ups).toBe(1);
     expect(t1?.playoff_finishes.map((f) => f.rank)).toEqual([1, 2]);
     expect(t1?.playoff_finishes[0].season_name).toBe('Spring 2025');
+  });
+
+  // Career power score through the batch path, worked out by hand. The old
+  // seasons come from the bulk fetch, the current season from the Teams list.
+  // Division "Premier" weighs 0.7 here (a plain 1.0 would hide a missing square).
+  //
+  // Both teams: a title and a runner-up in "Premier", no playoff matches.
+  //   old seasons (score x 100, weighted by matches):
+  //     season-1: 0.68 -> 68, 8 + 2 = 10 matches -> 680
+  //     season-2: 0.59 -> 59, 6 + 4 = 10 matches -> 590
+  //   season-3 is the current season: its stale stored row is left out.
+  //   bonus: title 7 x 0.7 x 0.7 = 3.43, runner-up 4 x 0.7 x 0.7 = 1.96,
+  //     playoff win-rate bonus 0 (no playoff matches), sum 5.39,
+  //     cap 15 x 0.7 x 0.7 = 7.35, so the bonus is 5.39.
+  // t1 (power score 72, no floored score, 6 + 4 = 10 matches -> 720):
+  //     base = (680 + 590 + 720) / 30 = 1990 / 30 = 66.3333
+  //     career power score = 66.3333 + 5.39 = 71.7233
+  // t2 (power score 60, but the floored score 80 is used instead, 3 + 3 = 6 matches -> 480):
+  //     base = (680 + 590 + 480) / 26 = 1750 / 26 = 67.3077
+  //     career power score = 67.3077 + 5.39 = 72.6977
+  it('works out career power score from the old seasons and the current-season row', async () => {
+    mockFetchDivisionWeightsByName.mockResolvedValue(new Map([['premier', 0.7]]));
+    mockFetchAllTeamsCareerData.mockResolvedValue(
+      new Map([
+        ['t1', bulkWithCurrentSeason('t1')],
+        ['t2', bulkWithCurrentSeason('t2')],
+      ])
+    );
+
+    const result = await computeAllTeamsTotals([
+      teamWithCurrentSeason('t1', {
+        power_score: 72,
+        career_power_score: null,
+        wins: 6,
+        losses: 4,
+      }),
+      teamWithCurrentSeason('t2', { power_score: 60, career_power_score: 80, wins: 3, losses: 3 }),
+    ]);
+
+    expect(result.get('t1')?.career_power_score).toBeCloseTo(71.7233, 4);
+    expect(result.get('t2')?.career_power_score).toBeCloseTo(72.6977, 4);
   });
 
   // A season row with no division name, or no season row to name it, still
