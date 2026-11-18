@@ -222,6 +222,8 @@ describe('useCareerRankings', () => {
   // Teams are listed worst first on purpose, so the order can only come from the sort.
   // Every count in the top row has its own value (12, 4, 27, 13, 6, 9, 2, 1, 5 and 3 finishes),
   // so a field read from the wrong total cannot give the right number by chance.
+  // "Mid Team" has MORE match wins (14) than "High Team" (12) but a lower career power score,
+  // so a sort by match wins would put Mid first and fail the order check below.
   // Worked out by hand for "High Team" (the row checked in full):
   //   match win % = 12 / (12 + 4) = 0.75
   //   game win %  = 27 / (27 + 13) = 0.675
@@ -290,7 +292,7 @@ describe('useCareerRankings', () => {
             career_sos: 0.55,
           }),
         ],
-        ['team-mid', totalsFor({ career_power_score: 63.4, career_match_wins: 3 })],
+        ['team-mid', totalsFor({ career_power_score: 63.4, career_match_wins: 14 })],
       ])
     );
 

@@ -75,15 +75,11 @@ describe('handleDatabaseError', () => {
 
   it('preserves code, details, and hint in the error details', () => {
     const error = makePostgrestError({ code: '23505', details: 'dup key', hint: 'try again' });
-    const callHandler = () => handleDatabaseError(error, 'ctx');
-    expect(callHandler).toThrow(
-      expect.objectContaining({ details: expect.objectContaining({ code: '23505' }) })
-    );
-    expect(callHandler).toThrow(
-      expect.objectContaining({ details: expect.objectContaining({ details: 'dup key' }) })
-    );
-    expect(callHandler).toThrow(
-      expect.objectContaining({ details: expect.objectContaining({ hint: 'try again' }) })
+    // One call, one thrown error: that same error must carry all three.
+    expect(() => handleDatabaseError(error, 'ctx')).toThrow(
+      expect.objectContaining({
+        details: expect.objectContaining({ code: '23505', details: 'dup key', hint: 'try again' }),
+      })
     );
   });
 

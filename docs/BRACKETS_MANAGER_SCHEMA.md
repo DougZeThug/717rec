@@ -375,13 +375,17 @@ The `round.stage_id` column is intentionally denormalized (duplicates data from 
 
 ## Testing
 
-Service-level coverage is provided in `tests/bracketManagerSchema.test.ts`
-(the database client and the library are mocked there):
+`tests/bracketManagerSchema.test.ts` holds no-throw checks only. The database
+client, the storage layer and the `brackets-manager` library are all mocked
+there, and each test only checks that the service call resolves without an
+error. Nothing in that file verifies BYE assignment, seeding or advancement:
 
-- ✅ Single elimination bracket creation (4, 8 teams)
-- ✅ Double elimination bracket creation (4, 8 teams)
-- ✅ Edge cases (odd number of teams, BYE handling)
-- ✅ Match updates and progression
+- ✅ Single elimination `createBracket` no-throw checks (4, 8 teams)
+- ✅ Double elimination `createBracket` no-throw checks (4, 8 teams)
+- ✅ Odd-team `createBracket` no-throw checks (3 teams, and 5 teams: the test
+  name says "BYE assignment", but it only checks that the call resolves)
+- ✅ `updateMatch` no-throw checks (a score update, and a "propagate winner"
+  update: the library is mocked, so no winner moves to a next match)
 
 No automated test checks the table columns or the foreign key cascade rules
 above. They come from the migrations. (Eight tests in that file checked nothing
