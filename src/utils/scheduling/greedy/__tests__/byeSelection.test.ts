@@ -48,10 +48,13 @@ describe('pickBye — fewestPartners strategy', () => {
     expect(bye.id).toBe('c');
   });
 
-  it('with all same-tier teams, picks the last team (all equal partners → first in loop wins)', () => {
+  it("with all same-tier teams, picks the first team: equal partners keep the first in the loop (today's behaviour)", () => {
     const teams = [makeTeam('a'), makeTeam('b'), makeTeam('c')];
-    // All have the same number of partners (2 each). Loop picks first min → 'a'.
+    // All have the same number of partners (2 each). The strict `<` keeps the
+    // first team with the lowest count, so 'a' sits out. This pins what the
+    // code does today; it is not a league rule.
     const bye = pickBye(teams, 'fewestPartners', new Set(), 1);
     expect(bye).toBeDefined();
+    expect(bye.id).toBe('a');
   });
 });

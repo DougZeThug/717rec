@@ -101,7 +101,7 @@ describe('updateMatchScore', () => {
       team2GameWins: 1,
     };
 
-    await expect(updateMatchScore(params)).rejects.toBeDefined();
+    await expect(updateMatchScore(params)).rejects.toThrow('Update failed');
   });
 
   it('leaves badge processing to the database and makes no badge calls of its own', async () => {
