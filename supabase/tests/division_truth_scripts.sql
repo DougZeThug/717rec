@@ -38,8 +38,8 @@
 --      stops before any score is compared), when an override row is for a season outside the
 --      six, or when the override table is empty; a gap of 0.0004 is rounding and passes, and
 --      so does the accepted change (power, sos and career far from the saved ones, records
---      the same). It takes the weight-save lock, then a share lock on team_season_stats,
---      before it looks for the backup. The real run drops ONLY the backup
+--      the same). It sets a 10 second lock timeout, takes the weight-save lock, then a share
+--      lock on team_season_stats and on the override table, before it looks for the backup. The real run drops ONLY the backup
 --      (team_season_stats, the override rows and the view are the same),
 --      prints the pre-check lines and the verdict, and a second run says "already
 --      gone". It fails, dropping nothing, when a view depends on the backup (no CASCADE).
@@ -50,7 +50,7 @@
 --      and, with the override-aware view and the overrides back in the stored numbers,
 --      it puts the old-rule scores back (including a team the overrides had moved).
 --      A backup table that exists with 0 rows makes script 06 say "backup table is empty"
---      (not "backup retired") in L6b, L6c, L6d and L7.
+--      (not "backup table not found") in L6b, L6c, L6d and L7.
 --  13. The live columns keep 3 decimals (power_score numeric(8,3), sos numeric(6,3)):
 --      the recompute's last line, check L4 and undo path 2's report line that compares
 --      with the rules ignore a gap of 0.0006 or less in power_score and sos. A bigger
@@ -1420,9 +1420,14 @@ END $$;
 
 -- (a3h) the ACCEPTED change passes: every saved power score, sos and career score is far from
 --       the stored one (+0.5, +0.2, +0.3), the records are the same. 07 drops the table.
---       It also holds the two locks: a share lock on team_season_stats (no live row can be
---       deleted between the guards and the drop), and it takes the weight-save lock and that
---       table lock BEFORE it looks for the backup (read from the order of the lines).
+--       It also holds the locks: a share lock on team_season_stats and on the override
+--       table (no live row and no override row can be deleted between the guards and the
+--       drop), and a lock timeout of 10 seconds. It takes the timeout, the weight-save lock
+--       and the two table locks BEFORE it looks for the backup (read from the order of the
+--       lines). A real lock timeout needs a second connection, which this single-session
+--       file cannot open, so the wait itself is not run here: the script has a handler
+--       that turns the timeout into a plain "STOP: could not get the locks within 10
+--       seconds ... Nothing was dropped" (the line order check requires it).
 SAVEPOINT dt_g12;
 UPDATE public.team_season_stats_pre_division_truth
    SET power_score = COALESCE(power_score, 0) + 0.5,
@@ -1433,8 +1438,12 @@ UPDATE public.team_season_stats_pre_division_truth
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_locks WHERE locktype = 'relation' AND granted AND pid = pg_backend_pid()
-                AND relation = 'public.team_season_stats'::regclass AND mode = 'ShareLock') THEN
+                AND relation IN ('public.team_season_stats'::regclass, 'public.power_score_division_override'::regclass)
+                AND mode = 'ShareLock') THEN
     RAISE EXCEPTION 'a share lock was held before script 07 ran, so the lock check below would prove nothing';
+  END IF;
+  IF current_setting('lock_timeout') IS DISTINCT FROM '0' THEN
+    RAISE EXCEPTION 'a lock timeout was set before script 07 ran, so the timeout check below would prove nothing';
   END IF;
 END $$;
 \o /dev/null
@@ -1457,15 +1466,22 @@ BEGIN
                     AND relation = 'public.team_season_stats'::regclass AND mode = 'ShareLock') THEN
     RAISE EXCEPTION 'script 07 did not hold a share lock on team_season_stats';
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_locks WHERE locktype = 'relation' AND granted AND pid = pg_backend_pid()
+                    AND relation = 'public.power_score_division_override'::regclass AND mode = 'ShareLock') THEN
+    RAISE EXCEPTION 'script 07 did not hold a share lock on the override table';
+  END IF;
+  IF current_setting('lock_timeout') IS DISTINCT FROM '10s' THEN
+    RAISE EXCEPTION 'script 07 should set a lock timeout of 10s, got %', current_setting('lock_timeout');
+  END IF;
 END $$;
 ROLLBACK TO SAVEPOINT dt_g12;
 RELEASE SAVEPOINT dt_g12;
 
-\set s07order `awk '$0 !~ /^[ \t]*--/ { if ($0 ~ /pg_advisory_xact_lock\(hashtext\(.power_score_weights.\)\)/ && !a) a = NR; if ($0 ~ /LOCK TABLE public\.team_season_stats IN SHARE MODE/ && !l) l = NR; if ($0 ~ /IF to_regclass\(.public\.team_season_stats_pre_division_truth.\) IS NULL THEN/ && !e) e = NR } END { print (a > 0 && l > a && e > l) ? "ok" : "bad" }' supabase/scripts/division_truth_07_drop_backup.sql`
+\set s07order `awk '$0 !~ /^[ \t]*--/ { if ($0 ~ /set_config\(.lock_timeout., .10s., true\)/ && !t) t = NR; if ($0 ~ /pg_advisory_xact_lock\(hashtext\(.power_score_weights.\)\)/ && !a) a = NR; if ($0 ~ /LOCK TABLE public\.team_season_stats IN SHARE MODE/ && !l) l = NR; if ($0 ~ /LOCK TABLE public\.power_score_division_override IN SHARE MODE/ && !o) o = NR; if ($0 ~ /EXCEPTION WHEN lock_not_available THEN/ && !h) h = NR; if ($0 ~ /IF to_regclass\(.public\.team_season_stats_pre_division_truth.\) IS NULL THEN/ && !e) e = NR } END { print (t > 0 && a > t && l > a && o > l && h > o && e > h) ? "ok" : "bad" }' supabase/scripts/division_truth_07_drop_backup.sql`
 SELECT :'s07order' = 'ok' AS ordered \gset
 \if :ordered
 \else
-  DO $$ BEGIN RAISE EXCEPTION 'script 07 must take the advisory lock, then the table lock, then look for the backup'; END $$;
+  DO $$ BEGIN RAISE EXCEPTION 'script 07 must set the lock timeout, take the advisory lock, the two table locks, handle a lock timeout, and only then look for the backup'; END $$;
 \endif
 
 -- (a4) a gap of 0.0004 is rounding: the guard lets it through (the drop is rolled back).
@@ -1490,7 +1506,7 @@ ROLLBACK TO SAVEPOINT dt_g4;
 RELEASE SAVEPOINT dt_g4;
 
 -- (a5) a backup table that EXISTS but holds 0 rows: script 06 says "backup table is empty",
---      not "backup retired" (that wording is for a missing table). Normal rows keep their words.
+--      not "backup table not found" (that wording is for a missing table). Normal rows keep their words.
 SAVEPOINT dt_g13;
 DELETE FROM public.team_season_stats_pre_division_truth;
 \o /dev/null
@@ -1642,9 +1658,9 @@ BEGIN
   SELECT count(*) INTO v_n FROM dt_06gone
    WHERE check_name IN ('L6b old scores re-derived', 'L6c no changed game, no change',
                         'L6d three newer seasons: who moved', 'L7 records identical to backup')
-     AND result = 'INFO' AND (detail LIKE 'skipped, backup retired%') IS TRUE;
+     AND result = 'INFO' AND (detail LIKE 'skipped, backup table not found (retired by script 07, or never taken)%') IS TRUE;
   IF v_n IS DISTINCT FROM 4 THEN
-    RAISE EXCEPTION 'script 06 after the drop: L6b, L6c, L6d and L7 should each say INFO, skipped, backup retired; found % that do', v_n;
+    RAISE EXCEPTION 'script 06 after the drop: L6b, L6c, L6d and L7 should each say INFO, skipped, backup table not found; found % that do', v_n;
   END IF;
   -- L6a does not need the backup: it still checks every team-season of the six seasons.
   SELECT count(*) INTO v_n FROM dt_06gone

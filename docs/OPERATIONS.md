@@ -1284,7 +1284,7 @@ of 2026-11-18). After the drop:
   The dry run (02a) lists one CHECK row with the same two reasons. A later override row
   is added by hand (see "Warnings" above), then run script 04 for that season.
 - Script 06 still runs. Its checks L6b, L6c, L6d and L7 say INFO, "skipped, backup
-  retired". The other checks run as before.
+  table not found". The other checks run as before.
 - **Do not run script 01 again.** It STOPs only while override rows exist. After undo
   path 2 has deleted them, a rerun would **not** stop: it would make a NEW snapshot
   under the same backup name, taken after the recompute. That snapshot **cannot**
@@ -1319,7 +1319,7 @@ of 2026-11-18). After the drop:
    message and tell the developer.
 
 7. **Optional:** run script 06 again (paste the whole file). L6b, L6c, L6d and L7 say
-   INFO, "skipped, backup retired". Every other row must be PASS (L4 lists the live
+   INFO, "skipped, backup table not found". Every other row must be PASS (L4 lists the live
    season on its own line, as on 2026-11-18).
 
 A second run of script 07 is safe: it says "already gone" and changes nothing. The
@@ -1338,9 +1338,11 @@ the way back or the only record:
 - an override row is for a season outside the six (undo path 2 would refuse to run).
 
 The script takes the same lock as a weight save, then blocks writes to
-`team_season_stats` until it ends (reads stay open). So no team-season can be deleted
-between its checks and the drop. If a weight save or a recompute is running, the script
-waits for it, then reads the new state.
+`team_season_stats` and to the override table until it ends (reads stay open). So no
+team-season and no override row can be deleted between its checks and the drop. It waits
+at most 10 seconds for these locks. **If it stops with "could not get the locks within
+10 seconds", nothing was dropped:** a score entry, a recompute or a weight save was
+running. Run it again when nobody is entering scores.
 
 If you run script 01 before script 07 (the backup still exists), it **never** replaces
 the first backup. Its last line says OK (nothing changed), NOTE (stored scores changed

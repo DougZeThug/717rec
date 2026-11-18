@@ -43,9 +43,12 @@
 --   * an override row is for a season OUTSIDE the six: undo path 2 of script 05 refuses
 --     to run while such a row exists, so after the drop there would be no way back at all.
 -- THE LOCK. The script takes the Sandbox weight-save lock, then blocks writes to
--- team_season_stats (reads stay open) until it ends. Without it, a team-season could be
--- deleted after the guards looked and before the table was dropped, and its saved row
--- would be lost for good.
+-- team_season_stats and to the override table (reads stay open) until it ends. Without
+-- it, a team-season could be deleted after the guards looked and before the table was
+-- dropped, and its saved row would be lost for good; the same for an override row.
+-- It waits at most 10 seconds for these locks. If a score entry, a recompute or a
+-- weight save is running, it STOPs ("could not get the locks within 10 seconds") with
+-- nothing dropped. Run it again when nobody is entering scores.
 -- It does not ask you to type anything. The editor may ask you to confirm a
 -- "destructive" statement (DROP TABLE). That is expected. It must name only
 -- team_season_stats_pre_division_truth (or a temporary division_truth_ table). If it
@@ -78,14 +81,27 @@ DECLARE
   v_override bigint := 0;
   v_outside  bigint := 0;
 BEGIN
-  -- The same lock as a Sandbox weight save and scripts 04 and 05: the checks below
-  -- and the drop never run at the same moment as a save. It comes FIRST, before the
-  -- "does the backup exist" test: a run that had to wait for another run then sees the
-  -- state the other run left ("already gone") and not an error.
-  PERFORM pg_advisory_xact_lock(hashtext('power_score_weights'));
-  -- Writes to team_season_stats wait until this block ends (reads stay open). So no
-  -- team-season can be deleted between the guards and the drop.
-  LOCK TABLE public.team_season_stats IN SHARE MODE;
+  -- Wait at most 10 seconds for any lock below (the setting ends with this run).
+  -- A long write then makes the script STOP with nothing dropped, and not wait in the
+  -- editor for ever.
+  PERFORM set_config('lock_timeout', '10s', true);
+  BEGIN
+    -- The same lock as a Sandbox weight save and scripts 04 and 05: the checks below
+    -- and the drop never run at the same moment as a save. It comes FIRST, before the
+    -- "does the backup exist" test: a run that had to wait for another run then sees
+    -- the state the other run left ("already gone") and not an error.
+    PERFORM pg_advisory_xact_lock(hashtext('power_score_weights'));
+    -- Writes to team_season_stats wait until this block ends (reads stay open). So no
+    -- team-season can be deleted between the guards and the drop.
+    LOCK TABLE public.team_season_stats IN SHARE MODE;
+    -- The same for the override rows: none can be deleted between the "0 rows" guard
+    -- and the drop. EXECUTE, so a database with no override table is not an error here.
+    IF to_regclass('public.power_score_division_override') IS NOT NULL THEN
+      EXECUTE 'LOCK TABLE public.power_score_division_override IN SHARE MODE';
+    END IF;
+  EXCEPTION WHEN lock_not_available THEN
+    RAISE EXCEPTION 'STOP: could not get the locks within 10 seconds: a score entry, a recompute or a weight save is running. Nothing was dropped. Run it again when nobody is entering scores.';
+  END;
 
   IF to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN
     INSERT INTO division_truth_drop VALUES

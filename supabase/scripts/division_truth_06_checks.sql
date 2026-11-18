@@ -38,9 +38,10 @@
 --       the six seasons are identical to the backup (power_score_snapshots is not
 --       in the backup; no script here writes it)
 --   L6b, L6c, L6d and L7 need the backup (script 01). Script 07 retires the backup
---   (docs/OPERATIONS.md section 6g). Once it is gone these four say INFO, "skipped,
---   backup retired", and the other checks run as before. If the table exists but holds
---   0 rows, they say INFO, "backup table is empty" (that is not a retired backup).
+--   (docs/OPERATIONS.md section 6g). If the table is not found (retired by script 07,
+--   or script 01 never ran) these four say INFO, "skipped, backup table not found",
+--   and the other checks run as before. If the table exists but holds
+--   0 rows, they say INFO, "backup table is empty" (the table is there, so it is not "not found").
 --   The team list of L6a comes from team_season_stats, so it does not need the backup
 --   either.
 --   WHICH CHECK OWNS WHICH SAVED ROW. L6b, L6c and L6d start from the live table
@@ -128,7 +129,7 @@ LEFT JOIN public.v_division_rateable dw ON dw.id = r.opp_division_id;
 DROP TABLE IF EXISTS pg_temp.division_truth_bk;
 DROP TABLE IF EXISTS pg_temp.division_truth_bk_state;
 -- Does the backup table exist? Kept apart from its row count: a table with 0 rows is
--- "empty", a missing table is "retired".
+-- "empty", a missing table is "not found" (retired by script 07, or never taken).
 CREATE TEMP TABLE division_truth_bk_state (present boolean);
 DO $$
 BEGIN
@@ -437,21 +438,21 @@ FROM (
   SELECT 'L6b old scores re-derived',
          CASE WHEN bk.n = 0 THEN 'INFO' WHEN l6.bad_old = 0 THEN 'PASS' ELSE 'FAIL' END,
          CASE WHEN bk.n = 0 AND bk.present THEN 'backup table is empty (0 saved rows): there are no saved numbers to compare with'
-              WHEN bk.n = 0 THEN 'skipped, backup retired (script 07): there are no saved numbers to compare with'
+              WHEN bk.n = 0 THEN 'skipped, backup table not found (retired by script 07, or never taken): there are no saved numbers to compare with'
               ELSE l6.bad_old || ' of ' || l6.backup_rows || ' differ from the backup''s live_rules numbers' END
     FROM l6, bk
   UNION ALL
   SELECT 'L6c no changed game, no change',
          CASE WHEN bk.n = 0 THEN 'INFO' WHEN l6.bad_zero = 0 THEN 'PASS' ELSE 'FAIL' END,
          CASE WHEN bk.n = 0 AND bk.present THEN 'backup table is empty (0 saved rows): there are no saved numbers to compare with'
-              WHEN bk.n = 0 THEN 'skipped, backup retired (script 07): there are no saved numbers to compare with'
+              WHEN bk.n = 0 THEN 'skipped, backup table not found (retired by script 07, or never taken): there are no saved numbers to compare with'
               ELSE l6.bad_zero || ' team-seasons with no changed game moved against live_rules' END
     FROM l6, bk
   UNION ALL
   SELECT 'L6d three newer seasons: who moved',
          'INFO',
          CASE WHEN bk.n = 0 AND bk.present THEN 'backup table is empty (0 saved rows): there are no saved numbers to compare with'
-              WHEN bk.n = 0 THEN 'skipped, backup retired (script 07): there are no saved numbers to compare with'
+              WHEN bk.n = 0 THEN 'skipped, backup table not found (retired by script 07, or never taken): there are no saved numbers to compare with'
               ELSE l6c.n || ' teams moved against live_rules (7 expected on the live data). '
                    || COALESCE(l6c.list, 'none') END
     FROM l6c, bk
@@ -459,7 +460,7 @@ FROM (
   SELECT 'L7 records identical to backup',
          CASE WHEN bk.n = 0 THEN 'INFO' WHEN l7.lost = 0 AND l7.changed = 0 THEN 'PASS' ELSE 'FAIL' END,
          CASE WHEN bk.n = 0 AND bk.present THEN 'backup table is empty (0 saved rows): there are no saved numbers to compare with'
-              WHEN bk.n = 0 THEN 'skipped, backup retired (script 07): there are no saved numbers to compare with'
+              WHEN bk.n = 0 THEN 'skipped, backup table not found (retired by script 07, or never taken): there are no saved numbers to compare with'
               ELSE l7.changed || ' of ' || l7.n || ' saved rows changed record, games, division, champion or rank; '
                    || l7.lost || ' rows missing' END
     FROM l7, bk

@@ -139,12 +139,13 @@ because other objects depend on it` (script 07 never uses CASCADE) and thirteen
   different record (wins, or a playoff rank that was empty), the old rated view is
   installed, an override row is for a season outside the six, or the override table is
   empty; a gap of 0.0004 passes, and so does the accepted change (power, sos and career
-  far from the saved ones, records the same). It also holds the weight-save lock and a
-  share lock on `team_season_stats` before it looks for the backup (the test reads the
-  line order and `pg_locks`). The real run drops ONLY the backup (the stored scores, the override rows and
+  far from the saved ones, records the same). It also sets a 10 second lock timeout and
+  holds the weight-save lock and a share lock on `team_season_stats` and on the override
+  table before it looks for the backup (the test reads the setting, `pg_locks` and the
+  line order; a real timeout needs a second connection, so it is not run in this file). The real run drops ONLY the backup (the stored scores, the override rows and
   the rated view are the same afterwards), prints the pre-check lines and the verdict,
   and a second run says "already gone". After the drop the test checks that script 06
-  still runs (L6b, L6c, L6d and L7 say INFO, "skipped, backup retired"; with an existing
+  still runs (L6b, L6c, L6d and L7 say INFO, "skipped, backup table not found"; with an existing
   but empty backup they say "backup table is empty"), that scripts 03 and 02 STOP with a
   message that names both reasons (first install, retired), that the dry run (02a)
   lists a CHECK row, that undo path 1 STOPs, and that path 2 still reports ("backup
