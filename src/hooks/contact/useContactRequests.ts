@@ -58,8 +58,12 @@ export function useMarkContactRequestResolved() {
     mutationFn: ({ id, userId }: { id: string; userId: string | null }) =>
       ContactRequestService.markResolved(id, userId),
     onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
-    onError: () =>
-      toast({ title: 'Failed to mark contact request as resolved', variant: 'destructive' }),
+    onError: (error) =>
+      toast({
+        title: 'Failed to mark contact request as resolved',
+        description: getUIErrorMessage(error),
+        variant: 'destructive',
+      }),
   });
 }
 
@@ -69,7 +73,12 @@ export function useReopenContactRequest() {
   return useMutation({
     mutationFn: (id: string) => ContactRequestService.reopen(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
-    onError: () => toast({ title: 'Failed to reopen contact request', variant: 'destructive' }),
+    onError: (error) =>
+      toast({
+        title: 'Failed to reopen contact request',
+        description: getUIErrorMessage(error),
+        variant: 'destructive',
+      }),
   });
 }
 

@@ -3,6 +3,8 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { BusinessLogicError } from '@/types/errors';
+
 const mocks = vi.hoisted(() => ({
   fetch: vi.fn(),
   resolve: vi.fn(),
@@ -107,6 +109,22 @@ describe('support ticket hooks', () => {
     await waitFor(() =>
       expect(mocks.toast).toHaveBeenCalledWith({
         title: 'Failed to reopen support ticket',
+        description: 'Something went wrong. Please try again.',
+        variant: 'destructive',
+      })
+    );
+  });
+
+  it('shows the nothing-was-saved reason when a resolve matched no row', async () => {
+    mocks.resolve.mockRejectedValue(new BusinessLogicError('Nothing was saved. Refresh the page.'));
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useMarkSupportTicketResolved(), { wrapper });
+
+    await expect(result.current.mutateAsync('ticket-1')).rejects.toThrow();
+    await waitFor(() =>
+      expect(mocks.toast).toHaveBeenCalledWith({
+        title: 'Failed to mark support ticket as resolved',
+        description: 'Nothing was saved. Refresh the page.',
         variant: 'destructive',
       })
     );

@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import { BusinessLogicError } from '@/types/errors';
 import { throwEdgeFunctionError } from '@/utils/edgeFunctionError';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
@@ -20,6 +21,9 @@ export interface SubmitContactRequestInput {
 const COLUMNS =
   'id, request_type, submitter_name, submitter_team, submitter_contact, players, message, user_id, team_id, is_verified, status, admin_notes, resolved_by, resolved_at, created_at, updated_at';
 
+const NOTHING_SAVED_MESSAGE =
+  'Nothing was saved. This request may have been deleted, or your admin access may have changed. Refresh the page and try again.';
+
 export const ContactRequestService = {
   submit: async (input: SubmitContactRequestInput): Promise<void> => {
     const { error } = await supabase.functions.invoke('submit-contact-request', {
@@ -38,24 +42,39 @@ export const ContactRequestService = {
     return (data ?? []) as ContactRequestRow[];
   },
 
+  /**
+   * @throws {DatabaseError} When the database operation fails
+   * @throws {BusinessLogicError} When no row was updated (the request was
+   *   deleted, or admin access was removed so row-level security hid it)
+   */
   markResolved: async (id: string, resolvedBy: string | null): Promise<void> => {
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('contact_requests')
       .update({
         status: 'resolved',
         resolved_by: resolvedBy,
         resolved_at: new Date().toISOString(),
       })
-      .eq('id', id);
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
     if (error) handleDatabaseError(error, 'Failed to mark resolved');
+    if (!updated) throw new BusinessLogicError(NOTHING_SAVED_MESSAGE);
   },
 
+  /**
+   * @throws {DatabaseError} When the database operation fails
+   * @throws {BusinessLogicError} When no row was updated (same cases as markResolved)
+   */
   reopen: async (id: string): Promise<void> => {
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('contact_requests')
       .update({ status: 'new', resolved_by: null, resolved_at: null })
-      .eq('id', id);
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
     if (error) handleDatabaseError(error, 'Failed to reopen request');
+    if (!updated) throw new BusinessLogicError(NOTHING_SAVED_MESSAGE);
   },
 
   remove: async (id: string): Promise<void> => {

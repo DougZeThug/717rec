@@ -8,6 +8,7 @@ import {
   type SupportTicketRow,
   SupportTicketService,
 } from '@/services/support/SupportTicketService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 const SUPPORT_TICKETS_QUERY_KEY = ['support-tickets'] as const;
 
@@ -50,8 +51,12 @@ export function useMarkSupportTicketResolved() {
   return useMutation({
     mutationFn: (id: string) => SupportTicketService.markResolved(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: SUPPORT_TICKETS_QUERY_KEY }),
-    onError: () =>
-      toast({ title: 'Failed to mark support ticket as resolved', variant: 'destructive' }),
+    onError: (error) =>
+      toast({
+        title: 'Failed to mark support ticket as resolved',
+        description: getUIErrorMessage(error),
+        variant: 'destructive',
+      }),
   });
 }
 
@@ -61,6 +66,11 @@ export function useReopenSupportTicket() {
   return useMutation({
     mutationFn: (id: string) => SupportTicketService.reopen(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: SUPPORT_TICKETS_QUERY_KEY }),
-    onError: () => toast({ title: 'Failed to reopen support ticket', variant: 'destructive' }),
+    onError: (error) =>
+      toast({
+        title: 'Failed to reopen support ticket',
+        description: getUIErrorMessage(error),
+        variant: 'destructive',
+      }),
   });
 }

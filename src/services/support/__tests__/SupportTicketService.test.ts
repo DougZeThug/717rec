@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError } from '@/types/errors';
 
 const mockFrom = vi.fn();
 
@@ -34,11 +34,13 @@ const selectChain = (result: { data: unknown; error: unknown }) => {
   return { select, order, limit };
 };
 
-/** Build the .update().eq() chain the write methods walk. */
-const updateChain = (result: { error: unknown }) => {
-  const eq = vi.fn().mockResolvedValue(result);
+/** Build the .update().eq().select().maybeSingle() chain the write methods walk. */
+const updateChain = (result: { data: unknown; error: unknown }) => {
+  const maybeSingle = vi.fn().mockResolvedValue(result);
+  const select = vi.fn().mockReturnValue({ maybeSingle });
+  const eq = vi.fn().mockReturnValue({ select });
   const update = vi.fn().mockReturnValue({ eq });
-  return { update, eq };
+  return { update, eq, select };
 };
 
 const row = {
@@ -147,40 +149,62 @@ describe('SupportTicketService', () => {
 
   describe('markResolved', () => {
     it('sets status to resolved for the given id', async () => {
-      const chain = updateChain({ error: null });
+      const chain = updateChain({ data: { id: 'ticket-1' }, error: null });
       mockFrom.mockReturnValue({ update: chain.update });
 
       await SupportTicketService.markResolved('ticket-1');
       expect(mockFrom).toHaveBeenCalledWith('support_tickets');
       expect(chain.update).toHaveBeenCalledWith({ status: 'resolved' });
       expect(chain.eq).toHaveBeenCalledWith('id', 'ticket-1');
+      expect(chain.select).toHaveBeenCalledWith('id');
     });
 
     it('throws a DatabaseError when the update fails', async () => {
-      const chain = updateChain({ error: pgError() });
+      const chain = updateChain({ data: null, error: pgError() });
       mockFrom.mockReturnValue({ update: chain.update });
 
       await expect(SupportTicketService.markResolved('ticket-1')).rejects.toBeInstanceOf(
         DatabaseError
       );
     });
+
+    // The ticket can be gone, or admin access removed so row-level security
+    // hides it. The update then matches nothing and reports no error.
+    it('throws BusinessLogicError when no row was updated', async () => {
+      const chain = updateChain({ data: null, error: null });
+      mockFrom.mockReturnValue({ update: chain.update });
+
+      const result = SupportTicketService.markResolved('ticket-1');
+      await expect(result).rejects.toBeInstanceOf(BusinessLogicError);
+      await expect(result).rejects.toThrow(/Nothing was saved. This ticket/);
+    });
   });
 
   describe('reopen', () => {
     it('sets status back to new for the given id', async () => {
-      const chain = updateChain({ error: null });
+      const chain = updateChain({ data: { id: 'ticket-1' }, error: null });
       mockFrom.mockReturnValue({ update: chain.update });
 
       await SupportTicketService.reopen('ticket-1');
       expect(chain.update).toHaveBeenCalledWith({ status: 'new' });
       expect(chain.eq).toHaveBeenCalledWith('id', 'ticket-1');
+      expect(chain.select).toHaveBeenCalledWith('id');
     });
 
     it('throws a DatabaseError when the update fails', async () => {
-      const chain = updateChain({ error: pgError() });
+      const chain = updateChain({ data: null, error: pgError() });
       mockFrom.mockReturnValue({ update: chain.update });
 
       await expect(SupportTicketService.reopen('ticket-1')).rejects.toBeInstanceOf(DatabaseError);
+    });
+
+    it('throws BusinessLogicError when no row was updated', async () => {
+      const chain = updateChain({ data: null, error: null });
+      mockFrom.mockReturnValue({ update: chain.update });
+
+      const result = SupportTicketService.reopen('ticket-1');
+      await expect(result).rejects.toBeInstanceOf(BusinessLogicError);
+      await expect(result).rejects.toThrow(/Nothing was saved. This ticket/);
     });
   });
 
