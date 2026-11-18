@@ -48,6 +48,14 @@
 -- in the repo, the next hand-apply of all migrations would add the override step
 -- again: revert the pull request too.
 --
+-- ROUNDING. On the live database power_score is numeric(8,3) and sos is numeric(6,3)
+-- (3 decimals; the repo migrations do not say so). The view has full precision, so a
+-- stored number is never exactly equal to it. The report line that compares with the
+-- RULES therefore ignores a gap of 0.0006 or less in power_score and sos (the same
+-- rule as script 04 and check L4). The line that compares with the BACKUP stays
+-- exact: both sides are stored values with 3 decimals. Path 2's own recompute is the
+-- same UPDATE as script 04 and rewrites about every row of the six seasons.
+--
 -- SAFE TO RE-RUN. Each path ends in the same place when run twice.
 
 DROP TABLE IF EXISTS pg_temp.division_truth_undo;
@@ -251,15 +259,17 @@ FROM (
                       || 'OR s.sos IS DISTINCT FROM b.sos',
                       false, true, '')))[1]::text END
   UNION ALL
-  SELECT 13, 'six seasons: rows that differ from the RULES NOW (0 after path 2)',
+  SELECT 13, 'six seasons: rows that differ from the RULES NOW by more than rounding (0 after path 2)',
          count(*)::text
     FROM public.team_season_stats s
     JOIN public.v_team_season_agg a ON a.season_id = s.season_id AND a.team_id = s.team_id
    WHERE s.season_id IN ('d6f67c01-1d50-4f2c-9b0e-e1dfefa89a2a', 'e537c594-3ba9-4d79-ba63-f6ed90c89e30',
                          'd50bb12e-99be-4170-802a-695a402373ce', '34cd19e2-abf5-43b8-a16f-6d73a0e998ac',
                          '4b90a1d8-b90a-4e47-8e8c-b89a7b54e106', '9cd55eb8-672c-4a43-a9df-3552a7759cca')
-      AND (s.power_score        IS DISTINCT FROM a.power_score
-        OR s.career_power_score IS DISTINCT FROM a.career_power_score
-        OR s.sos                IS DISTINCT FROM a.sos)
+      -- Rounding: on the live database power_score and sos keep 3 decimals, so a gap of
+      -- 0.0006 or less is rounding (the same rule as script 04 and check L4).
+      AND (abs(COALESCE(s.power_score, -1) - COALESCE(a.power_score, -1)) > 0.0006
+        OR abs(COALESCE(s.sos, -1) - COALESCE(a.sos, -1)) > 0.0006
+        OR s.career_power_score IS DISTINCT FROM a.career_power_score)
 ) r
 ORDER BY r.ord;

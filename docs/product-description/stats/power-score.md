@@ -160,18 +160,18 @@ stops an archived season moving when the league re-tiers a team.
 Working out the historical division runs down a chain of seven sources, from the
 weekly snapshot nearest the match date down to the last division ever seen for
 that team. If every step fails, the match is dropped from the three weighted
-terms — **and only from them**.
+terms — **and only from them**. Wins, losses, games won and games lost always
+count every match, so a team's record and its rating can be built from slightly
+different sets of matches without anything saying so.
 
 One more source sits **above** the chain: a division the league pinned by hand for
 one team in one season, with a written reason. It is used first. It exists for the
 three oldest seasons (Spring 2025, Summer 1 2025, Summer 2 2025), where the chain
 could not answer or could only guess from today's division, and for three teams that
 dropped out. A pinned division that is Hidden, or that has no weight, is ignored and
-the chain runs as before. It was built on 2026-11-17 and **was not yet applied to the
-live database** when this was written. Nothing on screen says that a game was rated
-this way. Wins, losses, games won and games lost always
-count every match, so a team's record and its rating can be built from slightly
-different sets of matches without anything saying so.
+the chain runs as before. It was built on 2026-11-17 and **applied to the live
+database on 2026-11-18** (86 pinned team-seasons; the scores of the six affected
+seasons were recomputed). Nothing on screen says that a game was rated this way.
 
 ## Season, career, and why they disagree
 

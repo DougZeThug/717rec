@@ -6,7 +6,8 @@
 --   a. right after the data script (02), before the recompute: L4 shows the six
 --      seasons still differ (that is expected), everything else must be PASS;
 --   b. after each recompute: the same;
---   c. after the last recompute: L4 must show 0 rows still different.
+--   c. after the last recompute: L4 must show 0 team-seasons in the six seasons that
+--      still differ by more than rounding.
 -- ONE list comes back: check, result, detail. Every result starts with PASS, FAIL
 -- or INFO. Any FAIL: stop, do not recompute more, send the list to the developer.
 --
@@ -19,7 +20,11 @@
 --       should be, and no game is left unrated in the six seasons
 --   L3b every manual_override game's opponent weight equals that division's weight
 --       today (it should: each map division has one weight-history row)
---   L4  stored scores that differ from the rules now: only the six seasons may
+--   L4  stored scores that differ from the rules now by MORE THAN ROUNDING (0.0006).
+--       On the live database power_score and sos are stored with 3 decimals, so a
+--       stored number can never equal the full-precision view value. Only the six
+--       seasons may differ (before the recompute). The live season is listed on its
+--       own: its stored numbers refresh by themselves when the next match is scored.
 --   L5  the live-season views (v_team_details) read no override game
 --   L6  the scores are re-derived with the live formula from the game rows: the
 --       new numbers equal what the recompute stores, the old numbers equal the
@@ -184,15 +189,21 @@ l3b AS (
 l3b_n AS (
   SELECT count(*) AS n FROM public.v_power_score_team_matches_rated WHERE resolved_by = 'manual_override'
 ),
--- L4
+-- L4 (rounding-safe): power_score and sos are stored with 3 decimals, so a gap of
+-- 0.0006 or less is rounding, not a real difference. The live season is listed on its
+-- own: its stored numbers refresh by themselves when the next match is scored.
 l4 AS (
   SELECT count(*) FILTER (WHERE s.season_id IN (SELECT season_id FROM six)) AS in_six,
-         count(*) FILTER (WHERE s.season_id NOT IN (SELECT season_id FROM six)) AS elsewhere
+         count(*) FILTER (WHERE s.season_id NOT IN (SELECT season_id FROM six)
+                            AND se.is_active IS NOT TRUE) AS elsewhere,
+         count(*) FILTER (WHERE s.season_id NOT IN (SELECT season_id FROM six)
+                            AND se.is_active IS TRUE) AS live_season
   FROM public.team_season_stats s
   JOIN public.v_team_season_agg a ON a.season_id = s.season_id AND a.team_id = s.team_id
-  WHERE s.power_score        IS DISTINCT FROM a.power_score
+  JOIN public.seasons se ON se.id = s.season_id
+  WHERE abs(COALESCE(s.power_score, -1) - COALESCE(a.power_score, -1)) > 0.0006
+     OR abs(COALESCE(s.sos, -1) - COALESCE(a.sos, -1)) > 0.0006
      OR s.career_power_score IS DISTINCT FROM a.career_power_score
-     OR s.sos                IS DISTINCT FROM a.sos
 ),
 -- L5
 l5 AS (
@@ -347,8 +358,9 @@ FROM (
          CASE WHEN l4.elsewhere > 0 THEN 'FAIL'
               WHEN l4.in_six = 0 THEN 'PASS'
               ELSE 'INFO' END,
-         l4.in_six || ' team-seasons in the six seasons still differ (expected before the recompute, 0 after); '
-         || l4.elsewhere || ' elsewhere (must be 0)'
+         l4.in_six || ' team-seasons in the six seasons still differ by more than rounding (0 after the recompute); '
+         || l4.elsewhere || ' elsewhere, not counting the live season (must be 0); '
+         || l4.live_season || ' in the live season (not caused by this fix; it refreshes when the next match is scored)'
     FROM l4
   UNION ALL
   SELECT 'L5 live-season views untouched',

@@ -128,7 +128,14 @@ so a non-zero exit code means drift was detected.
   season with `is_active` or `playoffs_active` on is a CHECK), script 01 (the first
   backup is never replaced; the verdict says OK, NOTE or CHECK from the keys and the
   saved scores, not the row counts) and script 05 (still reports after the backup
-  table is dropped).
+  table is dropped). A section also mimics the LIVE columns (`power_score`
+  `numeric(8,3)`, `sos` `numeric(6,3)`, found 2026-11-18; the repo migrations do not
+  have these limits) with an `ALTER TABLE` inside a rolled-back savepoint: script 04's
+  last line, check L4 of script 06 and undo path 2's report line that compares with the
+  rules ignore a gap of 0.0006 or less, and still count or fail a bigger one (L4 fails
+  for a closed season outside the six and counts the active season on its own line;
+  before the recompute L4 says INFO with N team-seasons still different; a gap in
+  `career_power_score` alone counts in L4 and in script 04's last line). The strict comparison, put back, turns those cases red.
 - `declined_request_team_change.sql` — asserts a refused join request may be
   aimed at a different team, and that every other lock on `team_memberships`
   still holds (pending rows immovable, no self-approval, no handing the row on,
