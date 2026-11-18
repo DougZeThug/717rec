@@ -50,11 +50,12 @@
 --
 -- ROUNDING. On the live database power_score is numeric(8,3) and sos is numeric(6,3)
 -- (3 decimals; the repo migrations do not say so). The view has full precision, so a
--- stored number is never exactly equal to it. The report line that compares with the
--- RULES therefore ignores a gap of 0.0006 or less in power_score and sos (the same
--- rule as script 04 and check L4). The line that compares with the BACKUP stays
--- exact: both sides are stored values with 3 decimals. Path 2's own recompute is the
--- same UPDATE as script 04 and rewrites about every row of the six seasons.
+-- stored number can differ from it (storage rounds the view's number to 3 decimals).
+-- The report line that compares with the RULES therefore ignores a gap of 0.0006 or
+-- less in power_score and sos (the same rule as script 04 and check L4). The line
+-- that compares with the BACKUP stays exact: both sides are stored values with 3
+-- decimals. Path 2's own recompute is the same UPDATE as script 04 and rewrites about
+-- every row of the six seasons.
 --
 -- SAFE TO RE-RUN. Each path ends in the same place when run twice.
 

@@ -131,9 +131,10 @@ Coverage is inspectable:
 SELECT resolved_by, count(*) FROM v_power_score_team_matches_rated GROUP BY 1;
 ```
 
-**W-L records are never affected** — `matches_played`, `wins`, `losses`,
-`game_wins` and `game_losses` count every match, including unresolved ones.
-Only the three weighted terms filter.
+**W-L records are never affected** — an opponent whose division cannot be
+found does not remove an otherwise eligible match from `matches_played`,
+`wins`, `losses`, `game_wins` and `game_losses`. Only the three weighted terms
+filter.
 
 Keeping Hidden teams out of public listings is a separate, read-layer concern:
 the frontend skips them in `src/utils/teamGrouping.ts` and the MCP

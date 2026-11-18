@@ -5,7 +5,11 @@
 -- before it, run the precheck (00) and the dry run (02a). Order and reasons:
 -- docs/OPERATIONS.md section 6g. Step 3 changes the VIEW at once; the stored
 -- numbers change only at the recompute (04), if all six seasons are closed.
--- To back out BEFORE step 6: DELETE FROM public.power_score_division_override;
+-- To back out BEFORE step 6, on a FIRST install only (the override table was empty
+-- before this script): DELETE FROM public.power_score_division_override;
+-- Do NOT do that on a re-run: the table then holds the live rows. This script does not
+-- record which rows a run added, so ask the developer for a delete limited to those
+-- rows (compare with the dry run, 02a).
 --
 -- WHAT IT DOES. It writes rows into power_score_division_override, so a game is
 -- rated by the division the opponent had in THAT season. Nothing else. It does

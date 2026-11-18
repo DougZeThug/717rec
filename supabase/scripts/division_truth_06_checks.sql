@@ -22,9 +22,13 @@
 --       today (it should: each map division has one weight-history row)
 --   L4  stored scores that differ from the rules now by MORE THAN ROUNDING (0.0006).
 --       On the live database power_score and sos are stored with 3 decimals, so a
---       stored number can never equal the full-precision view value. Only the six
---       seasons may differ (before the recompute). The live season is listed on its
---       own: its stored numbers refresh by themselves when the next match is scored.
+--       stored number can differ from the full-precision view value (storage rounds
+--       it to 3 decimals). Only the six seasons may differ (before the recompute).
+--       The LIVE season is listed on its own: a season that is the live standings
+--       season (the active one, else the one with playoffs active) and is NOT
+--       archived refreshes by itself when the next match is scored. A gap in an
+--       ARCHIVED season is never refreshed that way, so it is a FAIL even if the
+--       season is marked active.
 --   L5  the live-season views (v_team_details) read no override game
 --   L6  the scores are re-derived with the live formula from the game rows: the
 --       new numbers equal what the recompute stores, the old numbers equal the
@@ -191,13 +195,20 @@ l3b_n AS (
 ),
 -- L4 (rounding-safe): power_score and sos are stored with 3 decimals, so a gap of
 -- 0.0006 or less is rounding, not a real difference. The live season is listed on its
--- own: its stored numbers refresh by themselves when the next match is scored.
+-- own. "Live" = the season the live standings follow (current_standings_season_id():
+-- the active season, else the season with playoffs active) AND not archived: only
+-- that season refreshes by itself when the next match is scored. An archived season
+-- is never refreshed without the force flag, so a gap there is a FAIL, even if the
+-- season is also marked active. With no live season, every season outside the six
+-- counts as "elsewhere".
 l4 AS (
   SELECT count(*) FILTER (WHERE s.season_id IN (SELECT season_id FROM six)) AS in_six,
          count(*) FILTER (WHERE s.season_id NOT IN (SELECT season_id FROM six)
-                            AND se.is_active IS NOT TRUE) AS elsewhere,
+                            AND NOT COALESCE(s.season_id = public.current_standings_season_id()
+                                             AND se.is_archived IS NOT TRUE, false)) AS elsewhere,
          count(*) FILTER (WHERE s.season_id NOT IN (SELECT season_id FROM six)
-                            AND se.is_active IS TRUE) AS live_season
+                            AND COALESCE(s.season_id = public.current_standings_season_id()
+                                         AND se.is_archived IS NOT TRUE, false)) AS live_season
   FROM public.team_season_stats s
   JOIN public.v_team_season_agg a ON a.season_id = s.season_id AND a.team_id = s.team_id
   JOIN public.seasons se ON se.id = s.season_id

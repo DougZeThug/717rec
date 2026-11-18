@@ -1021,7 +1021,9 @@ season could be un-archived.
 On the live database `team_season_stats.power_score` is `numeric(8,3)` and `sos` is
 `numeric(6,3)`: **3 decimals**. `career_power_score` is plain `numeric`. **The repo
 migrations do not say this** (live differs from the repo; CI keeps full precision).
-So the view (full precision) can never equal a stored value:
+So the view (full precision) can differ from a stored value, because storage rounds
+the view's number to 3 decimals (the two are equal only when the view's number has no
+more than 3 decimals):
 
 - After a recompute, a strict "rows still different from the rules" count showed
   the number of team-seasons (24, 25, 33 ...), although the numbers were right. The
@@ -1050,6 +1052,12 @@ changed), and override rows exist only in the six old seasons, so every input to
 scored match. Check L4 lists them on their own line ("in the live season") and does
 not fail on them.
 
+Check L4 counts a season as **live** when it is the season the live standings follow
+(the active season, else the season with playoffs active) **and** it is not archived.
+A gap in an archived season is a FAIL, even if that season is still marked active.
+**At a season change, archive the old season first.** Until then, check L4 can say
+FAIL because of the old season's drift.
+
 ### The steps (used on 2026-11-18; keep for a re-run or an undo)
 
 Do the steps in this order. Run each script as a whole: paste the full file and
@@ -1063,7 +1071,7 @@ only the last result, so a note printed in the middle would not show.
 | 3a   | Precheck (read-only), **right before 3**     | `supabase/scripts/division_truth_00_precheck.sql`                      | Every row says PASS in the last column. See the box below.                                                                                                                                  |
 | 3b   | Dry run (read-only), **right before 3**      | `supabase/scripts/division_truth_02a_dryrun.sql`                       | The list of rows script 02 would write. Doug reads the Intermediate 1 and 2 lists.                                                                                                          |
 | 3    | Write the override rows                      | `supabase/scripts/division_truth_02_data.sql`                          | "ROWS INSERTED NOW" (86 on 2026-11-18), the same rows as the dry run. Read the "NOT inserted" lines.                                                                                        |
-| 4    | Checks (read-only)                           | `supabase/scripts/division_truth_06_checks.sql`                        | No FAIL. L4 says INFO (the six seasons still differ by more than rounding).                                                                                                                 |
+| 4    | Checks (read-only)                           | `supabase/scripts/division_truth_06_checks.sql`                        | No FAIL. FIRST run: L4 says INFO (the six seasons still differ by more than rounding). Re-run: the SIX SEASONS no longer differ, so L4 says PASS (the live season has its own line).        |
 | 5    | Preview (read-only). **Doug approves here.** | `supabase/scripts/division_truth_03_preview.sql`                       | Every team in the six seasons (over 100 rows), then CAREER rows. Paste it to the developer.                                                                                                 |
 | 6    | Recompute, **one season per run**            | `supabase/scripts/division_truth_04_recompute.sql`                     | "moved" lines list the real changes. "ROWS CHANGED" can be about the number of teams in the season (rounding, see above). The last line, "still different ... by more than rounding", is 0. |
 | 7    | Checks again, after the last season          | `supabase/scripts/division_truth_06_checks.sql`                        | All PASS. L4 says PASS (0 in the six seasons; the live season is listed on its own line).                                                                                                   |
@@ -1102,8 +1110,16 @@ only the last result, so a note printed in the middle would not show.
 >   or **Revert**, and do **not** press the §6a **Revert**. Each one rewrites every
 >   stored season (a Sandbox save would have written the override numbers and the
 >   catch-up changes in one go, with no per-season check).
-> - **(e) Back out before step 6:** `DELETE FROM public.power_score_division_override;`
->   Nothing stored has changed, and the view is identical to the old one again.
+> - **(e) Back out before step 6: FIRST INSTALL ONLY.** If the override table was
+>   **empty before step 3** (the first time, as on 2026-11-18), you can undo step 3 with
+>   `DELETE FROM public.power_score_division_override;`. Then nothing stored has changed
+>   and the view is identical to the old one again. **That sentence is true for a first
+>   install only.** After the 2026-11-18 rollout the table holds the 86 live rows. For a
+>   **re-run, do NOT run that DELETE:** it would remove every live override. Script 02
+>   does not record which rows a run added (the table keeps only a `created_at` time,
+>   no run id, and a re-run that finds nothing new adds 0 rows). So there is no scoped
+>   undo today. If a re-run added rows and they must go, ask the developer for a delete
+>   limited to those rows. Compare with the dry run (script 02a) you ran just before.
 > - **(f) Dry run.** Run `division_truth_02a_dryrun.sql` before script 02. It writes
 >   nothing. It lists the exact rows script 02 would write, sorted by stored name,
 >   then team. **Read the "Intermediate 1" and "Intermediate 2" lists.** That mapping
