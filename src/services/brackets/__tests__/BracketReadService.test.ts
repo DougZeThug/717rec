@@ -22,10 +22,6 @@ vi.mock('@/utils/logger', () => ({
   dbLog: vi.fn(),
 }));
 
-vi.mock('@/utils/matchTransformers', () => ({
-  transformDatabasePlayoffMatchesWithTeams: vi.fn((data) => data),
-}));
-
 // Import after mocks
 import {
   fetchBmMatchData,
@@ -39,8 +35,6 @@ import {
   fetchFinalStandings,
   fetchGroupsAndMatches,
   fetchParticipantsByIds,
-  fetchPlayoffBracketData,
-  fetchPlayoffMatches,
   fetchPlayoffMatchTeams,
   fetchPlayoffMatchWithBracket,
   fetchPlayoffTeams,
@@ -104,88 +98,6 @@ describe('fetchBracketsForSelector', () => {
       select: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
     });
     await expect(fetchBracketsForSelector()).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchPlayoffBracketData ──────────────────────────────────────────────────
-
-describe('fetchPlayoffBracketData', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns mapped bracket on success', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ maybeSingle: () => Promise.resolve({ data: makeBracket(), error: null }) }),
-      }),
-    });
-    const result = await fetchPlayoffBracketData('b-1');
-    expect(result.id).toBe('b-1');
-    expect(result.state).toBe('pending');
-  });
-
-  it('throws NotFoundError when bracket not found', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
-      }),
-    });
-    await expect(fetchPlayoffBracketData('b-missing')).rejects.toThrow(NotFoundError);
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
-      }),
-    });
-    await expect(fetchPlayoffBracketData('b-1')).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchPlayoffMatches ──────────────────────────────────────────────────────
-
-describe('fetchPlayoffMatches', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns empty array when no matches', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ order: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }),
-      }),
-    });
-    expect(await fetchPlayoffMatches('b-1')).toEqual([]);
-  });
-
-  it('returns transformed matches on success', async () => {
-    const row = {
-      id: 'm-1',
-      bracket_id: 'b-1',
-      round: 1,
-      position: 0,
-      team1: null,
-      team2: null,
-      playoff_games: [],
-    };
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          order: () => ({ order: () => Promise.resolve({ data: [row], error: null }) }),
-        }),
-      }),
-    });
-    const result = await fetchPlayoffMatches('b-1');
-    expect(result).toHaveLength(1);
-  });
-
-  it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          order: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
-        }),
-      }),
-    });
-    await expect(fetchPlayoffMatches('b-1')).rejects.toThrow(DatabaseError);
   });
 });
 

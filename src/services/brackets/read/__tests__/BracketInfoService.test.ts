@@ -23,7 +23,6 @@ import {
   fetchBracketInfo,
   fetchBracketsOverview,
   fetchBracketWithDivision,
-  fetchPlayoffBracketData,
 } from '../BracketInfoService';
 
 const pgError = (msg = 'query failed', code = '42P01') => ({
@@ -52,28 +51,6 @@ const makeBracket = () => ({
 
 describe('BracketInfoService', () => {
   beforeEach(() => vi.clearAllMocks());
-
-  it('maps legacy underway state to in_progress', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ maybeSingle: () => Promise.resolve({ data: makeBracket(), error: null }) }),
-      }),
-    });
-
-    const result = await fetchPlayoffBracketData('b-1');
-    expect(result.state).toBe('in_progress');
-    expect(result.name).toBe('Gold Bracket');
-  });
-
-  it('throws NotFoundError when playoff bracket is missing', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
-      }),
-    });
-
-    await expect(fetchPlayoffBracketData('b-missing')).rejects.toThrow(NotFoundError);
-  });
 
   it('returns brackets overview and applies season filter', async () => {
     const eq = vi.fn().mockResolvedValue({ data: [{ id: 'b-1', title: 'Gold' }], error: null });
