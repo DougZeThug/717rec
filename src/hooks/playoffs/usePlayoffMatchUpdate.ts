@@ -20,7 +20,7 @@ import { scoreLog } from '@/utils/logger';
 /**
  * A tied game (the 0-0 placeholder row the score editor allows) has no winner.
  * playoff_games.winner_id is nullable, so save null rather than a team: a team
- * id there is counted as a game win when the bracket is read back.
+ * id there is shown as that team winning the game in the bracket viewer.
  */
 const getGameWinnerId = (
   game: { team1Score: number; team2Score: number },

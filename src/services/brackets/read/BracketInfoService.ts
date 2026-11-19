@@ -1,6 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import type { BracketState, PlayoffBracket } from '@/types/playoffTypes';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
 type BracketRow = Tables<'brackets'>;
@@ -8,25 +7,6 @@ type BracketRow = Tables<'brackets'>;
 type BracketDivisionRow = {
   name: string | null;
   display_division: string | null;
-};
-
-type BracketDomainRow = Pick<
-  BracketRow,
-  | 'id'
-  | 'title'
-  | 'format'
-  | 'state'
-  | 'division_id'
-  | 'challonge_tournament_id'
-  | 'uses_brackets_manager'
-  | 'created_at'
-  | 'wb_champion_id'
-  | 'bracket_data'
-  | 'migrated'
-  | 'migrated_at'
-  | 'reset_match_needed'
-> & {
-  name?: string;
 };
 
 export type BracketsOverviewRow = Pick<
@@ -67,44 +47,6 @@ type BracketWithDivisionRow = Pick<
   divisions: BracketDivisionRow | null;
 };
 
-// Helper to normalize bracket state - handles both legacy and current DB values
-const computeBracketState = (state: string): BracketState =>
-  state === 'in_progress' || state === 'underway'
-    ? 'in_progress'
-    : state === 'completed' || state === 'complete'
-      ? 'completed'
-      : 'pending';
-
-// Normalization function to convert Supabase rows to PlayoffBracket objects
-const mapRowToBracket = (row: BracketDomainRow): PlayoffBracket => ({
-  ...row,
-  name: row.title || row.name,
-  format: row.format ?? '',
-  created_at: row.created_at ?? undefined,
-  challonge_tournament_id: row.challonge_tournament_id ?? undefined,
-  matches: [],
-  state: computeBracketState(row.state || 'pending'),
-});
-
-/**
- * Fetch a single bracket's basic data by ID
- */
-export const fetchPlayoffBracketData = async (bracketId: string): Promise<PlayoffBracket> => {
-  const { data, error } = await supabase
-    .from('brackets')
-    .select(
-      'id, title, format, state, division_id, challonge_tournament_id, uses_brackets_manager, created_at, wb_champion_id, bracket_data, migrated, migrated_at, reset_match_needed'
-    )
-    .eq('id', bracketId)
-    .maybeSingle();
-
-  if (error) {
-    handleDatabaseError(error, 'Failed to fetch playoff bracket data');
-  }
-
-  return mapRowToBracket(ensureFound(data, 'PlayoffBracket', bracketId));
-};
-
 /**
  * Fetch brackets overview (with divisions) optionally filtered by season
  * Used by usePlayoffViewModel.compat.ts
@@ -143,7 +85,7 @@ export const fetchBracketsOverview = async (
  * (PGRST116) rather than with empty data, so handleDatabaseError threw first
  * and the ensureFound below could never run. A stale link to a deleted bracket
  * reached the page as "Cannot coerce the result to a single JSON object".
- * Matches fetchPlayoffBracketData above.
+ * Same maybeSingle + ensureFound pattern as the other single-bracket reads.
  */
 export const fetchBracketInfo = async (bracketId: string): Promise<BracketInfoRow> => {
   const { data, error } = await supabase

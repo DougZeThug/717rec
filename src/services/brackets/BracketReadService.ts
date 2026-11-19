@@ -16,13 +16,11 @@ export {
   fetchBracketInfo,
   fetchBracketsOverview,
   fetchBracketWithDivision,
-  fetchPlayoffBracketData,
 } from './read/BracketInfoService';
 export {
   fetchBmMatchData,
   fetchBmMatchWithStage,
   fetchBracketsManagerMatchData,
-  fetchPlayoffMatches,
   fetchPlayoffMatchTeams,
   fetchPlayoffMatchWithBracket,
 } from './read/BracketMatchReadService';

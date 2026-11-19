@@ -1,40 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
-import {
-  type PlayoffMatchWithTeams,
-  transformDatabasePlayoffMatchesWithTeams,
-} from '@/utils/matchTransformers';
 
 import type { BracketManagerMatchWithStage, LegacyPlayoffMatchWithGames } from './types';
-
-/**
- * Fetch playoff matches for a bracket with team data
- */
-export const fetchPlayoffMatches = async (bracketId: string): Promise<PlayoffMatchWithTeams[]> => {
-  const { data, error } = await supabase
-    .from('playoff_matches')
-    .select(
-      `
-      id, bracket_id, round, position, match_type, best_of, status,
-      team1_id, team2_id, team1_score, team2_score, winner_id, loser_id,
-      team1_seed, team2_seed, next_win_match_id, next_lose_match_id, created_at, updated_at,
-      team1:teams!fk_playoff_matches_team1(id, name, logo_url, image_url),
-      team2:teams!fk_playoff_matches_team2(id, name, logo_url, image_url),
-      playoff_games(id, match_id, game_number, team1_score, team2_score, winner_id)
-    `
-    )
-    .eq('bracket_id', bracketId)
-    .order('round')
-    .order('position');
-
-  if (error) {
-    handleDatabaseError(error, 'Failed to fetch playoff matches');
-  }
-
-  if (!data || data.length === 0) return [];
-
-  return transformDatabasePlayoffMatchesWithTeams(data);
-};
 
 /**
  * Fetch a brackets-manager match with its stage and round data

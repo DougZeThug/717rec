@@ -54,7 +54,6 @@ vi.mock('@/services/brackets/validation/BracketValidationService', () => ({
 
 vi.mock('@/services/brackets/BracketReadService', () => ({
   fetchBmMatchWithStage: vi.fn(),
-  fetchPlayoffBracketData: vi.fn(),
   fetchPlayoffMatchWithBracket: vi.fn(),
 }));
 
