@@ -39,7 +39,7 @@ Deliberately NOT in Slice 1 (checked by the scoring and skeptic reviews):
 - `usePreviousRankings`: NOT dead. It feeds the trend arrows (database first, old browser key as fallback).
 - `utils/rankingUtils/{index,sortAndUpdateRankings}.ts`: dead wrappers, but `rankingUtils/__tests__/index.test.ts` imports through the barrel and is the only test of the non-power-score column sorts. Repoint that import first (Slice 2/5).
 - `GameRules.hardCap`: `winnerDetection.test.ts:8` is the only test of the confirmed "no hard cap" rule.
-- `matchesCreated` listener: touches `useScoreEntryData` and 5 mass-score tests for a tiny gain.
+- `matchesCreated` listener: touches `useScoreEntryData` and 5 mass-score tests for a tiny gain. **DONE in dead-code PR D1** (see "Dead code D1 result").
 - `BracketWriteService.updatePlayoffMatchResult`: its test (`BracketWriteService.test.ts:118`) is the only test that every playoff write carries `updated_at`. Before this export is ever removed, add `updated_at: expect.any(String)` to the `objectContaining` in `uncoveredPlayoffHooks.test.tsx` (~line 238).
 - `AMBIGUOUS_SCORES`, `clearMatchHistoryCache`, `UPSET_THRESHOLD` (definition), `updateTeamSeed`, `getDivisionGradientClass` in `styles/design-system/divisions.ts`: live or used as test seams.
 - `TeamCalculationService.test.ts:53` is the only test of the `sos || 0.5` fallback that lives in `hooks/useTeamRankings.ts:88` (display only). Consider porting that one case later.
@@ -1098,6 +1098,24 @@ This is the live-scoring part that Holes PR A left out, kept apart so it can be 
 - **Counts.** 4 tests added, no files added or removed. CI coverage run (`CI=true VITEST_DEEPSOURCE=1 VITEST_CI_COVERAGE=1 VITEST_FAST_COVERAGE=1 npx vitest run --coverage`): exit 0, 898 files passed, 8,697 passed plus 15 expected-fail (8,712 total). `TESTING.md` now says 898 files / 8,712 tests in both places (was 8,708). `coverage/deepsource/lcov.info` shows both new throw lines covered. `npm run typecheck`, `npm run lint` and `npm run knip` were clean.
 - **Rollback.** Revert the code commit. Nothing is stored.
 
+## Dead code D1 result (built 2026-11-19 on `claude/adoring-bohr-waxxok`; 2 code commits + 1 docs commit; Doug approved the removals)
+
+Removes unused config keys and one listener that nothing ever triggers. No behaviour changes on any screen. No migration, no SQL, nothing to hand-apply. Scoring, ranking and history are untouched.
+
+- **Commit 1: unused config keys (`src/config/admin.ts`, `src/config/cache.ts`).**
+  - `ADMIN_CONFIG` lost `enableAuditLog`, `sessionTimeout`, `paginationLimit`, `maxBatchSize`, `autoSaveDelay`. It keeps `maxUploadSize` (read by `src/utils/imageUpload.ts:46`).
+  - `QUERY_STALE_TIMES` lost `ALWAYS_FRESH`, `VERY_SHORT`, `SHORT`, `MEDIUM`, `MEDIUM_LONG`, `LONG`. It keeps `STANDARD` (read by `CareerBulkFetchService.ts:24`; two service tests mock the module with only `STANDARD`).
+  - **Evidence (VERIFIED, whole-repo search on the current tree, `dist/` and `node_modules/` left out):** the only readers of the two objects are `ADMIN_CONFIG.maxUploadSize` and `QUERY_STALE_TIMES.STANDARD`. No destructuring, no `[key]` access, no template strings. The only other hits were the old plan text in this file. No test pinned any removed key.
+  - Each object now holds one key. Left that way on purpose; folding a one-key object into its caller is a separate change.
+- **Commit 2: dead `matchesCreated` listener.**
+  - Removed `src/components/admin/mass-score-entry/hooks/useMatchEventListeners.ts` (the file held only this one listener), its unit test, the 5 `vi.mock` blocks for it in `MassScoreEntryTool.{bracketsError,filters,submitSync,unsaved,wiring}.test.tsx`, and the import and call in `useScoreEntryData.ts`.
+  - **Evidence (VERIFIED):** the string `matchesCreated` appeared only in the hook and in its own test. No `dispatchEvent`, `CustomEvent` or `new Event` anywhere in `src`, `e2e` or the scripts sends it. The other custom events in the app (`toggleAllBrackets`, `admin:switch-tab`) are different names. So on league night the listener never ran. `updateFiltersForMatchDate` stays: `useScoreEntryData.ts` still calls it when it picks the default entry date.
+- **Tests removed.** 1 test file (`useMatchEventListeners.test.ts`): 3 test cases, 4 `expect` lines. 5 test files edited (the `vi.mock` blocks only; every test case stays). Config commit: 0 tests removed.
+- **Totals.** CI coverage run (`CI=true VITEST_DEEPSOURCE=1 VITEST_CI_COVERAGE=1 VITEST_FAST_COVERAGE=1 npx vitest run --coverage`): exit 0, 897 files passed, 8,694 passed plus 15 expected-fail (8,709 total). Before D1: 898 files / 8,712 tests. `TESTING.md` now says 897 files / 8,709 tests in both places.
+- **Cascade check (knip, normal and `--production`, before and after each commit):** the reports are identical to the starting reports. Removing these made no other export dead. `matchLog` (used by the removed hook) is still used by `useBatchMatchForm.ts` and `timeGrouping.ts`. Nothing new for later PRs from D1.
+- **Factory integrity.** The integrity check flags the removed test file and its test cases as expected. Doug runs `F waive`; see the PR notes for the exact items.
+- **Rollback.** Revert the two code commits. Nothing is stored.
+
 ## Carry-over notes for later slices
 
 - **Follow-ups from the tests-only DeepSource PR (2026-11-13):** the "Looks wrong, NOT fixed here" list (6 items, 2 need Doug first: scheduling skip in item 1, head-to-head weighting in item 4) and the uncovered dead-code lines are recorded in the section "Tests-only PR for the DeepSource coverage lines" above.
@@ -1127,4 +1145,4 @@ This is the live-scoring part that Holes PR A left out, kept apart so it can be 
 
 2 import direction, shims, name twins (done: PR A, T, B, C; the leftovers move to the 3B exception list) - 3 layer rule (PRs 3A, 3B, 3C, 3D, 3E, 3F and 3G done, see "Slice 3D + 3G result" and "Slice 3E + 3F result"; 3H-3J planned in the 3A section above and need Doug's OK first) -
 4 league constants (done in Slice 4 (lite): see "Slice 4 result") - 5 scoring-adjacent copies (pin first; built 2026-11-16, QA PARTIAL: no defect, see "Slice 5 result") - 6 special cases (built 2026-11-16, see "Slice 6 result") - 7 comments (done 2026-11-17, see "Slice 7 result") - 8 tests (done 2026-11-18, see "Slice 8 result") - 9 re-scan and delete this file.
-Also pending from Slice 1: ~60 dead exports that only tests use, `rankingUtils/sortAndUpdateRankings.ts` (its sibling barrel `index.ts` went in Slice 2 PR A), `GameRules.hardCap`, the `matchesCreated` listener, unused config keys (`enableAuditLog`, `sessionTimeout` in `src/config/admin.ts`; unused tiers in `src/config/cache.ts`).
+Also pending from Slice 1: ~60 dead exports that only tests use, `rankingUtils/sortAndUpdateRankings.ts` (its sibling barrel `index.ts` went in Slice 2 PR A), `GameRules.hardCap`. (The `matchesCreated` listener and the unused config keys in `src/config/admin.ts` and `src/config/cache.ts` were removed in dead-code PR D1.)
