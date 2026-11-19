@@ -30,10 +30,6 @@ export function isUpset(winnerProbability: number): boolean {
   return winnerProbability <= UPSET_THRESHOLD;
 }
 
-export function formatProbability(prob: number): string {
-  return `${Math.round(prob * 100)}%`;
-}
-
 export function formatBreakdown(breakdown: PredictionBreakdown): string {
   const {
     powerScoreA,

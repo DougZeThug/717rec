@@ -7,7 +7,6 @@ import { supabase } from '@/integrations/supabase/client';
 import {
   type ContactRequestRow,
   ContactRequestService,
-  type SubmitContactRequestInput,
 } from '@/services/contact/ContactRequestService';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
@@ -39,15 +38,6 @@ export function useContactRequests(enabled = true) {
     queryFn: () => ContactRequestService.fetchAll(),
     enabled,
     staleTime: 60_000,
-  });
-}
-
-/** Mutation to submit a new contact request and refresh the cached list on success. */
-export function useSubmitContactRequest() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (input: SubmitContactRequestInput) => ContactRequestService.submit(input),
-    onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
   });
 }
 

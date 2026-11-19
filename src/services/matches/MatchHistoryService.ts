@@ -82,48 +82,6 @@ export const fetchMatchPairsInSeason = async (
 };
 
 /**
- * Check if two teams have ever played each other (any season)
- * @throws {DatabaseError} When database operations fail
- */
-export const checkTeamsEverPlayed = async (team1Id: string, team2Id: string): Promise<boolean> => {
-  assertValidUuid(team1Id, 'team1Id');
-  assertValidUuid(team2Id, 'team2Id');
-
-  const { data, error } = await supabase
-    .from('matches')
-    .select('id')
-    .or(
-      `and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`
-    )
-    .limit(1);
-
-  if (error) handleDatabaseError(error, 'Failed to check if teams have ever played');
-  return data !== null && data.length > 0;
-};
-
-/**
- * Check if two teams have ever played each other (any season). Throws on a bad id
- * or a database error. The auto-scheduler does not call this one: it uses the
- * same-named function in SchedulingHistoryService, which checks the current
- * season only and returns false on an error.
- */
-export const haveTeamsPlayedBefore = async (team1Id: string, team2Id: string): Promise<boolean> => {
-  assertValidUuid(team1Id, 'team1Id');
-  assertValidUuid(team2Id, 'team2Id');
-
-  const { data, error } = await supabase
-    .from('matches')
-    .select('id')
-    .or(
-      `and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`
-    )
-    .limit(1);
-
-  if (error) handleDatabaseError(error, 'Failed to check if teams have played');
-  return (data?.length ?? 0) > 0;
-};
-
-/**
  * Fetch season opponent history for the active season.
  * Returns null if no active season found.
  * @throws {DatabaseError} When database operations fail

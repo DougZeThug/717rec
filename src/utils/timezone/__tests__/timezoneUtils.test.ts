@@ -5,26 +5,10 @@ import {
   extractTimeSlotFromUTC,
   formatLeagueTimeString,
   formatTimeString,
-  formatUTCToLocalTimeString,
   getLeagueMidnightUtc,
   getLeagueTimeUtc,
   parseTimeString,
 } from '@/utils/timezone';
-
-const buildDateTimeFormatResult = (formatted: string): Intl.DateTimeFormat =>
-  ({
-    format: () => formatted,
-    resolvedOptions: () =>
-      ({
-        locale: 'en-US',
-        calendar: 'gregory',
-        numberingSystem: 'latn',
-        timeZone: 'UTC',
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-      }) as Intl.ResolvedDateTimeFormatOptions,
-  }) as unknown as Intl.DateTimeFormat;
 
 describe('timezone utilities', () => {
   afterEach(() => {
@@ -109,27 +93,6 @@ describe('timezone utilities', () => {
 
   it('extractTimeSlotFromUTC gives No Time for an invalid date', () => {
     expect(extractTimeSlotFromUTC(new Date('not a date'))).toBe('No Time');
-  });
-
-  it('formatUTCToLocalTimeString gives an empty string for an invalid date', () => {
-    expect(formatUTCToLocalTimeString(new Date('not a date'))).toBe('');
-  });
-
-  it('formatUTCToLocalTimeString supports 24-hour and seconds options', () => {
-    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function (
-      _locales: unknown,
-      options?: Intl.DateTimeFormatOptions
-    ) {
-      const formatted =
-        options?.hour12 === false && options?.second === '2-digit' ? '19:30:00' : '7:30 PM';
-      return buildDateTimeFormatResult(formatted);
-    } as unknown as typeof Intl.DateTimeFormat);
-
-    const date = new Date('2026-03-01T19:30:00.000Z');
-    expect(formatUTCToLocalTimeString(date)).toBe('7:30 PM');
-    expect(formatUTCToLocalTimeString(date, { use24Hour: true, includeSeconds: true })).toBe(
-      '19:30:00'
-    );
   });
 
   it.each([

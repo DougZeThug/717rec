@@ -496,24 +496,6 @@ describe('sentry utils', () => {
   });
 
   describe('thin Sentry wrappers', () => {
-    it('setUser passes the user, or null on sign-out, to Sentry', async () => {
-      const { setUser } = await importSentryModule();
-
-      setUser({ id: 'u1', username: 'doug' });
-      setUser(null);
-
-      expect(setUserMock).toHaveBeenNthCalledWith(1, { id: 'u1', username: 'doug' });
-      expect(setUserMock).toHaveBeenNthCalledWith(2, null);
-    });
-
-    it('addBreadcrumb passes the breadcrumb to Sentry', async () => {
-      const { addBreadcrumb } = await importSentryModule();
-
-      addBreadcrumb({ category: 'ui.click', message: 'Save' });
-
-      expect(addBreadcrumbMock).toHaveBeenCalledWith({ category: 'ui.click', message: 'Save' });
-    });
-
     it('metrics.count adds one unless given a value', async () => {
       const { metrics } = await importSentryModule();
 

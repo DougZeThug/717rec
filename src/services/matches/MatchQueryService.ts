@@ -1,8 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import { fetchAllPages } from '@/services/shared/pagination';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
-import { isMatchOpenForScoring } from '@/utils/matchStatus';
 
 import { isConfirmedTie } from './tieMetadata';
 
@@ -15,65 +13,12 @@ type MatchRow = Tables<'matches'>;
 /** Team columns embedded in match join-selects. */
 type MatchTeamSummary = Pick<Tables<'teams'>, 'id' | 'name' | 'logo_url' | 'image_url'>;
 
-/** A match row plus its two joined team summaries. */
-export type MatchWithTeamSummaries = MatchRow & {
-  team1: MatchTeamSummary | null;
-  team2: MatchTeamSummary | null;
-};
-
-/** Match columns returned by the pending/uncompleted queries (everything except metadata + season_id). */
+/** Match columns returned by the pending query (everything except metadata + season_id). */
 type MatchListRow = Omit<MatchRow, 'metadata' | 'season_id'>;
 
 /** A timeslot row plus its joined team summary. */
 type MatchTimeslotRow = Tables<'team_timeslots'> & {
   teams: (MatchTeamSummary & Pick<Tables<'teams'>, 'division_id'>) | null;
-};
-
-export interface MatchFilters {
-  date?: Date;
-  bracketId?: string;
-}
-
-/**
- * Fetch matches with team details, optionally filtered by date and/or bracket.
- *
- * Results are paginated (via fetchAllPages) so the admin mass-score screen never
- * silently stops at PostgREST's 1,000-row response cap. Rows are ordered by date
- * then id — date alone is not a total order (many matches share a date), and
- * range pagination requires a stable, unique sort or it can skip or repeat rows
- * across pages.
- *
- * @throws {DatabaseError} When database operations fail
- */
-export const fetchMatchesWithTeams = (
-  filters?: MatchFilters
-): Promise<MatchWithTeamSummaries[]> => {
-  return fetchAllPages<MatchWithTeamSummaries>((from, to) => {
-    let query = supabase
-      .from('matches')
-      .select(
-        `
-          id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, season_id, metadata, created_at,
-          team1:teams!matches_team1_id_fkey(id, name, logo_url, image_url),
-          team2:teams!matches_team2_id_fkey(id, name, logo_url, image_url)
-        `
-      )
-      .order('date', { ascending: true })
-      .order('id', { ascending: true });
-
-    // Apply date filter if provided
-    if (filters?.date) {
-      const dateStr = filters.date.toISOString().split('T')[0]; // Format as yyyy-MM-dd
-      query = query.gte('date', `${dateStr}T00:00:00`).lt('date', `${dateStr}T23:59:59`);
-    }
-
-    // Apply bracket filter if provided
-    if (filters?.bracketId) {
-      query = query.eq('bracket_id', filters.bracketId);
-    }
-
-    return query.range(from, to);
-  }, 'Failed to fetch matches with teams');
 };
 
 /**
@@ -103,23 +48,6 @@ export const fetchPendingMatches = async (): Promise<MatchListRow[]> => {
     pending.push(match);
   }
   return pending;
-};
-
-/**
- * Fetch uncompleted matches
- * @throws {DatabaseError} When database operations fail
- */
-export const fetchUncompletedMatches = async (): Promise<MatchListRow[]> => {
-  const { data, error } = await supabase
-    .from('matches')
-    .select(
-      'id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, created_at'
-    )
-    .not('iscompleted', 'is', true)
-    .order('date');
-
-  if (error) handleDatabaseError(error, 'Failed to fetch uncompleted matches');
-  return (data ?? []).filter(isMatchOpenForScoring);
 };
 
 /**
@@ -217,29 +145,6 @@ export const fetchScoreSubmissions = async (): Promise<ScoreSubmissionWithMatch[
 
   if (error) handleDatabaseError(error, 'Failed to fetch score submissions');
   return (data ?? []) as ScoreSubmissionWithMatch[];
-};
-
-/**
- * Fetch match details needed for tie cancellation
- * @throws {DatabaseError} When database operations fail
- * @throws {NotFoundError} When match not found
- */
-export const fetchMatchForTie = async (
-  matchId: string
-): Promise<
-  Pick<
-    MatchRow,
-    'winner_id' | 'loser_id' | 'team1_id' | 'team2_id' | 'team1_game_wins' | 'team2_game_wins'
-  >
-> => {
-  const { data: currentMatch, error: fetchError } = await supabase
-    .from('matches')
-    .select('winner_id, loser_id, team1_id, team2_id, team1_game_wins, team2_game_wins')
-    .eq('id', matchId)
-    .maybeSingle();
-
-  if (fetchError) handleDatabaseError(fetchError, 'Failed to fetch match for tie');
-  return ensureFound(currentMatch, 'Match', matchId);
 };
 
 /**

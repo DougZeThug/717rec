@@ -119,9 +119,6 @@ export const playoffLog = (...args: unknown[]) => log('🏆 Playoff:', ...args);
 // Score operations
 export const scoreLog = (...args: unknown[]) => log('📊 Score:', ...args);
 
-// Badge operations
-export const badgeLog = (...args: unknown[]) => log('🏅 Badge:', ...args);
-
 // Database operations
 export const dbLog = (...args: unknown[]) => log('💾 DB:', ...args);
 

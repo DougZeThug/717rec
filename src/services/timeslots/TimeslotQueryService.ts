@@ -132,28 +132,6 @@ export const TimeslotQueryService = {
   },
 
   /**
-   * Fetch timeslot assignments for validation (used by teamLoaderUtils.validateTeamBackToBackAssignment)
-   */
-  async fetchTimeslotValidation(
-    formattedDate: string,
-    teamId: string,
-    primarySlot: string,
-    secondarySlot: string
-  ) {
-    const { data, error } = await supabase
-      .from('team_timeslots')
-      .select('timeslot, match_sequence')
-      .eq('match_date', formattedDate)
-      .eq('team_id', teamId)
-      .eq('is_back_to_back', true)
-      .in('timeslot', [primarySlot, secondarySlot]);
-
-    if (error) handleDatabaseError(error, 'Failed to fetch timeslot validation');
-    // No rows (data is null/empty) genuinely means "no assignment" — return null.
-    return data ?? null;
-  },
-
-  /**
    * Every night that has at least one posted timeslot, newest first.
    * The schedule page uses this so a night with slots but no matches yet is
    * still a night the page knows about.

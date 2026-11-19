@@ -13,7 +13,6 @@ vi.mock('@/services/matches/MatchWriteService', () => ({
 
 vi.mock('@/utils/logger', () => ({
   matchLog: vi.fn(),
-  badgeLog: vi.fn(),
   errorLog: vi.fn(),
   warnLog: vi.fn(),
 }));

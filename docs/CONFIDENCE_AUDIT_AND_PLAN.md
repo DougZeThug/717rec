@@ -162,7 +162,7 @@ needs judgment. Each PR is intentionally small and independently shippable
 | 1 | **Claude Code** | Propagate `error` from `useTeams` / `useTeamRankings` / `useLeagueInsights`; render a shared retryable error state in `TeamList`, homepage `TopTeams`, `TeamsContainer`, `LeagueInsightsContainer`, `Compare`. |
 | 2 | **Claude Code** | Add HTTP security headers to the served SPA (host `_headers` / `wrangler` / Lovable publish config) + a smoke test. |
 | 3 | **Lovable** | Add `SeoHead` (title + meta description + OG tags) to the homepage `Index` page. |
-| 4 | **Claude Code** | Scope or paginate `fetchMatchesWithTeams` (admin mass-score) to remove the 1,000-row silent cap; add explicit `ORDER BY` to the range paginator. |
+| 4 | **Claude Code** | Scope or paginate the admin mass-score match query (`fetchMatchesWithTeams` then; the screen now uses `fetchMatchesForAdmin`) to remove the 1,000-row silent cap; add explicit `ORDER BY` to the range paginator. |
 
 ### Phase 2 — Depth & accessibility (Tier 2)
 | PR | Tool | Scope |

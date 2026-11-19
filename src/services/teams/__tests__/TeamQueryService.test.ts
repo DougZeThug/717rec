@@ -37,12 +37,7 @@ vi.mock('@/utils/teamTransformer', () => ({
 }));
 
 // Import after mocks
-import {
-  fetchAvailableTeams,
-  fetchTeamDetails,
-  fetchTeamForStats,
-  fetchTeamsWithOptions,
-} from '../TeamQueryService';
+import { fetchAvailableTeams, fetchTeamDetails, fetchTeamsWithOptions } from '../TeamQueryService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -199,48 +194,5 @@ describe('fetchAvailableTeams', () => {
       select: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
     });
     await expect(fetchAvailableTeams()).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchTeamForStats ────────────────────────────────────────────────────────
-
-describe('fetchTeamForStats', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns team data when found', async () => {
-    const row = {
-      id: 'team-1',
-      name: 'Eagles',
-      wins: 4,
-      losses: 2,
-      game_wins: 8,
-      game_losses: 5,
-      divisions: { name: 'Div A' },
-    };
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ maybeSingle: () => Promise.resolve({ data: row, error: null }) }),
-      }),
-    });
-    const result = await fetchTeamForStats('team-1');
-    expect(result?.name).toBe('Eagles');
-  });
-
-  it('returns null when team not found', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
-      }),
-    });
-    expect(await fetchTeamForStats('missing')).toBeNull();
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
-      }),
-    });
-    await expect(fetchTeamForStats('team-1')).rejects.toThrow(DatabaseError);
   });
 });

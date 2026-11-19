@@ -4,45 +4,6 @@
 
 import { errorLog, timezoneLog } from '@/utils/logger';
 
-import { TimeDisplayOptions } from './types';
-
-/**
- * Format a UTC date to a local time string
- * This is used for displaying stored UTC times in local timezone
- */
-export const formatUTCToLocalTimeString = (
-  date: Date,
-  options: TimeDisplayOptions = { use24Hour: false, includeSeconds: false }
-): string => {
-  // Convert UTC date to local timezone for display
-  try {
-    const { use24Hour, includeSeconds } = options;
-
-    // Time formatting options
-    const timeOptions: Intl.DateTimeFormatOptions = {
-      hour: 'numeric',
-      minute: '2-digit',
-      second: includeSeconds ? '2-digit' : undefined,
-      hour12: !use24Hour,
-    };
-
-    // Create formatter for the user's locale
-    const formatter = new Intl.DateTimeFormat(undefined, timeOptions);
-    const formattedTime = formatter.format(date);
-
-    timezoneLog('Formatted UTC date to local time', {
-      utcInput: date.toISOString(),
-      localOutput: formattedTime,
-      userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-
-    return formattedTime;
-  } catch (error) {
-    errorLog('Error formatting UTC date to local time:', error);
-    return '';
-  }
-};
-
 /**
  * Format time string components (hours/minutes) to a standardized time string
  */
