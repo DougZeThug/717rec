@@ -16,8 +16,6 @@ export interface GameRules {
   targetScore: number;
   /** Minimum lead required at or past the target score. */
   winBy: number;
-  /** Reaching this score wins outright regardless of lead (null = no cap). */
-  hardCap: number | null;
 }
 
 export interface BagBreakdown {
