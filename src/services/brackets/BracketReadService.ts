@@ -34,9 +34,5 @@ export {
   validateSeeds,
 } from './read/BracketParticipantService';
 export { fetchBracketsForSelector } from './read/BracketSelectorService';
-export {
-  fetchGroupsAndMatches,
-  fetchStageAndParticipants,
-  fetchStageIdByTournament,
-} from './read/BracketStageService';
+export { fetchGroupsAndMatches, fetchStageAndParticipants } from './read/BracketStageService';
 export { fetchFinalStandings } from './read/BracketStandingsService';

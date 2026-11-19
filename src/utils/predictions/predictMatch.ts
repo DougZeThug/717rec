@@ -26,12 +26,10 @@ import {
 import { logistic, normalizePowerScore, scaleDivisionWeight, scaleSOS } from './predictionScoring';
 import type { HeadToHeadStats, PredictionResult, TeamStats } from './predictionTypes';
 
-export { UPSET_THRESHOLD } from './predictionConstants';
 export { formatBreakdown, formatProbability, isUpset } from './predictionFormatting';
 export type {
   ConfidenceLevel,
   HeadToHeadStats,
-  PredictionBreakdown,
   PredictionResult,
   TeamStats,
 } from './predictionTypes';

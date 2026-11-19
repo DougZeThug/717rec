@@ -53,7 +53,7 @@ vi.mock('@/services/career/computeAllTeamsTotals', () => ({
     ),
 }));
 
-import { UPSET_THRESHOLD } from '@/utils/predictions';
+import { UPSET_THRESHOLD } from '@/utils/predictions/predictionConstants';
 
 import { WeeklyRecapService } from '../WeeklyRecapService';
 

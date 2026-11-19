@@ -1,7 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { TrendBasis, WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { pickTeamOfTheWeek } from '@/utils/powerScore/pickTeamOfTheWeek';
 
 /**
  * Week-over-week power score movement for one EXPLICIT season week.
@@ -161,5 +160,3 @@ export async function fetchPowerScoreTrendsForWeek(
 
   return { trends, currentWeek: weekNumber, previousWeek, basis };
 }
-
-export { pickTeamOfTheWeek };

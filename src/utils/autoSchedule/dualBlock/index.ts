@@ -7,6 +7,5 @@
 export { calculateDualBlockMetrics } from './metricsUtils';
 export { findTeamsWithSameOpponent } from './opponentUtils';
 export { generateDualBlockPairings } from './pairingGenerator';
-export { calculateOverallQualityScore } from './qualityScoreUtils';
 export { balanceTeamsBetweenBlocks } from './teamBalancer';
 export { validateDualBlockSchedule } from './validationUtils';

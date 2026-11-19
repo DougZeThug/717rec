@@ -3,11 +3,11 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { RearrangeBoard } from '@/services/brackets/manager/services/BracketAdmin';
 import type {
-  RearrangeBoard,
   RearrangeSlotView,
   SnapshotSlot,
-} from '@/services/brackets/manager/services/BracketAdmin';
+} from '@/services/brackets/manager/services/BracketAdmin/rearrange/types';
 
 vi.mock('@/hooks/playoffs/usePlayoffRearrange', () => ({
   useLoserRearrangeBoard: vi.fn(),

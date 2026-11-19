@@ -5,7 +5,7 @@ import { checkGameWinner } from '../winnerDetection';
 
 describe('checkGameWinner (first to 21, win by 2)', () => {
   it('uses 21 / win-by-2 as the league default', () => {
-    expect(DEFAULT_GAME_RULES).toEqual({ targetScore: 21, winBy: 2, hardCap: null });
+    expect(DEFAULT_GAME_RULES).toEqual({ targetScore: 21, winBy: 2 });
   });
 
   it('no winner before either team reaches 21', () => {
@@ -41,16 +41,17 @@ describe('checkGameWinner (first to 21, win by 2)', () => {
   });
 
   it('honors a custom win-by-1 rule', () => {
-    const rules = { targetScore: 21, winBy: 1, hardCap: null };
+    const rules = { targetScore: 21, winBy: 1 };
     expect(checkGameWinner(21, 20, rules)).toBe(1);
     expect(checkGameWinner(20, 21, rules)).toBe(2);
     expect(checkGameWinner(21, 21, rules)).toBeNull();
   });
 
-  it('honors a hard cap regardless of lead', () => {
-    const rules = { targetScore: 21, winBy: 2, hardCap: 25 };
-    expect(checkGameWinner(25, 24, rules)).toBe(1);
-    expect(checkGameWinner(24, 25, rules)).toBe(2);
-    expect(checkGameWinner(24, 23, rules)).toBeNull();
+  // League rule (docs/agents/LEAGUE_CONTEXT.md): first to 21, win by 2, no cap.
+  it('has no hard cap: a game runs past any score until someone leads by 2', () => {
+    expect(checkGameWinner(30, 29)).toBeNull();
+    expect(checkGameWinner(29, 30)).toBeNull();
+    expect(checkGameWinner(40, 38)).toBe(1);
+    expect(checkGameWinner(38, 40)).toBe(2);
   });
 });

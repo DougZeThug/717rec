@@ -212,11 +212,11 @@ usePairingGenerator.generateMatchPairings()
     ↓
     ├─→ config.dualMatchMode = true
     |       ↓
-    |   generateScheduleGreedy()
+    |   generateScheduleGreedyWithTracking()
     |       - Flatten teams
     |       - Fetch season history
     |       - Generate S1, S2, (S3) pairings
-    |       - Return ScheduledMatch[]
+    |       - Return GreedySchedulerResult (matches, new pairs, diagnostics)
     |
     └─→ config.dualMatchMode = false
             ↓
