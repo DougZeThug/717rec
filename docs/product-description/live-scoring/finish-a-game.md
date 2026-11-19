@@ -15,11 +15,11 @@ to confuse a scorer in a hurry.
 
 The scorer saves a round that takes their side from 19 to 23 against 15. The
 round input disappears. In its place, a bordered panel with a trophy reads
-"*Team name* wins Game 1, 23–15", and under it in small grey text: "Wrong score?
+"_Team name_ wins Game 1, 23–15", and under it in small grey text: "Wrong score?
 Undo the last round instead of ending the game."
 
 A full-width button reads "End Game 1". Pressing it opens a dialog: "End Game 1 —
-*Team name* wins?" with "Final score 23–15. The next game (or the match result)
+_Team name_ wins?" with "Final score 23–15. The next game (or the match result)
 comes after this." and two choices, "Keep scoring" and "End game".
 
 They press "End game". The banner disappears and the setup panel for Game 2
@@ -108,6 +108,11 @@ connection.
 On failure a red toast says "Could not complete game" with the reason, and the
 banner stays exactly as it was. Nothing is lost and the scorer can press again.
 
+If the database accepts the request but changes no game (for example the match
+is already finished, or the scorer's permission has gone), the screen no longer
+says the game ended. The same red toast shows: "Nothing was saved. This match
+may already be finished, or you can no longer score it. Refresh the page."
+
 > **Technical note:** the game's final totals are written onto the game record
 > when it is ended, but the screen never reads them back — every total shown is
 > recomputed from the rounds. The stored totals matter only to whatever reads the
@@ -116,29 +121,29 @@ banner stays exactly as it was. Nothing is lost and the scorer can press again.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | A scorer sees the End Game button. A spectator sees the banner alone and cannot end anything. | Losing the right to score leaves the button on screen until the screen refetches; the write then fails. |
-| The connection | With no signal the End Game button is greyed out and a line above it says the game cannot be ended until the signal comes back. | Losing the signal greys the button. Reconnecting does not hand it straight back: it stays greyed, now naming the round still being filed, until that round settles. |
-| The record's state | The banner appears only from the totals. A game already ended does not show it. | The other scorer ending the game first replaces the banner with the next stage, mid-dialog. |
-| The season's state | No effect. | No effect. |
-| Viewport | The banner is full width; the End Game button is 48 pixels high. On a phone the dialog is a centred box with a 16-pixel gap each side, never taller than the screen minus 32 pixels; it was full-width before the 2026-11-09 phone polish. | No effect. |
-| Keys the app honours | The dialog is a proper dialog: Escape closes it, focus is trapped, and returns to the button on close. | Escape is the same as "Keep scoring". |
+| Modifier             | Set at arrival                                                                                                                                                                                                                             | Changed while editing                                                                                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The user's role      | A scorer sees the End Game button. A spectator sees the banner alone and cannot end anything.                                                                                                                                              | Losing the right to score leaves the button on screen until the screen refetches; the write then fails.                                                             |
+| The connection       | With no signal the End Game button is greyed out and a line above it says the game cannot be ended until the signal comes back.                                                                                                            | Losing the signal greys the button. Reconnecting does not hand it straight back: it stays greyed, now naming the round still being filed, until that round settles. |
+| The record's state   | The banner appears only from the totals. A game already ended does not show it.                                                                                                                                                            | The other scorer ending the game first replaces the banner with the next stage, mid-dialog.                                                                         |
+| The season's state   | No effect.                                                                                                                                                                                                                                 | No effect.                                                                                                                                                          |
+| Viewport             | The banner is full width; the End Game button is 48 pixels high. On a phone the dialog is a centred box with a 16-pixel gap each side, never taller than the screen minus 32 pixels; it was full-width before the 2026-11-09 phone polish. | No effect.                                                                                                                                                          |
+| Keys the app honours | The dialog is a proper dialog: Escape closes it, focus is trapped, and returns to the button on close.                                                                                                                                     | Escape is the same as "Keep scoring".                                                                                                                               |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. | **Escape closes the confirmation and the game is not ended**, the same as "Keep scoring". It cannot stop an end already sent. |
-| In-app navigation away, or switching tab within the page | The match stays won-but-not-ended. Nothing is lost. | An end already sent still completes. The scorer comes back to the next game's setup panel with no explanation of when that happened. |
-| Browser back or forward | As above. | As above. |
-| Reload, or the tab closed | The banner returns, because it is worked out from the rounds. **Nothing about the won state needs to be stored.** | A sent end may have landed; the screen after reloading says which. |
-| Network lost mid-request | The match will not load. | "Could not complete game" with the reason. The banner stays. Nothing is queued. |
-| The request fails or times out | Not applicable. | As above. |
-| The session expires | Watching still works. | The write fails with the league's refusal as the message. |
-| The same record changed in another tab, or by another user | **The other scorer can undo the winning round from under this banner**, and it disappears. | If the other scorer ends the game first, this screen moves on and the open confirmation acts on a game that is already ended. |
-| Browser autofill or a password manager writes into the form | No effect. | No effect. |
-| The window loses focus | No effect. | No effect. |
+| Event                                                       | Before the first edit                                                                                             | While editing or submitting                                                                                                                                                                                                 |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Nothing to cancel.                                                                                                | **Escape closes the confirmation and the game is not ended**, the same as "Keep scoring". It cannot stop an end already sent.                                                                                               |
+| In-app navigation away, or switching tab within the page    | The match stays won-but-not-ended. Nothing is lost.                                                               | An end already sent still completes. The scorer comes back to the next game's setup panel with no explanation of when that happened.                                                                                        |
+| Browser back or forward                                     | As above.                                                                                                         | As above.                                                                                                                                                                                                                   |
+| Reload, or the tab closed                                   | The banner returns, because it is worked out from the rounds. **Nothing about the won state needs to be stored.** | A sent end may have landed; the screen after reloading says which.                                                                                                                                                          |
+| Network lost mid-request                                    | The match will not load.                                                                                          | "Could not complete game" with the reason. The banner stays. Nothing is queued.                                                                                                                                             |
+| The request fails or times out                              | Not applicable.                                                                                                   | As above.                                                                                                                                                                                                                   |
+| The session expires                                         | Watching still works.                                                                                             | The write fails with the league's refusal as the message. If the refusal comes back with no error, the toast says "Nothing was saved. This match may already be finished, or you can no longer score it. Refresh the page." |
+| The same record changed in another tab, or by another user  | **The other scorer can undo the winning round from under this banner**, and it disappears.                        | If the other scorer ends the game first, this screen moves on and the open confirmation acts on a game that is already ended.                                                                                               |
+| Browser autofill or a password manager writes into the form | No effect.                                                                                                        | No effect.                                                                                                                                                                                                                  |
+| The window loses focus                                      | No effect.                                                                                                        | No effect.                                                                                                                                                                                                                  |
 
 After any interrupt the banner is either there or not, decided entirely by the
 rounds that survive. There is no separate "won" flag to get out of step.
