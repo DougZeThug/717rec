@@ -18,7 +18,7 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 // Import after mocks
-import { fetchAllTeamBadges, fetchSeasonBadges, fetchTeamBadges } from '../TeamBadgeService';
+import { fetchAllTeamBadges, fetchTeamBadges } from '../TeamBadgeService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -100,28 +100,5 @@ describe('fetchAllTeamBadges', () => {
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue(oneEqOrderChain({ data: null, error: pgError() }));
     await expect(fetchAllTeamBadges()).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchSeasonBadges ────────────────────────────────────────────────────────
-
-describe('fetchSeasonBadges', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns badges for the given season', async () => {
-    mockFrom.mockReturnValue(twoEqOrderChain({ data: [makeBadge()], error: null }));
-    const result = await fetchSeasonBadges('season-1');
-    expect(result).toHaveLength(1);
-    expect(result[0].season_id).toBe('season-1');
-  });
-
-  it('returns empty array when no badges', async () => {
-    mockFrom.mockReturnValue(twoEqOrderChain({ data: null, error: null }));
-    expect(await fetchSeasonBadges('season-1')).toEqual([]);
-  });
-
-  it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue(twoEqOrderChain({ data: null, error: pgError() }));
-    await expect(fetchSeasonBadges('season-1')).rejects.toThrow(DatabaseError);
   });
 });

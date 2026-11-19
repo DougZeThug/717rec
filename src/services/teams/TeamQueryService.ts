@@ -154,30 +154,3 @@ export const fetchAvailableTeams = async (): Promise<Team[]> => {
     game_win_percentage: 0,
   }));
 };
-
-// ─── fetchTeamForStats ────────────────────────────────────────────────────────
-
-/**
- * Fetch basic team data used for stats calculations.
- * Returns null if team not found or database error occurs.
- */
-export const fetchTeamForStats = async (teamId: string) => {
-  const { data: team, error } = await supabase
-    .from('teams')
-    .select(
-      `
-      id,
-      name,
-      wins,
-      losses,
-      game_wins,
-      game_losses,
-      divisions (name)
-    `
-    )
-    .eq('id', teamId)
-    .maybeSingle();
-
-  if (error) handleDatabaseError(error, 'Failed to fetch team for stats');
-  return team;
-};
