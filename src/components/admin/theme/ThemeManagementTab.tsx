@@ -7,6 +7,7 @@ import { useThemeSettings, useUpdateThemeSetting } from '@/hooks/useThemeSetting
 import { toast } from '@/hooks/useToast';
 import { SnowflakeSparkle } from '@/icons';
 import { cn } from '@/lib/utils';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 const themeIcons: Record<string, React.ElementType> = {
   light: Sun,
@@ -33,8 +34,12 @@ const ThemeManagementTab: React.FC = () => {
         onSuccess: () => {
           toast({ title: `Theme ${!currentEnabled ? 'enabled' : 'disabled'}` });
         },
-        onError: () => {
-          toast({ title: 'Failed to update theme setting', variant: 'destructive' });
+        onError: (error) => {
+          toast({
+            title: 'Failed to update theme setting',
+            description: getUIErrorMessage(error),
+            variant: 'destructive',
+          });
         },
       }
     );

@@ -1075,8 +1075,8 @@ Doug asked for the "same hole elsewhere" list from Slice 3 PR-3 to be fixed, exc
   - `src/services/brackets/BracketWriteService.ts`: `updatePlayoffMatchScores` (118-123), `updatePlayoffMatchResult` (75-83; grep finds no production caller, so maybe dead; removed in D3b), `updateBracket` (38), `deleteBracket` (50). `deleteBracket` is like `TeamDeleteService`: a second press is legitimate.
   - `src/services/DivisionService.ts:65-73`: `updateDivision` (division weights). Admin-only. It does `.select(...).maybeSingle()` already but returns `data` (null) instead of throwing, so a missing row comes back as null (callers not checked). Leave for a later small PR: it touches the weights path and Doug should see it.
   - `src/services/teams/TeamDeleteService.ts:39-43`: do NOT throw on 0 rows (a second click is legitimate). The real flaw is different: team images are removed from storage before the database delete, so a refused delete can leave a team with no images.
-  - `src/services/HeroCardService.ts:100-105`: visibility toggle.
-  - `src/services/ThemeSettingsService.ts:24-31`: theme on/off.
+  - `src/services/HeroCardService.ts:100-105`: visibility toggle. **DONE: see "Holes PR C1 result" below.**
+  - `src/services/ThemeSettingsService.ts:24-31`: theme on/off. **DONE: see "Holes PR C1 result" below.**
   - `src/services/liveScoring/AdminCorrectionsService.ts:186`: `deleteRound`. 0 rows means the round is already gone; low risk.
   - **Unfixed rule gap, needs a design choice from Doug:** a stale phone can complete a game again after an admin reopened it. `completeGame` has no status guard, and adding one is a rule change, not a hole fix. Not touched in PR A, and not touched by PR B either unless Doug decides.
 - **Counts.** 15 tests added (3 + 2 + 1 + 1 + 4 + 2 + 2), no files added or removed. CI coverage run (`CI=true VITEST_DEEPSOURCE=1 VITEST_CI_COVERAGE=1 VITEST_FAST_COVERAGE=1 npx vitest run --coverage`): exit 0, 898 files passed, 8,693 passed plus 15 expected-fail (8,708 total). `TESTING.md` now says 898 files / 8,708 tests in both places (was 8,693; the old number was the total including the 15 expected-fail cases). `coverage/deepsource/lcov.info` shows every new throw line and the new hook line covered. `npm run typecheck`, `npm run lint` and `npm run knip` were clean after each code commit.
@@ -1256,6 +1256,22 @@ Answer first: **on the Join a Team screen, a failed request now keeps the picked
 - **Docs.** `join-a-team.md` (Submit section) no longer says the dropdown is cleared after a failure. Verification row JOIN-21 already expected the chosen team to be kept, so it is unchanged. Nothing is marked verified by hand.
 - **Totals.** CI coverage run (`CI=true VITEST_DEEPSOURCE=1 VITEST_CI_COVERAGE=1 VITEST_FAST_COVERAGE=1 npx vitest run --coverage`): exit 0, 890 files, 8,513 passed plus 15 expected-fail (8,528 total; was 8,525, so 3 cases added). `TESTING.md` counts updated.
 - **Rollback.** Revert the code commit.
+
+## Holes PR C1 result (hero card and theme saves check the row), built 2026-11-19 on `claude/adoring-bohr-waxxok`; 1 commit; no migration, nothing to hand-apply
+
+Answer first: **two admin switches (hero card on/off, theme on/off) now show a red error when the database blocks the update. Before, they showed success and nothing was saved.** Same pattern as Holes PR A and B: the database-error check runs first, then "no row came back" throws `BusinessLogicError`. `.eq(...)` is the only filter. **No status filter was added.** No stored value changes. No scoring.
+
+- **What changed (VERIFIED by reading the code and running the tests; the database behaviour is INFERRED from how PostgREST works, nothing was run against a real database).**
+  - `HeroCardService.toggleHeroCardVisibility` (`src/services/HeroCardService.ts`). `.select('id').maybeSingle()`. Message: "Nothing was saved. This hero card may have been deleted, or your admin access may have changed. Refresh the page and try again."
+  - `ThemeSettingsService.updateEnabled` (`src/services/ThemeSettingsService.ts`). Same chain. Message: "Nothing was saved. Your admin access may have changed. Refresh the page and try again."
+  - `ThemeManagementTab.tsx`: the failure toast showed only the title "Failed to update theme setting", so the new message would never have reached the admin. It now adds `description: getUIErrorMessage(error)`. The title is unchanged. A plain network failure now shows "Something went wrong. Please try again." under the title (it showed nothing before).
+  - Hero card hook (`useHeroCards.ts`): no change. Its failure toast already uses `getUIErrorMessage(error, 'Failed to update visibility')`, which shows a `BusinessLogicError` message as written (read in the code, not tried on a phone).
+- **Tests.** New `HeroCardService.test.ts` (3 tests, the first for this service: success checks the update payload, `eq('id', ...)` and `select('id')`; database error; 0 rows with the exact start of the message). `LowCoverageSettingsServices.test.ts`: the 2 theme write tests use the chain `update -> eq -> select -> maybeSingle` (every old assertion kept, plus `select('id')`); 1 new 0-row test. `ThemeManagementTab.test.tsx`: 1 new test, a failed update toasts the title plus the reason. Net: 5 tests added, 1 file added.
+- **What this means on league night.** An admin whose access changed, or who flips a hero card that another admin just deleted, now sees a red message and "Refresh the page". Before, the toast said it worked.
+- **Docs.** `docs/product-description/admin/site-settings.md` (Submit and the network-lost row) and `verification/admin.md` row `SETTINGS-04` (an offline theme failure now shows "Something went wrong. Please try again." under the title). Nothing was marked verified.
+- **NOT changed.** `types.ts`, `supabase/`, scoring, tie-breaks. No history impact. The other report-only holes in the Holes PR A list are still open.
+- **Counts.** CI coverage run (`CI=true VITEST_DEEPSOURCE=1 VITEST_CI_COVERAGE=1 VITEST_FAST_COVERAGE=1 npx vitest run --coverage`): exit 0, 891 files, 8,518 passed plus 15 expected-fail (8,533 total; was 890 files / 8,528). `TESTING.md` now says 891 files / 8,533 tests in both places. `npm run typecheck`, `npm run lint` and `npm run knip` were clean.
+- **Rollback.** Revert the commit. Nothing is stored.
 
 ## Carry-over notes for later slices
 

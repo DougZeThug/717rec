@@ -116,12 +116,19 @@ typed, so an empty form still previews as a card.
 **A theme switch** writes at once. One guard exists: **the last enabled theme
 cannot be turned off**, and trying raises a red toast reading "At least one theme
 must remain enabled". Success raises "Theme enabled" or "Theme disabled"; failure
-raises "Failed to update theme setting", with no reason. While any theme write is
-in flight, **every** switch on the screen is disabled.
+raises "Failed to update theme setting" with a reason under it. If the database
+refuses the write and says nothing (for example, admin access was removed), the
+reason reads "Nothing was saved. Your admin access may have changed. Refresh the
+page and try again."; any other failure reads "Something went wrong. Please try
+again." While any theme write is in flight, **every** switch on the screen is
+disabled.
 
 **A hero card's visibility switch** writes at once, with no confirmation, and
 raises "Success — Visibility updated". Turning it on publishes the card to the
-home page for every visitor.
+home page for every visitor. If the database refuses the write and says nothing
+(the card was deleted in another tab, or admin access was removed), the red toast
+reads "Nothing was saved. This hero card may have been deleted, or your admin
+access may have changed. Refresh the page and try again."
 
 **The hero card form** writes on Create Card or Save Changes. On success a toast
 says the card was created or updated and the form closes back to the table. On
@@ -255,7 +262,7 @@ separate content, and nothing in the admin dashboard edits it. See
 | In-app navigation away, or switching tab within the page | Nothing is lost. | Switching dashboard section **asks first** while the hero card form holds changes, then loses everything typed. A switch already flipped has already been written. |
 | Browser back or forward | Steps to the previously opened section. | Same as navigating away. The form is not a route of its own, so Back never returns to it. |
 | Reload, or the tab closed | Returns to the same section, with the form closed. | The form's contents are lost. A sent write still lands. |
-| Network lost mid-request | Nothing to lose. | The write fails and a red toast appears. Theme failures say nothing useful; hero card failures carry the server's message. The switch snaps back to its stored value on the next re-fetch. |
+| Network lost mid-request | Nothing to lose. | The write fails and a red toast appears. Theme failures show "Failed to update theme setting" with a plain reason under it; hero card failures carry the server's message. The switch snaps back to its stored value on the next re-fetch. |
 | The request fails or times out | Cannot happen. | The hero card form keeps its contents. A theme switch that failed keeps showing its old position, which is correct. A repair that timed out may still have run. |
 | The session expires | No effect while reading. League Night keeps polling and its counts keep working while the reads are public. | Writes fail. Nothing signs the admin out. |
 | The same record changed in another tab, or by another user | No realtime on any of the four, apart from League Night's connection indicator, which reports the socket rather than any data. | **Two admins editing the same hero card overwrite each other silently.** The last save wins and neither is told. |
