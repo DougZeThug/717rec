@@ -34,10 +34,6 @@ vi.mock('@/components/admin/mass-score-entry/hooks/fetching/useMatchesFetching',
   }),
 }));
 
-vi.mock('@/components/admin/mass-score-entry/hooks/useMatchEventListeners', () => ({
-  useMatchEventListeners: vi.fn(),
-}));
-
 vi.mock('@/hooks/brackets/useBracketsQuery', () => ({
   useBracketsQuery: () => ({ brackets: [], error: null, isLoading: false, refetch: vi.fn() }),
 }));
