@@ -15,7 +15,7 @@ import {
 } from './types';
 
 export { pairKey } from './pairKey';
-export type { GreedySchedulerInput, GreedySchedulerResult, ScheduledMatch } from './types';
+export type { GreedySchedulerInput, GreedySchedulerResult } from './types';
 
 /**
  * Main greedy scheduler function

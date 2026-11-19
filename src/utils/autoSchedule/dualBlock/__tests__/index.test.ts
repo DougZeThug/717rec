@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import {
   balanceTeamsBetweenBlocks,
   calculateDualBlockMetrics,
-  calculateOverallQualityScore,
   findTeamsWithSameOpponent,
   generateDualBlockPairings,
   validateDualBlockSchedule,
 } from '../index';
+import { calculateOverallQualityScore } from '../qualityScoreUtils';
 
 describe('dualBlock/index (smoke test)', () => {
   it('calculateDualBlockMetrics is exported as a function', () => {

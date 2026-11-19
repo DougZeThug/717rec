@@ -1,14 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import { UPSET_THRESHOLD } from '../predictionConstants';
 import { calculateH2HRating } from '../predictionRatings';
 import type { TeamStats } from '../predictMatch';
-import {
-  formatBreakdown,
-  formatProbability,
-  isUpset,
-  predictMatch,
-  UPSET_THRESHOLD,
-} from '../predictMatch';
+import { formatBreakdown, formatProbability, isUpset, predictMatch } from '../predictMatch';
 
 // Helper to create team stats
 const createTeamStats = (

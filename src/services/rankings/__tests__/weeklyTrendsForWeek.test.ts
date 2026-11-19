@@ -18,7 +18,9 @@ vi.mock('@/utils/errorHandler', () => ({
 
 vi.mock('@/utils/logger', () => ({ errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn() }));
 
-import { fetchPowerScoreTrendsForWeek, pickTeamOfTheWeek } from '../weeklyTrendsForWeek';
+import { pickTeamOfTheWeek } from '@/utils/powerScore/pickTeamOfTheWeek';
+
+import { fetchPowerScoreTrendsForWeek } from '../weeklyTrendsForWeek';
 
 type QueryResult = { data: unknown; error: unknown };
 

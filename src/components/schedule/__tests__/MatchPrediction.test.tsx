@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { PredictionBreakdown, PredictionResult } from '@/utils/predictions';
+import type { PredictionResult } from '@/utils/predictions';
+import type { PredictionBreakdown } from '@/utils/predictions/predictionTypes';
 
 import { MatchPrediction } from '../MatchPrediction';
 

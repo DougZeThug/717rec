@@ -16,13 +16,7 @@ export type { EditTeamsOptions } from './editTeams/options';
 export type { EditTeamsPreview } from './editTeams/preview';
 export type { EditMatchTeamsParams, TeamChoice } from './editTeams/types';
 export { simulateRearrange } from './rearrange/simulate';
-export type {
-  RearrangeBoard,
-  RearrangePlanResult,
-  RearrangeSlotView,
-  SlotAssignment,
-  SnapshotSlot,
-} from './rearrange/types';
+export type { RearrangeBoard, RearrangePlanResult, SlotAssignment } from './rearrange/types';
 export type { LoserSwapSlot, SwapLoserSlotsParams } from './swap';
 
 /**

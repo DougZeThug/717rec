@@ -3,8 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Team } from '@/types';
 import { getBackToBackPair, getPairConfig } from '@/utils/autoSchedule/constants';
 import { errorLog } from '@/utils/logger';
-import type { GreedySchedulerInput, ScheduledMatch } from '@/utils/scheduling/greedy';
+import type { GreedySchedulerInput } from '@/utils/scheduling/greedy';
 import { generateScheduleGreedyWithTracking, pairKey } from '@/utils/scheduling/greedy';
+import type { ScheduledMatch } from '@/utils/scheduling/greedy/types';
 
 import { scheduleDualBlockPairings } from '../dualBlockScheduler';
 
