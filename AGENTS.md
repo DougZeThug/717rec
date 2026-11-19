@@ -132,6 +132,9 @@ See `TESTING.md`. Default fast gate is `npm run test:coverage`; serial fallback 
 
 ## More project conventions
 
+- Keep division override notes internal; grant public reads only for rateable scoring keys so public scores still work.
+- Keep Power Score unification workers owner-only; the admin entry points must reject missing profiles before calling them.
+
 - The public Join page reuses the league contact form for team and solo requests; keep one submission path so requests stay in one admin inbox.
 - Join conversion events run after successful contact submission, exclude honeypots, and carry only allowlisted source and solo/team metadata; analytics failure must not suggest resending a saved request.
 

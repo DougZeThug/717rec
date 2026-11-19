@@ -2907,6 +2907,157 @@ export type Database = {
           },
         ]
       }
+      power_score_division_override: {
+        Row: {
+          created_at: string
+          division_id: string
+          reason: string
+          season_id: string
+          team_id: string
+        }
+        Insert: {
+          created_at?: string
+          division_id: string
+          reason: string
+          season_id: string
+          team_id: string
+        }
+        Update: {
+          created_at?: string
+          division_id?: string
+          reason?: string
+          season_id?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "power_score_division_override_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "v_division_rateable"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_current_division"
+            referencedColumns: ["division_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_last_known_division"
+            referencedColumns: ["division_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["season_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_counter_drift"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["team1_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["team2_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_current_division"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_match_stats"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_division_override_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_visible_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       power_score_snapshots: {
         Row: {
           created_at: string | null
@@ -6597,6 +6748,8 @@ export type Database = {
         Args: { p_bracket_id: string }
         Returns: number
       }
+      _reapply_power_score_unification_owner: { Args: never; Returns: string }
+      _revert_power_score_unification_owner: { Args: never; Returns: string }
       activate_season: {
         Args: { season_id: string }
         Returns: {

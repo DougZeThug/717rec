@@ -109,7 +109,9 @@ BEGIN
       RAISE EXCEPTION 'expected applied after full migration replay, got %', v_status;
     END IF;
 
+    SET LOCAL ROLE authenticated;
     SELECT public.admin_reapply_power_score_unification() INTO v_result;
+    RESET ROLE;
     IF v_result <> 'already_applied' THEN
       RAISE EXCEPTION 'reapply on an applied database should be a no-op, got %', v_result;
     END IF;
@@ -194,7 +196,9 @@ BEGIN
 
     -- Revert: old view definitions restored, stats re-derived under the old
     -- formula → the bye counts again and team1 matches its backup row.
+    SET LOCAL ROLE authenticated;
     SELECT public.admin_revert_power_score_unification() INTO v_result;
+    RESET ROLE;
     IF v_result <> 'reverted' THEN
       RAISE EXCEPTION 'revert should return reverted, got %', v_result;
     END IF;
@@ -228,7 +232,9 @@ BEGIN
     END IF;
 
     -- Re-apply: canonical definitions and numbers come back.
+    SET LOCAL ROLE authenticated;
     SELECT public.admin_reapply_power_score_unification() INTO v_result;
+    RESET ROLE;
     IF v_result <> 'applied' THEN
       RAISE EXCEPTION 'reapply should return applied, got %', v_result;
     END IF;
@@ -271,6 +277,43 @@ BEGIN
       GET STACKED DIAGNOSTICS v_err_text = MESSAGE_TEXT;
       IF v_err_text <> 'Admin access required' THEN RAISE; END IF;
     END;
+  END LOOP;
+
+  -- Check the actual signed-in role, both with and without a profile.
+  FOREACH v_fn IN ARRAY ARRAY[
+    'admin_revert_power_score_unification',
+    'admin_reapply_power_score_unification'
+  ] LOOP
+    PERFORM auth.set_test_claims(v_member_id);
+    SET LOCAL ROLE authenticated;
+    BEGIN
+      EXECUTE format('SELECT public.%I()', v_fn);
+      RAISE EXCEPTION '% accepted a member', v_fn;
+    EXCEPTION WHEN insufficient_privilege THEN
+      IF SQLERRM <> 'Admin access required' THEN RAISE; END IF;
+    END;
+    RESET ROLE;
+
+    PERFORM auth.set_test_claims('00000000-0000-0000-0000-00000000e103');
+    SET LOCAL ROLE authenticated;
+    BEGIN
+      EXECUTE format('SELECT public.%I()', v_fn);
+      RAISE EXCEPTION '% accepted a caller without a profile', v_fn;
+    EXCEPTION WHEN insufficient_privilege THEN
+      IF SQLERRM <> 'Admin access required' THEN RAISE; END IF;
+    END;
+    RESET ROLE;
+  END LOOP;
+
+  FOREACH v_fn IN ARRAY ARRAY[
+    '_revert_power_score_unification_owner',
+    '_reapply_power_score_unification_owner'
+  ] LOOP
+    IF has_function_privilege('anon', format('public.%I()', v_fn), 'EXECUTE')
+      OR has_function_privilege('authenticated', format('public.%I()', v_fn), 'EXECUTE')
+      OR has_function_privilege('service_role', format('public.%I()', v_fn), 'EXECUTE') THEN
+      RAISE EXCEPTION '% is directly callable outside its owner', v_fn;
+    END IF;
   END LOOP;
 
   -- anon has EXECUTE revoked outright on all of them.
