@@ -113,7 +113,10 @@ not undo round" with the reason.
 game becomes the current game, its rounds return to the round input's view, and
 the setup panel or winner panel disappears. A toast says "Game 2 reopened — A
 scorer reopened it to correct a score. It is in progress again." On failure a red
-toast says "Could not reopen game" with the reason and nothing changes.
+toast says "Could not reopen game" with the reason and nothing changes. If the
+database changes no game (the match is officially finished, or the scorer's
+permission has gone), the toast says "Nothing was reopened. This match may
+already be finished, or you can no longer change it. Refresh the page."
 
 **Everybody watching the match is told, not just the person who pressed it.** The
 notice is raised by the live connection rather than by the button, so it reaches
@@ -122,28 +125,28 @@ it once and not twice.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | Both controls need the right to score. Notably **reopening a game is not admin-only** — any approved member of either team can do it, which is deliberate. Spectators see neither. | Losing the right to score leaves the buttons on screen until the screen refetches; the write then fails. |
-| The record's state | Undo needs at least one round in the current game. Reopen needs at least one completed game. Neither appears on an officially completed match. | If the other scorer undoes first, this screen's undo target changes underneath. |
-| The season's state | No effect. | No effect. |
-| Viewport | Both are comfortable tap targets: undo is 44 pixels high. On a phone the confirmations are centred boxes with a 16-pixel gap each side; they were full-width before the 2026-11-09 phone polish. | No effect. |
-| Keys the app honours | The dialogs are proper dialogs: Escape closes them, Tab is trapped inside, focus returns to the trigger on close. | Escape cancels the confirmation without undoing. |
+| Modifier             | Set at arrival                                                                                                                                                                                   | Changed while editing                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| The user's role      | Both controls need the right to score. Notably **reopening a game is not admin-only** — any approved member of either team can do it, which is deliberate. Spectators see neither.               | Losing the right to score leaves the buttons on screen until the screen refetches; the write then fails. |
+| The record's state   | Undo needs at least one round in the current game. Reopen needs at least one completed game. Neither appears on an officially completed match.                                                   | If the other scorer undoes first, this screen's undo target changes underneath.                          |
+| The season's state   | No effect.                                                                                                                                                                                       | No effect.                                                                                               |
+| Viewport             | Both are comfortable tap targets: undo is 44 pixels high. On a phone the confirmations are centred boxes with a 16-pixel gap each side; they were full-width before the 2026-11-09 phone polish. | No effect.                                                                                               |
+| Keys the app honours | The dialogs are proper dialogs: Escape closes them, Tab is trapped inside, focus returns to the trigger on close.                                                                                | Escape cancels the confirmation without undoing.                                                         |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. | **Escape closes the undo confirmation and nothing is undone**, the same as pressing "Keep round". It cannot stop an undo already sent. |
-| In-app navigation away, or switching tab within the page | Nothing lost. | An undo already sent still completes. The scorer returns to a match with the round gone and no message explaining it. |
-| Browser back or forward | Nothing lost. | As above. |
-| Reload, or the tab closed | The buttons return in the same state. | A sent undo may have landed. The round history after reloading says which. |
-| Network lost mid-request | The match will not load. | The undo fails, the round comes back, and a red toast gives the reason. Nothing is queued. |
-| The request fails or times out | Not applicable. | As above. |
-| The session expires | Watching still works. | The write fails with the league's refusal as the message. |
-| The same record changed in another tab, or by another user | **The dangerous case.** The other scorer may save a new round between this scorer opening the confirmation and pressing Undo. The dialog names the round it captured when it opened. | Undo targets a specific game and round number, so it removes the round it named rather than "whatever is last now". If that round has already gone, nothing is removed and the app reports it. |
-| Browser autofill or a password manager writes into the form | No effect. | No effect. |
-| The window loses focus | No effect. | No effect. |
+| Event                                                       | Before the first edit                                                                                                                                                                | While editing or submitting                                                                                                                                                                    |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Nothing to cancel.                                                                                                                                                                   | **Escape closes the undo confirmation and nothing is undone**, the same as pressing "Keep round". It cannot stop an undo already sent.                                                         |
+| In-app navigation away, or switching tab within the page    | Nothing lost.                                                                                                                                                                        | An undo already sent still completes. The scorer returns to a match with the round gone and no message explaining it.                                                                          |
+| Browser back or forward                                     | Nothing lost.                                                                                                                                                                        | As above.                                                                                                                                                                                      |
+| Reload, or the tab closed                                   | The buttons return in the same state.                                                                                                                                                | A sent undo may have landed. The round history after reloading says which.                                                                                                                     |
+| Network lost mid-request                                    | The match will not load.                                                                                                                                                             | The undo fails, the round comes back, and a red toast gives the reason. Nothing is queued.                                                                                                     |
+| The request fails or times out                              | Not applicable.                                                                                                                                                                      | As above.                                                                                                                                                                                      |
+| The session expires                                         | Watching still works.                                                                                                                                                                | The write fails with the league's refusal as the message.                                                                                                                                      |
+| The same record changed in another tab, or by another user  | **The dangerous case.** The other scorer may save a new round between this scorer opening the confirmation and pressing Undo. The dialog names the round it captured when it opened. | Undo targets a specific game and round number, so it removes the round it named rather than "whatever is last now". If that round has already gone, nothing is removed and the app reports it. |
+| Browser autofill or a password manager writes into the form | No effect.                                                                                                                                                                           | No effect.                                                                                                                                                                                     |
+| The window loses focus                                      | No effect.                                                                                                                                                                           | No effect.                                                                                                                                                                                     |
 
 After an interrupt the totals are recomputed from whatever rounds survive, so the
 screen is never wrong — only possibly not what the scorer expected.
@@ -220,7 +223,7 @@ side effects; see [`finish-the-match.md`](finish-the-match.md).
   the league kept it that way deliberately, because a scorer at the field
   correcting a score should not have to find an admin. What changed is the
   friction and the trace: it asks first, and both screens are told. Restricting
-  it to an admin, as reopening the *match* is, was the alternative and was not
+  it to an admin, as reopening the _match_ is, was the alternative and was not
   taken. See [`bug-triage.md`](../bug-triage.md) B-17.
 - **Settled: the person who pressed the button is told too, every time.** The
   notice is raised by the live connection, so it reaches every screen watching

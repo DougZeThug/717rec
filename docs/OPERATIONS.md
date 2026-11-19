@@ -912,11 +912,13 @@ reads it. Real names do not have these.
 > 2026-11-18" below). The steps further down stay as the runbook for a re-run (each
 > script is safe to run again) and for the undo.
 >
-> **Backup table retirement: NOT YET APPLIED.** Doug accepted the new numbers on 2026-11-18 and
-> asked to drop the backup `team_season_stats_pre_division_truth`. It is **retired by
-> script 07** (`supabase/scripts/division_truth_07_drop_backup.sql`). **Doug runs it by
-> hand after merging** (steps: "How Doug retires the backup" below). Until he does, the
-> table still exists and undo path 1 still works. After it, only undo path 2 remains.
+> **Backup table retirement: APPLIED to the live database on 2026-11-19.** Doug accepted
+> the new numbers on 2026-11-18 and asked to drop the backup
+> `team_season_stats_pre_division_truth`. He ran **script 07**
+> (`supabase/scripts/division_truth_07_drop_backup.sql`) by hand on the live database on
+> 2026-11-19, and its result said "OK: backup dropped" (see "How Doug retires the
+> backup" below). **The backup table no longer exists. Undo path 1 is gone. Only undo
+> path 2 remains.**
 
 **Doug's rule (2026-11-17): "I want numbers to be accurate."** A game is rated by
 the division the opponent had in **that season**, not today's division.
@@ -1076,7 +1078,7 @@ only the last result, so a note printed in the middle would not show.
 
 | Step | What                                         | File                                                                   | Success looks like                                                                                                                                                                          |
 | ---- | -------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Backup, **before** the migration             | `supabase/scripts/division_truth_01_backup.sql`                        | "OK: saved = live". Do not run it again once script 07 has retired the backup (see step 8).                                                                                                 |
+| 1    | Backup, **before** the migration             | `supabase/scripts/division_truth_01_backup.sql`                        | "OK: saved = live". Do not run it again: script 07 retired the backup on 2026-11-19 (see step 8).                                                                                           |
 | 2    | Migration (table + view), table still empty  | `supabase/migrations/20261117130000_power_score_division_override.sql` | The fingerprint below is **the same** before and after                                                                                                                                      |
 | 3a   | Precheck (read-only), **right before 3**     | `supabase/scripts/division_truth_00_precheck.sql`                      | Every row says PASS in the last column. See the box below.                                                                                                                                  |
 | 3b   | Dry run (read-only), **right before 3**      | `supabase/scripts/division_truth_02a_dryrun.sql`                       | The list of rows script 02 would write. Doug reads the Intermediate 1 and 2 lists.                                                                                                          |
@@ -1085,7 +1087,7 @@ only the last result, so a note printed in the middle would not show.
 | 5    | Preview (read-only). **Doug approves here.** | `supabase/scripts/division_truth_03_preview.sql`                       | Every team in the six seasons (over 100 rows), then CAREER rows. Paste it to the developer.                                                                                                 |
 | 6    | Recompute, **one season per run**            | `supabase/scripts/division_truth_04_recompute.sql`                     | "moved" lines list the real changes. "ROWS CHANGED" can be about the number of teams in the season (rounding, see above). The last line, "still different ... by more than rounding", is 0. |
 | 7    | Checks again, after the last season          | `supabase/scripts/division_truth_06_checks.sql`                        | All PASS. L4 says PASS (0 in the six seasons; the live season is listed on its own line).                                                                                                   |
-| 8    | Retire the backup, **once**                  | `supabase/scripts/division_truth_07_drop_backup.sql`                   | Last line "OK: backup dropped". **NOT YET APPLIED: Doug runs it by hand after merging.** See "How Doug retires the backup".                                                                 |
+| 8    | Retire the backup, **once**                  | `supabase/scripts/division_truth_07_drop_backup.sql`                   | Last line "OK: backup dropped". **Done on 2026-11-19** (result: "OK: backup dropped"). See "How Doug retires the backup".                                                                   |
 
 > ### BEFORE step 3 (writing the override rows; done on 2026-11-18, keep for a re-run)
 >
@@ -1162,7 +1164,7 @@ SELECT resolved_by, count(*) FROM public.v_power_score_team_matches_rated GROUP 
 
 **If a script stops with "STOP:", it changed nothing.** Read the message. It names
 the cause: a missing backup, a division name that matches two divisions, or a team
-name that matches two teams. **After script 07, a missing backup is expected:** scripts
+name that matches two teams. **Since script 07 ran (2026-11-19), a missing backup is expected:** scripts
 02 and 03 stop on purpose, and so does path 1 of script 05. The message of 02 and 03
 says "the backup table is missing" and names both reasons, because the script cannot
 tell which one it is: first install (run script 01 first) or retired (do **not**
@@ -1234,9 +1236,8 @@ line marked TYPE HERE.
   before step 6, exactly.** It is safe because those six seasons are closed: no match
   is scored in them, so it cannot lose a newer score. It does **not** stop the
   overrides. The next recompute or Sandbox save writes the new numbers again.
-  **Path 1 is gone once Doug runs script 07** (NOT YET APPLIED: he runs it by hand
-  after the merge). The backup table is dropped then, so path 1 **STOPs** and writes
-  nothing. Only path 2 remains.
+  **Path 1 is gone.** Doug ran script 07 on the live database on 2026-11-19. The backup
+  table is dropped, so path 1 **STOPs** and writes nothing. Only path 2 remains.
 - **Path 2: stop using the overrides.** It first copies the override rows to the
   locked table `power_score_division_override_pre_undo` (so a row added by hand is
   not lost). Then it deletes the override rows, puts the view text of migration
@@ -1255,22 +1256,38 @@ line marked TYPE HERE.
   the deleted overrides: the undo is then incomplete. Script 07 refuses to retire the
   backup while such a row exists (see below). Path 2's copy and delete of the override
   rows is one statement, so a row is never deleted without being saved.
-- **To go all the way back:** run path 2, then path 1. (**After script 07 this is no
-  longer possible**: there is no path 1. The old stored numbers exist then only in the
-  CSV file Doug exports before the drop, which is required. See "How Doug retires the
-  backup".)
+- **To go all the way back:** run path 2, then path 1. (**This is no longer possible**:
+  script 07 ran on 2026-11-19, so there is no path 1. The old stored numbers exist now
+  only in the CSV file Doug reported he exported before the drop, which was a required
+  step. See "How Doug retires the backup".)
 - After undo, revert the pull request too. If the migration file stays in the repo,
   the next hand-apply of all migrations adds the override step again.
 
 ### How Doug retires the backup (script 07)
 
 **Doug accepted the new Power Scores on 2026-11-18 and asked to drop the backup.**
-Script 07 does it. **NOT YET APPLIED:** the script is in the repo, and Doug runs it by
-hand after this change is merged. A merged change does not reach the live database.
+Script 07 does it. **Done on 2026-11-19:** Doug ran it by hand on the live database.
+The steps below stay as a record of what he did.
 
-**The drop cannot be undone.** The table `team_season_stats_pre_division_truth` is the
+**Result Doug pasted on 2026-11-19.** The backup was taken on 2026-11-18 at 12:54 (UTC)
+and held 185 rows: Fall 2025 34, Spring 2025 31, Summer 1 2025 36, Summer 2 2025 33,
+Winter 1 2026 27, Winter 2 2026 24.
+
+| Check                                                                | Result             |
+| -------------------------------------------------------------------- | ------------------ |
+| Stored rows that differ from the rules NOW by more than rounding     | 0                  |
+| Saved rows that differ from the stored numbers now (accepted change) | 107                |
+| Override rows                                                        | 86                 |
+| Saved rows with no live row                                          | 0                  |
+| Saved rows whose record differs from the live row                    | 0                  |
+| Override rows outside the six seasons                                | 0                  |
+| Rated view has the override step                                     | yes                |
+| Table exists now                                                     | no                 |
+| Verdict                                                              | OK: backup dropped |
+
+**The drop cannot be undone.** The table `team_season_stats_pre_division_truth` was the
 **only copy** of the old stored numbers (the ones the site showed before the recompute
-of 2026-11-18). After the drop:
+of 2026-11-18). Now that it is dropped:
 
 - Undo path 1 (script 05) is gone. It STOPs and writes nothing.
 - Undo path 2 (script 05, type 2) still works. It deletes the override rows, puts the
@@ -1290,7 +1307,7 @@ of 2026-11-18). After the drop:
   under the same backup name, taken after the recompute. That snapshot **cannot**
   restore the original numbers.
 
-**Steps for Doug.**
+**Steps Doug followed (2026-11-19; keep as a record).**
 
 1. **Merge** this change first. (The scripts are in the repo. Nothing changes on the
    live database until step 5.)
@@ -1299,12 +1316,14 @@ of 2026-11-18). After the drop:
 3. **Save a file copy. This step is required.** In the Supabase dashboard, open the table
    `team_season_stats_pre_division_truth` and export it as CSV. Keep the file. The
    backup is the only copy of the old stored numbers, and it is only about 185 rows.
+   (Doug reported that he did this step first.)
 4. Open `supabase/scripts/division_truth_07_drop_backup.sql`. **Paste the WHOLE
    script** into the Supabase SQL editor.
 5. **Run it.** The editor may ask you to confirm a "destructive" statement
    (`DROP TABLE`). That is expected. If the question names a table other than
    `team_season_stats_pre_division_truth`, **stop**. Confirm.
-6. **Read the one result table.** Want:
+6. **Read the one result table.** Want (the live result of 2026-11-19 matched every line;
+   see the table above):
    - six seasons: stored rows that differ from the rules NOW by more than rounding = **0**
    - saved rows with no live row = **0**
    - saved rows whose record differs from the live row = **0**
