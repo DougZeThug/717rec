@@ -73,6 +73,8 @@ export function useTeamMembership() {
       await queryClient.invalidateQueries({ queryKey: ['team-membership', user.id] });
     } catch (error) {
       errorLog('Error joining team:', error);
+      // The screen may be stale (the row changed elsewhere): reload it.
+      queryClient.invalidateQueries({ queryKey: ['team-membership', user.id] });
       toast({
         title: 'Failed to submit request',
         description: getUIErrorMessage(error),

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
@@ -79,21 +79,49 @@ describe('BlindDrawService.updateBlindDrawSettings', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('resolves on success', async () => {
-    mockFrom.mockReturnValue({
-      update: () => ({ eq: () => Promise.resolve({ error: null }) }),
-    });
+    const eqFn = vi.fn((_column: string, _value: string) => ({
+      select: vi.fn((_columns: string) => ({
+        maybeSingle: () => Promise.resolve({ data: { id: 'settings-1' }, error: null }),
+      })),
+    }));
+    mockFrom.mockReturnValue({ update: () => ({ eq: eqFn }) });
     await expect(
       BlindDrawService.updateBlindDrawSettings({ id: 'settings-1', message: 'Hello' })
     ).resolves.toBeUndefined();
+    expect(eqFn).toHaveBeenCalledWith('id', 'settings-1');
+    expect(eqFn.mock.results[0].value.select).toHaveBeenCalledWith('id');
   });
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      update: () => ({ eq: () => Promise.resolve({ error: pgError() }) }),
+      update: () => ({
+        eq: () => ({
+          select: () => ({
+            maybeSingle: () => Promise.resolve({ data: null, error: pgError() }),
+          }),
+        }),
+      }),
     });
     await expect(
       BlindDrawService.updateBlindDrawSettings({ id: 'settings-1', message: 'Hello' })
     ).rejects.toThrow(DatabaseError);
+  });
+
+  // Admin access can be removed in another tab. Row-level security then hides
+  // the row: the update matches nothing and the database reports no error.
+  it('throws BusinessLogicError when no row was updated', async () => {
+    mockFrom.mockReturnValue({
+      update: () => ({
+        eq: () => ({
+          select: () => ({
+            maybeSingle: () => Promise.resolve({ data: null, error: null }),
+          }),
+        }),
+      }),
+    });
+    const result = BlindDrawService.updateBlindDrawSettings({ id: 'settings-1', message: 'Hello' });
+    await expect(result).rejects.toThrow(BusinessLogicError);
+    await expect(result).rejects.toThrow(/Nothing was saved/);
   });
 });
 

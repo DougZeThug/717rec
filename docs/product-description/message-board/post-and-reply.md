@@ -90,10 +90,10 @@ only rule the composer enforces as the user types.
 
 Pressing Send runs two checks:
 
-| Rule | What happens when it fails |
-| --- | --- |
-| The message must not be empty or only spaces | Red toast "Empty message — Please enter a message before sending". Nothing is sent. |
-| The message must be 500 characters or fewer | Red toast "Message too long — Please keep your message under 500 characters". Nothing is sent. In practice the dead button gets there first. |
+| Rule                                         | What happens when it fails                                                                                                                   |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| The message must not be empty or only spaces | Red toast "Empty message — Please enter a message before sending". Nothing is sent.                                                          |
+| The message must be 500 characters or fewer  | Red toast "Message too long — Please keep your message under 500 characters". Nothing is sent. In practice the dead button gets there first. |
 
 Neither rule puts a message under the box; both are toasts, which is unlike the
 rest of the app's forms.
@@ -140,7 +140,11 @@ there.
 Saving shows a green toast "Message updated — Your message has been updated", and
 the message comes back with "(edited)" after it. Hovering that word gives how long
 ago it was edited. Failure shows a red toast and **keeps the edit box open with
-the new text**, so nothing is lost.
+the new text**, so nothing is lost. If the message was deleted in the meantime,
+the toast reads "Error updating message — Your message could not be updated: The
+message may have been deleted. Refresh the page and try again." Before this was
+fixed, the same case showed the green "Message updated" toast although nothing
+was saved.
 
 **The edit box has no character counter and no length limit.** A message that
 could not have been posted at 700 characters can be edited to 700 characters.
@@ -159,31 +163,31 @@ repeats the same failure.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role (visitor, player, admin) | A visitor gets the sign-in bar and no composer. A player gets the composer with no category picker. An admin gets the composer plus a General-or-Announcement picker. | Signing out in another tab does not reach this page: the composer stays on screen and the post is then refused. |
-| The record's state | A message the reader wrote is tinted and is a control; anyone else's is inert. A message whose author's account has been removed belongs to nobody and can never be edited or deleted. | An author editing the same message in another tab wins or loses on whoever saves last, with no warning either way. |
-| The season's state (active, archived, playoffs on) | No effect. A message belongs to no season. | No effect. |
-| Viewport | On a phone the composer is pinned above the bottom navigation and the author's controls open with a press and hold rather than a tap. | No effect beyond re-flowing as the box grows. |
-| Keys the form honours | Tab reaches the box, the category picker, and the send button. Enter in the box adds a newline; it never sends. | In the edit box, Escape cancels and Ctrl+Enter (or Cmd+Enter) saves. The composer honours neither. |
+| Modifier                                           | Set at arrival                                                                                                                                                                         | Changed while editing                                                                                              |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| The user's role (visitor, player, admin)           | A visitor gets the sign-in bar and no composer. A player gets the composer with no category picker. An admin gets the composer plus a General-or-Announcement picker.                  | Signing out in another tab does not reach this page: the composer stays on screen and the post is then refused.    |
+| The record's state                                 | A message the reader wrote is tinted and is a control; anyone else's is inert. A message whose author's account has been removed belongs to nobody and can never be edited or deleted. | An author editing the same message in another tab wins or loses on whoever saves last, with no warning either way. |
+| The season's state (active, archived, playoffs on) | No effect. A message belongs to no season.                                                                                                                                             | No effect.                                                                                                         |
+| Viewport                                           | On a phone the composer is pinned above the bottom navigation and the author's controls open with a press and hold rather than a tap.                                                  | No effect beyond re-flowing as the box grows.                                                                      |
+| Keys the form honours                              | Tab reaches the box, the category picker, and the send button. Enter in the box adds a newline; it never sends.                                                                        | In the edit box, Escape cancels and Ctrl+Enter (or Cmd+Enter) saves. The composer honours neither.                 |
 
 The composer and the edit box therefore disagree about their keys: Ctrl+Enter
 saves an edit and does nothing at all in the composer.
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. The composer has no Cancel and Escape does nothing in it. | Escape cancels an **edit** and throws the change away with no confirmation. It does nothing in the composer, and it closes the delete confirmation without deleting. Neither can stop a request already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost, because nothing was typed. | **Everything typed is lost, with no warning.** There is no unsaved-changes guard on the composer or the edit box. A post already sent still lands, and the author never sees the outcome. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Same as navigating away, and the app cannot prevent it. Coming forward again gives an empty composer. |
-| Reload, or the tab closed | Gives a fresh empty composer. | **Everything typed is lost.** A post already sent still lands. After reloading, the board itself is the only way to tell which happened. |
-| Network lost mid-request | Cannot happen; no request is in flight. | The post, edit, or delete fails and its red toast appears. The text is kept. Nothing is queued and nothing is retried. |
-| The request fails or times out | Cannot happen. | The text is kept and the generic red toast appears. Nothing distinguishes "the league never got it" from "the league got it and the answer was lost", so a retry can post the same message twice. |
-| The session expires | The composer is still on screen, because it is drawn from the session the browser thinks it has. | The post is refused and the generic toast appears. Nothing says the session is the reason, and nothing offers to sign in again. |
-| The same record changed in another tab, or by another user | No effect on the composer. | **An author's message deleted in another tab disappears from under an open edit box**, and saving then writes nothing and still reports success. Two tabs can each hold a different draft and each post it. |
-| Browser autofill or a password manager writes into the form | The message box is a plain multi-line field with no name a form-filler recognises, so nothing offers to fill it. | Same. If something did fill it, no validation would run until Send was pressed. |
-| The window loses focus | No effect. | No effect. Nothing refetches and a request in flight continues. |
+| Event                                                       | Before the first edit                                                                                            | While editing or submitting                                                                                                                                                                                                                                                               |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. The composer has no Cancel and Escape does nothing in it.                                             | Escape cancels an **edit** and throws the change away with no confirmation. It does nothing in the composer, and it closes the delete confirmation without deleting. Neither can stop a request already sent.                                                                             |
+| In-app navigation away, or switching tab within the page    | Nothing is lost, because nothing was typed.                                                                      | **Everything typed is lost, with no warning.** There is no unsaved-changes guard on the composer or the edit box. A post already sent still lands, and the author never sees the outcome.                                                                                                 |
+| Browser back or forward                                     | Returns to the previous page. Nothing is recorded.                                                               | Same as navigating away, and the app cannot prevent it. Coming forward again gives an empty composer.                                                                                                                                                                                     |
+| Reload, or the tab closed                                   | Gives a fresh empty composer.                                                                                    | **Everything typed is lost.** A post already sent still lands. After reloading, the board itself is the only way to tell which happened.                                                                                                                                                  |
+| Network lost mid-request                                    | Cannot happen; no request is in flight.                                                                          | The post, edit, or delete fails and its red toast appears. The text is kept. Nothing is queued and nothing is retried.                                                                                                                                                                    |
+| The request fails or times out                              | Cannot happen.                                                                                                   | The text is kept and the generic red toast appears. Nothing distinguishes "the league never got it" from "the league got it and the answer was lost", so a retry can post the same message twice.                                                                                         |
+| The session expires                                         | The composer is still on screen, because it is drawn from the session the browser thinks it has.                 | The post is refused and the generic toast appears. Nothing says the session is the reason, and nothing offers to sign in again.                                                                                                                                                           |
+| The same record changed in another tab, or by another user  | No effect on the composer.                                                                                       | **An author's message deleted in another tab disappears from under an open edit box**, and saving then fails with the red "Error updating message" toast and the edit box stays open (see "Editing a message already posted"). Two tabs can each hold a different draft and each post it. |
+| Browser autofill or a password manager writes into the form | The message box is a plain multi-line field with no name a form-filler recognises, so nothing offers to fill it. | Same. If something did fill it, no validation would run until Send was pressed.                                                                                                                                                                                                           |
+| The window loses focus                                      | No effect.                                                                                                       | No effect. Nothing refetches and a request in flight continues.                                                                                                                                                                                                                           |
 
 After any interrupt the author is left with whatever the box still holds. The only
 state that survives leaving the page is what already reached the league.
@@ -192,7 +196,7 @@ state that survives leaving the page is what already reached the league.
 
 **Permissions and roles.** Posting needs a signed-in account with a profile.
 Editing and deleting need the account that wrote the message, checked by the
-browser *and* independently by the database. Admin adds exactly one thing —
+browser _and_ independently by the database. Admin adds exactly one thing —
 the Announcement category — and takes nothing away. See
 [`../cross-cutting/permissions.md`](../cross-cutting/permissions.md).
 
@@ -251,6 +255,7 @@ how the message looks.
   > league refused a message attached to a team the author is not an approved
   > member of, and the author saw only the generic "could not be posted" toast,
   > with nothing about approval. Retrying could never work.
+
 - **A message with reactions on it may be undeletable.** Reactions point at the
   message and nothing appears to clear them when the message goes, so the delete is
   refused and the author gets the generic failure toast for a message they will

@@ -138,10 +138,15 @@ describe('joinTeamMembership', () => {
   });
 
   it('updates existing record when hasMembership is true', async () => {
-    mockFrom.mockReturnValue({
-      update: () => ({ eq: () => Promise.resolve({ error: null }) }),
-    });
+    const eqFn = vi.fn((_column: string, _value: string) => ({
+      select: vi.fn((_columns: string) =>
+        Promise.resolve({ data: [{ id: 'mem-1' }], error: null })
+      ),
+    }));
+    mockFrom.mockReturnValue({ update: () => ({ eq: eqFn }) });
     await expect(joinTeamMembership('user-1', 'team-1', true)).resolves.toBeUndefined();
+    expect(eqFn).toHaveBeenCalledWith('user_id', 'user-1');
+    expect(eqFn.mock.results[0].value.select).toHaveBeenCalledWith('id');
   });
 
   // B-18: a refused row keeps the person's only slot under
@@ -150,7 +155,7 @@ describe('joinTeamMembership', () => {
   // and keep it out of the admin queue.
   it('clears a previous refusal when the same row is reused to ask again', async () => {
     const updateFn = vi.fn((_patch: Record<string, unknown>) => ({
-      eq: () => Promise.resolve({ error: null }),
+      eq: () => ({ select: () => Promise.resolve({ data: [{ id: 'mem-1' }], error: null }) }),
     }));
     mockFrom.mockReturnValue({ update: updateFn });
 
@@ -175,9 +180,26 @@ describe('joinTeamMembership', () => {
 
   it('throws DatabaseError on update error', async () => {
     mockFrom.mockReturnValue({
-      update: () => ({ eq: () => Promise.resolve({ error: pgError() }) }),
+      update: () => ({
+        eq: () => ({ select: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(joinTeamMembership('user-1', 'team-1', true)).rejects.toThrow(DatabaseError);
+  });
+
+  // The membership row can be gone (an admin removed it, or it was changed in
+  // another tab). The update then matches nothing and the database reports no
+  // error, so the request used to look sent when nothing was saved.
+  it.each([
+    ['an empty list', []],
+    ['no list at all', null],
+  ])('throws BusinessLogicError when the update changed no row (%s)', async (_label, data) => {
+    mockFrom.mockReturnValue({
+      update: () => ({ eq: () => ({ select: () => Promise.resolve({ data, error: null }) }) }),
+    });
+    const result = joinTeamMembership('user-1', 'team-1', true);
+    await expect(result).rejects.toThrow(BusinessLogicError);
+    await expect(result).rejects.toThrow(/Your request was not sent/);
   });
 
   // The join form is drawn whenever the membership read returns nothing, which

@@ -4,6 +4,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { BusinessLogicError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 const mocks = vi.hoisted(() => ({
@@ -106,6 +107,20 @@ describe('contact request hooks', () => {
     await waitFor(() =>
       expect(mocks.toast).toHaveBeenCalledWith({
         title: 'Failed to reopen contact request',
+        description: 'Something went wrong. Please try again.',
+        variant: 'destructive',
+      })
+    );
+  });
+  it('shows the nothing-was-saved reason when a resolve matched no row', async () => {
+    mocks.resolve.mockRejectedValue(new BusinessLogicError('Nothing was saved. Refresh the page.'));
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useMarkContactRequestResolved(), { wrapper });
+    await expect(result.current.mutateAsync({ id: 'c1', userId: 'u1' })).rejects.toThrow();
+    await waitFor(() =>
+      expect(mocks.toast).toHaveBeenCalledWith({
+        title: 'Failed to mark contact request as resolved',
+        description: 'Nothing was saved. Refresh the page.',
         variant: 'destructive',
       })
     );

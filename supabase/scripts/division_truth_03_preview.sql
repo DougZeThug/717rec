@@ -5,6 +5,11 @@
 -- stored number. (It makes one temporary view that vanishes with the session.)
 -- Doug looks at the result and approves, or does not.
 --
+-- ONE-TIME STEP. It reads the backup table (script 01). Script 07 retires that table.
+-- Once it is gone, this script STOPs at once (the first block below), because the
+-- numbers it compares with ("stored" and "live_rules") exist only in the backup.
+-- The STOP names both reasons: first install (run script 01 first) and retired.
+--
 -- APPROVING THIS TABLE ALSO APPROVES THE OLD-RULE CATCH-UP. About 62 team-seasons
 -- already show a stored score that differs from what today's rules give (older rule
 -- changes were never recomputed). The recompute fixes those too. They show up in
@@ -51,6 +56,13 @@
 -- least what is used here, so its live_rules and after scores are LOWER limits. The
 -- rank is by score only: the site's list also hides some teams and breaks ties its
 -- own way.
+
+DO $$
+BEGIN
+  IF to_regclass('public.team_season_stats_pre_division_truth') IS NULL THEN
+    RAISE EXCEPTION 'STOP: the backup table is missing, and this script cannot tell why. First install (the backup was never taken): run script 01 first. Retired (script 07 dropped it): do NOT recreate it; this preview was a one-time step (see docs/OPERATIONS.md 6g).';
+  END IF;
+END $$;
 
 -- The OLD rule, for comparing. This is the body of v_power_score_team_matches_rated
 -- exactly as migration 20261003183939 wrote it, without the override step, saved as

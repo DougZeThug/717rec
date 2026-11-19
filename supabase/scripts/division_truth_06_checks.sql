@@ -1,8 +1,8 @@
 -- Division truth, script 06: THE CHECKS (hand-apply steps 4 and 7, read-only).
 --
 -- NOT A MIGRATION. Paste the WHOLE file into the Supabase SQL Editor and run it.
--- It changes no stored number. (It makes one temporary view that vanishes with the
--- session.) Run it at three moments:
+-- It changes no stored number. (It makes one temporary view and two temporary tables;
+-- all of them vanish with the session.) Run it at three moments:
 --   a. right after the data script (02), before the recompute: L4 shows the six
 --      seasons still differ (that is expected), everything else must be PASS;
 --   b. after each recompute: the same;
@@ -37,6 +37,17 @@
 --   L7  win-loss, games, division name, champion, runner-up and playoff rank of
 --       the six seasons are identical to the backup (power_score_snapshots is not
 --       in the backup; no script here writes it)
+--   L6b, L6c, L6d and L7 need the backup (script 01). Script 07 retires the backup
+--   (docs/OPERATIONS.md section 6g). If the table is not found (retired by script 07,
+--   or script 01 never ran) these four say INFO, "skipped, backup table not found",
+--   and the other checks run as before. If the table exists but holds
+--   0 rows, they say INFO, "backup table is empty" (the table is there, so it is not "not found").
+--   The team list of L6a comes from team_season_stats, so it does not need the backup
+--   either.
+--   WHICH CHECK OWNS WHICH SAVED ROW. L6b, L6c and L6d start from the live table
+--   team_season_stats, so they compare only saved rows that still have a live row.
+--   A saved row whose live row is gone is not in them: L7 reports it as "rows missing"
+--   (lost). Script 07 refuses to drop the backup while such a row exists.
 --   L8  the three dropped-out teams: the SQL row and the TypeScript list
 --       (src/constants/dropoutDivisions.ts) name the same tier
 --
@@ -110,6 +121,34 @@ LEFT JOIN LATERAL (
   WHERE h.division_id = r.opp_division_id AND h.valid_from <= COALESCE(r.match_date, now())
   ORDER BY h.valid_from DESC LIMIT 1) wh ON true
 LEFT JOIN public.v_division_rateable dw ON dw.id = r.opp_division_id;
+
+-- The saved numbers (script 01), copied into a TEMPORARY table, so this script does not
+-- fail once script 07 has dropped the backup. If the backup is gone, the temporary
+-- table is the same table with no rows, and L6b, L6c, L6d and L7 are skipped. Like the
+-- view above, it lives only in this editor session and changes nothing.
+DROP TABLE IF EXISTS pg_temp.division_truth_bk;
+DROP TABLE IF EXISTS pg_temp.division_truth_bk_state;
+-- Does the backup table exist? Kept apart from its row count: a table with 0 rows is
+-- "empty", a missing table is "not found" (retired by script 07, or never taken).
+CREATE TEMP TABLE division_truth_bk_state (present boolean);
+DO $$
+BEGIN
+  IF to_regclass('public.team_season_stats_pre_division_truth') IS NOT NULL THEN
+    INSERT INTO division_truth_bk_state VALUES (true);
+    EXECUTE 'CREATE TEMP TABLE division_truth_bk AS '
+         || 'SELECT season_id, team_id, match_wins, match_losses, game_wins, game_losses, division_name, '
+         || 'playoff_rank, power_score, sos, champion, runner_up, recorded_at, career_power_score, '
+         || 'live_power_score, live_sos, live_career_power_score '
+         || 'FROM public.team_season_stats_pre_division_truth';
+  ELSE
+    INSERT INTO division_truth_bk_state VALUES (false);
+    EXECUTE 'CREATE TEMP TABLE division_truth_bk AS '
+         || 'SELECT s.season_id, s.team_id, s.match_wins, s.match_losses, s.game_wins, s.game_losses, s.division_name, '
+         || 's.playoff_rank, s.power_score, s.sos, s.champion, s.runner_up, s.recorded_at, s.career_power_score, '
+         || 'NULL::numeric AS live_power_score, NULL::numeric AS live_sos, NULL::numeric AS live_career_power_score '
+         || 'FROM public.team_season_stats s WHERE false';
+  END IF;
+END $$;
 
 WITH
 six(season_id) AS (VALUES
@@ -276,25 +315,36 @@ l6 AS (
     count(*) FILTER (WHERE dn.power IS DISTINCT FROM a.power_score
                        AND abs(COALESCE(dn.power, -1) - COALESCE(a.power_score, -1)) > 1e-9) AS bad_new,
     -- old numbers: re-derived vs the backup's live_rules numbers
-    count(*) FILTER (WHERE abs(COALESCE(dold.power, -1) - COALESCE(b.live_power_score, -1)) > 1e-9) AS bad_old,
+    count(*) FILTER (WHERE b.team_id IS NOT NULL
+                       AND abs(COALESCE(dold.power, -1) - COALESCE(b.live_power_score, -1)) > 1e-9) AS bad_old,
     -- no changed game: after = live_rules exactly
-    count(*) FILTER (WHERE COALESCE(c.games_changed, 0) = 0
+    count(*) FILTER (WHERE b.team_id IS NOT NULL AND COALESCE(c.games_changed, 0) = 0
                        AND (a.power_score IS DISTINCT FROM b.live_power_score
                          OR a.career_power_score IS DISTINCT FROM b.live_career_power_score
                          OR a.sos IS DISTINCT FROM b.live_sos)) AS bad_zero,
-    count(*) AS team_seasons
-  FROM public.team_season_stats_pre_division_truth b
-  LEFT JOIN public.v_team_season_agg a ON a.season_id = b.season_id AND a.team_id = b.team_id
-  LEFT JOIN derived dn   ON dn.tag = 'new' AND dn.season_id = b.season_id AND dn.team_id = b.team_id
-  LEFT JOIN derived dold ON dold.tag = 'old' AND dold.season_id = b.season_id AND dold.team_id = b.team_id
-  LEFT JOIN changed c    ON c.season_id = b.season_id AND c.team_id = b.team_id
+    count(*) AS team_seasons,
+    count(b.team_id) AS backup_rows
+  FROM public.team_season_stats t
+  JOIN six ON six.season_id = t.season_id
+  LEFT JOIN division_truth_bk b ON b.season_id = t.season_id AND b.team_id = t.team_id
+  LEFT JOIN public.v_team_season_agg a ON a.season_id = t.season_id AND a.team_id = t.team_id
+  LEFT JOIN derived dn   ON dn.tag = 'new' AND dn.season_id = t.season_id AND dn.team_id = t.team_id
+  LEFT JOIN derived dold ON dold.tag = 'old' AND dold.season_id = t.season_id AND dold.team_id = t.team_id
+  LEFT JOIN changed c    ON c.season_id = t.season_id AND c.team_id = t.team_id
+),
+-- The saved rows. 0 once script 07 has retired the backup (present = false) or when
+-- the table exists and is empty (present = true): then the checks that need them are
+-- skipped, with a message for each case.
+bk AS (
+  SELECT count(*) AS n, (SELECT present FROM division_truth_bk_state) AS present
+  FROM division_truth_bk
 ),
 l6c AS (
   SELECT count(*) AS n,
          string_agg(t.name || ' (' || se.name || ') ' || (CASE WHEN a.power_score >= b.live_power_score THEN '+' ELSE '' END)
                                                 || round((a.power_score - b.live_power_score) * 100, 2)::text,
                     '; ' ORDER BY abs(a.power_score - b.live_power_score) DESC) AS list
-  FROM public.team_season_stats_pre_division_truth b
+  FROM division_truth_bk b
   JOIN newer ON newer.season_id = b.season_id
   JOIN public.v_team_season_agg a ON a.season_id = b.season_id AND a.team_id = b.team_id
   JOIN public.teams t ON t.id = b.team_id
@@ -311,7 +361,7 @@ l7 AS (
                                 (b.match_wins, b.match_losses, b.game_wins, b.game_losses, b.division_name,
                                  b.playoff_rank, b.champion, b.runner_up)) AS changed,
          count(*) AS n
-  FROM public.team_season_stats_pre_division_truth b
+  FROM division_truth_bk b
   LEFT JOIN public.team_season_stats s ON s.season_id = b.season_id AND s.team_id = b.team_id
 ),
 -- L8: the same three rows as src/constants/dropoutDivisions.ts
@@ -386,26 +436,34 @@ FROM (
     FROM l6
   UNION ALL
   SELECT 'L6b old scores re-derived',
-         CASE WHEN l6.bad_old = 0 THEN 'PASS' ELSE 'FAIL' END,
-         l6.bad_old || ' of ' || l6.team_seasons || ' differ from the backup''s live_rules numbers'
-    FROM l6
+         CASE WHEN bk.n = 0 THEN 'INFO' WHEN l6.bad_old = 0 THEN 'PASS' ELSE 'FAIL' END,
+         CASE WHEN bk.n = 0 AND bk.present THEN 'backup table is empty (0 saved rows): there are no saved numbers to compare with'
+              WHEN bk.n = 0 THEN 'skipped, backup table not found (retired by script 07, or never taken): there are no saved numbers to compare with'
+              ELSE l6.bad_old || ' of ' || l6.backup_rows || ' differ from the backup''s live_rules numbers' END
+    FROM l6, bk
   UNION ALL
   SELECT 'L6c no changed game, no change',
-         CASE WHEN l6.bad_zero = 0 THEN 'PASS' ELSE 'FAIL' END,
-         l6.bad_zero || ' team-seasons with no changed game moved against live_rules'
-    FROM l6
+         CASE WHEN bk.n = 0 THEN 'INFO' WHEN l6.bad_zero = 0 THEN 'PASS' ELSE 'FAIL' END,
+         CASE WHEN bk.n = 0 AND bk.present THEN 'backup table is empty (0 saved rows): there are no saved numbers to compare with'
+              WHEN bk.n = 0 THEN 'skipped, backup table not found (retired by script 07, or never taken): there are no saved numbers to compare with'
+              ELSE l6.bad_zero || ' team-seasons with no changed game moved against live_rules' END
+    FROM l6, bk
   UNION ALL
   SELECT 'L6d three newer seasons: who moved',
          'INFO',
-         l6c.n || ' teams moved against live_rules (7 expected on the live data). '
-         || COALESCE(l6c.list, 'none')
-    FROM l6c
+         CASE WHEN bk.n = 0 AND bk.present THEN 'backup table is empty (0 saved rows): there are no saved numbers to compare with'
+              WHEN bk.n = 0 THEN 'skipped, backup table not found (retired by script 07, or never taken): there are no saved numbers to compare with'
+              ELSE l6c.n || ' teams moved against live_rules (7 expected on the live data). '
+                   || COALESCE(l6c.list, 'none') END
+    FROM l6c, bk
   UNION ALL
   SELECT 'L7 records identical to backup',
-         CASE WHEN l7.lost = 0 AND l7.changed = 0 THEN 'PASS' ELSE 'FAIL' END,
-         l7.changed || ' of ' || l7.n || ' saved rows changed record, games, division, champion or rank; '
-         || l7.lost || ' rows missing'
-    FROM l7
+         CASE WHEN bk.n = 0 THEN 'INFO' WHEN l7.lost = 0 AND l7.changed = 0 THEN 'PASS' ELSE 'FAIL' END,
+         CASE WHEN bk.n = 0 AND bk.present THEN 'backup table is empty (0 saved rows): there are no saved numbers to compare with'
+              WHEN bk.n = 0 THEN 'skipped, backup table not found (retired by script 07, or never taken): there are no saved numbers to compare with'
+              ELSE l7.changed || ' of ' || l7.n || ' saved rows changed record, games, division, champion or rank; '
+                   || l7.lost || ' rows missing' END
+    FROM l7, bk
   UNION ALL
   SELECT 'L8 TypeScript list = SQL rows',
          CASE WHEN l8.agree = l8.n THEN 'PASS'

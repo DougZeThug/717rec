@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { assertNonEmptyString } from '@/utils/validation';
 
@@ -28,6 +29,12 @@ export const BlindDrawService = {
     return data as BlindDrawSettings;
   },
 
+  /**
+   * Save the sign-up confirmation message.
+   * @throws {DatabaseError} When the database operation fails
+   * @throws {BusinessLogicError} When no row was updated (admin access was
+   *   removed, so row-level security filtered it out without an error)
+   */
   updateBlindDrawSettings: async ({
     id,
     message,
@@ -35,11 +42,18 @@ export const BlindDrawService = {
     id: string;
     message: string;
   }): Promise<void> => {
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('blind_draw_settings')
       .update({ signup_confirmation_message: message })
-      .eq('id', id);
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
     if (error) handleDatabaseError(error, 'Failed to update blind draw settings');
+    if (!updated) {
+      throw new BusinessLogicError(
+        'Nothing was saved. Your admin access may have changed. Refresh the page and try again.'
+      );
+    }
   },
 
   fetchBlindDrawSignupCount: async (eventDate: string): Promise<number> => {

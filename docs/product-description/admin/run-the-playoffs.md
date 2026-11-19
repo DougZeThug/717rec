@@ -5,11 +5,11 @@
 Running the playoffs is spread across three screens that do not link to each
 other.
 
-| Job | Where |
-| --- | --- |
-| Create, seed, repair, and delete brackets | `/playoffs`, which shows admins an extra set of controls |
-| Manage blind draw signups and the message players see | `/admin` → **Blind Draw** |
-| Turn on the Challonge fallback and list its embeds | `/admin` → **Hero** |
+| Job                                                   | Where                                                    |
+| ----------------------------------------------------- | -------------------------------------------------------- |
+| Create, seed, repair, and delete brackets             | `/playoffs`, which shows admins an extra set of controls |
+| Manage blind draw signups and the message players see | `/admin` → **Blind Draw**                                |
+| Turn on the Challonge fallback and list its embeds    | `/admin` → **Hero**                                      |
 
 An admin on `/playoffs` sees the same page a visitor sees plus a Brackets/Teams
 tab strip and a row of controls on each bracket. Reading a bracket is
@@ -74,14 +74,14 @@ no divisions at all, the page shows "No Playoff Brackets Yet" and a single
 
 Opening a bracket shows it in full, with a row of admin controls in the header:
 
-| Control | When it appears |
-| --- | --- |
+| Control                   | When it appears                                     |
+| ------------------------- | --------------------------------------------------- |
 | **Recalculate Standings** | The bracket is completed and has no final standings |
-| **Repair Bracket** | The bracket is not completed |
-| **Rearrange Teams** | Double elimination only; disabled once completed |
-| **Update Seeding** | Always; disabled once completed |
-| **Edit Bracket** | Always |
-| **Delete** | Always |
+| **Repair Bracket**        | The bracket is not completed                        |
+| **Rearrange Teams**       | Double elimination only; disabled once completed    |
+| **Update Seeding**        | Always; disabled once completed                     |
+| **Edit Bracket**          | Always                                              |
+| **Delete**                | Always                                              |
 
 Above the medium breakpoint the six sit in a row. Below it, they collapse into
 a single **⋯** button at the right of the header, which opens a menu holding the
@@ -95,10 +95,10 @@ is disabled **as soon as any match has been played**, with a line saying why: it
 teams would be left behind in the old division. The division is written only when
 the admin actually changes it. Nothing else about a bracket can be changed here —
 the teams, the format and the size decided the matches it generated, so changing
-them would mean deleting the bracket and every match played in it. *Update
-Seeding* and *Rearrange Teams* are the controls for those.
+them would mean deleting the bracket and every match played in it. _Update
+Seeding_ and _Rearrange Teams_ are the controls for those.
 
-> *Technical note:* "has been played" is read from the matches, not from the
+> _Technical note:_ "has been played" is read from the matches, not from the
 > bracket's stored state. Nothing in the app ever records a bracket as
 > in-progress — it goes straight from pending to completed when the whole thing
 > ends — so a state check would leave the division editable for an entire
@@ -122,11 +122,11 @@ The create dialog opens empty every time. Its fields:
   division changes; a division with no teams says so and offers the box.
 - **Format** — Single or Double Elimination. Default Double.
 - **Grand final** — one match or two, for double elimination only.
-- **Teams** — between **2 and 32**, shown as "Select Teams (*N*/32)". The
+- **Teams** — between **2 and 32**, shown as "Select Teams (_N_/32)". The
   list is **best first**, in the order the saved bracket uses (score to one
   decimal, then division tier, then win %, then name), not A to Z. The score
   beside a team shows one decimal, and a team with no score shows none. The
-  **#** number beside a team is its **place in the list shown**, 1 to *N*. A
+  **#** number beside a team is its **place in the list shown**, 1 to _N_. A
   division list starts at **#1**. A stored seed shows only in the **Seeds** tab.
   The bracket ignores stored seeds unless the admin types or drags seeds in
   that session.
@@ -177,7 +177,7 @@ Create Bracket and Update Seeding are centred pop-ups on every screen size, and
 both fit a 320-pixel phone (since 2026-11-10). Create Bracket stays centred on a
 phone on purpose (Doug, 2026-11-10): a bottom drawer closes with a swipe, and a
 swipe would fight its drag-to-seed list. On a 320-pixel phone its Cancel and
-"Create Bracket (*N* teams)" buttons sit on two lines.
+"Create Bracket (_N_ teams)" buttons sit on two lines.
 
 **Deleting** asks first, and says exactly what it means:
 
@@ -189,7 +189,7 @@ fails to refresh, a plain toast says "Bracket deleted — Deleted, but list coul
 not refresh". On failure, "Delete failed" with the league's reason.
 
 **Repair Bracket** and **Recalculate Standings** act on the first press, with no
-confirmation. Repair reports what it changed — "*N* match(es) updated, *N*
+confirmation. Repair reports what it changed — "_N_ match(es) updated, _N_
 match(es) made playable, bracket marked completed" — or "Nothing needed repair".
 Repair also resets the hidden feeder numbers on losers-bracket spots. When these
 numbers are wrong, a losers-bracket score fails to save with "Match not found".
@@ -248,13 +248,16 @@ cleared the later matches. The four buttons are readable in the dark theme too.
 **Settings** is one field: the "Signup Confirmation Message" shown to a player
 after they sign up, capped at 100 characters with no counter. Save is dead until
 it differs from what is stored. A toast says "Saved — Confirmation message
-updated".
+updated". If the admin's access was removed in another tab, nothing is saved and a
+red toast reads "Error — Failed to update settings: Nothing was saved. Your admin
+access may have changed. Refresh the page and try again." Before this was fixed,
+the green "Saved" toast showed in that case.
 
 **Signups** is a numbered table of first name and last initial with the time
 each signed up, and a count. Each row has a bin, which asks "Remove Signup — Are
-you sure you want to remove *name* from the signup list? This action cannot be
+you sure you want to remove _name_ from the signup list? This action cannot be
 undone." A **Clear All** button asks "Clear all signups? This will remove all
-*N* signups. This action cannot be undone." **Clear All removes every signup in
+_N_ signups. This action cannot be undone." **Clear All removes every signup in
 the league**, not just one night's; there is no date filter anywhere on the tab.
 When the table is wider than its box (a long name on a narrow phone), it scrolls
 sideways inside the box. Until 2026-11-11 the box cut it off instead, bins
@@ -262,7 +265,7 @@ included.
 
 ### The Challonge fallback
 
-`/admin` → **Hero** → *Challonge Playoffs Fallback* is a switch, two header
+`/admin` → **Hero** → _Challonge Playoffs Fallback_ is a switch, two header
 fields, and a list of embeds.
 
 The switch is labelled "Show Challonge bracket embeds on Playoffs page". The two
@@ -276,28 +279,28 @@ is selected**. Selecting a bracket hides it. It is read-only to everyone.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | A visitor or player sees `/playoffs` with no controls at all. An admin sees the tab strip and every button. Blind Draw and Hero are inside `/admin` and gated by its guard. | Losing admin leaves the controls on screen until the profile is re-read; the writes then fail. |
-| The record's state | `pending` allows seeding and rearranging. `in_progress` allows neither. `completed` disables everything but Recalculate Standings and Delete. | A result entered elsewhere moves the bracket to `in_progress`; the seeding dialog does not notice until it is reopened, and the save then fails. |
-| The season's state | The season picker chooses which season's brackets are listed, and a new bracket is stamped with it. When the playoff season and the active season differ, a banner says which is which. | Changing the season reloads the list and clears the selected bracket. |
-| Viewport | Below the medium breakpoint the six bracket admin controls collapse into one **⋯** menu; above it they are a row of buttons. The season picker does not move: it is under the heading on every screen size. | No effect. |
-| Keys the form honours | The create, seeding, rearrange, and delete dialogs are proper dialogs: Escape closes, Tab is trapped. The seeding list can be reordered from the keyboard. | Escape cancels without writing — except that the Seeds tab inside the create dialog has already saved anything it saved. |
+| Modifier              | Set at arrival                                                                                                                                                                                              | Changed while editing                                                                                                                            |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The user's role       | A visitor or player sees `/playoffs` with no controls at all. An admin sees the tab strip and every button. Blind Draw and Hero are inside `/admin` and gated by its guard.                                 | Losing admin leaves the controls on screen until the profile is re-read; the writes then fail.                                                   |
+| The record's state    | `pending` allows seeding and rearranging. `in_progress` allows neither. `completed` disables everything but Recalculate Standings and Delete.                                                               | A result entered elsewhere moves the bracket to `in_progress`; the seeding dialog does not notice until it is reopened, and the save then fails. |
+| The season's state    | The season picker chooses which season's brackets are listed, and a new bracket is stamped with it. When the playoff season and the active season differ, a banner says which is which.                     | Changing the season reloads the list and clears the selected bracket.                                                                            |
+| Viewport              | Below the medium breakpoint the six bracket admin controls collapse into one **⋯** menu; above it they are a row of buttons. The season picker does not move: it is under the heading on every screen size. | No effect.                                                                                                                                       |
+| Keys the form honours | The create, seeding, rearrange, and delete dialogs are proper dialogs: Escape closes, Tab is trapped. The seeding list can be reordered from the keyboard.                                                  | Escape cancels without writing — except that the Seeds tab inside the create dialog has already saved anything it saved.                         |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. | Closes any dialog and writes nothing. It cannot stop a creation already sent, and it cannot un-do seeds saved from the Seeds tab. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | A half-filled create form is lost with no warning. A creation already sent still completes and the bracket still appears. |
-| Browser back or forward | As above. | As above. The automatic navigation a second after creation can also land while the admin is doing something else. |
-| Reload, or the tab closed | A reload brings back the same season and bracket, because both are in the address. After the tab is closed, `/playoffs` opens on the list with no bracket selected. | The form is gone. A sent creation may have landed; the division card says which. |
-| Network lost mid-request | The brackets list shows its error banner. | Creation fails with "Network Error: Please check your internet connection and try again" in the dialog and a toast. Nothing is queued. |
-| The request fails or times out | As above. | The dialog keeps the form and shows the reason, so the admin can retry without re-ticking twelve teams. |
-| The session expires | Reading still works; `/playoffs` is public. | Every write is refused and reported as that control's failure. |
-| The same record changed in another tab, or by another user | The bracket's match table has a live connection, so results appear as they are entered. The brackets **list** does not. | Two admins creating a bracket for the same division both succeed; nothing prevents duplicates. A seeding save is refused if a result landed first. |
-| Browser autofill or a password manager writes into the form | No effect. | The title and slug fields are unnamed free text and are not autofill targets. |
-| The window loses focus | No effect. | Returning refetches the brackets and the Challonge config once stale. Nothing announces it. |
+| Event                                                       | Before the first edit                                                                                                                                               | While editing or submitting                                                                                                                        |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Nothing to cancel.                                                                                                                                                  | Closes any dialog and writes nothing. It cannot stop a creation already sent, and it cannot un-do seeds saved from the Seeds tab.                  |
+| In-app navigation away, or switching tab within the page    | Nothing is lost.                                                                                                                                                    | A half-filled create form is lost with no warning. A creation already sent still completes and the bracket still appears.                          |
+| Browser back or forward                                     | As above.                                                                                                                                                           | As above. The automatic navigation a second after creation can also land while the admin is doing something else.                                  |
+| Reload, or the tab closed                                   | A reload brings back the same season and bracket, because both are in the address. After the tab is closed, `/playoffs` opens on the list with no bracket selected. | The form is gone. A sent creation may have landed; the division card says which.                                                                   |
+| Network lost mid-request                                    | The brackets list shows its error banner.                                                                                                                           | Creation fails with "Network Error: Please check your internet connection and try again" in the dialog and a toast. Nothing is queued.             |
+| The request fails or times out                              | As above.                                                                                                                                                           | The dialog keeps the form and shows the reason, so the admin can retry without re-ticking twelve teams.                                            |
+| The session expires                                         | Reading still works; `/playoffs` is public.                                                                                                                         | Every write is refused and reported as that control's failure.                                                                                     |
+| The same record changed in another tab, or by another user  | The bracket's match table has a live connection, so results appear as they are entered. The brackets **list** does not.                                             | Two admins creating a bracket for the same division both succeed; nothing prevents duplicates. A seeding save is refused if a result landed first. |
+| Browser autofill or a password manager writes into the form | No effect.                                                                                                                                                          | The title and slug fields are unnamed free text and are not autofill targets.                                                                      |
+| The window loses focus                                      | No effect.                                                                                                                                                          | Returning refetches the brackets and the Challonge config once stale. Nothing announces it.                                                        |
 
 After an interrupt the division card is the record: the bracket is listed or it
 is not.
@@ -414,7 +417,7 @@ sees a count.
   opens an edit dialog for the bracket in front of the admin. Its scope is the
   title and the division only: everything else defines the generated match tree,
   so changing it would mean deleting the bracket and every match played in it.
-  *Update Seeding* and *Rearrange Teams* cover the structural cases. The
+  _Update Seeding_ and _Rearrange Teams_ cover the structural cases. The
   division is locked as soon as any match has been played, because moving it
   would leave its teams behind, and the dialog says so.
 - Resolved: **a division with a bracket had no Create button**, which is why the

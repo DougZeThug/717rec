@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
@@ -135,10 +135,18 @@ describe('ContactRequestService.fetchAll', () => {
 
 // ─── markResolved / reopen / remove ───────────────────────────────────────────
 
+/** Build the .update().eq().select().maybeSingle() chain markResolved and reopen walk. */
+const updateChain = (result: { data: unknown; error: unknown }) => {
+  const maybeSingle = vi.fn().mockResolvedValue(result);
+  const select = vi.fn().mockReturnValue({ maybeSingle });
+  const eq = vi.fn().mockReturnValue({ select });
+  const update = vi.fn().mockReturnValue({ eq });
+  return { update, eq, select };
+};
+
 describe('ContactRequestService write methods', () => {
   it('markResolved updates status and timestamps', async () => {
-    const eq = vi.fn().mockResolvedValue({ data: null, error: null });
-    const update = vi.fn().mockReturnValue({ eq });
+    const { update, eq, select } = updateChain({ data: { id: 'req-1' }, error: null });
     mockFrom.mockReturnValue({ update });
 
     await ContactRequestService.markResolved('req-1', 'admin-9');
@@ -149,11 +157,31 @@ describe('ContactRequestService write methods', () => {
     expect(patch.resolved_by).toBe('admin-9');
     expect(typeof patch.resolved_at).toBe('string');
     expect(eq).toHaveBeenCalledWith('id', 'req-1');
+    expect(select).toHaveBeenCalledWith('id');
+  });
+
+  it('throws DatabaseError when markResolved fails', async () => {
+    const { update } = updateChain({ data: null, error: pgError() });
+    mockFrom.mockReturnValue({ update });
+
+    await expect(ContactRequestService.markResolved('req-1', 'admin-9')).rejects.toBeInstanceOf(
+      DatabaseError
+    );
+  });
+
+  // The request can be gone, or admin access removed so row-level security
+  // hides it. The update then matches nothing and reports no error.
+  it('throws BusinessLogicError when markResolved changed no row', async () => {
+    const { update } = updateChain({ data: null, error: null });
+    mockFrom.mockReturnValue({ update });
+
+    const result = ContactRequestService.markResolved('req-1', 'admin-9');
+    await expect(result).rejects.toBeInstanceOf(BusinessLogicError);
+    await expect(result).rejects.toThrow(/Nothing was saved. This request/);
   });
 
   it('reopen clears resolved fields', async () => {
-    const eq = vi.fn().mockResolvedValue({ data: null, error: null });
-    const update = vi.fn().mockReturnValue({ eq });
+    const { update, eq, select } = updateChain({ data: { id: 'req-2' }, error: null });
     mockFrom.mockReturnValue({ update });
 
     await ContactRequestService.reopen('req-2');
@@ -164,6 +192,23 @@ describe('ContactRequestService write methods', () => {
       resolved_at: null,
     });
     expect(eq).toHaveBeenCalledWith('id', 'req-2');
+    expect(select).toHaveBeenCalledWith('id');
+  });
+
+  it('throws DatabaseError when reopen fails', async () => {
+    const { update } = updateChain({ data: null, error: pgError() });
+    mockFrom.mockReturnValue({ update });
+
+    await expect(ContactRequestService.reopen('req-2')).rejects.toBeInstanceOf(DatabaseError);
+  });
+
+  it('throws BusinessLogicError when reopen changed no row', async () => {
+    const { update } = updateChain({ data: null, error: null });
+    mockFrom.mockReturnValue({ update });
+
+    const result = ContactRequestService.reopen('req-2');
+    await expect(result).rejects.toBeInstanceOf(BusinessLogicError);
+    await expect(result).rejects.toThrow(/Nothing was saved. This request/);
   });
 
   it('remove deletes the row by id', async () => {

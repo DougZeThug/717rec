@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError } from '@/types/errors';
 import { Message, MessageCategory } from '@/types/reactions';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
@@ -82,14 +83,27 @@ export const MessageService = {
     if (error) handleDatabaseError(error, 'Failed to create message');
   },
 
+  /**
+   * Edit your own message.
+   * @throws {DatabaseError} When the database operation fails
+   * @throws {BusinessLogicError} When no row was updated (the message was
+   *   deleted, so nothing matched and the database reports no error)
+   */
   updateMessage: async (messageId: string, userId: string, content: string): Promise<void> => {
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('messages')
       .update({ content })
       .eq('id', messageId)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .select('id')
+      .maybeSingle();
 
     if (error) handleDatabaseError(error, 'Failed to update message');
+    if (!updated) {
+      throw new BusinessLogicError(
+        'The message may have been deleted. Refresh the page and try again.'
+      );
+    }
   },
 
   deleteMessage: async (messageId: string, userId: string): Promise<void> => {

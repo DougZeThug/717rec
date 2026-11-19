@@ -1,6 +1,7 @@
 import type { PostgrestError } from '@supabase/supabase-js';
 
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 /**
@@ -47,7 +48,14 @@ type UntypedFrom = (table: string) => {
     };
   };
   update: (values: Record<string, unknown>) => {
-    eq: (column: string, value: string) => PromiseLike<{ error: PostgrestError | null }>;
+    eq: (
+      column: string,
+      value: string
+    ) => {
+      select: (columns: string) => {
+        maybeSingle: () => PromiseLike<{ data: unknown; error: PostgrestError | null }>;
+      };
+    };
   };
 };
 const untypedFrom = supabase.from.bind(supabase) as unknown as UntypedFrom;
@@ -58,6 +66,9 @@ const untypedFrom = supabase.from.bind(supabase) as unknown as UntypedFrom;
 const NOT_APPLIED_CODES = ['PGRST205', '42P01'];
 
 const COLUMNS = 'id, name, email, subject, message, status, created_at';
+
+const NOTHING_SAVED_MESSAGE =
+  'Nothing was saved. This ticket may have been deleted, or your admin access may have changed. Refresh the page and try again.';
 
 export const SupportTicketService = {
   /**
@@ -95,15 +106,32 @@ export const SupportTicketService = {
     return count ?? 0;
   },
 
+  /**
+   * @throws {DatabaseError} When the database operation fails
+   * @throws {BusinessLogicError} When no row was updated (the ticket was
+   *   deleted, or admin access was removed so row-level security hid it)
+   */
   markResolved: async (id: string): Promise<void> => {
-    const { error } = await untypedFrom('support_tickets')
+    const { data: updated, error } = await untypedFrom('support_tickets')
       .update({ status: 'resolved' })
-      .eq('id', id);
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
     if (error) handleDatabaseError(error, 'Failed to mark support ticket resolved');
+    if (!updated) throw new BusinessLogicError(NOTHING_SAVED_MESSAGE);
   },
 
+  /**
+   * @throws {DatabaseError} When the database operation fails
+   * @throws {BusinessLogicError} When no row was updated (same cases as markResolved)
+   */
   reopen: async (id: string): Promise<void> => {
-    const { error } = await untypedFrom('support_tickets').update({ status: 'new' }).eq('id', id);
+    const { data: updated, error } = await untypedFrom('support_tickets')
+      .update({ status: 'new' })
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
     if (error) handleDatabaseError(error, 'Failed to reopen support ticket');
+    if (!updated) throw new BusinessLogicError(NOTHING_SAVED_MESSAGE);
   },
 };
