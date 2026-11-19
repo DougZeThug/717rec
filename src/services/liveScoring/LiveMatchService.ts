@@ -2,7 +2,7 @@ import type { PostgrestError } from '@supabase/supabase-js';
 
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import { LiveScoringNotEnabledError, ValidationError } from '@/types/errors';
+import { BusinessLogicError, LiveScoringNotEnabledError, ValidationError } from '@/types/errors';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { MAX_PLAYERS_PER_SIDE } from '@/utils/liveScoring/rules';
 type GamePlayerRow = Tables<'game_players'>;
@@ -146,12 +146,16 @@ export const LiveMatchService = {
     return ensureFound(data, 'Game');
   },
 
+  /**
+   * @throws {BusinessLogicError} When no row was updated (row-level security
+   *   filtered it out without an error), so the screen cannot claim a save
+   */
   completeGame: async (
     gameId: string,
     winnerTeamId: string,
     finalTotals: { team1: number; team2: number }
   ): Promise<void> => {
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('games')
       .update({
         status: 'completed',
@@ -160,18 +164,36 @@ export const LiveMatchService = {
         team2_score: finalTotals.team2,
         completed_at: new Date().toISOString(),
       })
-      .eq('id', gameId);
+      .eq('id', gameId)
+      .select('id')
+      .maybeSingle();
 
     if (error) handleLiveScoringError(error, 'Failed to complete game');
+    if (!updated) {
+      throw new BusinessLogicError(
+        'Nothing was saved. This match may already be finished, or you can no longer score it. Refresh the page.'
+      );
+    }
   },
 
+  /**
+   * @throws {BusinessLogicError} When no row was updated (row-level security
+   *   filtered it out without an error), so the screen cannot claim a reopen
+   */
   reopenGame: async (gameId: string): Promise<void> => {
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('games')
       .update({ status: 'in_progress', winner_team_id: null, completed_at: null })
-      .eq('id', gameId);
+      .eq('id', gameId)
+      .select('id')
+      .maybeSingle();
 
     if (error) handleLiveScoringError(error, 'Failed to reopen game');
+    if (!updated) {
+      throw new BusinessLogicError(
+        'Nothing was reopened. This match may already be open, or you can no longer change it. Refresh the page.'
+      );
+    }
   },
 
   /**

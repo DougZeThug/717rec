@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  BusinessLogicError,
   DatabaseError,
   LiveScoringNotEnabledError,
   NotFoundError,
@@ -213,10 +214,18 @@ describe('createGame', () => {
 
 // ─── completeGame / reopenGame ────────────────────────────────────────────────
 
+// update -> eq -> select -> maybeSingle, as the service chains it.
+const updateChain = (result: { data: unknown; error: unknown }) => {
+  const maybeSingle = vi.fn(() => Promise.resolve(result));
+  const select = vi.fn(() => ({ maybeSingle }));
+  const eq = vi.fn(() => ({ select }));
+  const update = vi.fn(() => ({ eq }));
+  return { update, eq, select };
+};
+
 describe('completeGame', () => {
   it('marks the game completed with winner and folded totals', async () => {
-    const eq = vi.fn(() => Promise.resolve({ error: null }));
-    const update = vi.fn(() => ({ eq }));
+    const { update, eq, select } = updateChain({ data: { id: 'game-1' }, error: null });
     routeTables({ games: { update } });
 
     await LiveMatchService.completeGame('game-1', 'team-2', { team1: 18, team2: 21 });
@@ -230,13 +239,39 @@ describe('completeGame', () => {
       })
     );
     expect(eq).toHaveBeenCalledWith('id', 'game-1');
+    expect(select).toHaveBeenCalledWith('id');
+  });
+
+  it('throws DatabaseError when the update fails', async () => {
+    const { update } = updateChain({ data: null, error: pgError('500') });
+    routeTables({ games: { update } });
+
+    await expect(
+      LiveMatchService.completeGame('game-1', 'team-2', { team1: 18, team2: 21 })
+    ).rejects.toBeInstanceOf(DatabaseError);
+  });
+
+  // RLS filters the row out and Postgres reports no error: without this check
+  // the scorer is told the game was saved when nothing changed.
+  it('throws when no row was updated (RLS blocked it, no error)', async () => {
+    const { update } = updateChain({ data: null, error: null });
+    routeTables({ games: { update } });
+
+    const thrown = await LiveMatchService.completeGame('game-1', 'team-2', {
+      team1: 18,
+      team2: 21,
+    }).catch((error: unknown) => error);
+
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect(getUIErrorMessage(thrown)).toBe(
+      'Nothing was saved. This match may already be finished, or you can no longer score it. Refresh the page.'
+    );
   });
 });
 
 describe('reopenGame', () => {
   it('clears winner and returns the game to in_progress', async () => {
-    const eq = vi.fn(() => Promise.resolve({ error: null }));
-    const update = vi.fn(() => ({ eq }));
+    const { update, eq, select } = updateChain({ data: { id: 'game-1' }, error: null });
     routeTables({ games: { update } });
 
     await LiveMatchService.reopenGame('game-1');
@@ -246,6 +281,27 @@ describe('reopenGame', () => {
       winner_team_id: null,
       completed_at: null,
     });
+    expect(eq).toHaveBeenCalledWith('id', 'game-1');
+    expect(select).toHaveBeenCalledWith('id');
+  });
+
+  it('throws DatabaseError when the update fails', async () => {
+    const { update } = updateChain({ data: null, error: pgError('500') });
+    routeTables({ games: { update } });
+
+    await expect(LiveMatchService.reopenGame('game-1')).rejects.toBeInstanceOf(DatabaseError);
+  });
+
+  it('throws when no row was updated (RLS blocked it, no error)', async () => {
+    const { update } = updateChain({ data: null, error: null });
+    routeTables({ games: { update } });
+
+    const thrown = await LiveMatchService.reopenGame('game-1').catch((error: unknown) => error);
+
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect(getUIErrorMessage(thrown)).toBe(
+      'Nothing was reopened. This match may already be open, or you can no longer change it. Refresh the page.'
+    );
   });
 });
 
