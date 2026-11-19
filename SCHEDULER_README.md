@@ -142,9 +142,8 @@ How the weights are used (`src/hooks/scheduling/utils/standardPairing.ts`):
   stopped where OFF finished (the admin sees a red error toast).
 
 The old scorers `calculateTeamCompatibility` and
-`calculateConfigurableCompatibility` (deprecated) are not used by the Standard
-path. `calculateConfigurableCompatibility` is reached only through
-`generateDualBlockPairings`, which has no production caller.
+`calculateConfigurableCompatibility`, and the old dual-block pairing generator
+`generateDualBlockPairings` that called them, were removed. Nothing called them.
 
 **Constraints:**
 - Configurable rematch avoidance

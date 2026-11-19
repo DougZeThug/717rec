@@ -183,7 +183,7 @@ Last measured: 2026-08-11.
 | Branches   | 58.15%  |
 
 Measured from a full passing run on 2026-08-11: 511 test files / 3840 tests. The
-suite is larger now: 894 test files / 8,571 tests (15 of them expected-fail cases) as of 2026-11-19.
+suite is larger now: 890 test files / 8,525 tests (15 of them expected-fail cases) as of 2026-11-19.
 
 The overall number is held down by the component layer, which is still uneven
 at 62% lines even after the 2026-08 test expansion. The logic-heavy areas
@@ -414,7 +414,7 @@ per-area numbers matter for a decision, recompute them from a fresh
 
 ## What's tested today
 
-894 test files / 8,571 tests (15 of them expected-fail cases) as of 2026-11-19. The highlights by layer below are
+890 test files / 8,525 tests (15 of them expected-fail cases) as of 2026-11-19. The highlights by layer below are
 from the 2026-08-11 run (511 test files / 3840 tests):
 
 **Services (89% lines):** the data-access layer is the best-covered area.
@@ -440,7 +440,7 @@ scheduling helpers).
 win %, power score), career stats (match stats, playoff stats, sweep rate,
 clutch rate, narratives, career SOS), predictions, playoffs, match utilities,
 bracket validators/mappers, error handler, auto-schedule (blossom algorithm at
-63% lines, dual-block pairing at 89%, validation, edge cases), greedy
+63% lines, dual-block metrics and team balancing, validation, edge cases), greedy
 scheduler (feasibility, constraints, rematch repair), colors, timezone,
 team details/stats, `sanitizeReturnTo`.
 
