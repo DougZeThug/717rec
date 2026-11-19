@@ -23,11 +23,7 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 // Import after mocks
-import {
-  fetchAllTeamsCareerPowerScores,
-  fetchHistoricalPowerScores,
-  fetchTeamCareerPowerScore,
-} from '../RankingCareerService';
+import { fetchAllTeamsCareerPowerScores, fetchTeamCareerPowerScore } from '../RankingCareerService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -142,63 +138,6 @@ describe('fetchAllTeamsCareerPowerScores', () => {
     });
 
     await expect(fetchAllTeamsCareerPowerScores()).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchHistoricalPowerScores ──────────────────────────────────────────────
-
-describe('fetchHistoricalPowerScores', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('returns historicalScores and previousScores on success', async () => {
-    setupTables({
-      v_team_details: {
-        data: [{ team_id: 't1', name: 'Alpha', power_score: 75 }],
-        error: null,
-      },
-      power_score_snapshots: {
-        data: [
-          {
-            team_id: 't1',
-            power_score: 70,
-            snapshot_date: '2025-01-01',
-            week_number: 1,
-            season_id: 's1',
-          },
-        ],
-        error: null,
-      },
-    });
-
-    const result = await fetchHistoricalPowerScores();
-
-    expect(result).toHaveProperty('historicalScores');
-    expect(result).toHaveProperty('previousScores');
-    expect(result.historicalScores).toHaveLength(1);
-    expect(result.historicalScores[0].team_id).toBe('t1');
-    // lastWeek should be the historical snapshot (70), not the current (75)
-    expect(result.previousScores.t1).toBe(70);
-  });
-
-  it('throws DatabaseError when the v_team_details query fails', async () => {
-    setupTables({
-      v_team_details: { data: null, error: pgError('team details fetch failed') },
-      power_score_snapshots: { data: [], error: null },
-    });
-
-    await expect(fetchHistoricalPowerScores()).rejects.toThrow(DatabaseError);
-  });
-
-  it('throws DatabaseError when the power_score_snapshots query fails', async () => {
-    setupTables({
-      v_team_details: { data: [], error: null },
-      power_score_snapshots: { data: null, error: pgError('snapshots fetch failed') },
-    });
-
-    // Call WITH a teamId to also exercise the ".eq('team_id', teamId)" branch
-    await expect(fetchHistoricalPowerScores('t1')).rejects.toThrow(DatabaseError);
   });
 });
 
