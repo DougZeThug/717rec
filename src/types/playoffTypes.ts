@@ -51,7 +51,7 @@ export interface PlayoffMatch {
  */
 type PlayoffMatchStatus = 'pending' | 'in_progress' | 'completed' | 'archived';
 
-export interface PlayoffGame {
+interface PlayoffGame {
   id: string;
   matchId?: string;
   gameNumber?: number;
