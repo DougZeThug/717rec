@@ -47,6 +47,14 @@ describe('checkGameWinner (first to 21, win by 2)', () => {
     expect(checkGameWinner(21, 21, rules)).toBeNull();
   });
 
+  // League rule (docs/agents/LEAGUE_CONTEXT.md): first to 21, win by 2, no cap.
+  it('has no hard cap: a game runs past any score until someone leads by 2', () => {
+    expect(checkGameWinner(30, 29)).toBeNull();
+    expect(checkGameWinner(29, 30)).toBeNull();
+    expect(checkGameWinner(40, 38)).toBe(1);
+    expect(checkGameWinner(38, 40)).toBe(2);
+  });
+
   it('honors a hard cap regardless of lead', () => {
     const rules = { targetScore: 21, winBy: 2, hardCap: 25 };
     expect(checkGameWinner(25, 24, rules)).toBe(1);

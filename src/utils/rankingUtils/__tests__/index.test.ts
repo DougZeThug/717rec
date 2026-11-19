@@ -310,6 +310,35 @@ describe('sortRankings (field/direction branches)', () => {
     expect(result.map((r) => r.teamId)).toEqual(['higher-win', 'lower-win']);
   });
 
+  it('uses division tier when displayed power scores tie after rounding', () => {
+    const result = sortRankings(
+      [
+        ranking({
+          teamId: 'smooth',
+          teamName: 'Smooth Sliders',
+          divisionName: 'Intermediate',
+          powerScore: 60.44,
+          winPercentage: 0.667,
+        }),
+        ranking({
+          teamId: 'cheesers',
+          teamName: 'Pepperoni Cheesers',
+          divisionName: 'Competitive',
+          powerScore: 60.41,
+          winPercentage: 0.417,
+        }),
+      ],
+      'powerScore',
+      'desc'
+    );
+
+    expect(result.map((r) => r.teamId)).toEqual(['cheesers', 'smooth']);
+  });
+
+  it('handles an empty rankings array', () => {
+    expect(updateRankChanges(sortRankings([], 'powerScore', 'desc'))).toEqual([]);
+  });
+
   it('returns 0 (stable) for exact ties on non-powerScore fields', () => {
     const result = sortRankings(
       [ranking({ teamId: 'first', wins: 4 }), ranking({ teamId: 'second', wins: 4 })],
