@@ -6748,6 +6748,8 @@ export type Database = {
         Args: { p_bracket_id: string }
         Returns: number
       }
+      _reapply_power_score_unification_owner: { Args: never; Returns: string }
+      _revert_power_score_unification_owner: { Args: never; Returns: string }
       activate_season: {
         Args: { season_id: string }
         Returns: {

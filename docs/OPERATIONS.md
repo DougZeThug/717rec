@@ -467,6 +467,9 @@ in the admin panel under **Operations → Power Score Review**:
 
 Caveats:
 
+- The two actions require a confirmed admin profile. The commands behind them
+  cannot be called directly from the app. The access update does not run either
+  action or change stored scores.
 - **Do not press Revert or Re-apply after §6e is applied.** Both buttons
   rebuild the views from text saved in `20260812171710`, which still counts a
   tie as a loss in Win % and the Power Score. Either one quietly undoes §6e.
