@@ -2,12 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Team } from '@/types';
 
-import {
-  generateScheduleGreedy,
-  generateScheduleGreedyWithTracking,
-  GreedySchedulerInput,
-  pairKey,
-} from '../greedy';
+import { generateScheduleGreedyWithTracking, GreedySchedulerInput, pairKey } from '../greedy';
 
 // Helper to create mock teams
 function createMockTeam(id: string, name: string, division: string, tier = 1): Team {
@@ -52,7 +47,7 @@ describe('greedyBackToBackScheduler', () => {
         slots: ['8:30', '9:00'],
       };
 
-      const result = generateScheduleGreedy(input);
+      const result = generateScheduleGreedyWithTracking(input).matches;
 
       // Should have 10 total matches (5 in S1, 5 in S2)
       expect(result).toHaveLength(10);
@@ -103,7 +98,7 @@ describe('greedyBackToBackScheduler', () => {
         slots: ['8:30', '9:00'],
       };
 
-      const result = generateScheduleGreedy(input);
+      const result = generateScheduleGreedyWithTracking(input).matches;
 
       // Count same-division matches
       const sameDivisionMatches = result.filter((m) => m.tierA === m.tierB);
@@ -131,7 +126,7 @@ describe('greedyBackToBackScheduler', () => {
         slots: ['8:30', '9:00'],
       };
 
-      const result = generateScheduleGreedy(input);
+      const result = generateScheduleGreedyWithTracking(input).matches;
 
       // Check no history rematches
       for (const match of result) {
@@ -166,7 +161,7 @@ describe('greedyBackToBackScheduler', () => {
         thirdSlot: '9:30',
       };
 
-      const result = generateScheduleGreedy(input);
+      const result = generateScheduleGreedyWithTracking(input).matches;
 
       // Should have 9 total matches (4 in S1, 4 in S2, 1 in S3)
       expect(result).toHaveLength(9);
@@ -230,7 +225,7 @@ describe('greedyBackToBackScheduler', () => {
         thirdSlot: '9:30',
       };
 
-      const result = generateScheduleGreedy(input);
+      const result = generateScheduleGreedyWithTracking(input).matches;
 
       const s3Matches = result.filter((m) => m.slot === '9:30');
       expect(s3Matches).toHaveLength(1);
@@ -258,7 +253,7 @@ describe('greedyBackToBackScheduler', () => {
         thirdSlot: '9:30',
       };
 
-      const result = generateScheduleGreedy(input);
+      const result = generateScheduleGreedyWithTracking(input).matches;
 
       const teamMatchCounts = new Map<string, number>();
       for (const match of result) {
@@ -290,7 +285,7 @@ describe('greedyBackToBackScheduler', () => {
         },
       };
 
-      const result = generateScheduleGreedy(input);
+      const result = generateScheduleGreedyWithTracking(input).matches;
 
       // All teams should be scheduled (4 teams, 2 slots = 4 matches)
       expect(result.length).toBe(4);
@@ -319,7 +314,7 @@ describe('greedyBackToBackScheduler', () => {
         slots: ['8:30', '9:00'],
       };
 
-      const result = generateScheduleGreedy(input);
+      const result = generateScheduleGreedyWithTracking(input).matches;
 
       // First slot should be all same-tier matches (T1 vs T1, T2 vs T2)
       const s1Matches = result.filter((m) => m.slot === '8:30');
@@ -348,8 +343,8 @@ describe('greedyBackToBackScheduler', () => {
         slots: ['8:30', '9:00'],
       };
 
-      const result1 = generateScheduleGreedy(input);
-      const result2 = generateScheduleGreedy(input);
+      const result1 = generateScheduleGreedyWithTracking(input).matches;
+      const result2 = generateScheduleGreedyWithTracking(input).matches;
 
       expect(result1).toEqual(result2);
     });
@@ -380,7 +375,7 @@ describe('greedyBackToBackScheduler', () => {
         slots: ['8:30', '9:00'],
       };
 
-      const result = generateScheduleGreedy(input);
+      const result = generateScheduleGreedyWithTracking(input).matches;
 
       // Should produce 6 matches total (3 per slot)
       expect(result).toHaveLength(6);
@@ -428,7 +423,7 @@ describe('greedyBackToBackScheduler', () => {
         slots: ['8:30', '9:00'],
       };
 
-      const result = generateScheduleGreedy(input);
+      const result = generateScheduleGreedyWithTracking(input).matches;
 
       expect(result).toHaveLength(8);
 
