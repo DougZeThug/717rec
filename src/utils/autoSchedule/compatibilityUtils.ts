@@ -23,66 +23,6 @@ function getTierDistance(team1: Team, team2: Team): number {
   return Math.abs(tier1Value - tier2Value);
 }
 
-/**
- * Calculate compatibility score between two teams
- * Higher score means better match (more evenly matched)
- * Tier penalties: Same tier (8-10), One tier diff (4-6), Two tier diff (0-2)
- */
-export function calculateTeamCompatibility(team1: Team, team2: Team): number {
-  // Calculate tier distance and penalty
-  const tierDistance = getTierDistance(team1, team2);
-  const tierPenalty = tierDistance === 0 ? 0 : tierDistance === 1 ? 4 : 8;
-
-  // Compare power scores - closer power scores are better matches
-  const powerScoreDiff = Math.abs((team1.power_score || 0) - (team2.power_score || 0));
-
-  // Compare strength of schedule - closer SOS values are better matches
-  const sosDiff = Math.abs((team1.sos || 0.5) - (team2.sos || 0.5));
-
-  // Calculate record similarity - teams with similar records are better matches
-  const {
-    wins: t1Wins = 0,
-    losses: t1Losses = 0,
-    game_wins: t1GameWins = 0,
-    game_losses: t1GameLosses = 0,
-  } = team1;
-  const {
-    wins: t2Wins = 0,
-    losses: t2Losses = 0,
-    game_wins: t2GameWins = 0,
-    game_losses: t2GameLosses = 0,
-  } = team2;
-  const team1WinPct = t1Wins / (t1Wins + t1Losses || 1);
-  const team2WinPct = t2Wins / (t2Wins + t2Losses || 1);
-  const recordDiff = Math.abs(team1WinPct - team2WinPct);
-
-  // Calculate game record similarity
-  const team1GameWinPct = t1GameWins / (t1GameWins + t1GameLosses || 1);
-  const team2GameWinPct = t2GameWins / (t2GameWins + t2GameLosses || 1);
-  const gameRecordDiff = Math.abs(team1GameWinPct - team2GameWinPct);
-
-  // Calculate weighted compatibility score (lower differences = higher compatibility)
-  // Normalize each factor to a 0-1 scale before weighting
-  const normalizedPowerScoreDiff = Math.min(1, powerScoreDiff / 100);
-  const normalizedSosDiff = Math.min(1, sosDiff);
-  const normalizedRecordDiff = Math.min(1, recordDiff);
-  const normalizedGameRecordDiff = Math.min(1, gameRecordDiff);
-
-  // Reduced weights to make room for tier penalties
-  const baseScore =
-    10 -
-    (normalizedPowerScoreDiff * 1.5 + // Reduced to accommodate tier penalties
-      normalizedSosDiff * 0.75 + // Reduced
-      normalizedRecordDiff + // Reduced, weight 1.0
-      normalizedGameRecordDiff * 0.5); // Reduced
-
-  // Apply tier penalty - cross-tier pairings get heavily penalized
-  const finalScore = Math.max(0, baseScore - tierPenalty);
-
-  // Ensure the score is within a reasonable range (0-10)
-  return Math.max(0, Math.min(10, finalScore));
-}
-
 /** Score of two teams from neighbouring divisions, before any skill cut. */
 const ADJACENT_DIVISION_SCORE = 5;
 
