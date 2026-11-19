@@ -98,11 +98,11 @@ export const getLeagueMidnightUtc = (year: number, month: number, day: number): 
  * Read an instant's league-time wall clock as a '7:30 PM' string — the shape the
  * match form's slot buttons and the league's posted slots use.
  *
- * Deliberately separate from formatUTCToLocalTimeString, which reads the
- * *viewer's* clock and which extractTimeSlotFromUTC depends on for schedule
- * grouping. Only the admin match form uses this one, where the slot being edited
- * is a league time by definition. Keeping them apart is what stops a form fix
- * re-grouping the schedule for every reader outside Eastern.
+ * Deliberately separate from extractTimeSlotFromUTC, which reads the
+ * *viewer's* clock for schedule grouping. Only the admin match form uses this
+ * one, where the slot being edited is a league time by definition. Keeping them
+ * apart is what stops a form fix re-grouping the schedule for every reader
+ * outside Eastern.
  *
  * Built from formatToParts plus formatTimeString rather than from Intl's own
  * 12-hour output: some ICU builds separate the time from AM/PM with U+202F, and
@@ -122,7 +122,7 @@ export const formatLeagueTimeString = (date: Date): string => {
 
     return formatTimeString(hours, minutes);
   } catch (error) {
-    // Same contract as formatUTCToLocalTimeString: an unusable date gives ''.
+    // An unusable date gives ''.
     errorLog('Error formatting instant in league time:', error);
     return '';
   }

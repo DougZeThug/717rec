@@ -17,12 +17,9 @@ import {
   getErrorMessage,
   getUIErrorMessage,
   handleDatabaseError,
-  isDatabaseError,
   isNotFoundError,
-  isServiceError,
   logError,
   USER_VISIBLE_HINT,
-  withErrorHandling,
 } from '@/utils/errorHandler';
 
 vi.mock('@/utils/logger', () => ({
@@ -125,77 +122,7 @@ describe('ensureFound', () => {
   });
 });
 
-// ─── withErrorHandling ───────────────────────────────────────────────────────
-
-describe('withErrorHandling', () => {
-  it('returns the result of a successful operation', async () => {
-    const result = await withErrorHandling(() => Promise.resolve(42), 'ctx');
-    expect(result).toBe(42);
-  });
-
-  it('re-throws ServiceErrors without wrapping them', async () => {
-    const original = new NotFoundError('Team', 'id-1');
-    await expect(withErrorHandling(() => Promise.reject(original), 'ctx')).rejects.toThrow(
-      NotFoundError
-    );
-  });
-
-  it('wraps unknown Errors in ServiceError', async () => {
-    const unknownErr = new Error('unexpected');
-    const thrown = await withErrorHandling(() => Promise.reject(unknownErr), 'ops').catch((e) => e);
-    expect(thrown).toBeInstanceOf(ServiceError);
-    expect(thrown.message).toContain('unexpected');
-  });
-
-  it('wraps non-Error throws in ServiceError', async () => {
-    const nonErrorReason: unknown = 'plain string';
-    const thrown = await withErrorHandling(() => Promise.reject(nonErrorReason), 'ctx').catch(
-      (e) => e
-    );
-    expect(thrown).toBeInstanceOf(ServiceError);
-  });
-
-  it('includes context in wrapped error message', async () => {
-    const thrown = await withErrorHandling(
-      () => Promise.reject(new Error('boom')),
-      'My context'
-    ).catch((e) => e);
-    expect(thrown.message).toContain('My context');
-  });
-});
-
 // ─── Type guards ─────────────────────────────────────────────────────────────
-
-describe('isServiceError', () => {
-  it('returns true for ServiceError and subclasses', () => {
-    expect(isServiceError(new ServiceError('msg', 'CODE'))).toBe(true);
-    expect(isServiceError(new DatabaseError('msg'))).toBe(true);
-    expect(isServiceError(new NotFoundError('Team'))).toBe(true);
-    expect(isServiceError(new ValidationError('bad'))).toBe(true);
-    expect(isServiceError(new AuthorizationError())).toBe(true);
-  });
-
-  it('returns false for plain Error and non-errors', () => {
-    const missingError: unknown = undefined;
-
-    expect(isServiceError(new Error('plain'))).toBe(false);
-    expect(isServiceError('string')).toBe(false);
-    expect(isServiceError(null)).toBe(false);
-    expect(isServiceError(missingError)).toBe(false);
-  });
-});
-
-describe('isDatabaseError', () => {
-  it('returns true only for DatabaseError', () => {
-    expect(isDatabaseError(new DatabaseError('msg'))).toBe(true);
-  });
-
-  it('returns false for other ServiceErrors', () => {
-    expect(isDatabaseError(new NotFoundError('Team'))).toBe(false);
-    expect(isDatabaseError(new ServiceError('msg', 'CODE'))).toBe(false);
-    expect(isDatabaseError(new Error('plain'))).toBe(false);
-  });
-});
 
 describe('isNotFoundError', () => {
   it('returns true only for NotFoundError', () => {
@@ -416,14 +343,17 @@ describe('getUIErrorMessage', () => {
       }
     );
 
-    it('stays generic for a ServiceError that wrapped an unknown throwable', async () => {
-      // withErrorHandling produces this when it catches something that is not
-      // already a ServiceError, so its message is whatever was thrown.
-      const thrown = await withErrorHandling(() => {
-        throw new Error('some library blew up');
-      }, 'Loading data').catch((error) => error);
+    it('stays generic for a ServiceError that wrapped an unknown throwable', () => {
+      // A ServiceError coded UNKNOWN_ERROR wraps something that was not already
+      // a ServiceError, so its message is whatever was thrown.
+      const original = new Error('some library blew up');
+      const thrown = new ServiceError(
+        `Loading data: ${original.message}`,
+        'UNKNOWN_ERROR',
+        original
+      );
 
-      expect((thrown as ServiceError).code).toBe('UNKNOWN_ERROR');
+      expect(thrown.code).toBe('UNKNOWN_ERROR');
       expect(getUIErrorMessage(thrown, 'Failed to load')).toBe('Failed to load. Please try again.');
     });
 

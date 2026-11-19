@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { BadgeType, TeamBadgeEvent } from '@/types/badges';
 
-import { badgeConfigs, getBadgeConfig, getBadgesByCategory } from '../badgeConfig';
+import { badgeConfigs, getBadgeConfig } from '../badgeConfig';
 
 const ALL_BADGE_TYPES = Object.keys(badgeConfigs) as BadgeType[];
 
@@ -54,25 +54,5 @@ describe('getBadgeConfig', () => {
     const config = getBadgeConfig('clutch_performer');
     expect(config.category).toBe('performance');
     expect(config.isPermanent).toBe(false);
-  });
-});
-
-describe('getBadgesByCategory', () => {
-  it('returns only championship badges', () => {
-    const badges = getBadgesByCategory('championship');
-    expect(badges.length).toBeGreaterThan(0);
-    badges.forEach((b) => expect(b.category).toBe('championship'));
-  });
-
-  it('returns only streak badges', () => {
-    const badges = getBadgesByCategory('streak');
-    expect(badges.length).toBeGreaterThan(0);
-    badges.forEach((b) => expect(b.category).toBe('streak'));
-  });
-
-  it('returns only performance badges', () => {
-    const badges = getBadgesByCategory('performance');
-    expect(badges.length).toBeGreaterThan(0);
-    badges.forEach((b) => expect(b.category).toBe('performance'));
   });
 });

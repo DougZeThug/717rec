@@ -46,7 +46,6 @@ vi.mock('@/utils/logger', () => {
     'teamLog',
     'playoffLog',
     'scoreLog',
-    'badgeLog',
     'dbLog',
     'scheduleLog',
     'adminLog',

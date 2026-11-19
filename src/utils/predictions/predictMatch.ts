@@ -26,7 +26,7 @@ import {
 import { logistic, normalizePowerScore, scaleDivisionWeight, scaleSOS } from './predictionScoring';
 import type { HeadToHeadStats, PredictionResult, TeamStats } from './predictionTypes';
 
-export { formatBreakdown, formatProbability, isUpset } from './predictionFormatting';
+export { formatBreakdown, isUpset } from './predictionFormatting';
 export type {
   ConfidenceLevel,
   HeadToHeadStats,

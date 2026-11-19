@@ -29,7 +29,6 @@ vi.mock('@/utils/logger', () => ({
   dbLog: vi.fn(),
   matchLog: vi.fn(),
   cacheLog: vi.fn(),
-  badgeLog: vi.fn(),
 }));
 
 // Isolate the RPC path: badge processing has its own tests and would

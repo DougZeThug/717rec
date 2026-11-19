@@ -323,7 +323,3 @@ export const getBadgeConfig = (
 
   return baseConfig;
 };
-
-export const getBadgesByCategory = (category: BadgeConfig['category']): ExtendedBadgeConfig[] => {
-  return Object.values(badgeConfigs).filter((badge) => badge.category === category);
-};

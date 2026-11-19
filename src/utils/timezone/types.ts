@@ -3,14 +3,6 @@
  */
 
 /**
- * Options for displaying a time
- */
-export interface TimeDisplayOptions {
-  use24Hour?: boolean;
-  includeSeconds?: boolean;
-}
-
-/**
  * Date range for querying
  */
 export interface DateRange {

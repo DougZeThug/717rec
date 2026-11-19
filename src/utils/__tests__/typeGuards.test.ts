@@ -2,13 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Division, Team } from '@/types';
 
-import {
-  isDivisionArray,
-  isDivisionIdValid,
-  isTeamArray,
-  isValidNumber,
-  isValidString,
-} from '../typeGuards';
+import { isDivisionArray, isDivisionIdValid, isTeamArray } from '../typeGuards';
 
 function makeTeam(overrides: Partial<Team> = {}): Team {
   return {
@@ -105,48 +99,5 @@ describe('isDivisionIdValid', () => {
 
   it('returns false for empty string', () => {
     expect(isDivisionIdValid(divisions, '')).toBe(false);
-  });
-});
-
-describe('isValidString', () => {
-  it('returns true for a non-empty string', () => {
-    expect(isValidString('hello')).toBe(true);
-  });
-
-  it('returns false for empty string', () => {
-    expect(isValidString('')).toBe(false);
-  });
-
-  it('returns false for number', () => {
-    expect(isValidString(0)).toBe(false);
-  });
-
-  it('returns false for null', () => {
-    expect(isValidString(null)).toBe(false);
-  });
-});
-
-describe('isValidNumber', () => {
-  it('returns true for finite numbers', () => {
-    expect(isValidNumber(0)).toBe(true);
-    expect(isValidNumber(42)).toBe(true);
-    expect(isValidNumber(-3.14)).toBe(true);
-  });
-
-  it('returns false for NaN', () => {
-    expect(isValidNumber(NaN)).toBe(false);
-  });
-
-  it('returns false for Infinity', () => {
-    expect(isValidNumber(Infinity)).toBe(false);
-    expect(isValidNumber(-Infinity)).toBe(false);
-  });
-
-  it('returns false for string', () => {
-    expect(isValidNumber('42')).toBe(false);
-  });
-
-  it('returns false for null', () => {
-    expect(isValidNumber(null)).toBe(false);
   });
 });

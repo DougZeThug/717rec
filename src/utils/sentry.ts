@@ -127,7 +127,7 @@ export const initSentry = () => {
     // defaults to "collect", so every category Sentry 10 limited is set here to
     // the value Sentry 10 used (defaultPiiToCollectionOptions in
     // @sentry/core 10.75.2). Cookies stay fully off, which is stricter.
-    // User IDs set via setUser() are still sent intentionally.
+    // The app never sets a Sentry user, so no user ID is sent.
     dataCollection: {
       userInfo: false, // no IP address or auto-filled user fields
       cookies: false,
@@ -296,20 +296,6 @@ export const captureMessage = (
 };
 
 /**
- * Set user context for error tracking
- */
-export const setUser = (user: { id: string; email?: string; username?: string } | null) => {
-  Sentry.setUser(user);
-};
-
-/**
- * Add breadcrumb for debugging
- */
-export const addBreadcrumb = (breadcrumb: Sentry.Breadcrumb) => {
-  Sentry.addBreadcrumb(breadcrumb);
-};
-
-/**
  * Thin metrics helpers — wraps Sentry.metrics for convenience.
  * Metrics only fire in production (guarded by the Sentry client's 'enabled' flag).
  */
@@ -321,5 +307,3 @@ export const metrics = {
   distribution: (name: string, value: number, attributes?: Record<string, string>) =>
     Sentry.metrics.distribution(name, value, { attributes }),
 };
-
-export { Sentry };

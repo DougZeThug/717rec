@@ -47,49 +47,6 @@ export function ensureFound<T>(
 }
 
 /**
- * Wraps an async operation with consistent error handling
- * Logs errors and re-throws them as ServiceErrors
- * @param operation - The async operation to execute
- * @param context - Description of what's being done (for logging)
- * @returns The result of the operation
- */
-export async function withErrorHandling<T>(
-  operation: () => Promise<T>,
-  context: string
-): Promise<T> {
-  try {
-    return await operation();
-  } catch (error) {
-    if (error instanceof ServiceError) {
-      // Already a ServiceError, just re-throw
-      throw error;
-    }
-
-    // Wrap unknown errors in ServiceError
-    errorLog(`${context}:`, error);
-    throw new ServiceError(
-      `${context}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      'UNKNOWN_ERROR',
-      error
-    );
-  }
-}
-
-/**
- * Checks if an error is a specific type of ServiceError
- */
-export function isServiceError(error: unknown): error is ServiceError {
-  return error instanceof ServiceError;
-}
-
-/**
- * Checks if an error is a DatabaseError
- */
-export function isDatabaseError(error: unknown): error is DatabaseError {
-  return error instanceof DatabaseError;
-}
-
-/**
  * Checks if an error is a NotFoundError
  */
 export function isNotFoundError(error: unknown): error is NotFoundError {
@@ -226,7 +183,7 @@ function describeError(error: unknown): ErrorDescription {
         );
       }
       case 'UNKNOWN_ERROR':
-        // withErrorHandling wrapping an arbitrary throwable.
+        // A ServiceError wrapping an arbitrary throwable.
         return { message: GENERIC_REASON, isSpecific: false };
       case 'AUTHORIZATION_ERROR':
         // Always constructed by our own code with an authored message, so it
