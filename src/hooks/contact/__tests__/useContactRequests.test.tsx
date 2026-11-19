@@ -9,7 +9,6 @@ import { handleDatabaseError } from '@/utils/errorHandler';
 
 const mocks = vi.hoisted(() => ({
   fetch: vi.fn(),
-  submit: vi.fn(),
   resolve: vi.fn(),
   reopen: vi.fn(),
   remove: vi.fn(),
@@ -22,7 +21,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/services/contact/ContactRequestService', () => ({
   ContactRequestService: {
     fetchAll: mocks.fetch,
-    submit: mocks.submit,
     markResolved: mocks.resolve,
     reopen: mocks.reopen,
     remove: mocks.remove,
@@ -36,7 +34,6 @@ import {
   useDeleteContactRequest,
   useMarkContactRequestResolved,
   useReopenContactRequest,
-  useSubmitContactRequest,
 } from '../useContactRequests';
 
 const setup = () => {
@@ -83,7 +80,6 @@ describe('contact request hooks', () => {
     expect(mocks.subscribe).not.toHaveBeenCalled();
   });
   it.each([
-    [useSubmitContactRequest, mocks.submit, { email: 'a@b.com', message: 'Hi' }],
     [useMarkContactRequestResolved, mocks.resolve, { id: 'c1', userId: 'u1' }],
     [useReopenContactRequest, mocks.reopen, 'c1'],
     [useDeleteContactRequest, mocks.remove, 'c1'],
