@@ -16,8 +16,8 @@
 --      that dropped out, 7 games in the live database).
 --   4. An override to a Hidden or an unweighted division is ignored.
 --   5. The same team in another season, and every other team, is unchanged.
---   6. anon can read the table and the view and cannot write; RLS is on; the view
---      is still security_invoker; the 14 columns are the same, in the same order.
+--   6. Public roles can read rateable override keys and the view, but not notes
+--      or entry times. RLS is on and the invoker view keeps its 14 columns.
 --   7. The Sandbox save (upsert_team_season_stats(true)) keeps the override
 --      numbers, and a second run changes nothing. A routine run leaves an
 --      archived season alone.
@@ -101,6 +101,7 @@ DECLARE
   v_wt_seen    numeric;
   v_by_seen    text;
   v_rel        record;
+  v_role       text;
 BEGIN
   v_all_teams := ARRAY[v_team_x, v_team_k, v_team_p, v_team_q, v_team_s, v_team_ar,
                        v_team_h, v_team_w, v_team_z, v_team_g, v_team_m,
@@ -600,12 +601,12 @@ BEGIN
   IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.power_score_division_override'::regclass) THEN
     RAISE EXCEPTION 'row-level security must be ON for power_score_division_override';
   END IF;
-  IF NOT EXISTS (
+  IF EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public' AND tablename = 'power_score_division_override'
-      AND cmd = 'SELECT' AND 'public' = ANY (roles) AND qual = 'true'
+      AND cmd = 'SELECT' AND (qual = 'true' OR 'public' = ANY (roles))
   ) THEN
-    RAISE EXCEPTION 'power_score_division_override is missing its public SELECT policy';
+    RAISE EXCEPTION 'power_score_division_override must not have an unrestricted SELECT policy';
   END IF;
   IF EXISTS (
     SELECT 1 FROM pg_policies
@@ -613,23 +614,21 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'power_score_division_override must have no write policy';
   END IF;
-  IF NOT has_table_privilege('anon', 'public.power_score_division_override', 'SELECT')
-     OR NOT has_table_privilege('authenticated', 'public.power_score_division_override', 'SELECT')
+  IF NOT has_table_privilege('service_role', 'public.power_score_division_override', 'SELECT')
      OR NOT has_table_privilege('service_role', 'public.power_score_division_override', 'INSERT') THEN
-    RAISE EXCEPTION 'grants: anon and authenticated need SELECT, service_role needs write';
+    RAISE EXCEPTION 'service_role must keep full read access and be able to write overrides';
   END IF;
   IF has_table_privilege('anon', 'public.power_score_division_override', 'INSERT, UPDATE, DELETE, TRUNCATE')
      OR has_table_privilege('authenticated', 'public.power_score_division_override', 'INSERT, UPDATE, DELETE, TRUNCATE') THEN
     RAISE EXCEPTION 'anon and authenticated must not be able to write power_score_division_override';
   END IF;
 
-  -- anon reads the view (which now reads the table) and the table.
+  -- Both public roles can read the view and the lookup keys it uses.
   -- A plain CI Postgres has no Supabase default privileges and no public read
   -- rule on divisions, so the OTHER tables the old view already reads
   -- (snapshots, archive, brackets, divisions...) are not open to anon here the
   -- way they are on Supabase. Open them inside this rolled-back transaction. The
-  -- new table is left exactly as the migration granted it, and its grants were
-  -- asserted above.
+  -- override table is left exactly as the migration granted it.
   FOR v_rel IN
     SELECT c.relname
     FROM pg_class c
@@ -640,15 +639,25 @@ BEGIN
     EXECUTE format('GRANT SELECT ON public.%I TO anon, authenticated', v_rel.relname);
   END LOOP;
   CREATE POLICY "test: public read of divisions" ON public.divisions FOR SELECT USING (true);
-  SET LOCAL ROLE anon;
-  SELECT count(*) INTO v_n  FROM public.v_power_score_team_matches_rated;
-  SELECT count(*) INTO v_n2 FROM public.power_score_division_override;
-  SELECT count(*) INTO v_rows FROM public.v_power_score_team_matches_rated WHERE resolved_by = 'manual_override';
-  RESET ROLE;
-  IF NOT COALESCE(v_n >= 16, false) OR v_n2 IS DISTINCT FROM 11 OR v_rows IS DISTINCT FROM 9 THEN
-    RAISE EXCEPTION 'anon should read the view (>= 16 rows), 11 override rows and 9 manual_override games, got %, %, %',
-      v_n, v_n2, v_rows;
-  END IF;
+  FOREACH v_role IN ARRAY ARRAY['anon', 'authenticated'] LOOP
+    IF has_column_privilege(v_role, 'public.power_score_division_override', 'reason', 'SELECT')
+       OR has_column_privilege(v_role, 'public.power_score_division_override', 'created_at', 'SELECT') THEN
+      RAISE EXCEPTION '% can read internal override details', v_role;
+    END IF;
+
+    EXECUTE format('SET LOCAL ROLE %I', v_role);
+    SELECT count(*) INTO v_n FROM public.v_power_score_team_matches_rated;
+    SELECT count(team_id), count(*) FILTER (WHERE division_id IN (v_div_hid, v_div_nul))
+      INTO v_n2, v_n3
+      FROM public.power_score_division_override WHERE season_id = v_season_a;
+    SELECT count(*) INTO v_rows FROM public.v_power_score_team_matches_rated WHERE resolved_by = 'manual_override';
+    RESET ROLE;
+    IF NOT COALESCE(v_n >= 16, false) OR v_n2 IS DISTINCT FROM 9
+       OR v_n3 IS DISTINCT FROM 0 OR v_rows IS DISTINCT FROM 9 THEN
+      RAISE EXCEPTION '% should read the view (>= 16 rows), 9 rateable overrides, 0 ignored overrides, and 9 manual override games; got %, %, %, %',
+        v_role, v_n, v_n2, v_n3, v_rows;
+    END IF;
+  END LOOP;
 
   -- anon and authenticated cannot write.
   BEGIN

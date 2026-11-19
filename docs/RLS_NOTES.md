@@ -58,6 +58,15 @@ MCP tools read them without an auth session.
 - **Do not remove public read** — the pages go empty with no error.
 - Verify: `psql "$SUPABASE_DB_URL" -f supabase/tests/team_season_stats_rls.sql`
 
+## `public.power_score_division_override`
+
+- Signed-out and signed-in visitors can read the team, season, and division
+  keys for overrides that point to a rateable division. Public scoring uses
+  these keys through `v_power_score_team_matches_rated`.
+- Reasons and entry times are internal. Do not restore table-wide public read.
+- Writes remain limited to the service role and database owner.
+- Verify on a throwaway database: `psql "$SUPABASE_DB_URL" -f supabase/tests/power_score_division_override.sql`.
+
 ## Accepted linter warnings (2026-10-03)
 
 The Supabase linter reports ~217 warnings that are intentional. Do not "fix"
