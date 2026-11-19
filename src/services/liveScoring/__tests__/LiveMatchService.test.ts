@@ -300,7 +300,7 @@ describe('reopenGame', () => {
 
     expect(thrown).toBeInstanceOf(BusinessLogicError);
     expect(getUIErrorMessage(thrown)).toBe(
-      'Nothing was reopened. This match may already be open, or you can no longer change it. Refresh the page.'
+      'Nothing was reopened. This match may already be finished, or you can no longer change it. Refresh the page.'
     );
   });
 });

@@ -191,7 +191,7 @@ export const LiveMatchService = {
     if (error) handleLiveScoringError(error, 'Failed to reopen game');
     if (!updated) {
       throw new BusinessLogicError(
-        'Nothing was reopened. This match may already be open, or you can no longer change it. Refresh the page.'
+        'Nothing was reopened. This match may already be finished, or you can no longer change it. Refresh the page.'
       );
     }
   },

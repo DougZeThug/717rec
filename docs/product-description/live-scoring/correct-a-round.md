@@ -114,9 +114,9 @@ game becomes the current game, its rounds return to the round input's view, and
 the setup panel or winner panel disappears. A toast says "Game 2 reopened — A
 scorer reopened it to correct a score. It is in progress again." On failure a red
 toast says "Could not reopen game" with the reason and nothing changes. If the
-database changes no game (the match is already open, or the scorer's permission
-has gone), the toast says "Nothing was reopened. This match may already be open,
-or you can no longer change it. Refresh the page."
+database changes no game (the match is officially finished, or the scorer's
+permission has gone), the toast says "Nothing was reopened. This match may
+already be finished, or you can no longer change it. Refresh the page."
 
 **Everybody watching the match is told, not just the person who pressed it.** The
 notice is raised by the live connection rather than by the button, so it reaches
