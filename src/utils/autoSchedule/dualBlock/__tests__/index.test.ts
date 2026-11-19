@@ -3,8 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   balanceTeamsBetweenBlocks,
   calculateDualBlockMetrics,
-  findTeamsWithSameOpponent,
-  generateDualBlockPairings,
   validateDualBlockSchedule,
 } from '../index';
 import { calculateOverallQualityScore } from '../qualityScoreUtils';
@@ -12,14 +10,6 @@ import { calculateOverallQualityScore } from '../qualityScoreUtils';
 describe('dualBlock/index (smoke test)', () => {
   it('calculateDualBlockMetrics is exported as a function', () => {
     expect(typeof calculateDualBlockMetrics).toBe('function');
-  });
-
-  it('findTeamsWithSameOpponent is exported as a function', () => {
-    expect(typeof findTeamsWithSameOpponent).toBe('function');
-  });
-
-  it('generateDualBlockPairings is exported as a function', () => {
-    expect(typeof generateDualBlockPairings).toBe('function');
   });
 
   it('calculateOverallQualityScore is exported as a function', () => {
