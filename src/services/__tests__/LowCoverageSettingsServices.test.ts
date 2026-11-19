@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError } from '@/types/errors';
 
 const mockFrom = vi.fn();
 vi.mock('@/integrations/supabase/client', () => ({
@@ -49,7 +49,9 @@ describe('ThemeSettingsService', () => {
   });
 
   it('updates the selected key', async () => {
-    const eq = vi.fn().mockResolvedValue({ error: null });
+    const maybeSingle = vi.fn().mockResolvedValue({ data: { id: 'theme-1' }, error: null });
+    const select = vi.fn(() => ({ maybeSingle }));
+    const eq = vi.fn(() => ({ select }));
     const update = vi.fn(() => ({ eq }));
     mockFrom.mockReturnValue({ update });
     await ThemeSettingsService.updateEnabled('winter', true);
@@ -57,6 +59,7 @@ describe('ThemeSettingsService', () => {
       expect.objectContaining({ is_enabled: true, updated_at: expect.any(String) })
     );
     expect(eq).toHaveBeenCalledWith('theme_key', 'winter');
+    expect(select).toHaveBeenCalledWith('id');
   });
 
   it('throws DatabaseError for reads and writes', async () => {
@@ -65,11 +68,33 @@ describe('ThemeSettingsService', () => {
         select: () => ({ order: () => Promise.resolve({ data: null, error: pgError }) }),
       })
       .mockReturnValueOnce({
-        update: () => ({ eq: () => Promise.resolve({ error: pgError }) }),
+        update: () => ({
+          eq: () => ({
+            select: () => ({
+              maybeSingle: () => Promise.resolve({ data: null, error: pgError }),
+            }),
+          }),
+        }),
       });
     await expect(ThemeSettingsService.fetchAll()).rejects.toThrow(DatabaseError);
     await expect(ThemeSettingsService.updateEnabled('winter', false)).rejects.toThrow(
       DatabaseError
+    );
+  });
+
+  it('throws BusinessLogicError when no row was updated', async () => {
+    mockFrom.mockReturnValue({
+      update: () => ({
+        eq: () => ({
+          select: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+        }),
+      }),
+    });
+    await expect(ThemeSettingsService.updateEnabled('winter', false)).rejects.toThrow(
+      BusinessLogicError
+    );
+    await expect(ThemeSettingsService.updateEnabled('winter', false)).rejects.toThrow(
+      /Nothing was saved/
     );
   });
 });

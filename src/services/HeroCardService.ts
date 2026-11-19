@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
+import { BusinessLogicError } from '@/types/errors';
 import { HeroCard } from '@/types/heroCard';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { parseHeroCardMetadata } from '@/utils/parseMetadata';
@@ -90,6 +91,13 @@ export const HeroCardService = {
     if (error) handleDatabaseError(error, 'Failed to delete hero card');
   },
 
+  /**
+   * Show or hide one hero card on the home page.
+   * @throws {DatabaseError} When the database operation fails
+   * @throws {BusinessLogicError} When no row was updated (the card was deleted,
+   *   or admin access was removed, so row-level security filtered it out
+   *   without an error)
+   */
   toggleHeroCardVisibility: async ({
     id,
     is_visible,
@@ -97,12 +105,19 @@ export const HeroCardService = {
     id: string;
     is_visible: boolean;
   }): Promise<void> => {
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('hero_cards')
       .update({ is_visible, updated_at: new Date().toISOString() })
-      .eq('id', id);
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
 
     if (error) handleDatabaseError(error, 'Failed to update hero card visibility');
+    if (!updated) {
+      throw new BusinessLogicError(
+        'Nothing was saved. This hero card may have been deleted, or your admin access may have changed. Refresh the page and try again.'
+      );
+    }
   },
 
   fetchChampionTeams: async (championIds: string[]): Promise<TeamData[]> => {
