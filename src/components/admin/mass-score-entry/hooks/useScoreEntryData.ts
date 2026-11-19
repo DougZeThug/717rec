@@ -14,7 +14,6 @@ import { useErrorHandling } from './error/useErrorHandling';
 import { useMatchesFetching } from './fetching/useMatchesFetching';
 import { useFiltersState } from './state/useFiltersState';
 import { useMatchesState } from './state/useMatchesState';
-import { useMatchEventListeners } from './useMatchEventListeners';
 import { useMatchScores } from './useMatchScores';
 
 export const useScoreEntryData = () => {
@@ -51,8 +50,6 @@ export const useScoreEntryData = () => {
   const { failedMatches, errorMessages, clearErrors, addError } = useErrorHandling();
 
   const { fetchMatches, fetchMatchesOrThrow } = useMatchesFetching();
-
-  useMatchEventListeners({ updateFiltersForMatchDate });
 
   const { handleScoreChange, handleGameWinsChange, handleMarkCompleted } = useMatchScores(
     matches,

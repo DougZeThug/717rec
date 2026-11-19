@@ -27,10 +27,6 @@ vi.mock('@/components/admin/mass-score-entry/hooks/fetching/useMatchesFetching',
   }),
 }));
 
-vi.mock('@/components/admin/mass-score-entry/hooks/useMatchEventListeners', () => ({
-  useMatchEventListeners: vi.fn(),
-}));
-
 // The bracket fetch failed: no options, but an error + refetch are exposed.
 vi.mock('@/hooks/brackets/useBracketsQuery', () => ({
   useBracketsQuery: () => ({
