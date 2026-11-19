@@ -21,9 +21,9 @@
 -- already exists, because the "live rules" numbers would then include the fix.
 --
 -- The table is locked like the other backups (service_role only). Doug accepted the
--- new numbers on 2026-11-18. Script 07 (division_truth_07_drop_backup.sql) retires
--- the table; Doug runs it by hand after the merge. Once the table is gone, do NOT
--- run this script again. It STOPs ("override rows already exist") and saves nothing
+-- new numbers on 2026-11-18. Script 07 retired the table on 2026-11-19 (Doug ran it
+-- by hand on the live database; result 'OK: backup dropped'). The table is gone, so
+-- do NOT run this script again. It STOPs ("override rows already exist") and saves nothing
 -- only WHILE override rows exist. That is on purpose: the "live rules" numbers it
 -- would save include the fix. After undo path 2 of script 05 has deleted the override
 -- rows, a rerun would NOT stop: it would make a NEW snapshot under the same backup
