@@ -139,6 +139,84 @@ describe('color modules table-driven coverage', () => {
     expect(getPowerScoreRingColor(score)).toBe(ring);
   });
 
+  // Each band starts AT its floor (`>=`): 30 is Poor, 29.9 is Struggling. The table
+  // above only checks scores from inside a band, so these pin the floors on the line
+  // and the value just under each one, for all four helpers that share the bands.
+  const BANDS = {
+    elite: {
+      color: 'text-yellow-700 dark:text-yellow-500',
+      bg: 'bg-yellow-100 dark:bg-yellow-900/20',
+      ring: 'stroke-yellow-500',
+      description: 'Elite Performance',
+    },
+    excellent: {
+      color: 'text-green-700 dark:text-green-500',
+      bg: 'bg-green-100 dark:bg-green-900/20',
+      ring: 'stroke-green-500',
+      description: 'Excellent',
+    },
+    strong: {
+      color: 'text-blue-600 dark:text-blue-500',
+      bg: 'bg-blue-100 dark:bg-blue-900/20',
+      ring: 'stroke-blue-500',
+      description: 'Very Good',
+    },
+    average: {
+      color: 'text-orange-700 dark:text-orange-400',
+      bg: 'bg-orange-100 dark:bg-orange-900/20',
+      ring: 'stroke-orange-500',
+      description: 'Average',
+    },
+    belowAverage: {
+      color: 'text-amber-700 dark:text-amber-500',
+      bg: 'bg-amber-100 dark:bg-amber-900/20',
+      ring: 'stroke-amber-500',
+      description: 'Below Average',
+    },
+    poor: {
+      color: 'text-pink-600 dark:text-pink-500',
+      bg: 'bg-pink-100 dark:bg-pink-900/20',
+      ring: 'stroke-pink-500',
+      description: 'Poor',
+    },
+    struggling: {
+      color: 'text-purple-600 dark:text-purple-500',
+      bg: 'bg-purple-100 dark:bg-purple-900/20',
+      ring: 'stroke-purple-500',
+      description: 'Struggling',
+    },
+    critical: {
+      color: 'text-red-600 dark:text-red-500',
+      bg: 'bg-red-100 dark:bg-red-900/20',
+      ring: 'stroke-red-500',
+      description: 'Critical Performance',
+    },
+  } as const;
+
+  it.each([
+    { score: 85, band: 'elite' },
+    { score: 84.9, band: 'excellent' },
+    { score: 70, band: 'excellent' },
+    { score: 69.9, band: 'strong' },
+    { score: 60, band: 'strong' },
+    { score: 59.9, band: 'average' },
+    { score: 50, band: 'average' },
+    { score: 49.9, band: 'belowAverage' },
+    { score: 40, band: 'belowAverage' },
+    { score: 39.9, band: 'poor' },
+    { score: 30, band: 'poor' },
+    { score: 29.9, band: 'struggling' },
+    { score: 20, band: 'struggling' },
+    { score: 19.9, band: 'critical' },
+    { score: 0, band: 'critical' },
+  ] as const)('power score band floors: $score is $band', ({ score, band }) => {
+    const expected = BANDS[band];
+    expect(getPowerScoreColor(score)).toBe(expected.color);
+    expect(getPowerScoreBackgroundColor(score)).toBe(expected.bg);
+    expect(getPowerScoreRingColor(score)).toBe(expected.ring);
+    expect(getPowerScoreDescription(score)).toBe(expected.description);
+  });
+
   // The gauge ring used to carry its own 75/60/45 thresholds while the number
   // inside it used 85/70/60/50, so the two could disagree. They share bands now.
   it.each([
