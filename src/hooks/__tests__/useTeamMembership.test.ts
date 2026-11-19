@@ -175,14 +175,36 @@ describe('useTeamMembership', () => {
     const { result } = renderHook(() => useTeamMembership(), { wrapper });
     await waitFor(() => expect(result.current.isFetching).toBe(false));
 
+    let sent: boolean | undefined;
     await act(async () => {
-      await result.current.joinTeam('team-2');
+      sent = await result.current.joinTeam('team-2');
     });
 
+    // false tells the join screen to keep the picked team for a retry.
+    expect(sent).toBe(false);
     expect(toast).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Failed to submit request', variant: 'destructive' })
     );
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['team-membership', 'user-1'] });
+  });
+
+  it('says a join was sent by resolving true', async () => {
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({ user: { id: 'user-1' } });
+    (fetchTeamMembership as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (fetchAvailableTeams as ReturnType<typeof vi.fn>).mockResolvedValue(mockTeams);
+
+    const { result } = renderHook(() => useTeamMembership(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isFetching).toBe(false));
+
+    let sent: boolean | undefined;
+    await act(async () => {
+      sent = await result.current.joinTeam('team-2');
+    });
+
+    expect(sent).toBe(true);
+    expect(toast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Team Request Submitted' })
+    );
   });
 
   it('guards joinTeam when there is no user', async () => {
@@ -192,10 +214,12 @@ describe('useTeamMembership', () => {
       wrapper: createWrapper(),
     });
 
+    let sent: boolean | undefined;
     await act(async () => {
-      await result.current.joinTeam('team-9');
+      sent = await result.current.joinTeam('team-9');
     });
 
+    expect(sent).toBe(false);
     expect(toast).toHaveBeenCalled();
     expect(joinTeamMembership).not.toHaveBeenCalled();
   });

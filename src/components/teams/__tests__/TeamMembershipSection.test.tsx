@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUseTeamMembership = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/useTeamMembership', () => ({
@@ -36,6 +36,14 @@ const membership = (over: Record<string, unknown> = {}) => ({
 });
 
 describe('TeamMembershipSection', () => {
+  // jsdom has no pointer capture or scrollIntoView, and the Radix select needs both.
+  beforeAll(() => {
+    HTMLElement.prototype.setPointerCapture = vi.fn();
+    HTMLElement.prototype.releasePointerCapture = vi.fn();
+    HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseTeamMembership.mockReturnValue({ ...baseState });
@@ -154,6 +162,40 @@ describe('TeamMembershipSection', () => {
       await userEvent.click(screen.getByRole('button', { name: /request to join/i }));
       // Nothing is sent until a team is chosen.
       expect(joinTeam).not.toHaveBeenCalled();
+    });
+  });
+
+  // A failed request must not cost the person their pick: the hook shows the
+  // error toast and resolves false, and the dropdown stays as it was so they
+  // can press the button again. Only a sent request clears it.
+  describe('the team pick after a join request', () => {
+    const pickHawksAndSubmit = async (joinTeam: () => Promise<boolean>) => {
+      mockUseTeamMembership.mockReturnValue({ ...baseState, joinTeam });
+      render(<TeamMembershipSection />);
+
+      await userEvent.click(screen.getByRole('combobox', { name: 'Team to join' }));
+      await userEvent.click(await screen.findByRole('option', { name: /Hawks/ }));
+      await userEvent.click(screen.getByRole('button', { name: /request to join/i }));
+    };
+
+    it('keeps the picked team when the request fails', async () => {
+      const joinTeam = vi.fn().mockResolvedValue(false);
+      await pickHawksAndSubmit(joinTeam);
+
+      expect(joinTeam).toHaveBeenCalledWith('team-2');
+      expect(screen.getByRole('combobox', { name: 'Team to join' })).toHaveTextContent('Hawks');
+      expect(screen.getByRole('button', { name: /request to join/i })).toBeEnabled();
+    });
+
+    it('clears the picked team when the request is sent', async () => {
+      const joinTeam = vi.fn().mockResolvedValue(true);
+      await pickHawksAndSubmit(joinTeam);
+
+      expect(joinTeam).toHaveBeenCalledWith('team-2');
+      expect(screen.getByRole('combobox', { name: 'Team to join' })).toHaveTextContent(
+        'Select a team to join'
+      );
+      expect(screen.getByRole('button', { name: /request to join/i })).toBeDisabled();
     });
   });
 });

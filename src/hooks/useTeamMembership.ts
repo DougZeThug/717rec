@@ -38,14 +38,17 @@ export function useTeamMembership() {
 
   const error = membershipError ? 'Failed to load team membership' : null;
 
-  const joinTeam = async (teamId: string) => {
+  // Resolves true when the request was sent and false when it was not, so the
+  // join screen can keep the picked team after a failure and clear it after a
+  // success. Failures are still shown as a toast, not thrown.
+  const joinTeam = async (teamId: string): Promise<boolean> => {
     if (!user) {
       toast({
         title: 'Authentication required',
         description: 'You must be logged in to join a team',
         variant: 'destructive',
       });
-      return;
+      return false;
     }
 
     try {
@@ -71,6 +74,7 @@ export function useTeamMembership() {
 
       // Invalidate to refetch membership data
       await queryClient.invalidateQueries({ queryKey: ['team-membership', user.id] });
+      return true;
     } catch (error) {
       errorLog('Error joining team:', error);
       // The screen may be stale (the row changed elsewhere): reload it.
@@ -80,6 +84,7 @@ export function useTeamMembership() {
         description: getUIErrorMessage(error),
         variant: 'destructive',
       });
+      return false;
     } finally {
       setIsLoading(false);
     }

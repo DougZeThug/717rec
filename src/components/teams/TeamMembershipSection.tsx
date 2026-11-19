@@ -177,8 +177,9 @@ const TeamMembershipSection: React.FC = () => {
 
   const handleJoinTeam = async () => {
     if (!selectedTeamId) return;
-    await joinTeam(selectedTeamId);
-    setSelectedTeamId('');
+    // Keep the pick after a failure so they can try again.
+    const sent = await joinTeam(selectedTeamId);
+    if (sent) setSelectedTeamId('');
   };
 
   if (isFetching) {
