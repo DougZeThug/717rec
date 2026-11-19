@@ -192,7 +192,6 @@ describe('useTeamMembership', () => {
     (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({ user: { id: 'user-1' } });
     (fetchTeamMembership as ReturnType<typeof vi.fn>).mockResolvedValue(null);
     (fetchAvailableTeams as ReturnType<typeof vi.fn>).mockResolvedValue(mockTeams);
-    (joinTeamMembership as ReturnType<typeof vi.fn>).mockResolvedValueOnce(undefined);
 
     const { result } = renderHook(() => useTeamMembership(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isFetching).toBe(false));
