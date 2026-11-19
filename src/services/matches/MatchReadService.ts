@@ -17,7 +17,6 @@ export {
 } from './MatchHistoryService';
 export type { ScoreSubmissionWithMatch } from './MatchQueryService';
 export {
-  fetchMatchesWithTeams,
   fetchMatchTeamIds,
   fetchMatchTimeslots,
   fetchPendingMatches,

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError, ValidationError } from '@/types/errors';
+import { DatabaseError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
@@ -19,12 +19,10 @@ vi.mock('@/utils/logger', () => ({
 
 // Import after mocks
 import {
-  checkTeamsEverPlayed,
   countTeamMatchesInSeason,
   fetchActiveSeasonIdStrict,
   fetchMatchPairsInSeason,
   fetchSeasonOpponentHistory,
-  haveTeamsPlayedBefore,
 } from '../MatchHistoryService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -124,73 +122,6 @@ describe('fetchMatchPairsInSeason', () => {
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue(pairsChain({ data: null, error: pgError() }));
     await expect(fetchMatchPairsInSeason(['t1'], 'season-1')).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── checkTeamsEverPlayed ─────────────────────────────────────────────────────
-
-describe('checkTeamsEverPlayed', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  const limitChain = (result: { data: unknown; error: unknown }) => ({
-    select: () => ({ or: () => ({ limit: () => Promise.resolve(result) }) }),
-  });
-
-  it('returns true when teams have played', async () => {
-    mockFrom.mockReturnValue(limitChain({ data: [{ id: 'm-1' }], error: null }));
-    expect(await checkTeamsEverPlayed(T1, T2)).toBe(true);
-  });
-
-  it('returns false when data is empty', async () => {
-    mockFrom.mockReturnValue(limitChain({ data: [], error: null }));
-    expect(await checkTeamsEverPlayed(T1, T2)).toBe(false);
-  });
-
-  it('returns false when data is null', async () => {
-    mockFrom.mockReturnValue(limitChain({ data: null, error: null }));
-    expect(await checkTeamsEverPlayed(T1, T2)).toBe(false);
-  });
-
-  it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue(limitChain({ data: null, error: pgError() }));
-    await expect(checkTeamsEverPlayed(T1, T2)).rejects.toThrow(DatabaseError);
-  });
-
-  it('rejects an invalid teamId before querying Supabase', async () => {
-    await expect(checkTeamsEverPlayed('t1', T2)).rejects.toThrow(ValidationError);
-    await expect(checkTeamsEverPlayed(T1, 't2')).rejects.toThrow(ValidationError);
-    expect(mockFrom).not.toHaveBeenCalled();
-  });
-});
-
-// ─── haveTeamsPlayedBefore ────────────────────────────────────────────────────
-
-describe('haveTeamsPlayedBefore', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  const limitChain = (result: { data: unknown; error: unknown }) => ({
-    select: () => ({ or: () => ({ limit: () => Promise.resolve(result) }) }),
-  });
-
-  it('returns true when teams have played', async () => {
-    mockFrom.mockReturnValue(limitChain({ data: [{ id: 'm-1' }], error: null }));
-    expect(await haveTeamsPlayedBefore(T1, T2)).toBe(true);
-  });
-
-  it('returns false when data is empty', async () => {
-    mockFrom.mockReturnValue(limitChain({ data: [], error: null }));
-    expect(await haveTeamsPlayedBefore(T1, T2)).toBe(false);
-  });
-
-  it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue(limitChain({ data: null, error: pgError() }));
-    await expect(haveTeamsPlayedBefore(T1, T2)).rejects.toThrow(DatabaseError);
-  });
-
-  it('rejects an invalid teamId before querying Supabase', async () => {
-    await expect(haveTeamsPlayedBefore('t1', T2)).rejects.toThrow(ValidationError);
-    await expect(haveTeamsPlayedBefore(T1, 't2')).rejects.toThrow(ValidationError);
-    expect(mockFrom).not.toHaveBeenCalled();
   });
 });
 

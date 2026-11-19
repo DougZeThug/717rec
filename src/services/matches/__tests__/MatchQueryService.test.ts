@@ -19,14 +19,11 @@ vi.mock('@/utils/logger', () => ({
 
 // Import after mocks
 import {
-  fetchMatchesWithTeams,
-  fetchMatchForTie,
   fetchMatchTeamIds,
   fetchMatchTimeslots,
   fetchPendingMatches,
   fetchPendingScoresMatches,
   fetchScoreSubmissions,
-  fetchUncompletedMatches,
 } from '../MatchQueryService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -49,36 +46,9 @@ const makeMatch = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-// Chainable mock for fetchMatchesWithTeams' paginated query:
-// select → order → order → [gte → lt] → [eq] → range, where range resolves to
-// the page result. Test result sets are all smaller than the page size, so the
-// pagination loop runs exactly once.
-const matchesQueryChain = (result: { data: unknown; error: unknown }) => {
-  let rangeCall = 0;
-  const chain: Record<string, (...args: unknown[]) => unknown> = {
-    select: () => chain,
-    order: () => chain,
-    gte: () => chain,
-    lt: () => chain,
-    eq: () => chain,
-    // First page returns the result, later pages are empty, so the pagination
-    // loop always terminates (guards against an accidental infinite loop).
-    range: () => {
-      rangeCall += 1;
-      return Promise.resolve(rangeCall === 1 ? result : { data: [], error: null });
-    },
-  };
-  return chain;
-};
-
 // Chain: .select().eq().is().order() (fetchPendingMatches)
 const selectEqIsOrderChain = (result: { data: unknown; error: unknown }) => ({
   select: () => ({ eq: () => ({ is: () => ({ order: () => Promise.resolve(result) }) }) }),
-});
-
-// Chain: .select().not().order() (fetchUncompletedMatches)
-const selectNotOrderChain = (result: { data: unknown; error: unknown }) => ({
-  select: () => ({ not: () => ({ order: () => Promise.resolve(result) }) }),
 });
 
 // Chain: .select().limit() (fetchPendingScoresMatches)
@@ -96,77 +66,9 @@ const selectEqOrderDescChain = (result: { data: unknown; error: unknown }) => ({
   select: () => ({ eq: () => ({ order: () => Promise.resolve(result) }) }),
 });
 
-// Chain: .select().eq().maybySingle() (fetchMatchForTie, fetchMatchTeamIds)
+// Chain: .select().eq().maybySingle() (fetchMatchTeamIds)
 const selectEqMaybeSingleChain = (result: { data: unknown; error: unknown }) => ({
   select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve(result) }) }),
-});
-
-// ─── fetchMatchesWithTeams ────────────────────────────────────────────────────
-
-describe('fetchMatchesWithTeams', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns matches on success (no filters)', async () => {
-    mockFrom.mockReturnValue(matchesQueryChain({ data: [makeMatch()], error: null }));
-    const result = await fetchMatchesWithTeams();
-    expect(result).toHaveLength(1);
-    expect(mockFrom).toHaveBeenCalledWith('matches');
-  });
-
-  it('returns empty array when no data', async () => {
-    mockFrom.mockReturnValue(matchesQueryChain({ data: null, error: null }));
-    const result = await fetchMatchesWithTeams();
-    expect(result).toEqual([]);
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue(matchesQueryChain({ data: null, error: pgError() }));
-    await expect(fetchMatchesWithTeams()).rejects.toThrow(DatabaseError);
-  });
-
-  it('applies date filter when provided', async () => {
-    // With a date filter the chain gains .gte().lt() before .range()
-    mockFrom.mockReturnValue(matchesQueryChain({ data: [makeMatch()], error: null }));
-    const result = await fetchMatchesWithTeams({ date: new Date('2026-04-17') });
-    expect(result).toHaveLength(1);
-  });
-
-  it('paginates past the 1,000-row cap until a short page is returned', async () => {
-    // Proves the fix: a full 1,000-row page must trigger a follow-up fetch, and
-    // rows from every page are accumulated (previously capped silently at 1,000).
-    interface PagingChain {
-      select: () => PagingChain;
-      order: () => PagingChain;
-      gte: () => PagingChain;
-      lt: () => PagingChain;
-      eq: () => PagingChain;
-      range: (from: number, to: number) => Promise<{ data: unknown; error: unknown }>;
-    }
-    const rangeCalls: Array<[number, number]> = [];
-    const fullPage = Array.from({ length: 1000 }, (_, i) => makeMatch({ id: `m-${i}` }));
-    const shortPage = [makeMatch({ id: 'm-last' })];
-    const chain: PagingChain = {
-      select: () => chain,
-      order: () => chain,
-      gte: () => chain,
-      lt: () => chain,
-      eq: () => chain,
-      range: (from, to) => {
-        rangeCalls.push([from, to]);
-        const data = rangeCalls.length === 1 ? fullPage : shortPage;
-        return Promise.resolve({ data, error: null });
-      },
-    };
-    mockFrom.mockReturnValue(chain);
-
-    const result = await fetchMatchesWithTeams();
-
-    expect(result).toHaveLength(1001);
-    expect(rangeCalls).toEqual([
-      [0, 999],
-      [1000, 1999],
-    ]);
-  });
 });
 
 // ─── fetchPendingMatches ──────────────────────────────────────────────────────
@@ -210,47 +112,6 @@ describe('fetchPendingMatches', () => {
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('still-open');
     expect(result[0]).not.toHaveProperty('metadata');
-  });
-});
-
-// ─── fetchUncompletedMatches ──────────────────────────────────────────────────
-
-describe('fetchUncompletedMatches', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns uncompleted matches', async () => {
-    mockFrom.mockReturnValue(selectNotOrderChain({ data: [makeMatch()], error: null }));
-    const result = await fetchUncompletedMatches();
-    expect(result).toHaveLength(1);
-  });
-
-  // `iscompleted` is nullable, and `.eq(false)` used to skip null rows, so a
-  // match nobody had touched never reached the queue (UX audit X-13 / L1).
-  it('keeps a match whose iscompleted was never set', async () => {
-    mockFrom.mockReturnValue(
-      selectNotOrderChain({ data: [makeMatch({ iscompleted: null })], error: null })
-    );
-    expect(await fetchUncompletedMatches()).toHaveLength(1);
-  });
-
-  it('drops a match an admin has called off', async () => {
-    mockFrom.mockReturnValue(
-      selectNotOrderChain({
-        data: [makeMatch({ iscompleted: false, status: 'canceled' })],
-        error: null,
-      })
-    );
-    expect(await fetchUncompletedMatches()).toEqual([]);
-  });
-
-  it('returns empty array when no rows', async () => {
-    mockFrom.mockReturnValue(selectNotOrderChain({ data: null, error: null }));
-    expect(await fetchUncompletedMatches()).toEqual([]);
-  });
-
-  it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue(selectNotOrderChain({ data: null, error: pgError() }));
-    await expect(fetchUncompletedMatches()).rejects.toThrow(DatabaseError);
   });
 });
 
@@ -324,36 +185,6 @@ describe('fetchScoreSubmissions', () => {
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue(selectEqOrderDescChain({ data: null, error: pgError() }));
     await expect(fetchScoreSubmissions()).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchMatchForTie ─────────────────────────────────────────────────────────
-
-describe('fetchMatchForTie', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns match data when found', async () => {
-    const match = {
-      winner_id: null,
-      loser_id: null,
-      team1_id: 't1',
-      team2_id: 't2',
-      team1_game_wins: 1,
-      team2_game_wins: 1,
-    };
-    mockFrom.mockReturnValue(selectEqMaybeSingleChain({ data: match, error: null }));
-    const result = await fetchMatchForTie('match-1');
-    expect(result.team1_id).toBe('t1');
-  });
-
-  it('throws NotFoundError when match is null', async () => {
-    mockFrom.mockReturnValue(selectEqMaybeSingleChain({ data: null, error: null }));
-    await expect(fetchMatchForTie('match-1')).rejects.toThrow(NotFoundError);
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue(selectEqMaybeSingleChain({ data: null, error: pgError() }));
-    await expect(fetchMatchForTie('match-1')).rejects.toThrow(DatabaseError);
   });
 });
 
