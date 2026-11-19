@@ -119,10 +119,11 @@ On failure a red toast appears headed "Failed to submit request", with a plain
 sentence under it. The app does **not** show the database's own words. A failure it
 cannot name reads "Something went wrong. Please try again." A few known causes get a
 sentence of their own, such as "You do not have permission to do this." or "Your
-session has expired. Please sign in again." The button comes back. **The dropdown is
-cleared after a failure too**: the panel clears it after every attempt, whatever the
-outcome, because the code that sends the request catches the failure itself and
-returns normally. So the user has to pick the team again.
+session has expired. Please sign in again." The button comes back. **The dropdown
+keeps the picked team after a failure**, so the user can press the button again
+without picking it again. The code that sends the request now says whether the
+request went out, and the panel clears the dropdown only when it did. (Not
+confirmed by hand.)
 
 One failure has its own plain sentence. If the person already had a membership
 row and the request now matches no row, nothing is saved. That happens when the row
