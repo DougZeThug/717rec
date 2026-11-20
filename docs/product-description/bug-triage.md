@@ -1353,8 +1353,11 @@ finding read a superseded migration.
   **Match-level checks only fire once a result is recorded**; game-level checks
   fire on any completed game, because `completeGame` writes the fold's totals and
   winner atomically, so a difference there is always a correction that was never
-  carried through. Games still in progress are skipped: `reopenGame` leaves the
-  old totals in place on purpose, so checking them would report noise. That
+  carried through. (Since Holes PR G, `completeGame` also refuses a stale screen:
+  it only writes a game that is still in progress at the `updated_at` the screen
+  loaded. Undone or edited rounds do not move that value, so a stale screen can
+  still end a game on old totals; this card catches that.) Games still in progress are skipped:
+  `reopenGame` leaves the old totals in place on purpose, so checking them would report noise. That
   distinction was not in the entry and is what keeps the card quiet.
 
   **`Reopen & re-save result`** now sits in the corrections panel itself, on a

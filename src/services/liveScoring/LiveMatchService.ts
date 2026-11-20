@@ -147,14 +147,35 @@ export const LiveMatchService = {
   },
 
   /**
-   * @throws {BusinessLogicError} When no row was updated (row-level security
-   *   filtered it out without an error), so the screen cannot claim a save
+   * Ends a game, but only if it is still the game the screen showed.
+   *
+   * The write needs the game to be in progress AND its `updated_at` to equal
+   * `seenUpdatedAt`. A status check alone is not enough: a reopen puts the game
+   * back to in progress, so a stale phone would finish it again over the
+   * correction. Every write to the row moves `updated_at`, so a reopen makes the
+   * old value stale.
+   *
+   * `seenUpdatedAt` is the raw string the screen loaded. Do not pass it through
+   * `Date`: that cuts the microseconds and every finish would be refused.
+   *
+   * If no row matches, the game is read again to say why. The same result
+   * already saved (a double tap, a second scorer, a lost reply) is a success.
+   *
+   * @throws {ValidationError} When `seenUpdatedAt` is empty (before any database call)
+   * @throws {BusinessLogicError} When the game is gone, was ended with a
+   *   different result, was changed by someone else, or the row-level security
+   *   filtered the write out without an error
    */
   completeGame: async (
     gameId: string,
     winnerTeamId: string,
-    finalTotals: { team1: number; team2: number }
+    finalTotals: { team1: number; team2: number },
+    seenUpdatedAt: string
   ): Promise<void> => {
+    if (!seenUpdatedAt) {
+      throw new ValidationError('Cannot end the game: the screen has no saved game version.');
+    }
+
     const { data: updated, error } = await supabase
       .from('games')
       .update({
@@ -165,15 +186,52 @@ export const LiveMatchService = {
         completed_at: new Date().toISOString(),
       })
       .eq('id', gameId)
+      .eq('status', 'in_progress')
+      .eq('updated_at', seenUpdatedAt)
       .select('id')
       .maybeSingle();
 
     if (error) handleLiveScoringError(error, 'Failed to complete game');
-    if (!updated) {
+    if (updated) return;
+
+    // No row changed. Read the game again to tell the cases apart.
+    const { data: current, error: readError } = await supabase
+      .from('games')
+      .select(GAME_COLUMNS)
+      .eq('id', gameId)
+      .maybeSingle();
+
+    if (readError) handleLiveScoringError(readError, 'Failed to check the game');
+    if (!current) {
+      throw new BusinessLogicError('This game no longer exists. Refresh the page.');
+    }
+
+    if (current.status === 'completed') {
+      // Compare with the values we tried to write, never the row's own. A null
+      // stored score must not count as 0.
+      const sameResult =
+        current.winner_team_id === winnerTeamId &&
+        current.team1_score !== null &&
+        current.team2_score !== null &&
+        Number(current.team1_score) === finalTotals.team1 &&
+        Number(current.team2_score) === finalTotals.team2;
+      if (sameResult) return;
       throw new BusinessLogicError(
-        'Nothing was saved. This match may already be finished, or you can no longer score it. Refresh the page.'
+        'Someone else already ended this game with a different score. Check the score. Reopen the game if it is wrong.'
       );
     }
+
+    if (current.status === 'in_progress' && current.updated_at !== seenUpdatedAt) {
+      throw new BusinessLogicError(
+        'This game was changed by someone else. The screen is updated. Check the score, then end the game again if it is right.'
+      );
+    }
+
+    // The guard did not fail, so something else blocked the write (row-level
+    // security, or access that was lost).
+    throw new BusinessLogicError(
+      'Nothing was saved. This match may already be finished, or you can no longer score it. Refresh the page.'
+    );
   },
 
   /**

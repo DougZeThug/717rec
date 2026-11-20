@@ -237,6 +237,9 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
               gameId: game.game.id,
               winnerTeamId: game.pendingWinnerSide === 1 ? (team1Id ?? '') : (team2Id ?? ''),
               finalTotals: game.totals,
+              // Read now, not earlier: the game version this screen shows. A
+              // reopen or a second scorer makes it stale and the end is refused.
+              seenUpdatedAt: game.game.updated_at,
             });
           }}
         />

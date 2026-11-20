@@ -113,6 +113,18 @@ is already finished, or the scorer's permission has gone), the screen no longer
 says the game ended. The same red toast shows: "Nothing was saved. This match
 may already be finished, or you can no longer score it. Refresh the page."
 
+**A stale screen cannot end a game someone else changed.** The end only goes
+through if the game is still in progress and has not changed since this screen
+loaded it. If another scorer reopened or changed the game, the red toast says:
+"This game was changed by someone else. The screen is updated. Check the score,
+then end the game again if it is right." If someone already ended it with a
+different winner or score, it says: "Someone else already ended this game with a
+different score. Check the score. Reopen the game if it is wrong." If they ended
+it with the same winner and score (a double tap, or a second scorer), the end
+counts as done and nothing is shown. Undone or edited rounds do not change the
+game record, so a stale screen can still end a game on the old totals. The
+screen refetches after every refusal.
+
 > **Technical note:** the game's final totals are written onto the game record
 > when it is ended, but the screen never reads them back — every total shown is
 > recomputed from the rounds. The stored totals matter only to whatever reads the
@@ -216,7 +228,8 @@ not move until the match result is saved.
 - **A game can be won by a score far beyond 21** — there is no cap — and the
   banner reports whatever the totals are.
 - **Both scorers can press End Game at once.** One write wins; the other's screen
-  has already moved on by the time their press lands.
+  has already moved on by the time their press lands. If the second press still
+  lands, the same winner and score count as done. A different score is refused.
 - **The confirmation says "the next game (or the match result)"** rather than
   telling the scorer which, even though the app knows.
 
