@@ -52,6 +52,13 @@ export const DivisionService = {
     return data;
   },
 
+  /**
+   * Change the name, display grouping or weight of one division.
+   * @throws {DatabaseError} When the database operation fails
+   * @throws {BusinessLogicError} When no row was updated (the division was
+   *   deleted, or admin access was removed, so row-level security filtered it
+   *   out without an error)
+   */
   updateDivision: async (id: string, patch: Partial<DivisionInput>) => {
     const payload: {
       name?: string;
@@ -70,6 +77,11 @@ export const DivisionService = {
       .maybeSingle();
 
     if (error) handleDatabaseError(error, 'Failed to update division');
+    if (!data) {
+      throw new BusinessLogicError(
+        'Nothing was saved. This division may have been deleted, or your admin access may have changed. Refresh the page and try again.'
+      );
+    }
     return data;
   },
 

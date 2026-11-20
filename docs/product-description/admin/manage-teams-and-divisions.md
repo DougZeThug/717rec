@@ -167,7 +167,10 @@ from the save, one from the screen — see
 **Division row.** Save writes name, display grouping and weight together, then
 raises "Division updated" and clears the cached weights so power score
 recalculates against the new value. Failure raises "Failed to update division"
-with the server's own reason.
+with the server's own reason. If the database refuses the write and says nothing
+(the division was deleted in another tab, or admin access was removed), the
+reason reads "Nothing was saved. This division may have been deleted, or your
+admin access may have changed. Refresh the page and try again."
 
 **Division delete.** The trash button opens a confirmation reading "Delete
 division *name*? This cannot be undone. Divisions currently assigned to any team

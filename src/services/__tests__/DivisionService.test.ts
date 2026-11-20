@@ -91,6 +91,80 @@ describe('DivisionService.fetchDivisionWeightsMap', () => {
   });
 });
 
+// ─── updateDivision ───────────────────────────────────────────────────────────
+
+describe('DivisionService.updateDivision', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const savedRow = {
+    id: 'd1',
+    name: 'Gold',
+    division_weight: 0.9,
+    display_division: 'Competitive',
+    created_at: '2026-01-01',
+  };
+
+  // update -> eq -> select -> maybeSingle
+  const mockUpdate = (result: { data: unknown; error: unknown }) => {
+    const maybeSingle = vi.fn(() => Promise.resolve(result));
+    const select = vi.fn(() => ({ maybeSingle }));
+    const eq = vi.fn(() => ({ select }));
+    const update = vi.fn(() => ({ eq }));
+    mockFrom.mockReturnValue({ update });
+    return { update, eq, select };
+  };
+
+  it('saves the trimmed name and the weight, and returns the saved row', async () => {
+    const { update, eq, select } = mockUpdate({ data: savedRow, error: null });
+
+    const result = await DivisionService.updateDivision('d1', {
+      name: '  Gold  ',
+      display_division: 'Competitive',
+      division_weight: 0.9,
+    });
+
+    expect(result).toEqual(savedRow);
+    expect(mockFrom).toHaveBeenCalledWith('divisions');
+    expect(update).toHaveBeenCalledWith({
+      name: 'Gold',
+      display_division: 'Competitive',
+      division_weight: 0.9,
+    });
+    expect(eq).toHaveBeenCalledWith('id', 'd1');
+    expect(select).toHaveBeenCalledWith('id, name, division_weight, display_division, created_at');
+  });
+
+  it('sends only the fields it is given', async () => {
+    const { update } = mockUpdate({ data: savedRow, error: null });
+
+    await DivisionService.updateDivision('d1', { division_weight: 0.8 });
+
+    expect(update).toHaveBeenCalledWith({ division_weight: 0.8 });
+  });
+
+  it('throws DatabaseError when the update fails', async () => {
+    mockUpdate({ data: null, error: pgError() });
+
+    await expect(DivisionService.updateDivision('d1', { division_weight: 0.8 })).rejects.toThrow(
+      DatabaseError
+    );
+  });
+
+  // The defect: row-level security hides the row without an error, or the
+  // division was deleted. The save came back as null and the admin saw
+  // "Division updated" while nothing was saved.
+  it('throws BusinessLogicError when no row was updated', async () => {
+    mockUpdate({ data: null, error: null });
+
+    const thrown = await DivisionService.updateDivision('d1', { division_weight: 0.8 }).catch(
+      (error: unknown) => error
+    );
+
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect((thrown as Error).message).toMatch(/Nothing was saved. This division/);
+  });
+});
+
 // ─── deleteDivision ───────────────────────────────────────────────────────────
 
 describe('DivisionService.deleteDivision', () => {

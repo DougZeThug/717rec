@@ -119,16 +119,18 @@ must remain enabled". Success raises "Theme enabled" or "Theme disabled"; failur
 raises "Failed to update theme setting" with a reason under it. If the database
 refuses the write and says nothing (for example, admin access was removed), the
 reason reads "Nothing was saved. Your admin access may have changed. Refresh the
-page and try again."; any other failure reads "Something went wrong. Please try
-again." While any theme write is in flight, **every** switch on the screen is
-disabled.
+page and try again."; a permission error reads "You do not have permission to do
+this."; an expired login reads "Your session has expired. Please sign in again.";
+any other failure reads "Something went wrong. Please try again." While any theme
+write is in flight, **every** switch on the screen is disabled.
 
 **A hero card's visibility switch** writes at once, with no confirmation, and
 raises "Success — Visibility updated". Turning it on publishes the card to the
 home page for every visitor. If the database refuses the write and says nothing
 (the card was deleted in another tab, or admin access was removed), the red toast
-reads "Nothing was saved. This hero card may have been deleted, or your admin
-access may have changed. Refresh the page and try again."
+has the title "Error" and the description "Failed to update visibility: Nothing
+was saved. This hero card may have been deleted, or your admin access may have
+changed. Refresh the page and try again."
 
 **The hero card form** writes on Create Card or Save Changes. On success a toast
 says the card was created or updated and the form closes back to the table. On
