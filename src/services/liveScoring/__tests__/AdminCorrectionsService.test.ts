@@ -39,10 +39,12 @@ const writeChain = (result: { data: unknown; error: unknown }) => {
   return { update, eq, single };
 };
 
-const deleteChain = () => {
-  const eq = vi.fn().mockResolvedValue({ error: null });
+const deleteChain = (result: { data: unknown; error: unknown }) => {
+  const maybeSingle = vi.fn().mockResolvedValue(result);
+  const selectBack = vi.fn(() => ({ maybeSingle }));
+  const eq = vi.fn(() => ({ select: selectBack }));
   const del = vi.fn(() => ({ eq }));
-  return { del, eq };
+  return { del, eq, selectBack };
 };
 
 const SEASON_ID = 'season-1';
@@ -54,9 +56,13 @@ interface Wiring {
   parent?: { match: { season_id: string | null } | null } | null;
   /** Row the write returns. */
   written?: unknown;
+  /** Row the delete returns. Omit for one deleted row; null means 0 rows. */
+  deleted?: unknown;
+  /** Error the delete returns. */
+  deleteError?: unknown;
 }
 
-const wire = ({ season, parent, written }: Wiring = {}) => {
+const wire = ({ season, parent, written, deleted, deleteError }: Wiring = {}) => {
   const seasonRead = readChain({
     data: season === undefined ? { id: SEASON_ID, name: 'Summer 1', is_archived: false } : season,
     error: null,
@@ -66,7 +72,10 @@ const wire = ({ season, parent, written }: Wiring = {}) => {
     error: null,
   });
   const write = writeChain({ data: written ?? null, error: null });
-  const remove = deleteChain();
+  const remove = deleteChain({
+    data: deleted === undefined ? { id: 'r1' } : deleted,
+    error: deleteError ?? null,
+  });
 
   mockFrom.mockImplementation((table: string) => {
     if (table === 'seasons') return { select: seasonRead.select };
@@ -434,6 +443,7 @@ describe('AdminCorrectionsService.deleteRound', () => {
     expect(mockFrom).toHaveBeenCalledWith('match_rounds');
     expect(remove.del).toHaveBeenCalled();
     expect(remove.eq).toHaveBeenCalledWith('id', 'r1');
+    expect(remove.selectBack).toHaveBeenCalledWith('id');
   });
 
   it('refuses to delete a round in an archived season', async () => {
@@ -453,12 +463,26 @@ describe('AdminCorrectionsService.deleteRound', () => {
     expect(remove.del).toHaveBeenCalled();
   });
 
-  it('allows the write when the round is already gone, so the delete no-ops', async () => {
-    const { remove } = wire({ parent: null });
+  it('reports an error when the round is already gone and the delete removes nothing', async () => {
+    const { remove } = wire({ parent: null, deleted: null });
 
-    await AdminCorrectionsService.deleteRound('r1');
+    const attempt = AdminCorrectionsService.deleteRound('r1');
 
+    await expect(attempt).rejects.toBeInstanceOf(BusinessLogicError);
+    await expect(attempt).rejects.toThrow(/Nothing was deleted/);
     expect(remove.del).toHaveBeenCalled();
+  });
+
+  it('reports an error when the database blocks the delete (0 rows, round still there)', async () => {
+    wire({ deleted: null });
+
+    await expect(AdminCorrectionsService.deleteRound('r1')).rejects.toThrow(/Nothing was deleted/);
+  });
+
+  it('throws a DatabaseError when the delete returns a database error', async () => {
+    wire({ deleted: null, deleteError: { code: '23503', message: 'foreign key' } });
+
+    await expect(AdminCorrectionsService.deleteRound('r1')).rejects.toBeInstanceOf(DatabaseError);
   });
 });
 

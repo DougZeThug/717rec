@@ -180,11 +180,29 @@ export const AdminCorrectionsService = {
     return data;
   },
 
+  /**
+   * Deletes one round. A round is scored data (it feeds the game totals), so a
+   * delete that removes nothing is an error, not a quiet success.
+   *
+   * @throws BusinessLogicError when the season is archived, or when no row was
+   *   deleted (the round is already gone, or the database refused the delete).
+   * @throws DatabaseError when the database reports an error.
+   */
   deleteRound: async (roundId: string): Promise<void> => {
     await assertSeasonEditable(await seasonIdForRound(roundId));
 
-    const { error } = await supabase.from('match_rounds').delete().eq('id', roundId);
+    const { data, error } = await supabase
+      .from('match_rounds')
+      .delete()
+      .eq('id', roundId)
+      .select('id')
+      .maybeSingle();
     if (error) handleLiveScoringError(error, 'Failed to delete round');
+    if (!data) {
+      throw new BusinessLogicError(
+        'Nothing was deleted. This round may already be gone, or your admin access may have changed. Refresh the page and try again.'
+      );
+    }
   },
 
   setGameWinner: async (
