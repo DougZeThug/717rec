@@ -75,7 +75,10 @@ export function usePlayoffViewState(
       }
     } catch (error) {
       errorLog('usePlayoffViewState: Error deleting bracket:', error);
-      const message = getUIErrorMessage(error, 'Failed to delete bracket');
+      // data.deleteBracket wraps the real error in a plain Error. A plain Error
+      // reads as generic, so read the reason from the original error instead.
+      const reason = error instanceof Error && error.cause ? error.cause : error;
+      const message = getUIErrorMessage(reason, 'Failed to delete bracket');
       toast({
         title: 'Delete failed',
         description: message,

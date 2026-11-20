@@ -66,3 +66,17 @@ describe('usePlayoffMatchUpdate (legacy bracket) — game winners', () => {
     ]);
   });
 });
+
+describe('usePlayoffMatchUpdate (legacy bracket) — blocked score save', () => {
+  it('stops before saving games when the score update is refused', async () => {
+    fetchPlayoffMatchTeams.mockResolvedValue({ team1_id: 't1', team2_id: 't2' });
+    updatePlayoffMatchScores.mockRejectedValue(new Error('Nothing was saved'));
+    const { result } = renderHook(() => usePlayoffMatchUpdate(null));
+
+    await expect(
+      result.current.updateMatch('m1', 2, 0, [{ team1Score: 21, team2Score: 15 }], 2, 0)
+    ).rejects.toThrow('Nothing was saved');
+
+    expect(replacePlayoffGames).not.toHaveBeenCalled();
+  });
+});
