@@ -27,39 +27,12 @@ interface CompatibilityWeights {
   divisionWeight?: number;
 }
 
-/**
- * Enhanced configuration for dual block scheduling
- * Now supports back-to-back pairs
- */
-export interface DualBlockConfig {
-  avoidRematches?: boolean;
-  prioritizeQuality?: boolean;
-  dualMatchMode?: boolean;
-  primaryBlock?: string;
-  secondaryBlock?: string;
-  unmatchedTeamStrategy?: 'lowest-rank' | 'highest-rank' | 'random';
-  weights?: CompatibilityWeights;
-  // New back-to-back specific options
-  backToBackMode?: boolean;
-  backToBackPair?: 'Early' | 'Mid' | 'Late';
-  requireOpponentDiversity?: boolean; // Ensure different opponents in back-to-back matches
-}
-
 export interface TeamPairingMap {
   [timeBlock: string]: TeamPair[];
 }
 
 export interface TimeBlockTeamsMap {
   [timeBlock: string]: Team[];
-}
-
-export interface PairedTimeBlockTeamsMap {
-  [blockPairKey: string]: {
-    primaryBlock: string;
-    secondaryBlock: string;
-    primaryTeams: Team[];
-    secondaryTeams: Team[];
-  };
 }
 
 export interface AlgorithmConfig {
