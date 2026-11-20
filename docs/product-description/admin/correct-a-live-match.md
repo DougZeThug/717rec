@@ -208,7 +208,11 @@ or "Deleting…", and the dialog closes only on success.
 | Reopen & re-save | Toast "Result re-saved" with the final game score | Red toast "Could not re-save the result" with the reason |
 
 These failure toasts are unusual in this app: they carry the real reason rather
-than a fixed sentence.
+than a fixed sentence. **A delete that removes nothing counts as a failure:** if
+the round is already gone, or the database refuses the delete, the red toast
+reads "Nothing was deleted. This round may already be gone, or your admin access
+may have changed. Refresh the page and try again." It no longer says "Round
+deleted".
 
 After each one the match is re-read and the totals redraw. **If the match is
 finalised, every match-level number is re-read too** — standings, records,
