@@ -9,9 +9,9 @@ const seedingMock = vi.hoisted(() => {
   const service = {
     marker: 'service',
     calls: [] as unknown[],
-    impl: undefined as undefined | ((options: unknown) => Promise<void>),
+    impl: null as null | ((options: unknown) => Promise<void>),
     updateSeeding(
-      this: { marker?: string; calls: unknown[]; impl?: (o: unknown) => Promise<void> },
+      this: { marker?: string; calls: unknown[]; impl: null | ((o: unknown) => Promise<void>) },
       options: unknown
     ) {
       if (this?.marker !== 'service') {
@@ -60,7 +60,7 @@ const options = {
 describe('useUpdateSeeding', () => {
   beforeEach(() => {
     seedingMock.calls.length = 0;
-    seedingMock.impl = undefined;
+    seedingMock.impl = null;
   });
 
   it('passes the exact options object to the service, once', async () => {
@@ -94,7 +94,7 @@ describe('useUpdateSeeding', () => {
   });
 
   it('passes a plain string rejection through unchanged', async () => {
-    seedingMock.impl = () => Promise.reject('nope'); // skipcq: JS-0238
+    seedingMock.impl = () => Promise.reject('nope'); // skipcq: JS-0114
     const { result } = renderUpdateSeeding();
 
     await expect(result.current.mutateAsync(options)).rejects.toBe('nope');

@@ -282,7 +282,7 @@ describe('SeedingUpdateDialog on a phone', () => {
 describe('SeedingUpdateDialog after a successful save', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    updateSeeding.mockResolvedValue(undefined); // skipcq: JS-W1042
+    updateSeeding.mockImplementation(() => Promise.resolve());
   });
 
   it('shows the success toast before it refreshes the three bracket lists', async () => {
@@ -290,7 +290,9 @@ describe('SeedingUpdateDialog after a successful save', () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
     });
-    const invalidate = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);
+    const invalidate = vi
+      .spyOn(queryClient, 'invalidateQueries')
+      .mockImplementation(() => Promise.resolve());
 
     render(
       <QueryClientProvider client={queryClient}>
