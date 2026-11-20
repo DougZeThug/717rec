@@ -53,6 +53,7 @@ When there's an odd number of teams:
 - Compatibility score by division: 10 for the same division, 5 for neighbouring divisions, 0 for Competitive against Recreational (blocked)
 - With "Prioritize Match Quality" ON, a small skill term is taken off that score (see Quality Optimization)
 - Each time block scheduled independently
+- 4 teams in two blocks need 8 matches, but only 6 different pairs exist, so 2 repeats are unavoidable. Generate still builds the schedule and shows the repeats amber (`hasPlayedBefore`). Standard mode only; this is not a Dual Match Mode rule
 - With "Prioritize Match Quality" ON, prefers teams with a close Power Score, strength of schedule, win record and game record. For each pair the division score counts first
 
 **Quality Optimization:**

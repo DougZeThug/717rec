@@ -183,7 +183,7 @@ Last measured: 2026-08-11.
 | Branches   | 58.15%  |
 
 Measured from a full passing run on 2026-08-11: 511 test files / 3840 tests. The
-suite is larger now: 891 test files / 8,560 tests (15 of them expected-fail cases) as of 2026-11-20.
+suite is larger now: 889 test files / 8,547 tests (15 of them expected-fail cases) as of 2026-11-20.
 
 The overall number is held down by the component layer, which is still uneven
 at 62% lines even after the 2026-08 test expansion. The logic-heavy areas
@@ -395,7 +395,7 @@ global gate.
 | `src/utils/playoffs`                       | 100%        | —     | 85%    | On target                                       |
 | `src/utils/auth`                           | 90%         | —     | 85%    | On target                                       |
 | `src/utils/autoSchedule`                   | 72%         | 68%   | 85%    | Complex scheduling algorithms — gradual         |
-| `src/utils/autoSchedule/dualBlock`         | 89%         | —     | 85%    | On target                                       |
+| `src/utils/autoSchedule/dualBlock`         | 90%         | —     | 85%    | On target                                       |
 | `src/utils/autoSchedule/blossom`           | 63%         | 60%   | 85%    | New floor; weakest autoSchedule sub-area        |
 | `src/utils/scheduling/greedy`              | 86%         | —     | 85%    | On target                                       |
 | `src/utils/colors`                         | 90%         | —     | 60%    | On target                                       |
@@ -414,7 +414,7 @@ per-area numbers matter for a decision, recompute them from a fresh
 
 ## What's tested today
 
-891 test files / 8,560 tests (15 of them expected-fail cases) as of 2026-11-20. The highlights by layer below are
+889 test files / 8,547 tests (15 of them expected-fail cases) as of 2026-11-20. The highlights by layer below are
 from the 2026-08-11 run (511 test files / 3840 tests):
 
 **Services (89% lines):** the data-access layer is the best-covered area.
@@ -440,7 +440,7 @@ scheduling helpers).
 win %, power score), career stats (match stats, playoff stats, sweep rate,
 clutch rate, narratives, career SOS), predictions, playoffs, match utilities,
 bracket validators/mappers, error handler, auto-schedule (blossom algorithm at
-63% lines, dual-block metrics and team balancing, validation, edge cases), greedy
+63% lines, dual-block metrics, validation, edge cases), greedy
 scheduler (feasibility, constraints, rematch repair), colors, timezone,
 team details/stats, `sanitizeReturnTo`.
 

@@ -198,6 +198,11 @@ on the Auto Schedule screen." Two odd blocks give one message that names both.
 On Auto Schedule a second, generic "Generation Failed" toast shows beside it; both
 stay on screen.
 
+**Four teams in two blocks (Standard mode, Dual Match Mode off).** Four teams in two
+blocks need 8 matches, but only 6 different pairs exist, so 2 repeats are
+unavoidable. Generate still builds the schedule. The repeated pairs show amber
+(they are flagged as rematches). This line is about Standard mode only.
+
 Dual Match Mode is on by default and is not changed: it gives an odd block a third
 match at the next half-hour, so nobody sits out (`dualBlockScheduler.ts:87-88`,
 `scheduleOdd.ts:84`). Match Creation has no Dual Match Mode switch, so there an odd
