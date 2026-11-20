@@ -276,3 +276,51 @@ describe('SeedingUpdateDialog on a phone', () => {
     expect(screen.getByRole('dialog')).toHaveClass('grid-cols-1');
   });
 });
+
+// League night: the admin sees "Seeding updated" first, then the bracket
+// lists refresh, then the pop-up closes. Keep that order.
+describe('SeedingUpdateDialog after a successful save', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    updateSeeding.mockImplementation(() => Promise.resolve());
+  });
+
+  it('shows the success toast before it refreshes the three bracket lists', async () => {
+    const user = userEvent.setup();
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    const invalidate = vi
+      .spyOn(queryClient, 'invalidateQueries')
+      .mockImplementation(() => Promise.resolve());
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SeedingUpdateDialog
+          open
+          onOpenChange={onOpenChange}
+          bracketId="b-1"
+          bracketName="Summer Finals"
+          currentParticipants={participants}
+          bracketState="pending"
+          matches={notStarted as unknown as PlayoffMatch[]}
+        />
+      </QueryClientProvider>
+    );
+
+    await user.click(submitButton());
+    await waitFor(() => expect(invalidate).toHaveBeenCalledTimes(3));
+
+    expect(invalidate.mock.calls.map(([filters]) => filters)).toEqual([
+      { queryKey: ['bracket', 'b-1'] },
+      { queryKey: ['brackets'] },
+      { queryKey: ['bracket-participants', 'b-1'] },
+    ]);
+
+    const successToastOrder = toast.mock.invocationCallOrder[0];
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Seeding updated' }));
+    invalidate.mock.invocationCallOrder.forEach((order) => {
+      expect(successToastOrder).toBeLessThan(order);
+    });
+  });
+});

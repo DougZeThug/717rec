@@ -30,8 +30,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useUpdateSeeding } from '@/hooks/playoffs/useUpdateSeeding';
 import { useToast } from '@/hooks/useToast';
-import { bracketManagerService } from '@/services/brackets/manager';
 import type { PlayoffMatch } from '@/types/playoffTypes';
 import { hasPlayStarted } from '@/utils/playoffs/playoffUtils';
 
@@ -145,6 +145,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const updateSeeding = useUpdateSeeding();
 
   // Sensors for drag and drop
   const sensors = useSensors(
@@ -217,7 +218,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await bracketManagerService.updateSeeding({
+      await updateSeeding.mutateAsync({
         bracketId,
         newSeeding: teams,
         keepSameSize: true,
