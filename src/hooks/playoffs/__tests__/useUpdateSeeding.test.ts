@@ -1,7 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook } from '@testing-library/react';
+import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const seedingMock = vi.hoisted(() => {
   // A normal method that reads `this`, like the real service class. A bare
@@ -63,6 +63,11 @@ describe('useUpdateSeeding', () => {
     seedingMock.impl = null;
   });
 
+  afterEach(() => {
+    // Always put the browser back online, so no other test is affected.
+    onlineManager.setOnline(true);
+  });
+
   it('passes the exact options object to the service, once', async () => {
     const { result } = renderUpdateSeeding();
 
@@ -115,5 +120,29 @@ describe('useUpdateSeeding', () => {
     await expect(result.current.mutateAsync(options)).rejects.toThrow('boom');
 
     expect(seedingMock.calls).toHaveLength(1);
+  });
+
+  // TanStack pauses an offline mutation by default. The dialog must still fail
+  // at once offline, as it did when it called the service directly.
+  it('still runs the save while the browser is offline', async () => {
+    onlineManager.setOnline(false);
+    const { result } = renderUpdateSeeding();
+
+    const saved = result.current.mutateAsync(options);
+    await waitFor(() => expect(seedingMock.calls).toHaveLength(1));
+
+    await expect(saved).resolves.toBeUndefined();
+  });
+
+  it('rejects with the same error when the save fails while the browser is offline', async () => {
+    const failure = new Error('Failed to fetch');
+    seedingMock.impl = () => Promise.reject(failure);
+    onlineManager.setOnline(false);
+    const { result } = renderUpdateSeeding();
+
+    const outcome = result.current.mutateAsync(options).catch((error: unknown) => error);
+    await waitFor(() => expect(seedingMock.calls).toHaveLength(1));
+
+    expect(await outcome).toBe(failure);
   });
 });
