@@ -46,7 +46,6 @@ const buildTeams = (entries: string[]) =>
 const generate = (block: Block) =>
   generatePairingsWithBlossom(buildTeams(block.teams), {
     avoidRematches: true,
-    fetchSeasonHistoryFn: vi.fn().mockResolvedValue([]),
     getCompatibilityScoreFn: calculateDivisionOnlyCompatibility,
     playedPairsSet: new Set(block.history.map((pair) => pair.split('-').sort().join('-'))),
   });

@@ -41,24 +41,7 @@ async function generateOnce(
 
   try {
     return await withTiming(
-      async () => {
-        // Pre-fetch match history once if not provided (avoids N+1 queries)
-        if (!config.playedPairsSet && config.avoidRematches) {
-          scheduleLog('Pre-fetching season history for all teams...');
-          const teamIds = teams.map((team) => team.id);
-          const historyPairs = await config.fetchSeasonHistoryFn(teamIds);
-
-          // Build Set for O(1) lookup
-          config.playedPairsSet = new Set<string>();
-          const playedPairs = config.playedPairsSet;
-          historyPairs.forEach(([team1Id, team2Id]) => {
-            const pairingKey = [team1Id, team2Id].sort().join('-');
-            playedPairs.add(pairingKey);
-          });
-
-          scheduleLog(`Loaded ${historyPairs.length} historical match pairs into memory`);
-        }
-
+      () => {
         // STEP 1: Analyze graph feasibility before running Blossom
         const feasibilityResult = analyzeGraphFeasibility(teams, config, 0);
 
@@ -155,7 +138,7 @@ async function generateOnce(
         // Log final statistics
         logFinalStatistics(teams, allPairings, targetMatchesPerTeam);
 
-        return allPairings;
+        return Promise.resolve(allPairings);
       },
       debugLog,
       'Blossom algorithm'

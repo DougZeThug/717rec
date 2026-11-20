@@ -13,6 +13,6 @@ export function haveTeamsPlayedBeforeSync(
     const pairingKey = [team1Id, team2Id].sort().join('-');
     return config.playedPairsSet.has(pairingKey);
   }
-  // Should not reach here if pre-fetch worked, but included for safety
+  // The Standard scheduler always passes a set. No set means no history is known: no rematch is flagged.
   return false;
 }
