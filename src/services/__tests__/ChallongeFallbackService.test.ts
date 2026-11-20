@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError, NotFoundError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError, NotFoundError } from '@/types/errors';
 
 const mockFrom = vi.fn();
 
@@ -232,17 +232,42 @@ describe('ChallongeFallbackService.updateBracket', () => {
 describe('ChallongeFallbackService.deleteBracket', () => {
   beforeEach(() => vi.clearAllMocks());
 
+  // delete -> eq -> select -> maybeSingle
+  const mockDelete = (result: { data: unknown; error: unknown }) => {
+    const maybeSingle = vi.fn(() => Promise.resolve(result));
+    const select = vi.fn(() => ({ maybeSingle }));
+    const eq = vi.fn(() => ({ select }));
+    const del = vi.fn(() => ({ eq }));
+    mockFrom.mockReturnValue({ delete: del });
+    return { eq, select };
+  };
+
   it('resolves on success', async () => {
-    mockFrom.mockReturnValue({
-      delete: () => ({ eq: () => Promise.resolve({ error: null }) }),
-    });
+    const { eq, select } = mockDelete({ data: { id: 'b-1' }, error: null });
+
     await expect(ChallongeFallbackService.deleteBracket('b-1')).resolves.toBeUndefined();
+
+    expect(mockFrom).toHaveBeenCalledWith('challonge_fallback_brackets');
+    expect(eq).toHaveBeenCalledWith('id', 'b-1');
+    expect(select).toHaveBeenCalledWith('id');
   });
 
   it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue({
-      delete: () => ({ eq: () => Promise.resolve({ error: pgError() }) }),
-    });
+    mockDelete({ data: null, error: pgError() });
+
     await expect(ChallongeFallbackService.deleteBracket('b-1')).rejects.toThrow(DatabaseError);
+  });
+
+  // The defect: the row is already gone, or row-level security hides it
+  // without an error. The delete came back empty and the admin saw "Removed".
+  it('throws BusinessLogicError when no row was deleted', async () => {
+    mockDelete({ data: null, error: null });
+
+    const thrown = await ChallongeFallbackService.deleteBracket('b-1').catch(
+      (error: unknown) => error
+    );
+
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect((thrown as Error).message).toMatch(/Nothing was deleted. This bracket/);
   });
 });

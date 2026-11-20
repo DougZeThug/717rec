@@ -281,7 +281,11 @@ The switch is labelled "Show Challonge bracket embeds on Playoffs page". The two
 fields are a section title and subtitle. Each embed row is a Title, a **Challonge
 slug** — "the part of the Challonge URL after challonge.com/" — and an Order
 number, with **Add**/**Save** and a bin. Config and rows save separately, and a
-saved row's bin deletes it immediately with **no confirmation**.
+saved row's bin deletes it immediately with **no confirmation**. If the database
+refuses a delete and says nothing (the row is already gone, or admin access was
+removed), the red toast reads "Failed to remove bracket: Nothing was deleted.
+This bracket may already be gone, or your admin access may have changed. Refresh
+the page and try again."
 
 The fallback appears on `/playoffs` **only when the switch is on and no bracket
 is selected**. Selecting a bracket hides it. It is read-only to everyone.
