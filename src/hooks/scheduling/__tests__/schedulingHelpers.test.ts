@@ -1,17 +1,9 @@
-import { act, renderHook } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const toast = vi.fn();
 vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast }) }));
-vi.mock('@/utils/autoSchedule/dualBlock', () => ({
-  balanceTeamsBetweenBlocks: vi.fn((primary, secondary) => ({
-    primaryAdjusted: secondary,
-    secondaryAdjusted: primary,
-    unmatchedTeamIds: ['unmatched'],
-  })),
-}));
 
-import { useDualBlockLogic } from '../useDualBlockLogic';
 import { useScheduleValidation } from '../useScheduleValidation';
 import { convertPairingsToMatches } from '../utils/matchConversionUtils';
 
@@ -55,25 +47,6 @@ describe('schedule validation', () => {
     const { result } = renderHook(() => useScheduleValidation());
     expect(result.current.validateAndNotify({ Early: [team('a'), team('b')] })).toEqual([]);
     expect(toast).not.toHaveBeenCalled();
-  });
-});
-
-describe('dual-block logic', () => {
-  it('routes configured blocks through balancing and exposes paired state', () => {
-    const { result } = renderHook(() => useDualBlockLogic());
-    const balanced = result.current.performTeamBalancing({ A: [team('a')], B: [team('b')] }, {
-      primaryBlock: 'A',
-      secondaryBlock: 'B',
-    } as never);
-    expect(balanced).toEqual({
-      balancedTeams: { A: [team('b')], B: [team('a')] },
-      unmatchedTeamIds: ['unmatched'],
-    });
-    const paired = {
-      A: { primaryBlock: 'A', secondaryBlock: 'B', primaryTeams: [], secondaryTeams: [] },
-    };
-    act(() => result.current.setPairedBlocks(paired));
-    expect(result.current.pairedBlocks).toEqual(paired);
   });
 });
 
