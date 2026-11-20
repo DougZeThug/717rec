@@ -96,7 +96,11 @@ teams would be left behind in the old division. The division is written only whe
 the admin actually changes it. Nothing else about a bracket can be changed here —
 the teams, the format and the size decided the matches it generated, so changing
 them would mean deleting the bracket and every match played in it. _Update
-Seeding_ and _Rearrange Teams_ are the controls for those.
+Seeding_ and _Rearrange Teams_ are the controls for those. If the database
+refuses the save and says nothing (the bracket was deleted in another tab, or
+admin access was removed), a red toast "Could not update bracket" reads "Nothing
+was saved. This bracket may have been deleted, or your admin access may have
+changed. Refresh the page and try again." The dialog stays open.
 
 > _Technical note:_ "has been played" is read from the matches, not from the
 > bracket's stored state. Nothing in the app ever records a bracket as
@@ -186,7 +190,12 @@ swipe would fight its drag-to-seed list. On a 320-pixel phone its Cancel and
 
 On success the bracket disappears and the selection clears. If the list then
 fails to refresh, a plain toast says "Bracket deleted — Deleted, but list could
-not refresh". On failure, "Delete failed" with the league's reason.
+not refresh". On failure, "Delete failed" with the league's reason. If the
+database refuses the delete and says nothing (the bracket is already gone, or
+admin access was removed), the reason reads "Failed to delete bracket: Nothing
+was deleted. This bracket may already be gone, or your admin access may have
+changed. Refresh the page and try again." The dialog stays open. A second press
+on a bracket that is already gone shows the same message.
 
 **Repair Bracket** and **Recalculate Standings** act on the first press, with no
 confirmation. Repair reports what it changed — "_N_ match(es) updated, _N_
@@ -342,6 +351,13 @@ first succeeded returns to what the first one wrote, not to what was on screen
 before either started. Leaving the page mid-save does the same rather than
 leaving an unwritten score behind, which matters because bracket data is held for
 five minutes and is not re-read on arrival.
+
+On a bracket not built with the current engine, the score write also fails when
+the database refuses it and says nothing (the match was deleted, or admin access
+was removed). That counts as a failed write: the bracket goes back and the red
+toast reads "Score update failed: Nothing was saved. This match may have been
+deleted, or your admin access may have changed. Refresh the page and try again."
+The games are not written after a refused score.
 
 **Realtime.** The matches inside an open bracket update live. Nothing else on
 any of these three screens does.

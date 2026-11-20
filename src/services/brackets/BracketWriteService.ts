@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { dbLog } from '@/utils/logger';
 
@@ -26,23 +27,45 @@ export const updateBracket = async (
   bracketId: string,
   patch: BracketUpdateInput
 ): Promise<void> => {
-  const { error } = await supabase.from('brackets').update(patch).eq('id', bracketId);
+  const { data: updated, error } = await supabase
+    .from('brackets')
+    .update(patch)
+    .eq('id', bracketId)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     dbLog('Error updating bracket:', error);
     handleDatabaseError(error, 'Failed to update bracket');
   }
+  if (!updated) {
+    throw new BusinessLogicError(
+      'Nothing was saved. This bracket may have been deleted, or your admin access may have changed. Refresh the page and try again.'
+    );
+  }
 };
 
 /**
  * Delete a bracket by ID
+ * @throws {BusinessLogicError} When no row was deleted (already gone, or row-level
+ *   security filtered it out without an error)
  */
 export const deleteBracket = async (bracketId: string): Promise<void> => {
-  const { error } = await supabase.from('brackets').delete().eq('id', bracketId);
+  const { data: deleted, error } = await supabase
+    .from('brackets')
+    .delete()
+    .eq('id', bracketId)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     dbLog('Error deleting bracket:', error);
     handleDatabaseError(error, 'Failed to delete bracket');
+  }
+  if (!deleted) {
+    throw new BusinessLogicError(
+      'Nothing was deleted. This bracket may already be gone, or your admin access may have changed. Refresh the page and try again.'
+    );
   }
 };
 
@@ -65,10 +88,20 @@ export const updatePlayoffMatchScores = async (
     updated_at: string;
   }
 ): Promise<void> => {
-  const { error } = await supabase.from('playoff_matches').update(data).eq('id', matchId);
+  const { data: updated, error } = await supabase
+    .from('playoff_matches')
+    .update(data)
+    .eq('id', matchId)
+    .select('id')
+    .maybeSingle();
 
   if (error) {
     handleDatabaseError(error, 'Failed to update playoff match scores');
+  }
+  if (!updated) {
+    throw new BusinessLogicError(
+      'Nothing was saved. This match may have been deleted, or your admin access may have changed. Refresh the page and try again.'
+    );
   }
 };
 

@@ -1,6 +1,8 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { BusinessLogicError } from '@/types/errors';
+
 import type { usePlayoffHandlers } from '../usePlayoffHandlers';
 import type { PlayoffPageData } from '../usePlayoffPageData';
 import { usePlayoffViewState } from '../usePlayoffViewState';
@@ -60,6 +62,37 @@ describe('usePlayoffViewState', () => {
     expect(result.current.deletingBracket).toBeNull();
     expect(result.current.isDeleting).toBe(false);
     expect(mockToast).not.toHaveBeenCalled();
+  });
+
+  it('shows the reason when the delete was blocked and nothing was deleted', async () => {
+    const data = createData();
+    const cause = new BusinessLogicError('Nothing was deleted. This bracket may already be gone.');
+    data.deleteBracket.mockRejectedValue(new Error('wrapped', { cause }));
+
+    const { result } = renderHook(() =>
+      usePlayoffViewState(
+        data as unknown as PlayoffPageData,
+        createHandlers() as unknown as ReturnType<typeof usePlayoffHandlers>
+      )
+    );
+
+    act(() => {
+      result.current.handleDeleteBracket('bracket-1', 'Spring Playoffs');
+    });
+
+    await act(async () => {
+      await result.current.handleConfirmDeleteBracket();
+    });
+
+    expect(result.current.deletingBracket).not.toBeNull();
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Delete failed',
+        description:
+          'Failed to delete bracket: Nothing was deleted. This bracket may already be gone.',
+        variant: 'destructive',
+      })
+    );
   });
 
   it('shows "Delete failed" toast when deleteBracket fails and keeps the dialog open', async () => {
