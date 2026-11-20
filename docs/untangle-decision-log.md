@@ -1053,7 +1053,7 @@ Doug decided on 2026-11-16 (he took every recommendation). **Later the same day 
 - **Recount (measured with grep).** **43** non-test files in `src/components` and `src/pages` still import `@/services` (44 after 3I). The lint rule "components must not import services" still cannot go on.
 - **13-file "own mutation" count.** 12 of 13 are done. **1 remains: `MassScoreEntryTool` (3J)**, which needs Doug's OK first.
 - **Not checked (no browser here).** Nobody has watched the dialog in a browser since the move: open Update Seeding on a bracket that has not started, drag a team, save, see "Seeding updated" and the pop-up close. The unit tests cover the wiring, not the look.
-- **Scoring review (read, not run).** A re-seed writes bracket slots and participant positions. It writes no stats. The dialog's `canUpdate` lock (state is pending and no match played) is the real guard. The service has no lock of its own, so the lock was not touched.
+- **Scoring review (read, not run).** A re-seed writes bracket slots and participant positions. It writes no stats. The dialog's `canUpdate` lock (state is pending and no match played) is the real guard. The service does not check whether play has started (VERIFIED: BracketSeedingService.ts:31 onward never reads hasPlayStarted or bracket.state). The bracket library only refuses a re-seed that would change a round-1 match that is running, completed or archived (node_modules/brackets-manager/dist/base/updater.js:92-106), and only for round 1. So the dialog lock stays the main guard, and it was not touched.
 - **Rollback.** Revert the code commit. No stored data changes.
 
 ## Slice 3 PR-3 result (team edit save checks the row), built 2026-11-18 on `claude/adoring-bohr-waxxok`; 1 code commit + 1 docs commit
