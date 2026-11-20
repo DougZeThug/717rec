@@ -197,8 +197,12 @@ a real way to work.
 
 ### Submit
 
-None of the three writes is optimistic. Each waits, the button reads "Saving…"
-or "Deleting…", and the dialog closes only on success.
+None of the three writes is optimistic. Each waits and the button reads
+"Saving…" or "Deleting…". The Save changes and Set winner dialogs close only on
+success. **The Delete round dialog closes on the click, whether the delete works
+or not** (it is a Radix alert dialog, and its Delete button closes it). On a
+failure the red toast "Could not delete round" gives the reason and the screen
+refreshes.
 
 | Action | On success | On failure |
 | --- | --- | --- |
