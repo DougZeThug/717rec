@@ -213,8 +213,11 @@ side effects; see [`finish-the-match.md`](finish-the-match.md).
   which is the same state as one just started.
 - **The undo dialog names the round it captured when it opened**, which may no
   longer be the last round by the time it is confirmed.
-- **There is no record of a correction.** Nothing anywhere shows that a round was
-  entered and removed.
+- **No screen shows a record of a correction.** Nothing in the app shows that a
+  round was entered and removed. The database does keep one: an undo writes a row
+  naming the scorer and the time, once migration `20261120130000` is applied
+  (read with SQL only, `OPERATIONS.md` section 6h). Entering a round is not
+  logged.
 
 ## Open questions and verification
 
