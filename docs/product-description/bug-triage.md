@@ -1355,8 +1355,8 @@ finding read a superseded migration.
   winner atomically, so a difference there is always a correction that was never
   carried through. (Since Holes PR G, `completeGame` also refuses a stale screen:
   it only writes a game that is still in progress at the `updated_at` the screen
-  loaded. A database trigger now also moves that value when a round is undone or
-  edited, so a stale screen cannot end a game on old totals; this card still
+  loaded. A database trigger now also moves that value when a round is undone,
+  deleted or given a new score, so a stale screen cannot end a game on old totals; this card still
   catches an old mismatch.) Games still in progress are skipped:
   `reopenGame` leaves the old totals in place on purpose, so checking them would report noise. That
   distinction was not in the entry and is what keeps the card quiet.

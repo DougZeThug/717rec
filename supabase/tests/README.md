@@ -225,8 +225,10 @@ because other objects depend on it` (script 07 never uses CASCADE) and thirteen
   match is refused. Covers B-67.
 - `touch_game_on_round_change.sql` — asserts undoing or editing a round moves
   `games.updated_at` of an in-progress game (`20261120120000`), so completeGame's
-  guarded finish matches no row on a stale phone. A delete or a score edit moves
-  it; a thrower-only edit, an insert, and any change to a completed game do not;
+  guarded finish matches no row on a stale phone. A delete, a real score edit or a
+  move to another game moves it; a thrower-only edit (with the score columns left
+  out, or with the same scores sent again as the admin dialog does), an insert,
+  and any change to a completed game do not;
   a control game in the same match keeps its old value. A scorer (approved team
   member) undoing the last round under the `authenticated` role moves it too, and
   deleting a game or a match with in-progress rounds still works. It runs the

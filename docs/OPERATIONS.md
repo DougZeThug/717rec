@@ -436,14 +436,41 @@ find the 'opponent1_position' column of 'match'".
 > (`20261120120000_touch_game_on_round_change.sql`). One statement set, no
 > runbook, no history rewritten: a trigger on `match_rounds`. Without it, a phone
 > that still shows "game won" can end a game on old totals after a teammate undid
-> the winning round. Paste the full file in the SQL Editor and run it (it is
-> idempotent). Verify with
-> `SELECT tgname FROM pg_trigger WHERE tgname = 'touch_game_on_round_change';`
-> (one row). No app change goes with it, so the order does not matter. The way
-> back is two lines, at the end of the file header:
-> `DROP TRIGGER IF EXISTS touch_game_on_round_change ON public.match_rounds;`
-> then `DROP FUNCTION IF EXISTS public.touch_game_on_round_change();`.
-> `supabase/tests/touch_game_on_round_change.sql` covers it in CI.
+> the winning round. A hand-apply is needed.
+>
+> - It moves the game only on a round delete, or an update that really changes a
+>   score or the game. A save that only changes a thrower or a bag count does not.
+> - Run it when no game is being scored. It takes a short lock on `match_rounds`
+>   (the `DROP TRIGGER` step needs an exclusive lock for a moment).
+> - The SQL Editor may ask you to confirm a "destructive operation". The file
+>   has `DROP TRIGGER IF EXISTS`. This is expected. Click through.
+> - Paste the full file and run it. It is safe to paste twice.
+> - Check before and after with this query (run it in the SQL Editor):
+>
+>   ```sql
+>   SELECT t.tgname, c.relname AS on_table, t.tgenabled AS enabled,
+>          p.prosecdef AS definer, p.proconfig AS fixed_path,
+>          has_function_privilege('anon', p.oid, 'EXECUTE') AS anon_can_run,
+>          has_function_privilege('authenticated', p.oid, 'EXECUTE') AS signed_in_can_run,
+>          pg_get_triggerdef(t.oid) AS definition
+>   FROM pg_trigger t
+>   JOIN pg_class c ON c.oid = t.tgrelid
+>   JOIN pg_proc p ON p.oid = t.tgfoid
+>   WHERE t.tgname = 'touch_game_on_round_change' AND NOT t.tgisinternal;
+>   ```
+>
+>   **Before:** 0 rows. **After:** 1 row. `on_table` is `match_rounds`,
+>   `enabled` is `O`, `definer` is `t`, `fixed_path` is
+>   `{"search_path=pg_catalog, public"}`, `anon_can_run` and `signed_in_can_run`
+>   are both `f`, and `definition` reads
+>   `CREATE TRIGGER touch_game_on_round_change AFTER DELETE OR UPDATE OF game_id, team1_score, team2_score ON public.match_rounds FOR EACH ROW EXECUTE FUNCTION touch_game_on_round_change()`.
+>   Any other result: stop and tell Claude.
+>
+> - No app change goes with it, so the order does not matter.
+> - The way back is two lines, at the end of the file header:
+>   `DROP TRIGGER IF EXISTS touch_game_on_round_change ON public.match_rounds;`
+>   then `DROP FUNCTION IF EXISTS public.touch_game_on_round_change();`.
+> - `supabase/tests/touch_game_on_round_change.sql` covers it in CI.
 
 ## 6a. Power-score unification: review, revert, reapply
 

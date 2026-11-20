@@ -4,10 +4,15 @@
 -- game (20261120120000), so completeGame's guard
 --   UPDATE games SET status = 'completed' ... WHERE status = 'in_progress'
 --   AND updated_at = <value the scorer's screen loaded>
--- matches no row on a stale phone. Only a DELETE and an UPDATE of the two scores
--- (or the game) touch the game. An INSERT does not: a scorer's own new round
+-- matches no row on a stale phone. Only a DELETE and an UPDATE that really
+-- changes a score or the game touch the game. An INSERT does not: a scorer's own new round
 -- would otherwise make their own screen look stale. A completed game is never
 -- touched.
+--
+-- "UPDATE OF <columns>" fires whenever a column is in the SET list, even if the
+-- value is the same. The admin Edit Round dialog always sends both scores, so
+-- the function compares OLD and NEW: a thrower-only save must not move the game
+-- whether or not the scores are in the SET list (case 3b).
 --
 -- Inside one test transaction now() never changes, so each game gets an old
 -- updated_at (2000-01-01) and the stamps are put back between steps. The reset
@@ -41,6 +46,8 @@ DECLARE
   v_cols text[];
   v_seen timestamptz;
   v_n bigint;
+  v_s1 integer;
+  v_s2 integer;
   v_stamp1 timestamptz;
   v_stamp2 timestamptz;
   v_stamp3 timestamptz;
@@ -199,7 +206,8 @@ BEGIN
     RAISE EXCEPTION 'editing team2_score did not move updated_at of the game';
   END IF;
 
-  -- Case 3b: a column outside the list (the thrower) does not move the game.
+  -- Case 3b: a thrower-only edit does not move the game, in both forms.
+  -- (a) The score columns are left out of the SET list.
   PERFORM set_config('session_replication_role', 'replica', true);
   UPDATE public.games SET updated_at = v_old WHERE match_id = v_match_id;
   PERFORM set_config('session_replication_role', 'origin', true);
@@ -214,6 +222,78 @@ BEGIN
   IF (SELECT updated_at FROM public.games WHERE id = v_game1_id) IS DISTINCT FROM v_old THEN
     RAISE EXCEPTION 'editing only the thrower moved updated_at of the game';
   END IF;
+
+  -- (b) The SAME scores are sent again, as the admin Edit Round dialog does.
+  -- The trigger fires here (the columns are in the SET list) and must still
+  -- leave the game alone, because no score changed.
+  SELECT team1_score, team2_score INTO v_s1, v_s2
+  FROM public.match_rounds WHERE id = v_round1_id;
+  IF v_s1 <> 7 OR v_s2 <> 2 THEN
+    RAISE EXCEPTION 'unexpected round scores before the re-send step: % - %', v_s1, v_s2;
+  END IF;
+
+  UPDATE public.match_rounds
+  SET team1_score = v_s1, team2_score = v_s2, team1_thrower_id = NULL
+  WHERE id = v_round1_id;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM public.match_rounds
+    WHERE id = v_round1_id AND team1_thrower_id IS NULL
+      AND team1_score = v_s1 AND team2_score = v_s2
+  ) THEN
+    RAISE EXCEPTION 'the re-send edit did not apply, so the test below proves nothing';
+  END IF;
+  IF (SELECT updated_at FROM public.games WHERE id = v_game1_id) IS DISTINCT FROM v_old THEN
+    RAISE EXCEPTION 're-sending the same scores with a new thrower moved updated_at of the game';
+  END IF;
+
+  -- Case 3c: moving a round to another game touches both in-progress games.
+  -- Game 2 is also in progress and already holds a round 1, so the round gets
+  -- number 2 in the new game.
+  UPDATE public.match_rounds
+  SET game_id = v_game2_id, round_number = 2
+  WHERE id = v_round1_id;
+
+  IF (SELECT game_id FROM public.match_rounds WHERE id = v_round1_id) <> v_game2_id THEN
+    RAISE EXCEPTION 'the game move did not apply, so the test below proves nothing';
+  END IF;
+  IF (SELECT updated_at FROM public.games WHERE id = v_game1_id) IS NOT DISTINCT FROM v_old THEN
+    RAISE EXCEPTION 'moving a round away did not move updated_at of the old game';
+  END IF;
+  IF (SELECT updated_at FROM public.games WHERE id = v_game2_id) IS NOT DISTINCT FROM v_old THEN
+    RAISE EXCEPTION 'moving a round in did not move updated_at of the new game';
+  END IF;
+  IF (SELECT updated_at FROM public.games WHERE id = v_game3_id) IS DISTINCT FROM v_old THEN
+    RAISE EXCEPTION 'moving a round moved a game it did not touch';
+  END IF;
+
+  -- Move it on to a COMPLETED game: the old game moves, the completed one stays.
+  PERFORM set_config('session_replication_role', 'replica', true);
+  UPDATE public.games SET updated_at = v_old WHERE match_id = v_match_id;
+  PERFORM set_config('session_replication_role', 'origin', true);
+
+  UPDATE public.match_rounds
+  SET game_id = v_game3_id, round_number = 2
+  WHERE id = v_round1_id;
+
+  IF (SELECT game_id FROM public.match_rounds WHERE id = v_round1_id) <> v_game3_id THEN
+    RAISE EXCEPTION 'the move to the completed game did not apply, so the test below proves nothing';
+  END IF;
+  IF (SELECT updated_at FROM public.games WHERE id = v_game2_id) IS NOT DISTINCT FROM v_old THEN
+    RAISE EXCEPTION 'moving a round out of an in-progress game did not move its updated_at';
+  END IF;
+  IF (SELECT updated_at FROM public.games WHERE id = v_game3_id) IS DISTINCT FROM v_old THEN
+    RAISE EXCEPTION 'moving a round into a completed game moved its updated_at';
+  END IF;
+
+  -- Put the round back in game 1 for the cases below, and reset the stamps.
+  UPDATE public.match_rounds
+  SET game_id = v_game1_id, round_number = 1
+  WHERE id = v_round1_id;
+
+  PERFORM set_config('session_replication_role', 'replica', true);
+  UPDATE public.games SET updated_at = v_old WHERE match_id = v_match_id;
+  PERFORM set_config('session_replication_role', 'origin', true);
 
   -- Case 4: inserting a round does NOT move the game (the scorer's own round).
   INSERT INTO public.match_rounds (id, match_id, game_id, round_number, team1_score, team2_score)
