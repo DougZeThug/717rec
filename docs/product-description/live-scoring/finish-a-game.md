@@ -121,9 +121,11 @@ then end the game again if it is right." If someone already ended it with a
 different winner or score, it says: "Someone else already ended this game with a
 different score. Check the score. Reopen the game if it is wrong." If they ended
 it with the same winner and score (a double tap, or a second scorer), the end
-counts as done and nothing is shown. Undone or edited rounds do not change the
-game record, so a stale screen can still end a game on the old totals. The
-screen refetches after every refusal.
+counts as done and nothing is shown. Undoing a round, or an admin editing a
+round's score or deleting a round, also changes the game record (a database
+trigger), so a screen that loaded before the undo gets the same "changed by
+someone else" message. Editing only a thrower does not. A game that is already
+ended is never touched this way. The screen refetches after every refusal.
 
 > **Technical note:** the game's final totals are written onto the game record
 > when it is ended, but the screen never reads them back — every total shown is

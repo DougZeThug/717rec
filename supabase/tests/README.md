@@ -223,6 +223,17 @@ because other objects depend on it` (script 07 never uses CASCADE) and thirteen
   game row left behind, a match that does not exist is refused rather than
   falling through to a foreign-key error, and somebody who cannot score the
   match is refused. Covers B-67.
+- `touch_game_on_round_change.sql` — asserts undoing or editing a round moves
+  `games.updated_at` of an in-progress game (`20261120120000`), so completeGame's
+  guarded finish matches no row on a stale phone. A delete or a score edit moves
+  it; a thrower-only edit, an insert, and any change to a completed game do not;
+  a control game in the same match keeps its old value. A scorer (approved team
+  member) undoing the last round under the `authenticated` role moves it too, and
+  deleting a game or a match with in-progress rounds still works. It runs the
+  guard's own statement after an undo and an admin edit and asserts 0 rows (and
+  1 row on an untouched game). Also pins the function (SECURITY DEFINER, pinned
+  search path, no EXECUTE for anon or signed-in users) and the trigger shape
+  (AFTER, row-level, DELETE and UPDATE OF three columns, not INSERT).
 - `username_availability.sql` — asserts `is_username_taken(text)`, the profile
   form's name check, answers past RLS: as an ordinary player a plain read of
   another player's profile finds nothing, while the function reports that name

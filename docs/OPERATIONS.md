@@ -432,6 +432,19 @@ find the 'opponent1_position' column of 'match'".
 > violation" (B-37). The app itself is already safe: `createSeason` sends
 > `is_active: false` explicitly.
 
+> **Undoing or editing a round makes a stale screen refuse to end the game**
+> (`20261120120000_touch_game_on_round_change.sql`). One statement set, no
+> runbook, no history rewritten: a trigger on `match_rounds`. Without it, a phone
+> that still shows "game won" can end a game on old totals after a teammate undid
+> the winning round. Paste the full file in the SQL Editor and run it (it is
+> idempotent). Verify with
+> `SELECT tgname FROM pg_trigger WHERE tgname = 'touch_game_on_round_change';`
+> (one row). No app change goes with it, so the order does not matter. The way
+> back is two lines, at the end of the file header:
+> `DROP TRIGGER IF EXISTS touch_game_on_round_change ON public.match_rounds;`
+> then `DROP FUNCTION IF EXISTS public.touch_game_on_round_change();`.
+> `supabase/tests/touch_game_on_round_change.sql` covers it in CI.
+
 ## 6a. Power-score unification: review, revert, reapply
 
 The power-score unification (migrations `20260809*`) put every page on one
