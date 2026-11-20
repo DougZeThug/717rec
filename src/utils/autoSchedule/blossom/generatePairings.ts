@@ -41,7 +41,7 @@ async function generateOnce(
 
   try {
     return await withTiming(
-      async () => {
+      () => {
         // STEP 1: Analyze graph feasibility before running Blossom
         const feasibilityResult = analyzeGraphFeasibility(teams, config, 0);
 
@@ -138,7 +138,7 @@ async function generateOnce(
         // Log final statistics
         logFinalStatistics(teams, allPairings, targetMatchesPerTeam);
 
-        return allPairings;
+        return Promise.resolve(allPairings);
       },
       debugLog,
       'Blossom algorithm'
