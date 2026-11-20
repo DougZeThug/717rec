@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -23,13 +23,11 @@ const createWrapper =
   ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-const renderCreateBracket = () => {
+const renderCreateBracket = (invalidateImpl: () => Promise<void> = () => Promise.resolve()) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
   });
-  const invalidate = vi
-    .spyOn(queryClient, 'invalidateQueries')
-    .mockImplementation(() => Promise.resolve());
+  const invalidate = vi.spyOn(queryClient, 'invalidateQueries').mockImplementation(invalidateImpl);
   const { result } = renderHook(() => useCreateBracket(), {
     wrapper: createWrapper(queryClient),
   });
@@ -85,5 +83,31 @@ describe('useCreateBracket', () => {
     expect(errorLog).toHaveBeenCalledWith('Failed to create bracket:', failure);
     expect(invalidate).not.toHaveBeenCalled();
     expect(bracketLog).not.toHaveBeenCalled();
+  });
+
+  it('settles without waiting for the cache refresh', async () => {
+    asMock(createBracket).mockResolvedValue(bracket);
+    const releaseRefresh: Array<() => void> = [];
+    const { result, invalidate } = renderCreateBracket(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseRefresh.push(resolve);
+        })
+    );
+    let settled = false;
+
+    try {
+      const pending = result.current.mutateAsync(payload).then(() => {
+        settled = true;
+      });
+
+      await waitFor(() => expect(settled).toBe(true));
+      await pending;
+
+      expect(invalidate).toHaveBeenCalledTimes(3);
+      expect(releaseRefresh).toHaveLength(3);
+    } finally {
+      releaseRefresh.forEach((release) => release());
+    }
   });
 });
