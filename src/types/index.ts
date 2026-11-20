@@ -137,9 +137,6 @@ export * from './powerScoreTrends';
 // Team advanced stats types
 export * from './teamAdvancedStats';
 
-// Dual block types
-export * from './dualBlock';
-
 // Head-to-head types
 export * from './headToHead';
 
