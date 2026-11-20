@@ -1482,8 +1482,12 @@ after. There is **no screen for it**. You read it in the Supabase SQL Editor.
 
 No app change goes with it, so the order does not matter.
 
-1. Pick a quiet time: no game being scored. The file takes a very short lock on
-   `match_rounds` and `games` (`DROP TRIGGER` needs an exclusive lock for a moment).
+**Who runs it:** the project owner (Doug), in the Supabase dashboard SQL Editor. The
+editor runs as the database owner, so no app login is needed.
+
+1. Pick a quiet time: when no league match is being scored. The file takes a very
+   short lock on `match_rounds` and `games` (`DROP TRIGGER` needs an exclusive lock
+   for a moment).
 2. Run the BEFORE check below. Expect **0 rows**.
 3. Open the SQL Editor. Paste the **whole** file
    `20261120130000_audit_live_scoring_corrections.sql`. Optional: put this line first,
@@ -1492,7 +1496,11 @@ No app change goes with it, so the order does not matter.
    again. It is safe to run twice.
 4. The editor may warn about a "destructive operation". The file has
    `DROP TRIGGER IF EXISTS`. This is expected. Click through.
-5. Run the AFTER checks below.
+5. If you used `SET lock_timeout = '5s';`, run `RESET lock_timeout;` after the file.
+   If you do not, the setting stays on that editor connection.
+6. Run the AFTER checks below.
+
+No other hardening step is needed. Do not add one.
 
 **BEFORE and AFTER check:**
 
@@ -1554,14 +1562,32 @@ hand. `new_values` is empty for a delete.
 ### The real proof (first genuine correction)
 
 The checks above prove the triggers exist. Only a real correction proves they
-write. Use a **throwaway match** (never a real one):
+write. Use a **throwaway match** (never a real one).
 
-1. On a phone, as a scorer, enter two rounds, then press undo once.
-2. Run the report. **Expect exactly one `live_round_delete` row**, with your
-   username and the round you undid.
-3. Finish the game (the normal way). Run the report again. **Expect no new row.**
+**Make the practice match.**
 
-If step 2 shows no row, or step 3 adds one, stop and tell Claude.
+1. In `/admin`, open **Match Creation**. Pick a date and pair two teams, then press
+   **Create Matches**. Use two test teams if you have them. See
+   `docs/product-description/admin/build-the-schedule.md`.
+2. Open the match's live page (`/matches/<match id>/live`).
+3. The scorer must be an **approved member of one of the two teams**, or an
+   **admin**. Anyone else only watches.
+
+**Test it.** Run the report (above) after each step.
+
+4. Start a game and enter a few rounds. Run the report. **Expect no new row.**
+5. Press **Undo last round** and confirm. Run the report. **Expect exactly one
+   `live_round_delete` row**, with the scorer's username and the round you undid.
+6. Finish the game the normal way. Run the report. **Expect no new row.**
+7. Press **Reopen Game N to fix a score** on the finished game. Run the report.
+   **Expect exactly one `live_game_change` row.**
+
+If step 5 or 7 shows no row, or step 4 or 6 adds one, stop and tell Claude.
+
+**Remove the practice match.** Do not press "finish the match". Delete it: in
+`/admin`, open **Scores**, find the match, press the bin on its row, and press
+**Delete**. This also reverses any statistics it made. A match delete writes **no**
+audit rows, on purpose (its rounds and games go with it).
 
 ### If it needs undoing
 
