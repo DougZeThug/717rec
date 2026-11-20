@@ -236,6 +236,31 @@ because other objects depend on it` (script 07 never uses CASCADE) and thirteen
   1 row on an untouched game). Also pins the function (SECURITY DEFINER, pinned
   search path, no EXECUTE for anon or signed-in users) and the trigger shape
   (AFTER, row-level, DELETE and UPDATE OF three columns, not INSERT).
+- `admin_audit_triggers.sql` — runs `admin_audit_coverage_drift()` and fails when
+  one of the admin audit triggers (`audit_admin_mutation`, `20260701120000`) is
+  missing, disabled or narrowed on any of its tables. It does not cover
+  `match_rounds` or `games`: see the next entry.
+- `live_scoring_audit_triggers.sql` — asserts the audit trail for live-scoring
+  corrections (`20261120130000`). A round delete (a scorer's undo too), a real
+  round edit, a change to a completed game (a reopen by a scorer, an admin winner
+  change) and a game delete each write one `security_audit_log` row naming the
+  signed-in user (`live_round_delete`, `live_round_update`, `live_game_change`,
+  `live_game_delete`), with the whole old and new row. It writes nothing for the
+  normal flow (rounds inserted by a scorer or an admin, a game finished from
+  in progress, the touch trigger's `updated_at` write), for a save that changes
+  nothing (the same scores sent again, an `updated_at`-only change of a completed
+  game), for a caller with no `auth.uid()`, and for a match delete with 2 games and
+  3 rounds (the cascaded rows are skipped, 0 rows) or the same through
+  `delete_match_with_stats_reversal`. A thrower-only change does write a row. It
+  proves the audit is failure-safe: a `CHECK (false)` on `security_audit_log` inside
+  a savepoint makes every audit write fail, and an admin round edit and a scorer
+  undo still land. It pins the function (SECURITY DEFINER, pinned search path, no
+  EXECUTE for anon or signed-in users), the three triggers (AFTER, row-level, the
+  right events, no INSERT, the WHEN clause on the games UPDATE trigger) and the
+  drift helper `live_scoring_audit_coverage_drift()`, which it also shows flags a
+  dropped, disabled or widened trigger and a missing function. The log holds two
+  expected `WARNING:  audit_live_scoring_correction failed on ...` lines (case 9
+  fails the audit on purpose).
 - `username_availability.sql` — asserts `is_username_taken(text)`, the profile
   form's name check, answers past RLS: as an ordinary player a plain read of
   another player's profile finds nothing, while the function reports that name
