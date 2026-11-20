@@ -37,6 +37,12 @@ export const DivisionService = {
     return data ?? [];
   },
 
+  /**
+   * Add a division.
+   * @throws {DatabaseError} When the database operation fails
+   * @throws {BusinessLogicError} When no row came back (admin access was
+   *   removed, so row-level security refused the insert without an error)
+   */
   createDivision: async (input: DivisionInput) => {
     const { data, error } = await supabase
       .from('divisions')
@@ -49,6 +55,11 @@ export const DivisionService = {
       .maybeSingle();
 
     if (error) handleDatabaseError(error, 'Failed to create division');
+    if (!data) {
+      throw new BusinessLogicError(
+        'Nothing was created. Your admin access may have changed. Refresh the page and try again.'
+      );
+    }
     return data;
   },
 
