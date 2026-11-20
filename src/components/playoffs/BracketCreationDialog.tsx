@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
@@ -10,8 +10,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { MAX_BRACKET_TEAMS, MIN_BRACKET_TEAMS } from '@/constants/brackets';
+import { useCreateBracket } from '@/hooks/playoffs/useCreateBracket';
 import { useToast } from '@/hooks/useToast';
-import { createBracket } from '@/services/bracket-creator';
 import { BracketFormData } from '@/services/brackets/types/BracketFormData';
 import { BracketValidationService } from '@/services/brackets/validation/BracketValidationService';
 import { Team } from '@/types';
@@ -75,19 +75,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
     };
   }, []);
 
-  const createBracketMutation = useMutation({
-    mutationFn: createBracket,
-    onSuccess: (bracket) => {
-      bracketLog('Bracket created successfully:', bracket);
-      // Keep cached bracket/playoff data in sync after the mutation.
-      queryClient.invalidateQueries({ queryKey: ['brackets'] });
-      queryClient.invalidateQueries({ queryKey: ['playoff-data'] });
-      queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
-    },
-    onError: (error) => {
-      errorLog('Failed to create bracket:', error);
-    },
-  });
+  const createBracketMutation = useCreateBracket();
 
   const handleSubmit = async (data: BracketFormValues) => {
     if (isSubmitting) {
