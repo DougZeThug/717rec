@@ -281,7 +281,12 @@ The switch is labelled "Show Challonge bracket embeds on Playoffs page". The two
 fields are a section title and subtitle. Each embed row is a Title, a **Challonge
 slug** — "the part of the Challonge URL after challonge.com/" — and an Order
 number, with **Add**/**Save** and a bin. Config and rows save separately, and a
-saved row's bin deletes it immediately with **no confirmation**.
+saved row's bin asks first ("Remove this saved bracket?", with Cancel and
+Remove); the bin of a new row that was never saved just drops it from the form.
+If the database refuses a delete and says nothing (the row is already gone, or admin access was
+removed), the red toast reads "Failed to remove bracket: Nothing was deleted.
+This bracket may already be gone, or your admin access may have changed. Refresh
+the page and try again."
 
 The fallback appears on `/playoffs` **only when the switch is on and no bracket
 is selected**. Selecting a bracket hides it. It is read-only to everyone.
@@ -442,8 +447,9 @@ sees a count.
 - **Blind draw Clear All ignores the night.** The control reads as "clear
   tonight's list" and removes every signup ever taken. **May be worth treating
   as a bug rather than documenting.**
-- **Deleting a Challonge embed has no confirmation**, unlike every other delete
-  on these screens.
+- **Deleting a saved Challonge embed asks first** ("Remove this saved bracket?"),
+  like the other deletes on these screens. The bin of a new row that was never
+  saved drops it from the form with no prompt, because nothing was stored.
 - **The Challonge fallback settings sit inside the admin dashboard's Hero tab**,
   which makes them look like a home-page setting. This document owns them
   because they control the playoffs page;

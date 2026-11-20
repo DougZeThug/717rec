@@ -172,6 +172,12 @@ with the server's own reason. If the database refuses the write and says nothing
 reason reads "Nothing was saved. This division may have been deleted, or your
 admin access may have changed. Refresh the page and try again."
 
+**Division create.** The New Division dialog closes only when the division was
+created. If the database refuses the insert and says nothing (admin access was
+removed), the dialog stays open and the toast "Failed to create division" reads
+"Nothing was created. Your admin access may have changed. Refresh the page and
+try again."
+
 **Division delete.** The trash button opens a confirmation reading "Delete
 division *name*? This cannot be undone. Divisions currently assigned to any team
 or bracket cannot be deleted." Pressing Delete checks both of those and refuses

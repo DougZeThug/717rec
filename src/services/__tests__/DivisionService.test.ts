@@ -91,6 +91,76 @@ describe('DivisionService.fetchDivisionWeightsMap', () => {
   });
 });
 
+// ─── createDivision ───────────────────────────────────────────────────────────
+
+describe('DivisionService.createDivision', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const createdRow = {
+    id: 'd1',
+    name: 'Gold',
+    division_weight: 0.9,
+    display_division: 'Competitive',
+    created_at: '2026-01-01',
+  };
+
+  // insert -> select -> maybeSingle
+  const mockInsert = (result: { data: unknown; error: unknown }) => {
+    const maybeSingle = vi.fn(() => Promise.resolve(result));
+    const select = vi.fn(() => ({ maybeSingle }));
+    const insert = vi.fn(() => ({ select }));
+    mockFrom.mockReturnValue({ insert });
+    return { insert, select };
+  };
+
+  it('saves the trimmed name and returns the created row', async () => {
+    const { insert, select } = mockInsert({ data: createdRow, error: null });
+
+    const result = await DivisionService.createDivision({
+      name: '  Gold  ',
+      display_division: 'Competitive',
+      division_weight: 0.9,
+    });
+
+    expect(result).toEqual(createdRow);
+    expect(mockFrom).toHaveBeenCalledWith('divisions');
+    expect(insert).toHaveBeenCalledWith({
+      name: 'Gold',
+      display_division: 'Competitive',
+      division_weight: 0.9,
+    });
+    expect(select).toHaveBeenCalledWith('id, name, division_weight, display_division, created_at');
+  });
+
+  it('throws DatabaseError when the insert fails', async () => {
+    mockInsert({ data: null, error: pgError() });
+
+    await expect(
+      DivisionService.createDivision({
+        name: 'Gold',
+        display_division: 'Competitive',
+        division_weight: 0.9,
+      })
+    ).rejects.toThrow(DatabaseError);
+  });
+
+  // The defect: row-level security refuses the insert without an error. The
+  // call came back as null and the admin saw "Division created" while nothing
+  // was created.
+  it('throws BusinessLogicError when no row came back', async () => {
+    mockInsert({ data: null, error: null });
+
+    const thrown = await DivisionService.createDivision({
+      name: 'Gold',
+      display_division: 'Competitive',
+      division_weight: 0.9,
+    }).catch((error: unknown) => error);
+
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect((thrown as Error).message).toMatch(/Nothing was created. Your admin access/);
+  });
+});
+
 // ─── updateDivision ───────────────────────────────────────────────────────────
 
 describe('DivisionService.updateDivision', () => {

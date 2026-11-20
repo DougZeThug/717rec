@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DivisionService } from '@/services/DivisionService';
 import { clearDivisionWeightsCache } from '@/services/divisionWeightsCache';
+import { BusinessLogicError } from '@/types/errors';
 
 import { useDivisionMutations } from '../useDivisionMutations';
 
@@ -96,5 +97,52 @@ describe('useDivisionMutations', () => {
     expect(toast).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Failed to create division', variant: 'destructive' })
     );
+  });
+
+  // A blocked insert or save comes back as a BusinessLogicError. The toast must
+  // carry its message, or the admin sees only a title and no way forward.
+  it('shows the reason when a create is blocked', async () => {
+    const message =
+      'Nothing was created. Your admin access may have changed. Refresh the page and try again.';
+    (DivisionService.createDivision as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new BusinessLogicError(message)
+    );
+    const { result } = renderHook(() => useDivisionMutations(), { wrapper: createWrapper() });
+    const spy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await act(async () => {
+      await expect(result.current.createDivision.mutateAsync(input)).rejects.toThrow(message);
+    });
+
+    expect(spy).not.toHaveBeenCalled();
+    expect(toast).toHaveBeenCalledWith({
+      title: 'Failed to create division',
+      description: message,
+      variant: 'destructive',
+    });
+  });
+
+  it('shows the reason when an update is blocked and does not invalidate', async () => {
+    const message =
+      'Nothing was saved. This division may have been deleted, or your admin access may have changed. Refresh the page and try again.';
+    (DivisionService.updateDivision as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new BusinessLogicError(message)
+    );
+    const { result } = renderHook(() => useDivisionMutations(), { wrapper: createWrapper() });
+    const spy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await act(async () => {
+      await expect(
+        result.current.updateDivision.mutateAsync({ id: 'd1', patch: { division_weight: 0.8 } })
+      ).rejects.toThrow(message);
+    });
+
+    expect(spy).not.toHaveBeenCalled();
+    expect(clearDivisionWeightsCache).not.toHaveBeenCalled();
+    expect(toast).toHaveBeenCalledWith({
+      title: 'Failed to update division',
+      description: message,
+      variant: 'destructive',
+    });
   });
 });

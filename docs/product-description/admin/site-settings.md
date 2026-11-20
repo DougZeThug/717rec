@@ -148,8 +148,9 @@ whose slugs collide.
 *title*? This action cannot be undone." That is accurate; there is no undo and no
 trash. The card and its settings are gone.
 
-**The Challonge fallback's remove button deletes a saved row at once, with no
-confirmation at all.**
+**The Challonge fallback's remove button asks first** ("Remove this saved
+bracket?", with Cancel and Remove) before it deletes a saved row. The bin of a
+new row that was never saved drops it from the form with no prompt.
 
 ## League Night in detail
 
@@ -328,8 +329,8 @@ immediately. Repairing counters rewrites the standings everybody reads.
 
 - **Duplicate has no confirmation and produces a colliding slug** the second time
   it is used on the same card.
-- **Removing a Challonge fallback bracket has no confirmation.** One press,
-  gone.
+- **Removing a saved Challonge fallback bracket asks first.** Press Remove in the
+  prompt and it is gone. A new row that was never saved drops with no prompt.
 - **The order column has a drag handle that does nothing.** Ordering is a number
   field buried in Advanced Settings.
 - **The last theme cannot be disabled**, but nothing stops an admin disabling
@@ -344,9 +345,10 @@ immediately. Repairing counters rewrites the standings everybody reads.
 
 ## Open questions and verification
 
-- **The Challonge fallback deletes a bracket row with no confirmation**, on a
-  screen where deleting a hero card asks first. Inconsistent and destructive.
-  **May be worth treating as a bug rather than documenting.**
+- Resolved: **the Challonge fallback deleted a bracket row with no confirmation.**
+  It asks first ("Remove this saved bracket?"), as deleting a hero card does. A
+  test pins the prompt (`ChallongeFallbackSection.test.tsx`, "deletes an existing
+  bracket via deleteBracket, after confirming").
 - **Duplicating a hero card twice creates two cards with the same slug.** The
   slug is described in the interface as the card's internal identifier. **May be
   worth treating as a bug rather than documenting.**

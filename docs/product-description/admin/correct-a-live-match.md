@@ -197,8 +197,12 @@ a real way to work.
 
 ### Submit
 
-None of the three writes is optimistic. Each waits, the button reads "Saving…"
-or "Deleting…", and the dialog closes only on success.
+None of the three writes is optimistic. Each waits and the button reads
+"Saving…" or "Deleting…". The Save changes and Set winner dialogs close only on
+success. **The Delete round dialog closes on the click, whether the delete works
+or not** (it is a Radix alert dialog, and its Delete button closes it). On a
+failure the red toast "Could not delete round" gives the reason and the screen
+refreshes.
 
 | Action | On success | On failure |
 | --- | --- | --- |
@@ -402,10 +406,17 @@ two disagree until someone re-saves — which the admin dashboard now lists and
   nights".
 - **The empty state names what emptied it** — the season, or the night — rather
   than saying nothing was ever scored.
-- **Nothing records that a correction happened.** There is no audit trail on
-  rounds, games, or results anywhere a user can see. The dashboard card shows the
-  *state*, not the history: once a match is re-saved it drops off the list and
-  nothing says it was ever corrected.
+- **No screen shows that a correction happened, but the database records it
+  (from migration `20261120130000`, once it is hand-applied).** Every round
+  undo, round edit or delete, game reopen, winner change on a finished game and
+  game delete writes one row to `security_audit_log` with who did it (a scorer's
+  undo too), when, and the whole row before and after. It is read with SQL only
+  ([`OPERATIONS.md` section 6h](../../OPERATIONS.md#6h-who-changed-a-live-score-the-live-scoring-audit-trail)).
+  Entering rounds and finishing a game are not logged. A change made in the SQL
+  Editor is not logged, and neither is a match-level action (reopen a match,
+  save it as finished, delete it). The dashboard card shows the *state*, not the
+  history: once a match is re-saved it drops off the list and nothing on screen
+  says it was ever corrected.
 - **Reopening a match needs admin; reopening a game does not.** The two look
   alike and differ completely in reach.
 

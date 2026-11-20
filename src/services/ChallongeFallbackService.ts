@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import { BusinessLogicError } from '@/types/errors';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
 export type ChallongeFallbackConfig = Tables<'challonge_fallback_config'>;
@@ -76,8 +77,25 @@ export const ChallongeFallbackService = {
     return ensureFound(data, 'ChallongeFallbackBracket', id);
   },
 
+  /**
+   * Remove one saved fallback bracket.
+   * @throws {DatabaseError} When the database operation fails
+   * @throws {BusinessLogicError} When no row was deleted (the bracket is
+   *   already gone, or admin access was removed, so row-level security
+   *   filtered it out without an error)
+   */
   deleteBracket: async (id: string): Promise<void> => {
-    const { error } = await supabase.from('challonge_fallback_brackets').delete().eq('id', id);
+    const { data, error } = await supabase
+      .from('challonge_fallback_brackets')
+      .delete()
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
     if (error) handleDatabaseError(error, 'Failed to delete Challonge fallback bracket');
+    if (!data) {
+      throw new BusinessLogicError(
+        'Nothing was deleted. This bracket may already be gone, or your admin access may have changed. Refresh the page and try again.'
+      );
+    }
   },
 };

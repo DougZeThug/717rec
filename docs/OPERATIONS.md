@@ -1444,3 +1444,161 @@ table) and `supabase/tests/division_truth_scripts.sql` (the real script files on
 fixture; the dry run lists exactly the rows script 02 writes) cover the mechanism
 in the `db-apply-and-smoke` CI job. They prove the mechanism, not the live numbers.
 The live numbers are Doug's checks above.
+
+## 6h. Who changed a live score? The live-scoring audit trail
+
+Built 2026-11-20 (`supabase/migrations/20261120130000_audit_live_scoring_corrections.sql`).
+**A hand-apply is needed** (§6). Until it is applied, nothing records a correction
+and nothing else breaks. Doug decided that scorers are logged too, not only
+admins (2026-11-20).
+
+**What it does.** When a signed-in person corrects live scoring, the database writes
+one row in the `security_audit_log` table: who, when, and the whole row before and
+after. There is **no screen for it**. You read it in the Supabase SQL Editor.
+
+| `action` in the log | What happened                                                                      |
+| ------------------- | ---------------------------------------------------------------------------------- |
+| `live_round_delete` | A round was deleted. A scorer's undo, or an admin's delete.                        |
+| `live_round_update` | An admin edit that really changed a round (a score, a thrower, a bag count).       |
+| `live_game_change`  | A **finished** game was changed: a reopen (scorer or admin), or an admin's winner. |
+| `live_game_delete`  | A game was deleted.                                                                |
+
+**What is NOT logged, on purpose:**
+
+- Entering a round, and ending a game the normal way (it happens all night).
+- An admin save that changes nothing (the Edit Round dialog always re-sends both
+  scores).
+- Rounds and games that go away because a whole match or game was deleted. The
+  match or game delete is the event. A match delete itself is not logged either
+  (the `matches` table has no audit).
+- A change made in the SQL Editor or by a background job. There is no signed-in
+  person to name.
+- An admin changing the winner of a game that is still **in progress**.
+- If the audit itself ever fails, the scorer's change still goes through. The
+  database only prints a warning. So a missing row is possible, but a blocked score
+  is not.
+
+### Applying it (Supabase SQL Editor, not Lovable)
+
+No app change goes with it, so the order does not matter.
+
+**Who runs it:** the project owner (Doug), in the Supabase dashboard SQL Editor. The
+editor runs as the database owner, so no app login is needed.
+
+1. Pick a quiet time: when no league match is being scored. The file takes a very
+   short lock on `match_rounds` and `games` (`DROP TRIGGER` needs an exclusive lock
+   for a moment).
+2. Run the BEFORE check below. Expect **0 rows**.
+3. Open the SQL Editor. Paste the **whole** file
+   `20261120130000_audit_live_scoring_corrections.sql`. Optional: put this line first,
+   so it gives up instead of waiting if a game is being written at that moment:
+   `SET lock_timeout = '5s';` If it gives up ("lock timeout"), wait a minute and run it
+   again. It is safe to run twice.
+4. The editor may warn about a "destructive operation". The file has
+   `DROP TRIGGER IF EXISTS`. This is expected. Click through.
+5. If you used `SET lock_timeout = '5s';`, run `RESET lock_timeout;` after the file.
+   If you do not, the setting stays on that editor connection.
+6. Run the AFTER checks below.
+
+No other hardening step is needed. Do not add one.
+
+**BEFORE and AFTER check:**
+
+```sql
+SELECT tgrelid::regclass AS on_table, tgname, tgenabled
+FROM pg_trigger
+WHERE tgname LIKE 'audit_live_scoring_correction%' AND NOT tgisinternal
+ORDER BY tgrelid::regclass::text, tgname;
+```
+
+**Before:** 0 rows. **After:** these 3 rows (from a run on a test database):
+
+| on_table       | tgname                              | tgenabled |
+| -------------- | ----------------------------------- | --------- |
+| `games`        | `audit_live_scoring_correction_del` | `O`       |
+| `games`        | `audit_live_scoring_correction_upd` | `O`       |
+| `match_rounds` | `audit_live_scoring_correction`     | `O`       |
+
+`O` means the trigger is on. Then run the built-in check. **Expect no rows**:
+
+```sql
+SELECT * FROM live_scoring_audit_coverage_drift();
+```
+
+Any row in that answer is a problem in plain words (a missing or switched-off
+trigger). Stop and tell Claude.
+
+Then check that the log table works at all (read only). **Expect a few recent
+rows.** If it shows nothing at all, tell Claude (the older admin audit may never
+have written on the live database: UNKNOWN, not checked):
+
+```sql
+SELECT table_name, action, created_at
+FROM security_audit_log
+ORDER BY created_at DESC
+LIMIT 5;
+```
+
+### Who changed this? (the report)
+
+Run this any time. Newest first. `username` is who did it.
+
+```sql
+SELECT l.created_at, p.username, l.action, l.table_name, l.record_id,
+       COALESCE(l.new_values->>'match_id', l.old_values->>'match_id') AS match_id,
+       l.old_values, l.new_values
+FROM security_audit_log l
+LEFT JOIN profiles p ON p.id = l.user_id
+WHERE l.action LIKE 'live_%'
+ORDER BY l.created_at DESC
+LIMIT 50;
+```
+
+To look at one match, add `AND COALESCE(l.new_values->>'match_id', l.old_values->>'match_id') = '<match id>'`
+above the `ORDER BY`. `old_values` is the row as it was before. For a deleted
+round it holds the scores, so it also works as a copy to put the round back by
+hand. `new_values` is empty for a delete.
+
+### The real proof (first genuine correction)
+
+The checks above prove the triggers exist. Only a real correction proves they
+write. Use a **throwaway match** (never a real one).
+
+**Make the practice match.**
+
+1. In `/admin`, open **Match Creation**. Pick a date and pair two teams, then press
+   **Create Matches**. Use two test teams if you have them. See
+   `docs/product-description/admin/build-the-schedule.md`.
+2. Open the match's live page (`/matches/<match id>/live`).
+3. The scorer must be an **approved member of one of the two teams**, or an
+   **admin**. Anyone else only watches.
+
+**Test it.** Run the report (above) after each step.
+
+4. Start a game and enter a few rounds. Run the report. **Expect no new row.**
+5. Press **Undo last round** and confirm. Run the report. **Expect exactly one
+   `live_round_delete` row**, with the scorer's username and the round you undid.
+6. Finish the game the normal way. Run the report. **Expect no new row.**
+7. Press **Reopen Game N to fix a score** on the finished game. Run the report.
+   **Expect exactly one `live_game_change` row.**
+
+If step 5 or 7 shows no row, or step 4 or 6 adds one, stop and tell Claude.
+
+**Remove the practice match.** Do not press "finish the match". Delete it: in
+`/admin`, open **Scores**, find the match, press the bin on its row, and press
+**Delete**. This also reverses any statistics it made. A match delete writes **no**
+audit rows, on purpose (its rounds and games go with it).
+
+### If it needs undoing
+
+Run these five lines. Rows already written stay in `security_audit_log`:
+
+```sql
+DROP TRIGGER IF EXISTS audit_live_scoring_correction ON public.match_rounds;
+DROP TRIGGER IF EXISTS audit_live_scoring_correction_upd ON public.games;
+DROP TRIGGER IF EXISTS audit_live_scoring_correction_del ON public.games;
+DROP FUNCTION IF EXISTS public.audit_live_scoring_correction();
+DROP FUNCTION IF EXISTS public.live_scoring_audit_coverage_drift();
+```
+
+`supabase/tests/live_scoring_audit_triggers.sql` covers it in CI.
