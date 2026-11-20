@@ -2,7 +2,6 @@ import { Team } from '@/types';
 
 export type TeamPairingConfig = {
   avoidRematches?: boolean;
-  fetchSeasonHistoryFn: (teamIds: string[]) => Promise<Array<[string, string]>>;
   getCompatibilityScoreFn: (team1: Team, team2: Team) => number;
   maxScore?: number;
   weights?: {
@@ -10,7 +9,6 @@ export type TeamPairingConfig = {
     sosWeight?: number;
     recordWeight?: number;
     gameRecordWeight?: number;
-    tierPenalty?: number;
   };
   playedPairsSet?: Set<string>; // Pre-fetched match history for performance
   /** First run matches as many teams as it can in each round (Prioritize Match Quality ON). */

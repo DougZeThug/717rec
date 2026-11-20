@@ -28,7 +28,6 @@ const pair = (first: typeof alpha, second: typeof alpha): TeamPairing => ({
 
 const config = (playedPairs: string[] = []): TeamPairingConfig => ({
   avoidRematches: true,
-  fetchSeasonHistoryFn: vi.fn(),
   getCompatibilityScoreFn: vi.fn(() => 10),
   playedPairsSet: new Set(playedPairs),
 });

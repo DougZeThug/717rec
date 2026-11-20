@@ -1,18 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { createMockTeam } from '@/utils/test/autoSchedule/testHelpers';
 
 import { generatePairingsWithBlossom } from '../blossom';
-import type { TeamPairingConfig } from '../blossom/types';
 
-/**
- * Base config that skips the season-history fetch (config.fetchSeasonHistoryFn):
- * - avoidRematches: false  → no pre-fetch
- * - playedPairsSet: new Set() → also prevents fetch if avoidRematches were true
- */
+/** Base config: rematches are not avoided and no pairs have been played. */
 const baseConfig = {
   avoidRematches: false,
-  fetchSeasonHistoryFn: () => Promise.resolve([]),
   getCompatibilityScoreFn: () => 5,
   playedPairsSet: new Set<string>(),
 };
@@ -209,38 +203,5 @@ describe('generatePairingsWithBlossom', () => {
     const normalize = (pairings: typeof first) =>
       pairings.map((pairing) => [pairing.team1.id, pairing.team2.id].sort().join('-'));
     expect(normalize(second)).toEqual(normalize(first));
-  });
-
-  describe('season history pre-fetch', () => {
-    const teams = ['t1', 't2', 't3', 't4'].map((id) => createMockTeam({ id, name: id }));
-
-    it('asks config.fetchSeasonHistoryFn for the team ids when rematches are avoided and no played-pairs set is given', async () => {
-      const fetchSeasonHistoryFn = vi.fn().mockResolvedValue([['t1', 't2']]);
-      const config: TeamPairingConfig = {
-        avoidRematches: true,
-        fetchSeasonHistoryFn,
-        getCompatibilityScoreFn: () => 5,
-      };
-
-      await generatePairingsWithBlossom(teams, config);
-
-      expect(fetchSeasonHistoryFn).toHaveBeenCalledTimes(1);
-      expect(fetchSeasonHistoryFn).toHaveBeenCalledWith(['t1', 't2', 't3', 't4']);
-      // What it returned becomes the played-pairs set the rest of the run reads.
-      expect(config.playedPairsSet?.has('t1-t2')).toBe(true);
-    });
-
-    it('does not ask config.fetchSeasonHistoryFn when a played-pairs set is already given', async () => {
-      const fetchSeasonHistoryFn = vi.fn().mockResolvedValue([]);
-
-      await generatePairingsWithBlossom(teams, {
-        avoidRematches: true,
-        fetchSeasonHistoryFn,
-        getCompatibilityScoreFn: () => 5,
-        playedPairsSet: new Set<string>(),
-      });
-
-      expect(fetchSeasonHistoryFn).not.toHaveBeenCalled();
-    });
   });
 });

@@ -1,5 +1,4 @@
 import { fetchTeamsByIds } from '@/services/matches/MatchTeamLookupService';
-import { fetchSeasonHistoryForTeams } from '@/services/matches/SchedulingHistoryService';
 import { AlgorithmConfig, TeamPairingMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { BusinessLogicError, ValidationError } from '@/types/errors';
 import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossom';
@@ -139,7 +138,6 @@ export const scheduleStandardPairings = async (
     scheduleLog(`Generating pairings for ${block} block with ${teamsInBlock.length} teams`);
     const blockPairings = await generatePairingsWithBlossom(teamsInBlock, {
       avoidRematches: config.avoidRematches,
-      fetchSeasonHistoryFn: fetchSeasonHistoryForTeams,
       getCompatibilityScoreFn,
       weights: config.weights,
       playedPairsSet,

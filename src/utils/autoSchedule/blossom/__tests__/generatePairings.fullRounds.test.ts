@@ -47,7 +47,6 @@ const teams = () =>
 const generate = (preferFullRounds?: boolean) =>
   generatePairingsWithBlossom(teams(), {
     avoidRematches: true,
-    fetchSeasonHistoryFn: vi.fn().mockResolvedValue([]),
     getCompatibilityScoreFn: calculateDivisionOnlyCompatibility,
     playedPairsSet: new Set<string>(),
     ...(preferFullRounds === undefined ? {} : { preferFullRounds }),
