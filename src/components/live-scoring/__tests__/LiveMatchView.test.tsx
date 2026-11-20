@@ -145,7 +145,7 @@ const game = (overrides: Record<string, unknown> = {}) =>
     started_at: '',
     completed_at: null,
     created_at: null,
-    updated_at: '',
+    updated_at: '2026-11-20T01:23:45.123456+00:00',
     ...overrides,
   }) as LiveMatchBundle['games'][number];
 
@@ -721,6 +721,7 @@ describe('in-game state', () => {
       gameId: 'game-1',
       winnerTeamId: 'team-1',
       finalTotals: { team1: 21, team2: 0 },
+      seenUpdatedAt: '2026-11-20T01:23:45.123456+00:00',
     });
   });
 
@@ -1120,6 +1121,7 @@ describe('LiveMatchView — a won game and an unsettled round', () => {
       gameId: 'game-1',
       winnerTeamId: 'team-1',
       finalTotals: { team1: 21, team2: 0 },
+      seenUpdatedAt: '2026-11-20T01:23:45.123456+00:00',
     });
   });
 });

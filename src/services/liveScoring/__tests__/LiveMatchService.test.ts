@@ -214,7 +214,7 @@ describe('createGame', () => {
 
 // ─── completeGame / reopenGame ────────────────────────────────────────────────
 
-// update -> eq -> select -> maybeSingle, as the service chains it.
+// update -> eq -> select -> maybeSingle, as reopenGame chains it.
 const updateChain = (result: { data: unknown; error: unknown }) => {
   const maybeSingle = vi.fn(() => Promise.resolve(result));
   const select = vi.fn(() => ({ maybeSingle }));
@@ -223,12 +223,46 @@ const updateChain = (result: { data: unknown; error: unknown }) => {
   return { update, eq, select };
 };
 
+// A realistic stored value: Postgres keeps microseconds, JavaScript dates do not.
+const SEEN = '2026-11-20T01:23:45.123456+00:00';
+const NEWER = '2026-11-20T01:24:10.654321+00:00';
+const TOTALS = { team1: 18, team2: 21 };
+const STALE_MESSAGE =
+  'This game was changed by someone else. The screen is updated. Check the score, then end the game again if it is right.';
+const DIFFERENT_RESULT_MESSAGE =
+  'Someone else already ended this game with a different score. Check the score. Reopen the game if it is wrong.';
+
+// update -> eq -> eq -> eq -> select -> maybeSingle, as completeGame chains it.
+const completeChain = (result: { data: unknown; error: unknown }) => {
+  const maybeSingle = vi.fn(() => Promise.resolve(result));
+  const select = vi.fn(() => ({ maybeSingle }));
+  const eq = vi.fn((): { eq: unknown; select: unknown } => ({ eq, select }));
+  const update = vi.fn(() => ({ eq }));
+  return { update, eq, select };
+};
+
+// select -> eq -> maybeSingle, the re-read after the guarded update matched nothing.
+const rereadChain = (result: { data: unknown; error: unknown }) => {
+  const maybeSingle = vi.fn(() => Promise.resolve(result));
+  const eq = vi.fn(() => ({ maybeSingle }));
+  const select = vi.fn(() => ({ eq }));
+  return { select, eq };
+};
+
+// The first update matches nothing; the games table is then read again.
+const noMatchThenReread = (reread: { data: unknown; error: unknown }) => {
+  const upd = completeChain({ data: null, error: null });
+  const read = rereadChain(reread);
+  routeTables({ games: { update: upd.update, select: read.select } });
+  return { upd, read };
+};
+
 describe('completeGame', () => {
   it('marks the game completed with winner and folded totals', async () => {
-    const { update, eq, select } = updateChain({ data: { id: 'game-1' }, error: null });
+    const { update, eq, select } = completeChain({ data: { id: 'game-1' }, error: null });
     routeTables({ games: { update } });
 
-    await LiveMatchService.completeGame('game-1', 'team-2', { team1: 18, team2: 21 });
+    await LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN);
 
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -242,30 +276,221 @@ describe('completeGame', () => {
     expect(select).toHaveBeenCalledWith('id');
   });
 
-  it('throws DatabaseError when the update fails', async () => {
-    const { update } = updateChain({ data: null, error: pgError('500') });
+  it('only writes a game that is in progress and still at the version the screen saw', async () => {
+    const { update, eq } = completeChain({ data: { id: 'game-1' }, error: null });
     routeTables({ games: { update } });
 
-    await expect(
-      LiveMatchService.completeGame('game-1', 'team-2', { team1: 18, team2: 21 })
-    ).rejects.toBeInstanceOf(DatabaseError);
+    await LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN);
+
+    expect(eq).toHaveBeenCalledTimes(3);
+    expect(eq).toHaveBeenCalledWith('id', 'game-1');
+    expect(eq).toHaveBeenCalledWith('status', 'in_progress');
+    // The exact raw string, microseconds and all. A Date round trip would cut
+    // them and the database would match nothing.
+    expect(eq).toHaveBeenCalledWith('updated_at', '2026-11-20T01:23:45.123456+00:00');
   });
 
-  // RLS filters the row out and Postgres reports no error: without this check
-  // the scorer is told the game was saved when nothing changed.
-  it('throws when no row was updated (RLS blocked it, no error)', async () => {
-    const { update } = updateChain({ data: null, error: null });
-    routeTables({ games: { update } });
+  it('does not read the game again when the first write worked', async () => {
+    const { update } = completeChain({ data: { id: 'game-1' }, error: null });
+    const select = vi.fn();
+    routeTables({ games: { update, select } });
 
-    const thrown = await LiveMatchService.completeGame('game-1', 'team-2', {
-      team1: 18,
-      team2: 21,
-    }).catch((error: unknown) => error);
+    await LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN);
 
-    expect(thrown).toBeInstanceOf(BusinessLogicError);
-    expect(getUIErrorMessage(thrown)).toBe(
-      'Nothing was saved. This match may already be finished, or you can no longer score it. Refresh the page.'
+    expect(select).not.toHaveBeenCalled();
+    expect(mockFrom).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws DatabaseError when the update fails, and does not read again', async () => {
+    const { update } = completeChain({ data: null, error: pgError('500') });
+    const select = vi.fn();
+    routeTables({ games: { update, select } });
+
+    await expect(
+      LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN)
+    ).rejects.toBeInstanceOf(DatabaseError);
+    expect(select).not.toHaveBeenCalled();
+  });
+
+  it('throws ValidationError for an empty version, before any database call', async () => {
+    const thrown = await LiveMatchService.completeGame('game-1', 'team-2', TOTALS, '').catch(
+      (error: unknown) => error
     );
+
+    expect(thrown).toBeInstanceOf(ValidationError);
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  describe('when the guarded write matched no row', () => {
+    it('reads the game again by id with explicit columns', async () => {
+      const { read } = noMatchThenReread({ data: gameRow({ updated_at: SEEN }), error: null });
+
+      await LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN).catch(
+        (error: unknown) => error
+      );
+
+      expect(read.select).toHaveBeenCalledTimes(1);
+      const columns = (read.select.mock.calls as unknown as string[][])[0][0];
+      expect(columns).not.toBe('*');
+      expect(columns).toContain('updated_at');
+      expect(read.eq).toHaveBeenCalledWith('id', 'game-1');
+    });
+
+    // A double tap, a second scorer finishing the same result, a lost reply, or
+    // a match already finalized: the game is already as we wanted it.
+    it('succeeds when the game is already ended with the same winner and totals', async () => {
+      noMatchThenReread({
+        data: gameRow({
+          status: 'completed',
+          winner_team_id: 'team-2',
+          team1_score: 18,
+          team2_score: 21,
+          updated_at: NEWER,
+        }),
+        error: null,
+      });
+
+      await expect(
+        LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN)
+      ).resolves.toBeUndefined();
+    });
+
+    it('succeeds when the stored totals come back as numeric strings', async () => {
+      noMatchThenReread({
+        data: gameRow({
+          status: 'completed',
+          winner_team_id: 'team-2',
+          team1_score: '18',
+          team2_score: '21',
+        }),
+        error: null,
+      });
+
+      await expect(
+        LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN)
+      ).resolves.toBeUndefined();
+    });
+
+    it('refuses when the game was ended with a different winner', async () => {
+      noMatchThenReread({
+        data: gameRow({
+          status: 'completed',
+          winner_team_id: 'team-1',
+          team1_score: 18,
+          team2_score: 21,
+        }),
+        error: null,
+      });
+
+      const thrown = await LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN).catch(
+        (error: unknown) => error
+      );
+
+      expect(thrown).toBeInstanceOf(BusinessLogicError);
+      expect(getUIErrorMessage(thrown)).toBe(DIFFERENT_RESULT_MESSAGE);
+    });
+
+    it('refuses when the game was ended with the same winner but different totals', async () => {
+      noMatchThenReread({
+        data: gameRow({
+          status: 'completed',
+          winner_team_id: 'team-2',
+          team1_score: 19,
+          team2_score: 21,
+        }),
+        error: null,
+      });
+
+      const thrown = await LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN).catch(
+        (error: unknown) => error
+      );
+
+      expect(thrown).toBeInstanceOf(BusinessLogicError);
+      expect(getUIErrorMessage(thrown)).toBe(DIFFERENT_RESULT_MESSAGE);
+    });
+
+    // Null is not 0: a completed game with no stored score is not the 0-0 result.
+    it('does not read stored null totals as 0-0', async () => {
+      noMatchThenReread({
+        data: gameRow({
+          status: 'completed',
+          winner_team_id: 'team-2',
+          team1_score: null,
+          team2_score: null,
+        }),
+        error: null,
+      });
+
+      const thrown = await LiveMatchService.completeGame(
+        'game-1',
+        'team-2',
+        { team1: 0, team2: 0 },
+        SEEN
+      ).catch((error: unknown) => error);
+
+      expect(thrown).toBeInstanceOf(BusinessLogicError);
+      expect(getUIErrorMessage(thrown)).toBe(DIFFERENT_RESULT_MESSAGE);
+    });
+
+    // The reopen case: the game is back in progress and has moved on since the
+    // screen loaded, so the stale phone must not finish it.
+    it('refuses when the game was changed since the screen loaded it', async () => {
+      noMatchThenReread({
+        data: gameRow({ status: 'in_progress', updated_at: NEWER }),
+        error: null,
+      });
+
+      const thrown = await LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN).catch(
+        (error: unknown) => error
+      );
+
+      expect(thrown).toBeInstanceOf(BusinessLogicError);
+      expect(getUIErrorMessage(thrown)).toBe(STALE_MESSAGE);
+    });
+
+    it('keeps the old message when the game is unchanged and still in progress', async () => {
+      noMatchThenReread({
+        data: gameRow({ status: 'in_progress', updated_at: SEEN }),
+        error: null,
+      });
+
+      const thrown = await LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN).catch(
+        (error: unknown) => error
+      );
+
+      // RLS filtered the write out: the guard did not fail, so this is not "stale".
+      expect(thrown).toBeInstanceOf(BusinessLogicError);
+      expect(getUIErrorMessage(thrown)).toBe(
+        'Nothing was saved. This match may already be finished, or you can no longer score it. Refresh the page.'
+      );
+    });
+
+    it('says the game is gone when the row no longer exists', async () => {
+      noMatchThenReread({ data: null, error: null });
+
+      const thrown = await LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN).catch(
+        (error: unknown) => error
+      );
+
+      expect(thrown).toBeInstanceOf(BusinessLogicError);
+      expect(getUIErrorMessage(thrown)).toBe('This game no longer exists. Refresh the page.');
+    });
+
+    it('throws DatabaseError when the second read fails', async () => {
+      noMatchThenReread({ data: null, error: pgError('500') });
+
+      await expect(
+        LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN)
+      ).rejects.toBeInstanceOf(DatabaseError);
+    });
+
+    it('maps a missing table on the second read to LiveScoringNotEnabledError', async () => {
+      noMatchThenReread({ data: null, error: pgError('PGRST205') });
+
+      await expect(
+        LiveMatchService.completeGame('game-1', 'team-2', TOTALS, SEEN)
+      ).rejects.toBeInstanceOf(LiveScoringNotEnabledError);
+    });
   });
 });
 

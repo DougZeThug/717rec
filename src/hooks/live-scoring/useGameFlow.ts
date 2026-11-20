@@ -20,6 +20,8 @@ export interface CompleteGameInput {
   gameId: string;
   winnerTeamId: string;
   finalTotals: { team1: number; team2: number };
+  /** The raw `games.updated_at` the screen loaded. Never reformat it. */
+  seenUpdatedAt: string;
 }
 
 export function useGameFlow(matchId: string) {
@@ -59,7 +61,12 @@ export function useGameFlow(matchId: string) {
     // result written later is not.
     networkMode: 'always',
     mutationFn: (input: CompleteGameInput) =>
-      LiveMatchService.completeGame(input.gameId, input.winnerTeamId, input.finalTotals),
+      LiveMatchService.completeGame(
+        input.gameId,
+        input.winnerTeamId,
+        input.finalTotals,
+        input.seenUpdatedAt
+      ),
     onError: onError('Could not complete game'),
     onSettled: invalidate,
   });

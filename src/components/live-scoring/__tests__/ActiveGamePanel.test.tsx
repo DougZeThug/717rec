@@ -1,4 +1,5 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -31,7 +32,13 @@ import { ActiveGamePanel } from '../ActiveGamePanel';
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
 const game = {
-  game: { id: 'game-1', match_id: 'match-1', game_number: 1, status: 'in_progress' },
+  game: {
+    id: 'game-1',
+    match_id: 'match-1',
+    game_number: 1,
+    status: 'in_progress',
+    updated_at: '2026-11-20T01:23:45.123456+00:00',
+  },
   rounds: [],
   totals: { team1: 0, team2: 0 },
   pendingWinnerSide: null,
@@ -44,17 +51,17 @@ type PanelProps = React.ComponentProps<typeof ActiveGamePanel>;
 
 const mutation = { mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false, isPaused: false };
 
-const renderPanel = () =>
+const renderPanel = (panelGame: LiveGameDerived = game, canScore = false) =>
   render(
     <ActiveGamePanel
-      game={game}
+      game={panelGame}
       matchId="match-1"
       team1Name="Baggers"
       team2Name="Tossers"
       team1Id="team-1"
       team2Id="team-2"
       playerNames={{}}
-      canScore={false}
+      canScore={canScore}
       rulesLabel="First to 21"
       submitRound={mutation as unknown as PanelProps['submitRound']}
       undoLastRound={mutation as unknown as PanelProps['undoLastRound']}
@@ -87,5 +94,32 @@ describe('leave warning while rounds are held or sending', () => {
     renderPanel();
     expect(mockBeforeUnloadWarning).toHaveBeenLastCalledWith(false);
     expect(mockBeforeUnloadWarning).not.toHaveBeenCalledWith(true);
+  });
+});
+
+// ─── End game ─────────────────────────────────────────────────────────────────
+
+describe('ending a won game', () => {
+  // The screen sends the game version it loaded, untouched. The service uses it
+  // to refuse a finish when someone reopened or changed the game meanwhile.
+  it('sends the raw updated_at the screen loaded with the end request', async () => {
+    mockPausedCount.value = 0;
+    mockUnsettledCount.value = 0;
+    const wonGame = {
+      ...game,
+      totals: { team1: 21, team2: 5 },
+      pendingWinnerSide: 1,
+    } as unknown as LiveGameDerived;
+    renderPanel(wonGame, true);
+
+    await userEvent.click(screen.getByRole('button', { name: /end game 1/i }));
+    await userEvent.click(await screen.findByRole('button', { name: 'End game' }));
+
+    expect(mutation.mutate).toHaveBeenCalledWith({
+      gameId: 'game-1',
+      winnerTeamId: 'team-1',
+      finalTotals: { team1: 21, team2: 5 },
+      seenUpdatedAt: '2026-11-20T01:23:45.123456+00:00',
+    });
   });
 });

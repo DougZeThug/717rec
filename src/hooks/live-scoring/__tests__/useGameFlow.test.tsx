@@ -105,10 +105,16 @@ describe('confirmGameComplete', () => {
         gameId: 'game-1',
         winnerTeamId: 'team-2',
         finalTotals: { team1: 18, team2: 21 },
+        seenUpdatedAt: '2026-11-20T01:23:45.123456+00:00',
       });
     });
 
-    expect(mockCompleteGame).toHaveBeenCalledWith('game-1', 'team-2', { team1: 18, team2: 21 });
+    expect(mockCompleteGame).toHaveBeenCalledWith(
+      'game-1',
+      'team-2',
+      { team1: 18, team2: 21 },
+      '2026-11-20T01:23:45.123456+00:00'
+    );
   });
 
   // A round save is deliberately parked when the signal is gone. This is not:
@@ -126,6 +132,7 @@ describe('confirmGameComplete', () => {
         gameId: 'game-1',
         winnerTeamId: 'team-2',
         finalTotals: { team1: 18, team2: 21 },
+        seenUpdatedAt: '2026-11-20T01:23:45.123456+00:00',
       });
     });
 
