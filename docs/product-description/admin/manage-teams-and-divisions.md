@@ -204,7 +204,9 @@ The consequences are worth stating plainly:
   which is a different field from its name. See
   [Open questions](#open-questions-and-verification).
 - **No admin screen deletes a team.** Deletion exists in the product and is
-  reachable from the public teams page, not from here.
+  reachable from the public teams page, not from here. That delete removes the
+  team row first and the team's logo files after; if the database refuses the
+  delete, the logo files stay, and a failed file cleanup only leaves unused files behind.
 
 ## Update Logos and Member Approvals
 

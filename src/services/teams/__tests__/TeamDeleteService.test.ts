@@ -35,9 +35,17 @@ const pgError = (msg = 'db error') => ({
   name: 'PostgrestError',
 });
 
-const deleteEqChain = (result: { error: unknown }) => ({
-  delete: () => ({ eq: () => Promise.resolve(result) }),
-});
+// delete -> eq -> select resolves { data, error }
+const mockSelect = vi.fn();
+const mockEq = vi.fn();
+const mockDelete = vi.fn();
+
+const mockRowDelete = (result: { data: unknown; error: unknown }) => {
+  mockSelect.mockResolvedValue(result);
+  mockEq.mockReturnValue({ select: mockSelect });
+  mockDelete.mockReturnValue({ eq: mockEq });
+  mockFrom.mockReturnValue({ delete: mockDelete });
+};
 
 // ─── deleteTeamApi ────────────────────────────────────────────────────────────
 
@@ -47,46 +55,79 @@ describe('deleteTeamApi', () => {
     mockStorageFrom.mockReturnValue(mockStorageBucket);
   });
 
-  it('deletes team files then team record when files exist', async () => {
+  it('deletes the team row first, then lists and removes its files', async () => {
     const files = [{ name: 'logo.png' }, { name: 'image.jpg' }];
     mockStorageBucket.list.mockResolvedValue({ data: files, error: null });
     mockStorageBucket.remove.mockResolvedValue({ data: null, error: null });
-    mockFrom.mockReturnValue(deleteEqChain({ error: null }));
+    mockRowDelete({ data: [{ id: 'team-1' }], error: null });
 
     await deleteTeamApi('team-1');
 
+    expect(mockFrom).toHaveBeenCalledWith('teams');
+    expect(mockEq).toHaveBeenCalledWith('id', 'team-1');
+    expect(mockSelect).toHaveBeenCalledWith('id');
     expect(mockStorageFrom).toHaveBeenCalledWith('teams');
     expect(mockStorageBucket.list).toHaveBeenCalledWith('teams/team-1');
     expect(mockStorageBucket.remove).toHaveBeenCalledWith([
       'teams/team-1/logo.png',
       'teams/team-1/image.jpg',
     ]);
-    expect(mockFrom).toHaveBeenCalledWith('teams');
+
+    // Order: row delete, then list, then remove
+    const deleteOrder = mockSelect.mock.invocationCallOrder[0];
+    const listOrder = mockStorageBucket.list.mock.invocationCallOrder[0];
+    const removeOrder = mockStorageBucket.remove.mock.invocationCallOrder[0];
+    expect(deleteOrder).toBeLessThan(listOrder);
+    expect(listOrder).toBeLessThan(removeOrder);
   });
 
-  it('skips file deletion when no files exist', async () => {
-    mockStorageBucket.list.mockResolvedValue({ data: [], error: null });
-    mockFrom.mockReturnValue(deleteEqChain({ error: null }));
-
-    await deleteTeamApi('team-1');
-
-    expect(mockStorageBucket.remove).not.toHaveBeenCalled();
-    expect(mockFrom).toHaveBeenCalledWith('teams');
-  });
-
-  it('still deletes team record even when file delete fails', async () => {
+  it('throws DatabaseError and never touches storage when the row delete fails', async () => {
     mockStorageBucket.list.mockResolvedValue({ data: [{ name: 'logo.png' }], error: null });
-    mockStorageBucket.remove.mockResolvedValue({ data: null, error: { message: 'storage error' } });
-    mockFrom.mockReturnValue(deleteEqChain({ error: null }));
-
-    await expect(deleteTeamApi('team-1')).resolves.toBeUndefined();
-    expect(mockFrom).toHaveBeenCalledWith('teams');
-  });
-
-  it('throws DatabaseError when team database delete fails', async () => {
-    mockStorageBucket.list.mockResolvedValue({ data: null, error: null });
-    mockFrom.mockReturnValue(deleteEqChain({ error: pgError() }));
+    mockRowDelete({ data: null, error: pgError() });
 
     await expect(deleteTeamApi('team-1')).rejects.toThrow(DatabaseError);
+
+    expect(mockStorageFrom).not.toHaveBeenCalled();
+    expect(mockStorageBucket.list).not.toHaveBeenCalled();
+    expect(mockStorageBucket.remove).not.toHaveBeenCalled();
+  });
+
+  it('resolves without touching storage when no row was deleted', async () => {
+    mockRowDelete({ data: [], error: null });
+
+    await expect(deleteTeamApi('team-1')).resolves.toBeUndefined();
+
+    expect(mockStorageFrom).not.toHaveBeenCalled();
+    expect(mockStorageBucket.list).not.toHaveBeenCalled();
+    expect(mockStorageBucket.remove).not.toHaveBeenCalled();
+  });
+
+  it('still resolves when listing the files fails after the row delete', async () => {
+    mockStorageBucket.list.mockResolvedValue({ data: null, error: { message: 'list error' } });
+    mockRowDelete({ data: [{ id: 'team-1' }], error: null });
+
+    await expect(deleteTeamApi('team-1')).resolves.toBeUndefined();
+
+    expect(mockStorageBucket.remove).not.toHaveBeenCalled();
+  });
+
+  it('still resolves when removing the files fails after the row delete', async () => {
+    mockStorageBucket.list.mockResolvedValue({ data: [{ name: 'logo.png' }], error: null });
+    mockStorageBucket.remove.mockResolvedValue({ data: null, error: { message: 'storage error' } });
+    mockRowDelete({ data: [{ id: 'team-1' }], error: null });
+
+    await expect(deleteTeamApi('team-1')).resolves.toBeUndefined();
+
+    expect(mockStorageBucket.remove).toHaveBeenCalledWith(['teams/team-1/logo.png']);
+  });
+
+  it('skips file removal when the team has no files', async () => {
+    mockStorageBucket.list.mockResolvedValue({ data: [], error: null });
+    mockRowDelete({ data: [{ id: 'team-1' }], error: null });
+
+    await expect(deleteTeamApi('team-1')).resolves.toBeUndefined();
+
+    expect(mockStorageBucket.list).toHaveBeenCalledWith('teams/team-1');
+    expect(mockStorageBucket.remove).not.toHaveBeenCalled();
   });
 });
