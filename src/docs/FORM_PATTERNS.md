@@ -3,6 +3,7 @@
 ## Required Pattern: react-hook-form + Zod + shadcn Form
 
 All forms MUST use:
+
 1. `react-hook-form` with `useForm` hook
 2. `zodResolver` with Zod schema for validation
 3. shadcn `<Form>`, `<FormField>`, `<FormItem>`, `<FormLabel>`, `<FormControl>`, `<FormMessage>` components
@@ -24,9 +25,9 @@ Before considering a form complete, verify:
 ## Example Pattern (Gold Standard)
 
 ```tsx
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   Form,
   FormField,
@@ -34,14 +35,14 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/useToast";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/hooks/useToast';
 
 const schema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -50,8 +51,8 @@ const MyForm = ({ onSuccess, onCancel }) => {
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: "",
-      email: "",
+      name: '',
+      email: '',
     },
   });
 
@@ -59,16 +60,16 @@ const MyForm = ({ onSuccess, onCancel }) => {
     try {
       await saveData(data);
       toast({
-        title: "Success",
-        description: "Data saved successfully",
+        title: 'Success',
+        description: 'Data saved successfully',
       });
       form.reset();
       onSuccess?.();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to save data",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to save data',
+        variant: 'destructive',
       });
     }
   };
@@ -81,7 +82,9 @@ const MyForm = ({ onSuccess, onCancel }) => {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name <span className="text-destructive-text">*</span></FormLabel>
+              <FormLabel>
+                Name <span className="text-destructive-text">*</span>
+              </FormLabel>
               <FormControl>
                 <Input placeholder="Enter name" {...field} />
               </FormControl>
@@ -95,7 +98,9 @@ const MyForm = ({ onSuccess, onCancel }) => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email <span className="text-destructive-text">*</span></FormLabel>
+              <FormLabel>
+                Email <span className="text-destructive-text">*</span>
+              </FormLabel>
               <FormControl>
                 <Input type="email" placeholder="Enter email" {...field} />
               </FormControl>
@@ -109,7 +114,7 @@ const MyForm = ({ onSuccess, onCancel }) => {
             Cancel
           </Button>
           <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Saving..." : "Save"}
+            {form.formState.isSubmitting ? 'Saving...' : 'Save'}
           </Button>
         </div>
       </form>
@@ -121,6 +126,7 @@ const MyForm = ({ onSuccess, onCancel }) => {
 ## Field Patterns
 
 ### Text Input
+
 ```tsx
 <FormField
   control={form.control}
@@ -138,6 +144,7 @@ const MyForm = ({ onSuccess, onCancel }) => {
 ```
 
 ### Select
+
 ```tsx
 <FormField
   control={form.control}
@@ -162,6 +169,7 @@ const MyForm = ({ onSuccess, onCancel }) => {
 ```
 
 ### Textarea
+
 ```tsx
 <FormField
   control={form.control}
@@ -179,6 +187,7 @@ const MyForm = ({ onSuccess, onCancel }) => {
 ```
 
 ### Switch/Checkbox
+
 ```tsx
 <FormField
   control={form.control}
@@ -198,27 +207,30 @@ const MyForm = ({ onSuccess, onCancel }) => {
 ## Validation Patterns
 
 ### Common Schemas
+
 ```tsx
 // Required string
-z.string().min(1, "Field is required")
+z.string().min(1, 'Field is required');
 
 // Email
-z.string().email("Invalid email address")
+z.string().email('Invalid email address');
 
 // Number with min/max
-z.number().min(0, "Must be positive").max(100, "Max is 100")
+z.number().min(0, 'Must be positive').max(100, 'Max is 100');
 
 // Optional field
-z.string().optional()
+z.string().optional();
 
 // Optional with transform
-z.string().optional().transform(val => val || null)
+z.string()
+  .optional()
+  .transform((val) => val || null);
 
 // Date
-z.date()
+z.date();
 
 // String to number transform
-z.string().transform(val => parseInt(val, 10))
+z.string().transform((val) => parseInt(val, 10));
 ```
 
 ## Async Validation
@@ -229,9 +241,9 @@ For async validation (like checking username availability), use the form's `setE
 const checkAvailability = async (value: string) => {
   const isAvailable = await checkIfAvailable(value);
   if (!isAvailable) {
-    form.setError("username", {
-      type: "manual",
-      message: "Username is already taken",
+    form.setError('username', {
+      type: 'manual',
+      message: 'Username is already taken',
     });
   }
 };

@@ -1,9 +1,11 @@
 # Apply five power-score migrations (database only)
 
 ## Prerequisite check — PASSED
+
 `SELECT count(*) FROM public.power_score_rollout_ddl_backup;` returns **15** rows, so the backup migration is already applied. Safe to continue.
 
 ## What I will do
+
 Apply these five migration files verbatim, one at a time, in this order:
 
 1. `20260811210000_power_score_weighted_denominators.sql`
@@ -13,16 +15,20 @@ Apply these five migration files verbatim, one at a time, in this order:
 5. `20260812140000_power_score_formula_control_bypass.sql`
 
 Rules I will follow:
+
 - SQL is copied exactly from the repo files. No edits, no reformatting.
 - File 5 keeps its internal statement order (backfill first, then the archived-season freeze). It is applied as one migration.
 - No frontend code, no `types.ts`, no other files change.
 - If any migration fails, I stop there and report which one and why.
 
 ## Expected effect
+
 Stored power scores are rewritten across seasons. That is intended.
 
 ## Reporting after all five apply
+
 I will run and report both checks:
+
 - Counts by `resolved_by` from `v_power_score_team_matches_rated`.
 - Top 25 before/after/delta power scores vs `team_details_pre_power_rollout`.
 

@@ -4,14 +4,14 @@
 
 I checked the npm registry and the release notes for each one. **None are deprecated, and none break this project.**
 
-| Package | Current | Target | Risk |
-| --- | --- | --- | --- |
-| @testing-library/jest-dom | 6.9.1 | 7.0.1 | Safe. Major, but the only breaks are: `@testing-library/dom` is now a required peer (we already have `^10.4.1`, needs `>=10 <11`) and Node must be `>=22` (we pin Node 24). 7.0.1 also makes `vitest` an optional peer, so no new install noise. |
-| @testing-library/user-event | 14.6.1 | 14.6.4 | Safe. Patch only. |
-| @types/node | 26.1.1 | 26.2.0 | Safe. Types-only minor. |
-| eslint | 10.6.0 | 10.8.1 | Safe. Minor. Node engine `>=24` matches our pin. |
-| eslint-plugin-react-refresh | 0.5.3 | 0.5.4 | Safe. Patch. Peer `eslint ^9 \|\| ^10`. |
-| eslint-plugin-simple-import-sort | 13.0.0 | 14.0.0 | Safe. Major, but the only change is sorting of quoted "arbitrary module namespace names" (`import { "a-b" as c }`). This repo does not use that syntax, so no re-sorting is triggered. |
+| Package                          | Current | Target | Risk                                                                                                                                                                                                                                             |
+| -------------------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| @testing-library/jest-dom        | 6.9.1   | 7.0.1  | Safe. Major, but the only breaks are: `@testing-library/dom` is now a required peer (we already have `^10.4.1`, needs `>=10 <11`) and Node must be `>=22` (we pin Node 24). 7.0.1 also makes `vitest` an optional peer, so no new install noise. |
+| @testing-library/user-event      | 14.6.1  | 14.6.4 | Safe. Patch only.                                                                                                                                                                                                                                |
+| @types/node                      | 26.1.1  | 26.2.0 | Safe. Types-only minor.                                                                                                                                                                                                                          |
+| eslint                           | 10.6.0  | 10.8.1 | Safe. Minor. Node engine `>=24` matches our pin.                                                                                                                                                                                                 |
+| eslint-plugin-react-refresh      | 0.5.3   | 0.5.4  | Safe. Patch. Peer `eslint ^9 \|\| ^10`.                                                                                                                                                                                                          |
+| eslint-plugin-simple-import-sort | 13.0.0  | 14.0.0 | Safe. Major, but the only change is sorting of quoted "arbitrary module namespace names" (`import { "a-b" as c }`). This repo does not use that syntax, so no re-sorting is triggered.                                                           |
 
 No peer-dependency conflicts. No new transitive risk beyond what is already installed.
 

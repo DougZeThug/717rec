@@ -8,18 +8,18 @@ A Dependabot-style grouped update for production packages. The listed bumps are 
 
 Raise the declared floor in `package.json` for the 10 explicitly listed packages:
 
-| Package | From | To |
-| --- | --- | --- |
-| @capacitor/core | ^8.5.0 | ^8.5.1 |
-| @capgo/capacitor-social-login | ^8.4.4 | ^8.5.5 |
-| @lovable.dev/mcp-js | ^0.26.2 | ^2.0.2 |
-| @sentry/react | ^10.70.0 | ^10.73.0 |
-| @supabase/supabase-js | ^2.112.3 | ^2.115.0 |
-| @tanstack/react-query | ^5.101.4 | ^5.102.8 |
-| framer-motion | ^13.1.1 | ^13.2.0 |
-| lucide-react | ^1.33.0 | ^1.41.0 |
-| react-hook-form | ^7.85.0 | ^7.87.0 |
-| react-intersection-observer | ^11.0.0 | ^11.0.1 |
+| Package                       | From     | To       |
+| ----------------------------- | -------- | -------- |
+| @capacitor/core               | ^8.5.0   | ^8.5.1   |
+| @capgo/capacitor-social-login | ^8.4.4   | ^8.5.5   |
+| @lovable.dev/mcp-js           | ^0.26.2  | ^2.0.2   |
+| @sentry/react                 | ^10.70.0 | ^10.73.0 |
+| @supabase/supabase-js         | ^2.112.3 | ^2.115.0 |
+| @tanstack/react-query         | ^5.101.4 | ^5.102.8 |
+| framer-motion                 | ^13.1.1  | ^13.2.0  |
+| lucide-react                  | ^1.33.0  | ^1.41.0  |
+| react-hook-form               | ^7.85.0  | ^7.87.0  |
+| react-intersection-observer   | ^11.0.0  | ^11.0.1  |
 
 The remaining production-dependencies refreshes will be picked up automatically by `npm install` because they are already covered by existing `^` ranges (Radix UI packages, bracket libraries, etc.).
 

@@ -39,11 +39,11 @@ is emailed, and nothing tells the other team.
 
 ## What is recorded on every page
 
-| What | Carries | When |
-| --- | --- | --- |
-| A Google Analytics pageview | The path and the page's title | Published build only. Nothing is sent from a development build; it prints to the console instead |
-| A pageview to the league's own counter | The path, and a coarse device class: iOS, Android, other mobile, desktop, or unknown | Published build only |
-| A route counter | The route name | Published build only |
+| What                                   | Carries                                                                              | When                                                                                             |
+| -------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| A Google Analytics pageview            | The path and the page's title                                                        | Published build only. Nothing is sent from a development build; it prints to the console instead |
+| A pageview to the league's own counter | The path, and a coarse device class: iOS, Android, other mobile, desktop, or unknown | Published build only                                                                             |
+| A route counter                        | The route name                                                                       | Published build only                                                                             |
 
 The league's own counter deliberately avoids identifying anybody. It stores no
 address and no user agent. It stores a 16-character fingerprint made from the
@@ -98,17 +98,17 @@ recorded decision of the league rather than an oversight — see
 
 ## What a user writes, and where it goes
 
-| The user does this | It is stored | Somebody is told |
-| --- | --- | --- |
-| Sends the contact form | As a support ticket the admins can read | **Yes** — an email to the league, with the sender's address as reply-to, so a reply lands in their inbox. This is the only email the product sends |
-| Sends a contact request from elsewhere in the app | As a contact request in the admin inbox | No |
-| Reports a score | As a score submission for review | No. The other team is not told, and neither is an admin |
-| Signs up for the blind draw | As a signup only admins can read | No |
-| Requests to join a team | As an unapproved membership | No. An admin finds it by looking |
-| Is approved for a team | The membership changes | No. The player finds out by reloading |
-| Posts to the message board | With their username and team name, readable by every signed-in user | No |
-| Renames their team | Everywhere the team appears, at once | No |
-| Finalises a live match | The result, both teams' records, per-player statistics | No, but standings, power scores, and badges all move, and they move some time **after** the write rather than with it |
+| The user does this                                | It is stored                                                        | Somebody is told                                                                                                                                   |
+| ------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sends the contact form                            | As a support ticket the admins can read                             | **Yes** — an email to the league, with the sender's address as reply-to, so a reply lands in their inbox. This is the only email the product sends |
+| Sends a contact request from elsewhere in the app | As a contact request in the admin inbox                             | No                                                                                                                                                 |
+| Reports a score                                   | As a score submission for review                                    | No. The other team is not told, and neither is an admin                                                                                            |
+| Signs up for the blind draw                       | As a signup only admins can read                                    | No                                                                                                                                                 |
+| Requests to join a team                           | As an unapproved membership                                         | No. An admin finds it by looking                                                                                                                   |
+| Is approved for a team                            | The membership changes                                              | No. The player finds out by reloading                                                                                                              |
+| Posts to the message board                        | With their username and team name, readable by every signed-in user | No                                                                                                                                                 |
+| Renames their team                                | Everywhere the team appears, at once                                | No                                                                                                                                                 |
+| Finalises a live match                            | The result, both teams' records, per-player statistics              | No, but standings, power scores, and badges all move, and they move some time **after** the write rather than with it                              |
 
 The last row is the one users notice. Completing a match starts work on the
 server, so a player who looks immediately sees the match completed and the
@@ -127,7 +127,7 @@ The bell holds an open connection on every page of the app, so a notice posted b
 an admin appears in an open browser without a reload — one of the few things in
 717rec that does.
 
-Whether a notice has been *seen* is stored in the browser and nowhere else. It is
+Whether a notice has been _seen_ is stored in the browser and nowhere else. It is
 per browser and per device, it syncs between tabs on the same device, and it
 never reaches the league. **Nobody can tell who has read a notice**, and the
 unread badge comes back on a different phone.
@@ -168,13 +168,13 @@ sees nothing and the league simply has one fewer number.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | Nothing recorded differs by role. An admin is the only role that can *read* any of it. | No effect. |
-| The record's state | No effect. Nothing recorded here is about a record. | No effect. |
-| The season's state | No effect. No pageview, metric, or error is scoped to a season. | No effect. |
-| Viewport | The device class stored with every pageview is derived from the browser's own description of itself, so a phone and a desktop are counted separately. | Rotating or resizing does not re-record anything. The class is read per pageview. |
-| Keys the app honours | No effect. | No effect. |
+| Modifier             | Set at arrival                                                                                                                                        | Changed while editing                                                             |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| The user's role      | Nothing recorded differs by role. An admin is the only role that can _read_ any of it.                                                                | No effect.                                                                        |
+| The record's state   | No effect. Nothing recorded here is about a record.                                                                                                   | No effect.                                                                        |
+| The season's state   | No effect. No pageview, metric, or error is scoped to a season.                                                                                       | No effect.                                                                        |
+| Viewport             | The device class stored with every pageview is derived from the browser's own description of itself, so a phone and a desktop are counted separately. | Rotating or resizing does not re-record anything. The class is read per pageview. |
+| Keys the app honours | No effect.                                                                                                                                            | No effect.                                                                        |
 
 The build matters more than any of these. **Nothing at all is recorded from a
 development build** — analytics, the league's counter, and error reporting are
@@ -182,18 +182,18 @@ all switched off, and analytics prints to the console instead.
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. Nothing recorded here can be cancelled. | Abandoning a form records nothing. Only completed writes are stored; a half-filled form leaves no trace anywhere. |
-| In-app navigation away, or switching tab within the page | The new route is recorded immediately, before the page has drawn. | A write already sent still lands and is still stored, and the user never sees the result. Two rapid navigations to the same path within half a second are counted once. |
-| Browser back or forward | Recorded as a fresh pageview, so bouncing between two pages inflates both counts. | Same. |
-| Reload, or the tab closed | A reload records another pageview for the same path. | **The pageview survives a tab close**, because it is sent in a way the browser finishes after the page is gone. A write in flight may or may not land, and nothing records which. |
-| Network lost mid-request | Nothing is recorded and nothing is queued. The league sees a gap, not an error. | The write fails and is not stored. The failure is counted for monitoring but the plain network error itself is deliberately not reported. |
-| The request fails or times out | A failed pageview is swallowed. No retry, no message, no record. | The failure is counted, and the error is reported with a stack unless it is a plain network failure. |
-| The session expires | Pageviews carry no session, so they keep being recorded exactly as before. | The refused write is not stored. The refusal is counted as a failed write like any other. |
-| The same record changed in another tab, or by another user | Nothing announces it. Notifications are the one exception: a notice posted by an admin arrives in an open browser without a reload. | Two people writing the same record store the last write. Nothing records that there were two. |
-| Browser autofill or a password manager writes into the form | Nothing is recorded. | A form filled by a tool is stored exactly like a typed one. The contact form's hidden bot trap is the one case where a submission is accepted, stored nowhere, and reported to the user as sent. |
-| The window loses focus | Nothing new is recorded; there is no session-length or dwell-time measurement anywhere. | Returning to the tab refetches data, which is not recorded either. |
+| Event                                                       | Before the first edit                                                                                                               | While editing or submitting                                                                                                                                                                      |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Escape, or a Cancel button                                  | No effect. Nothing recorded here can be cancelled.                                                                                  | Abandoning a form records nothing. Only completed writes are stored; a half-filled form leaves no trace anywhere.                                                                                |
+| In-app navigation away, or switching tab within the page    | The new route is recorded immediately, before the page has drawn.                                                                   | A write already sent still lands and is still stored, and the user never sees the result. Two rapid navigations to the same path within half a second are counted once.                          |
+| Browser back or forward                                     | Recorded as a fresh pageview, so bouncing between two pages inflates both counts.                                                   | Same.                                                                                                                                                                                            |
+| Reload, or the tab closed                                   | A reload records another pageview for the same path.                                                                                | **The pageview survives a tab close**, because it is sent in a way the browser finishes after the page is gone. A write in flight may or may not land, and nothing records which.                |
+| Network lost mid-request                                    | Nothing is recorded and nothing is queued. The league sees a gap, not an error.                                                     | The write fails and is not stored. The failure is counted for monitoring but the plain network error itself is deliberately not reported.                                                        |
+| The request fails or times out                              | A failed pageview is swallowed. No retry, no message, no record.                                                                    | The failure is counted, and the error is reported with a stack unless it is a plain network failure.                                                                                             |
+| The session expires                                         | Pageviews carry no session, so they keep being recorded exactly as before.                                                          | The refused write is not stored. The refusal is counted as a failed write like any other.                                                                                                        |
+| The same record changed in another tab, or by another user  | Nothing announces it. Notifications are the one exception: a notice posted by an admin arrives in an open browser without a reload. | Two people writing the same record store the last write. Nothing records that there were two.                                                                                                    |
+| Browser autofill or a password manager writes into the form | Nothing is recorded.                                                                                                                | A form filled by a tool is stored exactly like a typed one. The contact form's hidden bot trap is the one case where a submission is accepted, stored nowhere, and reported to the user as sent. |
+| The window loses focus                                      | Nothing new is recorded; there is no session-length or dwell-time measurement anywhere.                                             | Returning to the tab refetches data, which is not recorded either.                                                                                                                               |
 
 After any interrupt, what reached the league is what the league has. Nothing is
 reconciled and nothing is re-sent.

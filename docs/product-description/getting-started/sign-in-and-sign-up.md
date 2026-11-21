@@ -120,10 +120,10 @@ errors and the red panel. Nothing warns that this will happen.
 Pressing the button runs both rules at once and, if either fails, shows a message
 under the failing field and sends nothing:
 
-| Field | Rule | Message shown |
-| --- | --- | --- |
-| Email | must look like an email address | "Please enter a valid email address" |
-| Password | at least 6 characters | "Password must be at least 6 characters" |
+| Field    | Rule                            | Message shown                            |
+| -------- | ------------------------------- | ---------------------------------------- |
+| Email    | must look like an email address | "Please enter a valid email address"     |
+| Password | at least 6 characters           | "Password must be at least 6 characters" |
 
 The failing field also gets a red border. Unlike the
 [contact form](../help/contact-the-league.md), these messages do **not** clear as
@@ -164,40 +164,40 @@ at the top of the card, and a red toast appears with the same words. **This page
 is the one place in the app that tells the user why**: three reasons are rewritten
 into plain sentences and anything else is passed through as the league sent it.
 
-| What went wrong | What the user is told |
-| --- | --- |
-| Wrong address or password | "Incorrect email or password" |
-| The account exists but the email was never confirmed | "Please check your email to confirm your account" |
-| Registering an address that already has an account | "This email is already registered. Try logging in instead" |
-| Anything else, including no network | the league's own words, unchanged |
+| What went wrong                                      | What the user is told                                      |
+| ---------------------------------------------------- | ---------------------------------------------------------- |
+| Wrong address or password                            | "Incorrect email or password"                              |
+| The account exists but the email was never confirmed | "Please check your email to confirm your account"          |
+| Registering an address that already has an account   | "This email is already registered. Try logging in instead" |
+| Anything else, including no network                  | the league's own words, unchanged                          |
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role (visitor, player, admin) | A visitor sees the form. A player or an admin is redirected off the page at once; the card can flash up first. | Signing in in another tab redirects this one to the remembered destination mid-typing. |
-| The record's state | No effect. Signing in creates a session, not a record; there is nothing to be in a state. | No effect. |
-| The season's state (active, archived, playoffs on) | No effect. This page is not scoped to a season. | No effect. |
-| Viewport | The card is centred and capped at a readable width, so it fills a phone and floats on a desktop. The bottom tab bar sits under the card on a phone. | No effect beyond re-flowing on rotation. |
-| Keys the form honours | Tab reaches the two tabs, then Email, Password, the button, and Google. Left and right arrows move between the two tabs. | Enter in either field submits. Escape does nothing. |
+| Modifier                                           | Set at arrival                                                                                                                                      | Changed while editing                                                                  |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| The user's role (visitor, player, admin)           | A visitor sees the form. A player or an admin is redirected off the page at once; the card can flash up first.                                      | Signing in in another tab redirects this one to the remembered destination mid-typing. |
+| The record's state                                 | No effect. Signing in creates a session, not a record; there is nothing to be in a state.                                                           | No effect.                                                                             |
+| The season's state (active, archived, playoffs on) | No effect. This page is not scoped to a season.                                                                                                     | No effect.                                                                             |
+| Viewport                                           | The card is centred and capped at a readable width, so it fills a phone and floats on a desktop. The bottom tab bar sits under the card on a phone. | No effect beyond re-flowing on rotation.                                               |
+| Keys the form honours                              | Tab reaches the two tabs, then Email, Password, the button, and Google. Left and right arrows move between the two tabs.                            | Enter in either field submits. Escape does nothing.                                    |
 
 The remembered destination is fixed at arrival and is never re-read, so a
 redirect that arrives while the user is typing does not change where they end up.
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel button on this page. | No effect. Escape does not clear the fields and does not abort a request in flight. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. **Switching between Login and Sign Up empties both fields** even before anything is typed, which is invisible on an empty form. | **Everything typed is lost, with no warning** — by leaving the page or by switching tab. A request already sent still completes and can still sign the user in on whatever page they are now looking at. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Same as navigating away. **After a successful sign-in the Back button does not work**: it returns to `/auth`, which sees the session and pushes the user forward again. The user cannot get back past the sign-in page. |
-| Reload, or the tab closed | Gives a fresh empty form and **loses the remembered destination** unless it was in the URL as `next`. | Everything typed is lost. A sign-in already accepted still holds, so a reload can land on a signed-in app. |
-| Network lost mid-request | Cannot happen; no request is in flight. | The request fails. The fields are kept, the button returns, and the red panel and toast carry the network error in the league's own words rather than a friendly sentence. |
-| The request fails or times out | Cannot happen. | The fields are kept and both the panel and the toast appear. The user decides whether to retry. Nothing is retried automatically. |
-| The session expires | Not applicable; there is no session yet. | Not applicable. An expired session is one of the reasons a user is sent to this page. |
-| The same record changed in another tab, or by another user | Signing in in another tab is noticed here and this tab redirects itself off the page. | Same, mid-typing. Signing **out** in another tab while sitting on `/auth` has no effect, because the page has nothing to lose. |
-| Browser autofill or a password manager writes into the form | Both fields are marked for it — Email asks for the saved address, Password asks for the current password on the Login tab and a new one on the Sign Up tab — so a manager fills them without a keystroke. Validation still does not run. | Same. The filled values are treated exactly as typed ones. |
-| The window loses focus | No effect. | No effect. Nothing refetches, nothing revalidates, and a request in flight continues. |
+| Event                                                       | Before the first edit                                                                                                                                                                                                                    | While editing or submitting                                                                                                                                                                                             |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. There is no Cancel button on this page.                                                                                                                                                                                       | No effect. Escape does not clear the fields and does not abort a request in flight.                                                                                                                                     |
+| In-app navigation away, or switching tab within the page    | Nothing is lost. **Switching between Login and Sign Up empties both fields** even before anything is typed, which is invisible on an empty form.                                                                                         | **Everything typed is lost, with no warning** — by leaving the page or by switching tab. A request already sent still completes and can still sign the user in on whatever page they are now looking at.                |
+| Browser back or forward                                     | Returns to the previous page. Nothing is recorded.                                                                                                                                                                                       | Same as navigating away. **After a successful sign-in the Back button does not work**: it returns to `/auth`, which sees the session and pushes the user forward again. The user cannot get back past the sign-in page. |
+| Reload, or the tab closed                                   | Gives a fresh empty form and **loses the remembered destination** unless it was in the URL as `next`.                                                                                                                                    | Everything typed is lost. A sign-in already accepted still holds, so a reload can land on a signed-in app.                                                                                                              |
+| Network lost mid-request                                    | Cannot happen; no request is in flight.                                                                                                                                                                                                  | The request fails. The fields are kept, the button returns, and the red panel and toast carry the network error in the league's own words rather than a friendly sentence.                                              |
+| The request fails or times out                              | Cannot happen.                                                                                                                                                                                                                           | The fields are kept and both the panel and the toast appear. The user decides whether to retry. Nothing is retried automatically.                                                                                       |
+| The session expires                                         | Not applicable; there is no session yet.                                                                                                                                                                                                 | Not applicable. An expired session is one of the reasons a user is sent to this page.                                                                                                                                   |
+| The same record changed in another tab, or by another user  | Signing in in another tab is noticed here and this tab redirects itself off the page.                                                                                                                                                    | Same, mid-typing. Signing **out** in another tab while sitting on `/auth` has no effect, because the page has nothing to lose.                                                                                          |
+| Browser autofill or a password manager writes into the form | Both fields are marked for it — Email asks for the saved address, Password asks for the current password on the Login tab and a new one on the Sign Up tab — so a manager fills them without a keystroke. Validation still does not run. | Same. The filled values are treated exactly as typed ones.                                                                                                                                                              |
+| The window loses focus                                      | No effect.                                                                                                                                                                                                                               | No effect. Nothing refetches, nothing revalidates, and a request in flight continues.                                                                                                                                   |
 
 After any interrupt the user is left wherever the interrupt took them. The page
 never holds them, never warns them, and never restores what they typed.

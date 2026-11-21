@@ -121,30 +121,30 @@ The shell never submits anything. Every write on `/admin` belongs to a section.
 
 In menu order, with the document that owns each:
 
-| Menu entry | What it is |
-| --- | --- |
-| Timeslots | Assign teams to timeslots for a date — [`manage-timeslots.md`](manage-timeslots.md) |
-| Match Creation | Build matches by hand for one date — [`build-the-schedule.md`](build-the-schedule.md) |
-| Auto Schedule | Generate a whole night's schedule — [`build-the-schedule.md`](build-the-schedule.md) |
-| Matchups | Read-only opponent history between teams |
-| Scores | Mass score entry — [`enter-scores-in-bulk.md`](enter-scores-in-bulk.md) |
-| Live Corrections | Fix a match already scored — [`correct-a-live-match.md`](correct-a-live-match.md) |
-| Season | Create, activate, edit, archive, finalise — [`manage-seasons.md`](manage-seasons.md) |
-| Weekly Content Pack | Turn a week's results into a graphic, standings images and a caption — [`weekly-content-pack.md`](weekly-content-pack.md) |
-| Participation | Who has said they are playing — [`manage-seasons.md`](manage-seasons.md) |
-| Requests | Team requests, with the count badge — [`handle-requests.md`](handle-requests.md) |
-| Contact Inbox | Messages from the contact form — [`handle-requests.md`](handle-requests.md) |
-| Notifications | Post and edit the announcements in the bell — [`send-notifications.md`](send-notifications.md) |
-| Teams | Teams, divisions per team, logos, member approvals — [`manage-teams-and-divisions.md`](manage-teams-and-divisions.md) |
-| Divisions | Division names, display grouping, weights — [`manage-teams-and-divisions.md`](manage-teams-and-divisions.md) |
-| Score approvals | Score reports awaiting approval, and matches completed with no winner — [`../scores/pending-scores.md`](../scores/pending-scores.md) |
-| Hero | Home page hero cards and the Challonge fallback — [`site-settings.md`](site-settings.md) |
-| Themes | Which themes players may choose — [`site-settings.md`](site-settings.md) |
-| Blind Draw | Blind draw signups — [`run-the-playoffs.md`](run-the-playoffs.md) |
-| Help | A static guide for admins — [`site-settings.md`](site-settings.md) |
-| League Night | Live health, queues, traffic, counter repair — [`site-settings.md`](site-settings.md) |
-| Power Score Review | Revert or re-apply the power score change — [`../stats/power-score.md`](../stats/power-score.md) |
-| Power Score Sandbox | Try new power score weights before applying — [`../stats/power-score.md`](../stats/power-score.md) |
+| Menu entry          | What it is                                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Timeslots           | Assign teams to timeslots for a date — [`manage-timeslots.md`](manage-timeslots.md)                                                  |
+| Match Creation      | Build matches by hand for one date — [`build-the-schedule.md`](build-the-schedule.md)                                                |
+| Auto Schedule       | Generate a whole night's schedule — [`build-the-schedule.md`](build-the-schedule.md)                                                 |
+| Matchups            | Read-only opponent history between teams                                                                                             |
+| Scores              | Mass score entry — [`enter-scores-in-bulk.md`](enter-scores-in-bulk.md)                                                              |
+| Live Corrections    | Fix a match already scored — [`correct-a-live-match.md`](correct-a-live-match.md)                                                    |
+| Season              | Create, activate, edit, archive, finalise — [`manage-seasons.md`](manage-seasons.md)                                                 |
+| Weekly Content Pack | Turn a week's results into a graphic, standings images and a caption — [`weekly-content-pack.md`](weekly-content-pack.md)            |
+| Participation       | Who has said they are playing — [`manage-seasons.md`](manage-seasons.md)                                                             |
+| Requests            | Team requests, with the count badge — [`handle-requests.md`](handle-requests.md)                                                     |
+| Contact Inbox       | Messages from the contact form — [`handle-requests.md`](handle-requests.md)                                                          |
+| Notifications       | Post and edit the announcements in the bell — [`send-notifications.md`](send-notifications.md)                                       |
+| Teams               | Teams, divisions per team, logos, member approvals — [`manage-teams-and-divisions.md`](manage-teams-and-divisions.md)                |
+| Divisions           | Division names, display grouping, weights — [`manage-teams-and-divisions.md`](manage-teams-and-divisions.md)                         |
+| Score approvals     | Score reports awaiting approval, and matches completed with no winner — [`../scores/pending-scores.md`](../scores/pending-scores.md) |
+| Hero                | Home page hero cards and the Challonge fallback — [`site-settings.md`](site-settings.md)                                             |
+| Themes              | Which themes players may choose — [`site-settings.md`](site-settings.md)                                                             |
+| Blind Draw          | Blind draw signups — [`run-the-playoffs.md`](run-the-playoffs.md)                                                                    |
+| Help                | A static guide for admins — [`site-settings.md`](site-settings.md)                                                                   |
+| League Night        | Live health, queues, traffic, counter repair — [`site-settings.md`](site-settings.md)                                                |
+| Power Score Review  | Revert or re-apply the power score change — [`../stats/power-score.md`](../stats/power-score.md)                                     |
+| Power Score Sandbox | Try new power score weights before applying — [`../stats/power-score.md`](../stats/power-score.md)                                   |
 
 `/admin/notifications` is simply the address of the Notifications section now —
 it used to be a page of its own. `/timeslots` was one too, and redirects to
@@ -152,28 +152,28 @@ it used to be a page of its own. `/timeslots` was one too, and redirects to
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role (visitor, player, admin) | Only an admin reaches this page at all. A visitor is sent to `/auth`; a signed-in non-admin gets one "Access Denied" toast and lands on the home page. | Losing admin in another tab does not close the dashboard. The menu stays, the sections stay, and the writes start failing. |
-| The record's state | No effect. The shell holds no record. | No effect. |
-| The season's state (active, archived, playoffs on) | No effect on the shell. Individual sections show different things with no active season; each says so. | No effect on the shell. |
-| Viewport | Below the mobile breakpoint the left menu is replaced by a bar holding a **Sections** button and two quick-access buttons; the six groups and the search box live in a drawer behind it. Above the breakpoint, the sidebar. Below the breakpoint the seven sections that share one frame (Mass Score Entry, Match Creation, Season Management, Divisions, Weekly Content Pack, Power Score Migration Review and Power Score Sandbox) add no side margin of their own, so their left edge lines up with the Sections bar. Before 2026-11-10 they sat 16 pixels further in. | Crossing the breakpoint by resizing swaps the whole navigation. The open section is kept, because it is in the address rather than in either menu. |
-| Keys the form honours | Tab reaches the collapse toggle, the search box, then every visible menu entry in order. No shortcut opens a section. | Typing in the search box filters as each character lands. Escape does nothing; the box has no clear button on a wide screen. |
+| Modifier                                           | Set at arrival                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Changed while editing                                                                                                                              |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The user's role (visitor, player, admin)           | Only an admin reaches this page at all. A visitor is sent to `/auth`; a signed-in non-admin gets one "Access Denied" toast and lands on the home page.                                                                                                                                                                                                                                                                                                                                                                                                                    | Losing admin in another tab does not close the dashboard. The menu stays, the sections stay, and the writes start failing.                         |
+| The record's state                                 | No effect. The shell holds no record.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | No effect.                                                                                                                                         |
+| The season's state (active, archived, playoffs on) | No effect on the shell. Individual sections show different things with no active season; each says so.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | No effect on the shell.                                                                                                                            |
+| Viewport                                           | Below the mobile breakpoint the left menu is replaced by a bar holding a **Sections** button and two quick-access buttons; the six groups and the search box live in a drawer behind it. Above the breakpoint, the sidebar. Below the breakpoint the seven sections that share one frame (Mass Score Entry, Match Creation, Season Management, Divisions, Weekly Content Pack, Power Score Migration Review and Power Score Sandbox) add no side margin of their own, so their left edge lines up with the Sections bar. Before 2026-11-10 they sat 16 pixels further in. | Crossing the breakpoint by resizing swaps the whole navigation. The open section is kept, because it is in the address rather than in either menu. |
+| Keys the form honours                              | Tab reaches the collapse toggle, the search box, then every visible menu entry in order. No shortcut opens a section.                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Typing in the search box filters as each character lands. Escape does nothing; the box has no clear button on a wide screen.                       |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. The shell has no Cancel. | No effect on the shell. Whether Escape cancels anything is up to the open section. |
-| In-app navigation away, or switching tab within the page | The open section is remembered. Coming back reopens it. | Switching section discards whatever the old section held in memory, **after asking** where the section reports unsaved work. Auto Schedule also survives regardless, because it writes its working state to the browser. |
-| Browser back or forward | Steps between the sections visited, because each has its own address. Back from the first one leaves the console. | **Asks first**, the same question a menu press asks. Saying no keeps the section and the work; saying yes loses whatever the old section held. Back out of the console entirely raises the browser's own warning instead. |
-| Reload, or the tab closed | A reload returns to the same section. Closing the tab forgets it, and the next visit opens Timeslots. | A reload loses everything the open section held, except Auto Schedule's working state. |
-| Network lost mid-request | The request-count badge stops updating and keeps showing its last value. | The shell keeps working because it is already loaded. **A section not yet opened cannot load at all** and shows its loading panel indefinitely. |
-| The request fails or times out | The badge silently keeps its old number. There is no error state for it. | Handled by the section, not the shell. |
-| The session expires | The dashboard stays on screen. The gate is not re-run while the page is open. | Writes start failing with each section's own message. Nothing signs the admin out or sends them away. |
-| The same record changed in another tab, or by another user | The shell subscribes to nothing; the badge is the only number it refreshes on its own. Some sections do subscribe. | Two admins in two dashboards do not generally see each other's work. |
-| Browser autofill or a password manager writes into the form | The search box is a plain text input and could be autofilled, which would filter the menu. Nothing else on the shell is fillable. | Same. |
-| The window loses focus | Coming back re-fetches anything past its five-minute window, so counts and lists can change under the cursor. | Same. A number can move mid-edit in a section that is reading it. |
+| Event                                                       | Before the first edit                                                                                                             | While editing or submitting                                                                                                                                                                                               |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. The shell has no Cancel.                                                                                               | No effect on the shell. Whether Escape cancels anything is up to the open section.                                                                                                                                        |
+| In-app navigation away, or switching tab within the page    | The open section is remembered. Coming back reopens it.                                                                           | Switching section discards whatever the old section held in memory, **after asking** where the section reports unsaved work. Auto Schedule also survives regardless, because it writes its working state to the browser.  |
+| Browser back or forward                                     | Steps between the sections visited, because each has its own address. Back from the first one leaves the console.                 | **Asks first**, the same question a menu press asks. Saying no keeps the section and the work; saying yes loses whatever the old section held. Back out of the console entirely raises the browser's own warning instead. |
+| Reload, or the tab closed                                   | A reload returns to the same section. Closing the tab forgets it, and the next visit opens Timeslots.                             | A reload loses everything the open section held, except Auto Schedule's working state.                                                                                                                                    |
+| Network lost mid-request                                    | The request-count badge stops updating and keeps showing its last value.                                                          | The shell keeps working because it is already loaded. **A section not yet opened cannot load at all** and shows its loading panel indefinitely.                                                                           |
+| The request fails or times out                              | The badge silently keeps its old number. There is no error state for it.                                                          | Handled by the section, not the shell.                                                                                                                                                                                    |
+| The session expires                                         | The dashboard stays on screen. The gate is not re-run while the page is open.                                                     | Writes start failing with each section's own message. Nothing signs the admin out or sends them away.                                                                                                                     |
+| The same record changed in another tab, or by another user  | The shell subscribes to nothing; the badge is the only number it refreshes on its own. Some sections do subscribe.                | Two admins in two dashboards do not generally see each other's work.                                                                                                                                                      |
+| Browser autofill or a password manager writes into the form | The search box is a plain text input and could be autofilled, which would filter the menu. Nothing else on the shell is fillable. | Same.                                                                                                                                                                                                                     |
+| The window loses focus                                      | Coming back re-fetches anything past its five-minute window, so counts and lists can change under the cursor.                     | Same. A number can move mid-edit in a section that is reading it.                                                                                                                                                         |
 
 ## Interactions with other systems
 
@@ -208,7 +208,7 @@ were. Pressing Back repeatedly is safe — a refusal leaves the history intact,
 and the next press asks again.
 
 **One press behaves differently, and correctly**: Back onto the page you were on
-*before* the app loaded. That leaves the site altogether, so it raises the
+_before_ the app loaded. That leaves the site altogether, so it raises the
 browser's own warning instead of ours. The footer's "Contact us" is the same
 case — a plain link that loads a fresh page.
 

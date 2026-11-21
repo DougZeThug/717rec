@@ -1,7 +1,7 @@
 ---
 name: factory-polish
 description: Evaluate and improve one screen or feature (layout, spacing, phone usability, empty and error states, accessibility) without redesigning it. Captures before and after screenshots at phone and desktop width. Use for "make X nicer", "X looks off on my phone".
-argument-hint: "<screen, route or feature>"
+argument-hint: '<screen, route or feature>'
 disable-model-invocation: true
 ---
 

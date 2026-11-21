@@ -71,13 +71,13 @@ or tell anyone else that somebody is looking.
 Five refusals can happen instead of the match appearing, each with its own
 wording:
 
-| What is wrong | What the screen says |
-| --- | --- |
-| Live scoring is not switched on for this league yet | "Live scoring is not enabled yet — The database update for live scoring has not been applied. Check back soon!" |
-| No match with that id | "Match not found — This match does not exist or was removed from the schedule." |
-| The match could not be loaded for any other reason | "Could not load the match — Something went wrong loading live scoring. Please try again." |
-| The match exists but one or both teams are not set | "Teams not set — Live scoring opens once both teams are assigned to this match." |
-| The three games are in a state that cannot be true | "The games in this match look inconsistent. An admin can reopen a game to fix the scores." — shown with the full round history below it, rather than a blank screen |
+| What is wrong                                       | What the screen says                                                                                                                                                |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live scoring is not switched on for this league yet | "Live scoring is not enabled yet — The database update for live scoring has not been applied. Check back soon!"                                                     |
+| No match with that id                               | "Match not found — This match does not exist or was removed from the schedule."                                                                                     |
+| The match could not be loaded for any other reason  | "Could not load the match — Something went wrong loading live scoring. Please try again."                                                                           |
+| The match exists but one or both teams are not set  | "Teams not set — Live scoring opens once both teams are assigned to this match."                                                                                    |
+| The three games are in a state that cannot be true  | "The games in this match look inconsistent. An admin can reopen a game to fix the scores." — shown with the full round history below it, rather than a blank screen |
 
 None of these is a dead end: the back link to the schedule is always above them.
 
@@ -130,13 +130,13 @@ admin who needs to change a completed match must reopen it first.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | Decides whether the controls are drawn at all. An admin can score any open match; a player only their own team's. A visitor watches. | Admin granted or revoked elsewhere does not reach this screen until it refetches. Controls stay as they were, and writes start or stop being accepted without warning. |
-| The record's state | The match's stage decides which of the five screens is shown. A completed match is read-only for everyone. | The stage changes under the user as rounds are saved, by them or by anyone else. |
-| The season's state | No effect. Live scoring does not read the active season; it reads the match. | No effect. |
-| Viewport | The whole screen is built for a phone: one narrow column, large touch targets, generous bottom padding for a thumb. On a wide screen it stays a narrow column in the middle. | No effect. |
-| Keys the app honours | Nothing is focused on arrival and there are no shortcuts. Every control is reachable by Tab. | No shortcuts. |
+| Modifier             | Set at arrival                                                                                                                                                               | Changed while editing                                                                                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The user's role      | Decides whether the controls are drawn at all. An admin can score any open match; a player only their own team's. A visitor watches.                                         | Admin granted or revoked elsewhere does not reach this screen until it refetches. Controls stay as they were, and writes start or stop being accepted without warning. |
+| The record's state   | The match's stage decides which of the five screens is shown. A completed match is read-only for everyone.                                                                   | The stage changes under the user as rounds are saved, by them or by anyone else.                                                                                       |
+| The season's state   | No effect. Live scoring does not read the active season; it reads the match.                                                                                                 | No effect.                                                                                                                                                             |
+| Viewport             | The whole screen is built for a phone: one narrow column, large touch targets, generous bottom padding for a thumb. On a wide screen it stays a narrow column in the middle. | No effect.                                                                                                                                                             |
+| Keys the app honours | Nothing is focused on arrival and there are no shortcuts. Every control is reachable by Tab.                                                                                 | No shortcuts.                                                                                                                                                          |
 
 Live scoring is the one part of 717rec designed phone-first, because that is
 where it is used. Nothing about it changes on a desktop except the surrounding
@@ -144,18 +144,18 @@ whitespace.
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. There is no Cancel on this screen. | Closes the save-result dialog if it is open. Does not abort a save in flight. |
-| In-app navigation away, or switching tab within the page | The subscription closes. Nothing is recorded. | **A save already sent still lands.** The scorer does not see its result. Anything typed but not saved — a part-chosen round score — is lost. |
-| Browser back or forward | Returns to the schedule. | Same as navigating away. Coming back re-fetches everything, so the screen is correct, but any part-entered round is gone. |
-| Reload, or the tab closed | Re-fetches everything. | **Every saved round survives; nothing else does.** This is the screen's central safety property: the whole match is rebuilt from the saved rounds, so a phone that dies mid-match loses at most the round being typed. |
-| Network lost mid-request | The match does not load; the "could not load" screen appears. | The save fails, the optimistic round is rolled back, and a red toast explains. The realtime indicator changes. Nothing is queued. |
-| The request fails or times out | As above. | As above. The tapped scores stay selected, so the scorer retries rather than re-entering the round. |
-| The session expires | A signed-out visitor can still watch. | Writes begin failing. The controls stay on screen because the browser still thinks the user is signed in. |
-| The same record changed in another tab, or by another user | Not applicable before arriving. | **This is the normal case, not an edge case.** A round saved by the other scorer arrives over the subscription and the screen updates. Two scorers saving the same round number produce one winner and one friendly message; see [`enter-a-round.md`](enter-a-round.md). |
-| Browser autofill or a password manager writes into the form | No effect. There are no text fields on this screen except when adding a player by name. | No effect. |
-| The window loses focus | No effect. | The subscription stays open in the background on desktop. A phone that suspends the tab drops it and rebuilds it on return, re-fetching the match. |
+| Event                                                       | Before the first edit                                                                   | While editing or submitting                                                                                                                                                                                                                                              |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Escape, or a Cancel button                                  | Nothing to cancel. There is no Cancel on this screen.                                   | Closes the save-result dialog if it is open. Does not abort a save in flight.                                                                                                                                                                                            |
+| In-app navigation away, or switching tab within the page    | The subscription closes. Nothing is recorded.                                           | **A save already sent still lands.** The scorer does not see its result. Anything typed but not saved — a part-chosen round score — is lost.                                                                                                                             |
+| Browser back or forward                                     | Returns to the schedule.                                                                | Same as navigating away. Coming back re-fetches everything, so the screen is correct, but any part-entered round is gone.                                                                                                                                                |
+| Reload, or the tab closed                                   | Re-fetches everything.                                                                  | **Every saved round survives; nothing else does.** This is the screen's central safety property: the whole match is rebuilt from the saved rounds, so a phone that dies mid-match loses at most the round being typed.                                                   |
+| Network lost mid-request                                    | The match does not load; the "could not load" screen appears.                           | The save fails, the optimistic round is rolled back, and a red toast explains. The realtime indicator changes. Nothing is queued.                                                                                                                                        |
+| The request fails or times out                              | As above.                                                                               | As above. The tapped scores stay selected, so the scorer retries rather than re-entering the round.                                                                                                                                                                      |
+| The session expires                                         | A signed-out visitor can still watch.                                                   | Writes begin failing. The controls stay on screen because the browser still thinks the user is signed in.                                                                                                                                                                |
+| The same record changed in another tab, or by another user  | Not applicable before arriving.                                                         | **This is the normal case, not an edge case.** A round saved by the other scorer arrives over the subscription and the screen updates. Two scorers saving the same round number produce one winner and one friendly message; see [`enter-a-round.md`](enter-a-round.md). |
+| Browser autofill or a password manager writes into the form | No effect. There are no text fields on this screen except when adding a player by name. | No effect.                                                                                                                                                                                                                                                               |
+| The window loses focus                                      | No effect.                                                                              | The subscription stays open in the background on desktop. A phone that suspends the tab drops it and rebuilds it on return, re-fetching the match.                                                                                                                       |
 
 After any interrupt the scorer returns to a screen rebuilt from what was saved.
 The screen never asks them to confirm what state the match was in, and never

@@ -90,12 +90,12 @@ character typed and shows it in upper case.
 Pressing "Sign Up" checks both fields at once and, if either fails, shows a small
 red message under it and sends nothing:
 
-| Field | Rule | Message shown |
-| --- | --- | --- |
+| Field      | Rule                                | Message shown   |
+| ---------- | ----------------------------------- | --------------- |
 | First Name | at least 1 character after trimming | "Name required" |
-| First Name | at most 30 characters | "Too long" |
-| L.I. | exactly one character | "Single letter" |
-| L.I. | a letter, not a digit or symbol | "Letter only" |
+| First Name | at most 30 characters               | "Too long"      |
+| L.I.       | exactly one character               | "Single letter" |
+| L.I.       | a letter, not a digit or symbol     | "Letter only"   |
 
 The messages clear on the next press, not as the field is corrected.
 
@@ -143,28 +143,28 @@ on the confirmation panel that says so.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | No effect on the form. A visitor, a player, and an admin see and use exactly the same two boxes, and nothing is prefilled from a signed-in profile. Only an admin can *see* the resulting list. | No effect. Signing in or out in another tab does not reach this panel. |
-| The record's state | No effect. Each press creates a new row; there is no existing record to be in a state. | No effect. |
-| The season's state | No effect. A blind draw is not attached to a season, a division, or a bracket. Whether the panel appears depends on the hero card alone, not on `playoffs_active`. | No effect. |
-| Viewport | The card is one column on a phone and two on a wide screen. The two boxes stay side by side at every width, and both are sized for a thumb. | No effect beyond re-flowing on rotation. |
-| Keys the form honours | Tab reaches First Name, then L.I., then Sign Up. | Enter in either box submits the form, because both are single-line. Escape does nothing. |
+| Modifier              | Set at arrival                                                                                                                                                                                  | Changed while editing                                                                    |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| The user's role       | No effect on the form. A visitor, a player, and an admin see and use exactly the same two boxes, and nothing is prefilled from a signed-in profile. Only an admin can _see_ the resulting list. | No effect. Signing in or out in another tab does not reach this panel.                   |
+| The record's state    | No effect. Each press creates a new row; there is no existing record to be in a state.                                                                                                          | No effect.                                                                               |
+| The season's state    | No effect. A blind draw is not attached to a season, a division, or a bracket. Whether the panel appears depends on the hero card alone, not on `playoffs_active`.                              | No effect.                                                                               |
+| Viewport              | The card is one column on a phone and two on a wide screen. The two boxes stay side by side at every width, and both are sized for a thumb.                                                     | No effect beyond re-flowing on rotation.                                                 |
+| Keys the form honours | Tab reaches First Name, then L.I., then Sign Up.                                                                                                                                                | Enter in either box submits the form, because both are single-line. Escape does nothing. |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel anywhere on this panel. | No effect. It does not clear the boxes and it does not abort a request in flight. |
-| In-app navigation away, or switching tab within the page | Nothing is lost, because nothing was typed. | **Everything typed is lost, with no warning.** A request already sent still lands and the signup is recorded, but the player never sees the confirmation — no tick, no toast. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Same as navigating away. Coming back gives an empty panel; the text is not restored, and neither is the confirmation for a signup that succeeded. |
-| Reload, or the tab closed | Gives a fresh empty panel. | **Everything typed is lost.** A signup already sent still lands. After a reload the panel is empty again with no sign of a successful signup, so the player cannot tell which happened. |
-| Network lost mid-request | Cannot happen; no request is in flight. | The request fails, both boxes are kept, and the generic red toast appears. Nothing is queued and nothing is retried. |
-| The request fails or times out | Cannot happen. | Both boxes are kept and the generic red toast appears. A retry may sign the same person up twice, because nothing deduplicates. |
-| The session expires | No effect. | No effect. The form needs no session and works signed out. |
-| The same record changed in another tab, or by another user | No effect. There is no shared record. | No effect. There is no realtime here. The "N signed up" pill is up to two minutes old and never updates on its own; other people signing up are invisible until something refetches. |
-| Browser autofill or a password manager writes into the form | The first-name box asks the browser for a given name and may be filled from saved contact details. The initial box is never autofilled. Validation still does not run. | Same. An autofilled name over 30 characters is truncated as it is typed but is not flagged until the button is pressed. |
-| The window loses focus | No effect. | No effect on the form. Returning to the tab can refetch the signup count and the hero cards, so the pill can jump — and, if the league switched the card off meanwhile, the whole panel can vanish while a name is half-typed. |
+| Event                                                       | Before the first edit                                                                                                                                                  | While editing or submitting                                                                                                                                                                                                    |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Escape, or a Cancel button                                  | No effect. There is no Cancel anywhere on this panel.                                                                                                                  | No effect. It does not clear the boxes and it does not abort a request in flight.                                                                                                                                              |
+| In-app navigation away, or switching tab within the page    | Nothing is lost, because nothing was typed.                                                                                                                            | **Everything typed is lost, with no warning.** A request already sent still lands and the signup is recorded, but the player never sees the confirmation — no tick, no toast.                                                  |
+| Browser back or forward                                     | Returns to the previous page. Nothing is recorded.                                                                                                                     | Same as navigating away. Coming back gives an empty panel; the text is not restored, and neither is the confirmation for a signup that succeeded.                                                                              |
+| Reload, or the tab closed                                   | Gives a fresh empty panel.                                                                                                                                             | **Everything typed is lost.** A signup already sent still lands. After a reload the panel is empty again with no sign of a successful signup, so the player cannot tell which happened.                                        |
+| Network lost mid-request                                    | Cannot happen; no request is in flight.                                                                                                                                | The request fails, both boxes are kept, and the generic red toast appears. Nothing is queued and nothing is retried.                                                                                                           |
+| The request fails or times out                              | Cannot happen.                                                                                                                                                         | Both boxes are kept and the generic red toast appears. A retry may sign the same person up twice, because nothing deduplicates.                                                                                                |
+| The session expires                                         | No effect.                                                                                                                                                             | No effect. The form needs no session and works signed out.                                                                                                                                                                     |
+| The same record changed in another tab, or by another user  | No effect. There is no shared record.                                                                                                                                  | No effect. There is no realtime here. The "N signed up" pill is up to two minutes old and never updates on its own; other people signing up are invisible until something refetches.                                           |
+| Browser autofill or a password manager writes into the form | The first-name box asks the browser for a given name and may be filled from saved contact details. The initial box is never autofilled. Validation still does not run. | Same. An autofilled name over 30 characters is truncated as it is typed but is not flagged until the button is pressed.                                                                                                        |
+| The window loses focus                                      | No effect.                                                                                                                                                             | No effect on the form. Returning to the tab can refetch the signup count and the hero cards, so the pill can jump — and, if the league switched the card off meanwhile, the whole panel can vanish while a name is half-typed. |
 
 After any interrupt the player is left with an empty panel and no way to check
 whether their name reached the league.

@@ -1,7 +1,7 @@
 ---
 name: factory-build
 description: Build a feature or improvement end to end. Plans it, delegates to specialist agents, tests it in a browser, gets an independent review, repairs failures (max 3 tries), and hands back a ready branch with evidence. Use for "add X", "improve Y", "make Z work".
-argument-hint: "<what you want, in plain words>"
+argument-hint: '<what you want, in plain words>'
 disable-model-invocation: true
 ---
 

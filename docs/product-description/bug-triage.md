@@ -32,7 +32,7 @@ thirteen are the reports themselves, and the other eight were found while
 reading the files those reports named. Eleven were fixed; B-69 and B-74 were put
 to the league and left as they are, documented.
 
-*The counts in this paragraph go stale easily, and have twice.* They once read
+_The counts in this paragraph go stale easily, and have twice._ They once read
 "42 entries: 13 high, 23 medium, and 6 low", then "62 entries: 15 high, 30
 medium, 16 low", long after the list had grown past each. They are recounted
 from the **Severity** line on each entry whenever entries are added. Three
@@ -92,7 +92,7 @@ career power score that differed from the one on screen by 41 points on a
 threshold of 25. Two of the three reports were themselves wrong in part — B-35
 named a migration that had been dead since March and proposed reading a stored
 value that does not exist, and B-36 named the wrong screen while missing a
-larger fault underneath. See each entry's *Corrected on review* note.
+larger fault underneath. See each entry's _Corrected on review_ note.
 
 The original four: B-15 failed the contact
 form and the score report for every contributor running from source, and reported
@@ -104,8 +104,8 @@ refusal from a request never received. Two of the four reports were also
 inaccurate in ways that mattered — B-15 named two functions of three, and missed
 the one its own reproduction steps reach; B-17 described one button where there
 are two — and B-18 turned out to be constrained by a schema with no third state
-and a unique index allowing one row per person. See each entry's *Corrected on
-review* note.
+and a unique index allowing one row per person. See each entry's _Corrected on
+review_ note.
 
 A fourth theme appeared only once the code was read rather than the screens:
 **an operation that has never worked at all.** B-40 was found while checking
@@ -121,7 +121,7 @@ A fifth theme was **controls that look live and are not.** B-21 gathered eight o
 them across the admin screens and `/my-team`; all eight are now wired up rather
 than removed, and two of them were not as the entry described — one failed
 loudly rather than silently, and one was dead for a different reason than the one
-given. Fixing the honest version of *Edit Bracket* also closed a hole the entry
+given. Fixing the honest version of _Edit Bracket_ also closed a hole the entry
 did not anticipate: the mislabelled button was the only route to a second bracket
 in a division, so a real Create control had to take its place.
 
@@ -133,58 +133,58 @@ described, and one of those was re-filed as a different, smaller bug. B-12's
 proposed fix — propagate the reason the way live scoring does — would have made
 the app less safe, because the function it named does not sanitise and the
 service layer had already lost the reason it was meant to surface. See each
-entry's *Corrected on review* note.
+entry's _Corrected on review_ note.
 
-| ID | Title | Severity | Area | Decision needed | Issue |
-| --- | --- | --- | --- | --- | --- |
-| B-01 | Approving a score submission never records the result on the match | high | scores, admin | **fixed** | — |
-| B-02 | No **existing** season can be activated from the admin screens | medium | admin | **fixed** | — |
-| B-03 | With Dual Match Mode off, the auto-scheduler's save is always refused (reported as "saved at midnight") | medium | admin | **fixed** | — |
-| B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it | high | live-scoring | **fixed** | — |
-| B-05 | A failed round save throws away what the scorer tapped | high | live-scoring | **fixed** | — |
-| B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale | high | history, stats | **not a bug** | — |
-| B-07 | A second membership row permanently breaks every member ability | high | foundations, teams | **fixed** | — |
-| B-08 | A failed profile read silently demotes an admin | high | foundations | **fixed** | — |
-| B-09 | There is no way to resolve a tie | high | scores, admin | **fixed** | — |
-| B-10 | Two contact channels, neither aware of the other | high | help, admin | **fixed** | — |
-| B-32 | Live-scored matches award no badges | high | live-scoring, stats | fix | **fixed** |
-| B-33 | Six of the twenty badge types can never be awarded | high | stats | fix | **fixed** |
-| B-37 | Creating a season without archiving first left two active seasons | high | admin | **fixed** | — |
-| B-39 | The head-to-head details dialog never opened: its database function raised on every call | high | history, stats | **fixed** | — |
-| B-40 | Deleting or archiving a live-scored match fails on a foreign key | high | admin | **fixed** | — |
-| B-44 | Approving a refused request leaves it refused, locking the member out | high | admin, teams | **fixed** | — |
-| B-45 | A profile left behind by the previous user can grant admin | high | foundations | **fixed** | — |
-| B-11 | Four destructive admin actions have no confirmation | medium | admin | **fixed** | — |
-| B-12 | Failure messages discard the reason the server gave | medium | all | **fixed** | — |
-| B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | **fixed** | — |
-| B-14 | Scroll position carries across every in-app navigation | medium | foundations | **fixed** | — |
-| B-15 | The support and score-report functions refuse the app's own dev origin | medium | help, scores | **fixed** | — |
-| B-16 | A visitor sees an empty message board and is told to be the first to post | medium | message-board | **fixed** | — |
-| B-17 | Reopening a live game needs no confirmation and tells nobody | medium | live-scoring | **fixed** | — |
-| B-18 | Rejecting a membership deletes the row, so the person is never told | medium | admin, getting-started | **fixed** | — |
-| B-19 | Live corrections can leave a match disagreeing with itself | medium | admin | **fixed** | — |
-| B-20 | Archived seasons are editable through live corrections | medium | admin | **fixed** | — |
-| B-21 | Eight controls do nothing when pressed | medium | admin, teams | **fixed** | — |
-| B-22 | Reduced-motion is honoured in one stylesheet and ignored everywhere else | medium | cross-cutting | **fixed** | — |
-| B-23 | The mobile menu is not a dialog | medium | cross-cutting | **fixed** | — |
-| B-24 | Bracket administration is unreachable on a phone | medium | playoffs, admin | **fixed** | — |
-| B-25 | Anyone signed out can report a score for any match | medium | scores | product call | — |
-| B-34 | Four standings columns silently sort by power score instead | medium | stats | **fixed** | — |
-| B-35 | A stale fourth career power-score formula decides one badge | medium | stats | **fixed** | — |
-| B-36 | Two grades on the team report card are not real measurements | medium | stats | **fixed** | — |
-| B-38 | The head-to-head dialog shows the wrong W/L badge on half of every team's matches | medium | history, stats | **fixed** | — |
-| B-41 | The "Confirm your team" card has no sign-in check and lists hidden teams | medium | home | **fixed** | — |
-| B-43 | Three links in a message are counted as six and refused as spam | medium | help | **fixed** | — |
-| B-46 | A failed division-weights read empties the career rankings silently | medium | stats, teams | **fixed** | — |
-| B-49 | A failed team list empties the career rankings table | medium | stats | **fixed** | — |
-| B-48 | A won game can be ended on a round that is still on its way | medium | live-scoring | **fixed** | — |
-| B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | **documented** | — |
-| B-27 | Several actions raise two success toasts | low | admin, teams | **fixed** | — |
-| B-28 | Message timestamps show a clock time with no date | low | message-board | **fixed** | — |
-| B-29 | Results are distinguished by colour alone in two places | low | schedule, teams | **fixed** | — |
-| B-30 | Small copy and labelling slips | low | several | **fixed** | — |
-| B-31 | Two dead features are visible in the interface | low | admin | **fixed** | — |
-| B-47 | The scorer who reopens a game is sometimes the only one not told | low | live-scoring | **fixed** | — |
+| ID   | Title                                                                                                   | Severity | Area                   | Decision needed | Issue     |
+| ---- | ------------------------------------------------------------------------------------------------------- | -------- | ---------------------- | --------------- | --------- |
+| B-01 | Approving a score submission never records the result on the match                                      | high     | scores, admin          | **fixed**       | —         |
+| B-02 | No **existing** season can be activated from the admin screens                                          | medium   | admin                  | **fixed**       | —         |
+| B-03 | With Dual Match Mode off, the auto-scheduler's save is always refused (reported as "saved at midnight") | medium   | admin                  | **fixed**       | —         |
+| B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it                    | high     | live-scoring           | **fixed**       | —         |
+| B-05 | A failed round save throws away what the scorer tapped                                                  | high     | live-scoring           | **fixed**       | —         |
+| B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale                         | high     | history, stats         | **not a bug**   | —         |
+| B-07 | A second membership row permanently breaks every member ability                                         | high     | foundations, teams     | **fixed**       | —         |
+| B-08 | A failed profile read silently demotes an admin                                                         | high     | foundations            | **fixed**       | —         |
+| B-09 | There is no way to resolve a tie                                                                        | high     | scores, admin          | **fixed**       | —         |
+| B-10 | Two contact channels, neither aware of the other                                                        | high     | help, admin            | **fixed**       | —         |
+| B-32 | Live-scored matches award no badges                                                                     | high     | live-scoring, stats    | fix             | **fixed** |
+| B-33 | Six of the twenty badge types can never be awarded                                                      | high     | stats                  | fix             | **fixed** |
+| B-37 | Creating a season without archiving first left two active seasons                                       | high     | admin                  | **fixed**       | —         |
+| B-39 | The head-to-head details dialog never opened: its database function raised on every call                | high     | history, stats         | **fixed**       | —         |
+| B-40 | Deleting or archiving a live-scored match fails on a foreign key                                        | high     | admin                  | **fixed**       | —         |
+| B-44 | Approving a refused request leaves it refused, locking the member out                                   | high     | admin, teams           | **fixed**       | —         |
+| B-45 | A profile left behind by the previous user can grant admin                                              | high     | foundations            | **fixed**       | —         |
+| B-11 | Four destructive admin actions have no confirmation                                                     | medium   | admin                  | **fixed**       | —         |
+| B-12 | Failure messages discard the reason the server gave                                                     | medium   | all                    | **fixed**       | —         |
+| B-13 | Only one toast is shown at a time, so paired messages are lost                                          | medium   | all                    | **fixed**       | —         |
+| B-14 | Scroll position carries across every in-app navigation                                                  | medium   | foundations            | **fixed**       | —         |
+| B-15 | The support and score-report functions refuse the app's own dev origin                                  | medium   | help, scores           | **fixed**       | —         |
+| B-16 | A visitor sees an empty message board and is told to be the first to post                               | medium   | message-board          | **fixed**       | —         |
+| B-17 | Reopening a live game needs no confirmation and tells nobody                                            | medium   | live-scoring           | **fixed**       | —         |
+| B-18 | Rejecting a membership deletes the row, so the person is never told                                     | medium   | admin, getting-started | **fixed**       | —         |
+| B-19 | Live corrections can leave a match disagreeing with itself                                              | medium   | admin                  | **fixed**       | —         |
+| B-20 | Archived seasons are editable through live corrections                                                  | medium   | admin                  | **fixed**       | —         |
+| B-21 | Eight controls do nothing when pressed                                                                  | medium   | admin, teams           | **fixed**       | —         |
+| B-22 | Reduced-motion is honoured in one stylesheet and ignored everywhere else                                | medium   | cross-cutting          | **fixed**       | —         |
+| B-23 | The mobile menu is not a dialog                                                                         | medium   | cross-cutting          | **fixed**       | —         |
+| B-24 | Bracket administration is unreachable on a phone                                                        | medium   | playoffs, admin        | **fixed**       | —         |
+| B-25 | Anyone signed out can report a score for any match                                                      | medium   | scores                 | product call    | —         |
+| B-34 | Four standings columns silently sort by power score instead                                             | medium   | stats                  | **fixed**       | —         |
+| B-35 | A stale fourth career power-score formula decides one badge                                             | medium   | stats                  | **fixed**       | —         |
+| B-36 | Two grades on the team report card are not real measurements                                            | medium   | stats                  | **fixed**       | —         |
+| B-38 | The head-to-head dialog shows the wrong W/L badge on half of every team's matches                       | medium   | history, stats         | **fixed**       | —         |
+| B-41 | The "Confirm your team" card has no sign-in check and lists hidden teams                                | medium   | home                   | **fixed**       | —         |
+| B-43 | Three links in a message are counted as six and refused as spam                                         | medium   | help                   | **fixed**       | —         |
+| B-46 | A failed division-weights read empties the career rankings silently                                     | medium   | stats, teams           | **fixed**       | —         |
+| B-49 | A failed team list empties the career rankings table                                                    | medium   | stats                  | **fixed**       | —         |
+| B-48 | A won game can be ended on a round that is still on its way                                             | medium   | live-scoring           | **fixed**       | —         |
+| B-26 | Session replay records one visit in ten with no notice                                                  | low      | cross-cutting          | **documented**  | —         |
+| B-27 | Several actions raise two success toasts                                                                | low      | admin, teams           | **fixed**       | —         |
+| B-28 | Message timestamps show a clock time with no date                                                       | low      | message-board          | **fixed**       | —         |
+| B-29 | Results are distinguished by colour alone in two places                                                 | low      | schedule, teams        | **fixed**       | —         |
+| B-30 | Small copy and labelling slips                                                                          | low      | several                | **fixed**       | —         |
+| B-31 | Two dead features are visible in the interface                                                          | low      | admin                  | **fixed**       | —         |
+| B-47 | The scorer who reopens a game is sometimes the only one not told                                        | low      | live-scoring           | **fixed**       | —         |
 
 ---
 
@@ -207,7 +207,7 @@ entry's *Corrected on review* note.
   (`src/services/matches/MatchWriteService.ts:214-232`) writes only `status`,
   `reviewed_by` and `reviewed_at` on the `score_submissions` row. It never
   touches `matches`. `useScoreSubmissions` (`src/hooks/useScoreSubmissions.ts:37-44`)
-  calls nothing else. The functions that *would* do it — `approveMatchResult`
+  calls nothing else. The functions that _would_ do it — `approveMatchResult`
   and `markMatchAsTie` — exist and are unreachable; see [B-09](#b-09-there-is-no-way-to-resolve-a-tie).
 - **Severity:** `high`. The league's standings silently diverge from its results,
   and the admin has no way to notice.
@@ -310,7 +310,7 @@ entry's *Corrected on review* note.
   `dualMatchMode`. Dual mode keys by the real clock time it assigned
   (`utils/dualBlockScheduler.ts:191-192`), so it was always correct. Standard
   mode passed the block key straight through (`utils/standardPairing.ts:61`), and
-  those keys come from `getAllBackToBackTeams`, which is keyed by pair *name*
+  those keys come from `getAllBackToBackTeams`, which is keyed by pair _name_
   (`src/services/timeslots/teamLoaderUtils.ts:194`). `usePairingOperations.ts`
   then set `timeslot: timeBlock` with no lookup, and `parseTimeString`
   (`src/utils/timezone/parsers.ts:7-38`) returns its `hours = 0, minutes = 0`
@@ -347,8 +347,7 @@ entry's *Corrected on review* note.
   match was played. No list, no reminder, no admin screen shows a match sitting
   in this state. Expected: something, somewhere, says "this match was played and
   its result was never recorded".
-- **Reproduce:** 1. Score a match to two game wins on `/matches/:matchId/live`.
-  2. Close the tab without pressing "Save official result". 3. Look at
+- **Reproduce:** 1. Score a match to two game wins on `/matches/:matchId/live`. 2. Close the tab without pressing "Save official result". 3. Look at
   `/schedule`, `/stats`, and every admin queue.
 - **Why (from the code):** the decided state is derived from the games each time
   the screen is drawn (`src/utils/liveScoring/bestOfThree.ts:13`,
@@ -358,7 +357,7 @@ entry's *Corrected on review* note.
   submissions, pending team requests and new contact requests, and `games` was
   never joined against `matches` anywhere in the app.
 - **Correction to the original write-up (1):** it said the state "is never
-  stored, **so nothing can query for it**". The derived *flag* is not stored, but
+  stored, **so nothing can query for it**". The derived _flag_ is not stored, but
   the evidence is. `games` persists `status`, `winner_team_id` and `completed_at`
   (`supabase/migrations/20260708120000_live_scoring.sql:64-69`), and
   `finalize_live_match` already counts exactly that to decide whether a match may
@@ -370,7 +369,7 @@ entry's *Corrected on review* note.
   "Pending Scores" card through `v_pending_matches`
   (`supabase/migrations/20250821121435_*.sql:19-23`), indistinguishable from a
   match nobody played, and its button files a free-text score report that an
-  admin then approves down a *different* write path which can disagree with the
+  admin then approves down a _different_ write path which can disagree with the
   games actually played. Live Corrections lists the match too, distinguishable
   only by the absence of the word "final"
   (`src/components/admin/live-corrections/LiveCorrectionsSection.tsx:100-103`).
@@ -428,7 +427,7 @@ entry's *Corrected on review* note.
   `src/components/live-scoring/LiveMatchView.tsx`). A failed save leaves the
   tapped scores on screen and the scorer presses Save Round again. Three
   details were needed beyond the one-line change this entry proposed.
-  **One:** a `DuplicateRoundError` still clears the grids — that round *is*
+  **One:** a `DuplicateRoundError` still clears the grids — that round _is_
   recorded, so the tapped scores are stale and keeping them would leave wrong
   numbers in the next round's grid. **Two:** when the optimistic round won the
   game, the whole panel unmounted behind the game-won banner and the rollback
@@ -491,7 +490,7 @@ finding read a superseded migration.
   ended in `.maybeSingle()`, which returns `PGRST116` when more than one row
   comes back (`@supabase/postgrest-js` 2.112.4). The unique index that would
   prevent the second row was **partial**, on `is_approved = true`
-  (`supabase/migrations/20260820105942_*.sql:1`), so two *pending* rows were
+  (`supabase/migrations/20260820105942_*.sql:1`), so two _pending_ rows were
   allowed.
 - **Severity:** `high`. It is unrecoverable from inside the app and it removes
   every ability the account has.
@@ -508,10 +507,10 @@ finding read a superseded migration.
   team request. Refresh the page to see it." instead of raising a raw database
   error. `supabase/tests/one_membership_per_user.sql` covers both halves.
 
-  **Two claims in the original entry were wrong.** *"a player who has asked to
-  join a team twice, or who has been on two teams"* — neither creates a duplicate
+  **Two claims in the original entry were wrong.** _"a player who has asked to
+  join a team twice, or who has been on two teams"_ — neither creates a duplicate
   on its own. A second request goes through the **update** branch of
-  `joinTeamMembership`, which edits the same row. *"`/my-team` collapses"* — it
+  `joinTeamMembership`, which edits the same row. _"`/my-team` collapses"_ — it
   does not crash. It renders the "you have no team" join form, because
   `TeamMembershipSection` reads only `membership` and never the `error` that
   `useTeamMembership` exposes. That was worse than a crash: the one control it
@@ -522,6 +521,7 @@ finding read a superseded migration.
   a row existed — a dropped request (the query retries once, `src/App.tsx`), or a
   second tab holding a cached "no membership" through its five-minute stale
   window. One press of Request to Join then inserted the second row.
+
 - **Raised by:** [`getting-started/join-a-team.md`](getting-started/join-a-team.md#open-questions-and-verification),
   [`teams/my-team.md`](teams/my-team.md#open-questions-and-verification),
   [`cross-cutting/permissions.md`](cross-cutting/permissions.md#open-questions-and-verification).
@@ -554,7 +554,7 @@ finding read a superseded migration.
   home". The "Access Denied" toast and the redirect are both suppressed while
   that flag is set.
 - **Note on the original report:** it said "on a reload no toast is raised at
-  all". The *profile-error* toast was indeed missing (it only fired on
+  all". The _profile-error_ toast was indeed missing (it only fired on
   `SIGNED_IN`), but the "Access Denied" toast did fire. So the message was wrong
   rather than absent.
 - **Raised by:** [`foundations/accounts-and-roles.md`](foundations/accounts-and-roles.md#open-questions-and-verification),
@@ -600,11 +600,11 @@ finding read a superseded migration.
   `profile.id === user.id` before granting, and counts a profile belonging to
   anyone else as a failed check rather than an answer, so the retry card is
   shown. The profile id was already fetched (`ProfileService` selects it), so
-  no query changed. Separately, the auth hook stops *keeping* a foreign
+  no query changed. Separately, the auth hook stops _keeping_ a foreign
   profile: one `keepProfileOnlyFor` updater is applied when a different user
   signs in, in both failure branches, and in `refreshProfile`.
 
-  *Checked for the obvious regression.* An admin must not be bounced to the home
+  _Checked for the obvious regression._ An admin must not be bounced to the home
   page on an ordinary token refresh. `ProtectedAdminRoute` shows its spinner
   whenever `isLoading`, which is `!authInitialized || isProfileLoading`, and the
   user-change path sets `isProfileLoading` before it fetches — so the gap where
@@ -615,7 +615,7 @@ finding read a superseded migration.
   profile grants nothing; a foreign profile plus a failed read reports the
   failure) and two on the auth hook (the held profile is dropped when a
   different user signs in, and is not kept when the new user's read fails). The
-  other two are non-regression guards — a failed read for the *same* user keeps
+  other two are non-regression guards — a failed read for the _same_ user keeps
   that user's profile, which is what B-08's fix depends on. Every profile
   fixture in `useAdminAccess.test.ts` now carries an id, because a fixture
   without one could not express the bug.
@@ -676,7 +676,7 @@ finding read a superseded migration.
   panel is league business (timeslots, scores, joining) — so merging the forms
   would have made both worse. `SupportTicketService` and `useSupportTickets`
   give `support_tickets` its first reader; `ContactInboxSection` merges both row
-  shapes into one list behind an *All / League requests / Support* filter, with
+  shapes into one list behind an _All / League requests / Support_ filter, with
   Delete on league rows only (the table has no DELETE policy);
   `submit-contact-request` now emails `admin@717rec.com` too, through a shared
   `_shared/email.ts`, best-effort so a failed send never turns a saved request
@@ -739,7 +739,7 @@ finding read a superseded migration.
 ### B-33: Six of the twenty badge types can never be awarded
 
 - **Status:** **fixed**. The original entry's **title was wrong**: it said nine,
-  and its own body said six. Six is right — nine is the number of *placement*
+  and its own body said six. Six is right — nine is the number of _placement_
   types, and three of those, the champions, were always written.
 - **Where the user meets it:** a team that finishes second or third in its
   division never receives a badge for it.
@@ -789,7 +789,7 @@ finding read a superseded migration.
 - **What happens / what was expected:** the row ends up approved **and** still
   stamped refused. Expected: a membership is pending, approved, or refused —
   never two at once.
-- **Reproduce:** 1. Refuse a join request in *Member Approvals*. 2. Approve that
+- **Reproduce:** 1. Refuse a join request in _Member Approvals_. 2. Approve that
   same row. 3. Sign in as that member.
 - **Why (from the code):** `updateMembershipApproval`
   (`src/services/teams/TeamMembershipService.ts`) had two branches and each wrote
@@ -800,7 +800,7 @@ finding read a superseded migration.
 - **Why the member cannot recover:** `rejected_at` is the single thing the rest
   of the app reads as "this person has no team"
   (`src/hooks/useTeamMembership.ts:123`), so a non-null value removes every team
-  ability and shows the red *Request declined* card. *Leave Team* is hidden in
+  ability and shows the red _Request declined_ card. _Leave Team_ is hidden in
   that state (`TeamMembershipSection.tsx:37`), so they cannot start over. Both
   admin queue reads filter on `.is('rejected_at', null)`
   (`TeamMembershipService.ts:128,148`), so no admin sees the row to fix it. And
@@ -819,7 +819,7 @@ finding read a superseded migration.
 
   Two tests, one per branch, asserting the cleared fields. Both were checked
   against the unfixed code first and failed there with `expected undefined to be
-  null` — the fields were simply absent from the patch.
+null` — the fields were simply absent from the patch.
 
 ---
 
@@ -839,7 +839,7 @@ finding read a superseded migration.
     is in the bell on every page.
   - Deleting a saved Challonge fallback — `ChallongeFallbackSection.tsx`.
   - Changing a team's division — `TeamTableDesktop.tsx` and `TeamListMobile.tsx`.
-    Because hiding a team *is* setting its division to Hidden, one mis-click
+    Because hiding a team _is_ setting its division to Hidden, one mis-click
     removes a team from the public site.
 - **Severity:** `medium`. Each is recoverable by hand, but the division change
   moves a team out of the standings, the schedule and its public page.
@@ -852,17 +852,17 @@ finding read a superseded migration.
   two missing success toasts were added.
 - **Corrected on review.** This entry originally listed **six** actions. Two of
   them do not hold up:
-  - *Re-scoring a completed match in the mass tool* — **dropped, not a defect.**
+  - _Re-scoring a completed match in the mass tool_ — **dropped, not a defect.**
     Every match the tool submits is completed by design; that is its entry
     condition (`submissionEligibility.ts` requires `isEdited && isValid &&
-    iscompleted`). The admin must edit a score first and then press Submit, and
-    gets a summary toast naming saved and failed counts. The tool's *delete*
+iscompleted`). The admin must edit a score first and then press Submit, and
+    gets a summary toast naming saved and failed counts. The tool's _delete_
     action already has a dialog.
-  - *Duplicating a hero card* — **the claim was wrong.** It said two presses
+  - _Duplicating a hero card_ — **the claim was wrong.** It said two presses
     make two cards with the same slug. They cannot: `hero_cards.slug` is
     `TEXT UNIQUE NOT NULL`, so the database refuses the second insert. Re-filed
     as what it actually is, and fixed: the suffix was always `-copy`, so
-    duplicating the same card a second time *ever* collided; the button had no
+    duplicating the same card a second time _ever_ collided; the button had no
     `disabled` guard though the hook already exposed `isCreating`; and the
     unawaited rejection surfaced as an unhandled promise rejection on top of the
     error toast. The copy is created hidden, so it never reached the public site.
@@ -912,7 +912,7 @@ finding read a superseded migration.
     explicit `ERRCODE`, so the rest defaulted to `P0001` and went generic too —
     including the live-scoring guards a scorer used to read mid-match ("Match is
     not decided yet", "Not authorized to finalize this match", "Thrower does not
-    play for team 1 of this match"). Those reached users *before* this entry was
+    play for team 1 of this match"). Those reached users _before_ this entry was
     fixed, so this was a regression, not a missed improvement. Six guards now
     mark themselves `USING HINT = 'user-visible'`; everything unmarked stays
     generic, so "Match not found: &lt;uuid&gt;" and the row-count diagnostics
@@ -926,13 +926,13 @@ finding read a superseded migration.
   - `getUIErrorMessage` did not sanitise anything. It was `error.message` plus a
     prefix, while `handleDatabaseError` builds its message from the **raw
     PostgrestError**. Live scoring's twenty call sites were therefore already
-    showing users text like *"new row violates row-level security policy for
-    table match_rounds"*. Propagating that pattern would have added ~50 more
+    showing users text like _"new row violates row-level security policy for
+    table match_rounds"_. Propagating that pattern would have added ~50 more
     such sites. A sanitiser had to come first.
   - For the contact form the reason was lost **before** the toast.
     `supabase.functions.invoke` reports a non-2xx as a `FunctionsHttpError`
-    whose message is the fixed string *"Edge Function returned a non-2xx status
-    code"*; the real body is only on `error.context`, and no call site in the
+    whose message is the fixed string _"Edge Function returned a non-2xx status
+    code"_; the real body is only on `error.context`, and no call site in the
     app read it. Fixing only the toast would have shown that placeholder —
     worse than the generic sentence it replaced.
   - Eighteen further leak sites were found that this entry never listed, in
@@ -941,8 +941,8 @@ finding read a superseded migration.
     `useMatchUpdate`, `useMatchDelete`, `useTeamMembership` and others, all
     interpolating the raw error message straight into a toast.
   - Three test suites mocked `getUIErrorMessage` with a stub that treated its
-    second argument as a *fallback* when the real function treats it as a
-    *prefix*, so any leak on those paths was invisible to the suite. The stubs
+    second argument as a _fallback_ when the real function treats it as a
+    _prefix_, so any leak on those paths was invisible to the suite. The stubs
     were deleted before anything else changed.
 - **Raised by:** [`help/contact-the-league.md`](help/contact-the-league.md#open-questions-and-verification),
   [`foundations/messages-to-the-user.md`](foundations/messages-to-the-user.md#open-questions-and-verification),
@@ -963,7 +963,7 @@ finding read a superseded migration.
 - **Decision needed:** `fix`. Raise the limit, or stop raising the second message.
 - **Status:** **fixed.** The limit is now 3, the viewport got a gap, and the
   low-value "Data Refreshed" toast was removed — the dialog navigates away a
-  second later, so making that message *visible* was not the same as making it
+  second later, so making that message _visible_ was not the same as making it
   worth reading. `TOAST_REMOVE_DELAY` had to move with the limit: Radix
   auto-closes a toast after ~5s, which only sets `open: false`, and the old
   1000000ms delay then kept the closed toast in state for 16.7 minutes, where it
@@ -992,7 +992,7 @@ finding read a superseded migration.
   `/help`. 3. The new page is still scrolled down.
 - **Why (from the code):** nothing in `src/App.tsx` resets scroll on a route
   change, and React Router does not do it by itself. Four routes call
-  `useScrollRestoration` to restore *their own* position — `/teams`, `/stats`,
+  `useScrollRestoration` to restore _their own_ position — `/teams`, `/stats`,
   `/history`, `/insights` — which is a different behaviour and does not help
   anyone arriving at the other sixteen.
 - **Severity:** `medium`. It affects every navigation in the app and is most
@@ -1008,7 +1008,7 @@ finding read a superseded migration.
   `setSearchParams` with `replace` from an effect. `<ScrollRestoration>` was not
   an option — it needs a data router and the app uses `<BrowserRouter>`.
   One prerequisite was not in this entry: returning from a team page to `/stats`
-  was a *forward* navigation (`navigate(state.from)` plus a 100ms smooth scroll),
+  was a _forward_ navigation (`navigate(state.from)` plus a 100ms smooth scroll),
   so a POP guard alone would not have covered it and the page would have jumped
   to the top and then glided back. That handler now pops history instead, which
   also deleted the timer and five dead `scrollPosition` link payloads.
@@ -1084,12 +1084,12 @@ finding read a superseded migration.
   [`scores/submit-a-score.md`](scores/submit-a-score.md#open-questions-and-verification).
 - **Status:** **fixed.** Confirmed on 2026-08-25. A preflight sent with
   `Origin: https://717rec.app` returns `access-control-allow-origin:
-  https://717rec.app`; the same preflight with `Origin: http://localhost:8080`
+https://717rec.app`; the same preflight with `Origin: http://localhost:8080`
   returns no such header, and a browser fetch from the dev server fails with
   "TypeError: Failed to fetch". Checklist item `CONTACT-27` — this entry
   previously cited `CONTACT-05`, which is a different item, about field focus.
 
-  *Corrected on review.* The entry named two functions; there are **three**.
+  _Corrected on review._ The entry named two functions; there are **three**.
   `submit-contact-request/index.ts:21-27` had the same gap, and it is the one
   the reproduction steps above actually reach: `/contact` submits through
   `ContactRequestService.ts:25`, which invokes `submit-contact-request`, not
@@ -1119,7 +1119,7 @@ finding read a superseded migration.
   them.
 - **Reproduce:** 1. Open `/message-board` in a private window.
 - **Why (from the code):** the only SELECT policy on `messages` is granted `TO
-  authenticated` (`supabase/migrations/20251010171351_*.sql:4-7`). The page has no
+authenticated` (`supabase/migrations/20251010171351_*.sql:4-7`). The page has no
   route guard and its empty state does not distinguish "none" from "not allowed"
   (`src/components/message-board/MessageFeed.tsx:66-78`).
 - **Severity:** `medium`. It tells the user something false about the league.
@@ -1148,7 +1148,7 @@ finding read a superseded migration.
   No route guard was added — the page still opens for a visitor, and only the
   messages are withheld.
 
-  *Corrected on review.* There are **two** SELECT policies on `messages`, not
+  _Corrected on review._ There are **two** SELECT policies on `messages`, not
   one: `20250614141604_*.sql:5-9` and the `20251010171351_*.sql:4-11` this entry
   cites, added a year apart by a migration titled "Fix: Add SELECT policy" that
   was seemingly unaware of the first. Both are `TO authenticated`, so the
@@ -1169,8 +1169,7 @@ finding read a superseded migration.
   screen changes with no explanation. Undoing a single round, which is far less
   surprising, does ask for confirmation. Expected: the more surprising action
   asks at least as much as the less surprising one.
-- **Reproduce:** 1. Two scorers on one match, one from each team. 2. End a game.
-  3. The losing team's scorer presses "Reopen Game N". 4. Watch the other screen.
+- **Reproduce:** 1. Two scorers on one match, one from each team. 2. End a game. 3. The losing team's scorer presses "Reopen Game N". 4. Watch the other screen.
 - **Why (from the code):** `src/components/live-scoring/LiveMatchView.tsx:246`
   calls `reopenGame.mutate` directly from `onClick` with no dialog;
   `useGameFlow.reopenGame` (`src/hooks/live-scoring/useGameFlow.ts:65`) raises no
@@ -1178,7 +1177,7 @@ finding read a superseded migration.
 - **Severity:** `medium`. Recoverable, but it is an opposing-team action with no
   friction and no trace.
 - **Decision needed:** `product call`. Either add a confirmation and a message to
-  both screens, or restrict it to an admin as reopening the *match* already is.
+  both screens, or restrict it to an admin as reopening the _match_ already is.
 - **Raised by:** [`live-scoring/correct-a-round.md`](live-scoring/correct-a-round.md#open-questions-and-verification).
 - **Status:** **fixed.** The league took the first option. Reopening stays open to
   any scorer on either team — a scorer at the field correcting a score should not
@@ -1192,22 +1191,22 @@ finding read a superseded migration.
   The notice is raised by the live connection (`useLiveMatchRealtime`) when a
   game goes from completed back to in progress, not by the mutation. That is
   deliberate: every subscriber is told, including whoever pressed the button, so
-  the person acting sees it once. A success toast on the mutation *as well* would
+  the person acting sees it once. A success toast on the mutation _as well_ would
   have given them two and destroyed the first — which is B-27 in this same list.
   The previous status is read from the query cache rather than `payload.old`,
   because `postgres_changes` only carries the old row with `REPLICA IDENTITY
-  FULL`, which `games` does not have.
+FULL`, which `games` does not have.
 
-  *Corrected on review.* The entry cites `LiveMatchView.tsx:246`; that line is
+  _Corrected on review._ The entry cites `LiveMatchView.tsx:246`; that line is
   the close of `renderScoring`. There are **two** reopen buttons, not one, at
   `:307-319` (between games) and `:347-359` (after the match is decided but not
   finalised), with duplicated JSX. Both now render one shared
   `ReopenGameButton`, so the prompt cannot drift between the two paths.
 
-  Not fixed, and still open: there is no record of *who* reopened a game. The
+  Not fixed, and still open: there is no record of _who_ reopened a game. The
   notice says a scorer did it, not which one.
 
-  *Did not hold in practice.* "The person acting sees it once" was the point of
+  _Did not hold in practice._ "The person acting sees it once" was the point of
   raising the notice from the live connection, and it was not what happened: the
   same mutation's refetch can overwrite the status the check reads, leaving the
   actor told nothing. See
@@ -1245,7 +1244,7 @@ finding read a superseded migration.
   exclude it, which is what keeps the queue clear.
 
   **One membership row per user, ever.** `idx_one_membership_per_user`
-  (`20260827120000`) is a *total* unique index on `user_id`, so a kept refused
+  (`20260827120000`) is a _total_ unique index on `user_id`, so a kept refused
   row occupies the person's only slot. Asking again therefore has to update that
   row rather than insert beside it. It already took the update path when a row
   existed; it now also clears the refusal and restamps `joined_at`.
@@ -1262,7 +1261,7 @@ finding read a superseded migration.
   stamped on a posted message. A refused row is truthy, so all four would have
   shown a team the person had just been refused from. They now read a derived
   `activeMembership`, which is null for a refusal. (They were already treating a
-  *pending* row the same way; that is a separate, pre-existing question, left
+  _pending_ row the same way; that is a separate, pre-existing question, left
   alone here and since answered and fixed in
   [B-42](#b-42-a-player-waiting-for-team-approval-cannot-post-on-the-message-board-at-all).)
 
@@ -1272,10 +1271,10 @@ finding read a superseded migration.
   generator after the migration is applied should produce no change; if it does,
   the generator wins.**
 
-  *Corrected on review.* The entry cites `TeamMembershipService.ts:175-178`; the
+  _Corrected on review._ The entry cites `TeamMembershipService.ts:175-178`; the
   delete was at `:189-203`.
 
-  *Second correction, on review of the pull request.* Keeping the row made a
+  _Second correction, on review of the pull request._ Keeping the row made a
   path reachable that never had been: `joinTeamMembership` updates the existing
   row, and `trg_prevent_team_membership_reassignment` (`20260713190745`) refuses
   every non-admin change to `team_id` with `42501`. Asking the **same** team
@@ -1326,7 +1325,7 @@ finding read a superseded migration.
   re-decided automatically.
 
   **A third data-integrity card** sits on League Night Status beside the two that
-  were already there: *Matches that disagree with their rounds*. It counts the
+  were already there: _Matches that disagree with their rounds_. It counts the
   disagreement rather than storing it, the way `UnsavedLiveMatchesService`
   counts a decided-but-unsaved match, and reports five kinds, worst first — the
   recorded winner the games do not support, stored game wins that do not match,
@@ -1335,7 +1334,7 @@ finding read a superseded migration.
   Each row names what is stored against what the rounds say.
 
   **The third kind first missed the case it was most needed for.** It only fired
-  when the rounds decided somebody *else*, so a game whose rounds decide nobody —
+  when the rounds decided somebody _else_, so a game whose rounds decide nobody —
   under 21, or at 21 by a single point — went unreported however its winner was
   recorded. `setGameWinner` is the way into that state and it also writes the
   fold as the game's score, so the fourth kind stayed quiet too and the match
@@ -1346,7 +1345,7 @@ finding read a superseded migration.
   purpose, and naming that a wrong winner would outrank and bury it.
 
   **Written in TypeScript, not as a view.** `v_counter_drift` was the other
-  precedent, but `rules.ts` says *"Change game rules only here"*, and a view
+  precedent, but `rules.ts` says _"Change game rules only here"_, and a view
   would hard-code first-to-21-win-by-2 a second time and drift silently. The
   service reuses `foldGameTotals`, `checkGameWinner` and `deriveMatchState`.
 
@@ -1387,7 +1386,7 @@ finding read a superseded migration.
   not listed. There is still **no audit trail**: the card shows the state, not the
   history, so once a match is re-saved nothing records that it was ever corrected.
 
-  *Answered on review.* The raising document asked whether deleting the last round
+  _Answered on review._ The raising document asked whether deleting the last round
   of a completed game leaves it completed with a winner and no rounds. **It does**,
   and that is now one of the five kinds the card reports.
 
@@ -1428,11 +1427,11 @@ finding read a superseded migration.
   passes it to the toast unchanged.
 
   **The list says so before anything is selected.** The picker marks archived
-  seasons — "*name* (archived — read-only)" — and every card belonging to one ends
+  seasons — "_name_ (archived — read-only)" — and every card belonging to one ends
   its counts line "archived, read-only", because the default "All seasons" filter
   applies no season filter at all and mixes them in without anyone choosing.
 
-  *The entry understated the risk, and misjudged the exposure.* `archive_season`
+  _The entry understated the risk, and misjudged the exposure._ `archive_season`
   deletes a season's finished matches, so what survives for an archived season is
   its **unfinished** ones — not, as "a frozen season's rounds are editable here"
   implies, its whole history. Those survivors are exactly the set
@@ -1442,7 +1441,7 @@ finding read a superseded migration.
   was offering the admin the very matches its sibling card hides. So this was
   never only a tidiness question about the word "frozen".
 
-  *Also worth recording:* the computed-number half of the freeze was already
+  _Also worth recording:_ the computed-number half of the freeze was already
   enforced in SQL. `upsert_team_season_stats` refuses to recompute an archived
   season's `power_score`, `sos` or `division_name` unless a deliberate repair
   passes `p_include_archived`. The gap was only ever the raw rows underneath.
@@ -1462,7 +1461,7 @@ finding read a superseded migration.
   - "9:30 PM" in the timeslot picker — it is not the primary of any pair, so the
     write always throws (`src/utils/autoSchedule/constants.ts:96-113`,
     `src/services/timeslots/TimeslotBatchService.ts:76-82`).
-  - "Edit Bracket" — opens the *Create New Playoff Bracket* dialog and edits
+  - "Edit Bracket" — opens the _Create New Playoff Bracket_ dialog and edits
     nothing (`src/components/playoffs/views/AdminView.tsx:76,91`).
   - The Create Team tab's Cancel button, wired to a no-op
     (`src/components/admin/teams/TeamManagementTab.tsx:23,109`).
@@ -1483,11 +1482,11 @@ finding read a superseded migration.
   [`admin/build-the-schedule.md`](admin/build-the-schedule.md#open-questions-and-verification),
   [`teams/my-team.md`](teams/my-team.md#open-questions-and-verification).
 - **Status:** **fixed**, all eight, each wired up rather than removed. Two of
-  them turned out to be different from the entry's description; see *Corrected
-  on review* below.
+  them turned out to be different from the entry's description; see _Corrected
+  on review_ below.
 
   **The Double Header switch** now writes. The page renders the assignment form
-  **twice** — once for a narrow screen, once for a wide one — and *neither*
+  **twice** — once for a narrow screen, once for a wide one — and _neither_
   passed the handler; the entry cites only the first. Both pass it now, reusing
   the mutation the admin Timeslots tab already used.
 
@@ -1496,7 +1495,7 @@ finding read a superseded migration.
   nothing follows it. Double-header mode therefore lists only the times that
   start a pair, derived from `BACK_TO_BACK_PAIRS` so the list cannot drift from
   the pairs again. The component's own hardcoded copy of the times is gone,
-  replaced by `ALL_BLOCK_TIMES` — that duplicate is *how* the picker and the
+  replaced by `ALL_BLOCK_TIMES` — that duplicate is _how_ the picker and the
   pair table drifted apart, and B-03 fixed the same duplication in the other
   picker.
 
@@ -1506,25 +1505,25 @@ finding read a superseded migration.
   narrow: the title and the division, nothing else.** A bracket's format, size
   and team list define its generated stage, rounds and matches, so changing them
   means deleting and rebuilding, which cascades away played matches with no
-  undo. *Update Seeding* and *Rearrange Teams* already handle the structural
+  undo. _Update Seeding_ and _Rearrange Teams_ already handle the structural
   cases, including refusing when results would be affected. The division is
   editable only until the first match is played: after that, moving the bracket
   would leave its teams behind in the old division, and the dialog says so.
 
-  *Corrected after review.* The first version of this fix got two things wrong,
+  _Corrected after review._ The first version of this fix got two things wrong,
   both caught by a review bot and both verified before fixing. The dialog read
   "has the bracket started?" from `brackets.state` — but **nothing in the app
   ever writes an in-progress state**; a bracket goes straight from `pending` to
   `completed`, so the division would have stayed editable for a whole
   tournament. It is now read from the matches. And the bracket data reaching the
-  dialog carried the division's *display name* but not its **id**, so a plain
+  dialog carried the division's _display name_ but not its **id**, so a plain
   rename would have written a null division and dropped the bracket out of the
   grouped list. The id is now carried through, and the division is written only
   when the admin actually changes it. No migration was needed — the admin `UPDATE` policy on
   `brackets` already existed, and the table's only `AFTER UPDATE` trigger fires
   on a `state → completed` transition, which a rename does not touch.
 
-  **The Create Team Cancel button** returns to *Manage Teams*. The tab set is
+  **The Create Team Cancel button** returns to _Manage Teams_. The tab set is
   now controlled; the inactive tab unmounts, so the half-filled form is
   discarded with it.
 
@@ -1540,15 +1539,15 @@ finding read a superseded migration.
 
   **`/my-team` is reachable again.** This is wider than the entry asked, and the
   entry's own fix would have left a hole. The user menu sent a member to their
-  team's *public* page, which has neither *Leave Team* nor the edit control, so
+  team's _public_ page, which has neither _Leave Team_ nor the edit control, so
   both were hidden from exactly the people entitled to them. The menu item now
   always points at `/my-team`; only its label changes.
 
-  *Corrected on review.* Two of the eight were not as described.
+  _Corrected on review._ Two of the eight were not as described.
 
   **"9:30 PM" is not silent.** The entry files it under controls that do
   nothing. It raises a toast from the mutation hook and a second one from the
-  screen over the top of it. It failed *loudly*, and always. That makes it a
+  screen over the top of it. It failed _loudly_, and always. That makes it a
   smaller defect than the entry implies — and a different one: the picker
   offered a choice the service could never accept, rather than a control that
   went nowhere.
@@ -1557,15 +1556,15 @@ finding read a superseded migration.
   only when there is no membership. It also renders when a membership was
   **refused** — and that case is caught by an earlier branch. The genuinely
   unreachable branch is the "change teams" one, unreachable because a member
-  sees the team card with *Leave Team* and never a team picker. The conclusion
+  sees the team card with _Leave Team_ and never a team picker. The conclusion
   (dead code, now removed) was right; the reason was not.
 
-  *Also found, and not in the entry.* `DivisionBracketsCard` declared an
+  _Also found, and not in the entry._ `DivisionBracketsCard` declared an
   `onEditBracket` prop it never used, so the bracket list forwarded a handler
   into nothing — a **ninth** dead wire behind the eight controls. It is gone.
 
   **Deliberately not done: a bracket editor that can change teams.** The entry
-  says "wire them up or remove them", and for *Edit Bracket* the honest wiring
+  says "wire them up or remove them", and for _Edit Bracket_ the honest wiring
   stops at the title and the division. Anything more would either be refused by
   the bracket library the moment a result exists, or would mean a delete and
   rebuild that destroys played matches. Admins who need that have two working
@@ -1609,11 +1608,11 @@ finding read a superseded migration.
   knows the app is still working, and a skeleton pulses its opacity rather than
   moving. Freezing either would take away information, not motion.
 
-  *Corrected on review.* Two of the entry's specifics were wrong, in opposite
+  _Corrected on review._ Two of the entry's specifics were wrong, in opposite
   directions.
 
   **The snowfall is narrower than described.** "The home page's 200-flake
-  snowfall" drops a qualifier: it needs the winter theme *and* the home page,
+  snowfall" drops a qualifier: it needs the winter theme _and_ the home page,
   and the default theme is dark. The raising document
   ([`accessibility.md`](cross-cutting/accessibility.md)) says "when the winter
   theme is on"; the summary here lost it.
@@ -1623,7 +1622,7 @@ finding read a superseded migration.
   outside the component library; the defensible figure is ~155 files, or ~89 if
   spinner- and skeleton-only files are excused.
 
-  *Also found, and not in the entry.* The one honoured rule was **weaker than it
+  _Also found, and not in the entry._ The one honoured rule was **weaker than it
   looked**: its stylesheet is lazily imported, so it was not even in the main
   bundle and loaded only once a bracket rendered. And `styles/base.css` set
   `scroll-behavior: smooth` on `html` globally — a documented reduced-motion
@@ -1644,7 +1643,7 @@ finding read a superseded migration.
   app.
 - **Raised by:** [`cross-cutting/accessibility.md`](cross-cutting/accessibility.md#open-questions-and-verification).
 - **Status:** **fixed**, but **not** the way this entry proposes. The menu is
-  now a proper *disclosure*, not a dialog.
+  now a proper _disclosure_, not a dialog.
 
   **Why not a dialog.** The menu is not an overlay. It is a panel that expands
   in place under the top bar and pushes the page down; it covers nothing. For
@@ -1653,8 +1652,8 @@ finding read a superseded migration.
   advice literally would have meant adding a slide-in `Sheet` the project does
   not have, changing how the menu looks, and working through its collisions with
   the bottom tab bar, the phone safe areas and the sticky header's stacking —
-  a redesign, to fix an accessibility bug. So the *facts* of this entry were
-  taken and its proposed *fix* was not.
+  a redesign, to fix an accessibility bug. So the _facts_ of this entry were
+  taken and its proposed _fix_ was not.
 
   **What changed:** the button carries `aria-expanded` and `aria-controls`, and
   the panel has a matching id. Escape closes the menu and gives the button its
@@ -1665,7 +1664,7 @@ finding read a superseded migration.
   modals. Tab order already flows through this panel and out into the page
   behind it, which is what a disclosure should do.
 
-  *Corrected on review.* **"The button does not say whether it is open" is
+  _Corrected on review._ **"The button does not say whether it is open" is
   wrong.** Its `aria-label` already toggled between "Open menu" and "Close
   menu", so the accessible name did change. That is a weaker signal than
   `aria-expanded` — a name change is not reliably re-announced, and it says
@@ -1720,7 +1719,7 @@ finding read a superseded migration.
   would be needed first. The added unit tests cover the menu's behaviour and its
   conditions; the width behaviour was checked by measurement instead.
 
-  *Corrected on review.* **The cited file is wrong.** The controls left
+  _Corrected on review._ **The cited file is wrong.** The controls left
   `BracketDetail.tsx` in commit `3b0249d`; all six `hidden md:flex` classes were
   in `src/components/playoffs/admin/BracketAdminToolbar.tsx`. Everything else in
   the entry is exactly right.
@@ -1847,7 +1846,7 @@ finding read a superseded migration.
   head-to-head table, expecting the **Head-to-Head vs …** dialog.
 - **What happens / what was expected:** nothing happens. No dialog, no error, no
   spinner — the press produces no visible change at all. Expected: the dialog
-  opens with the summary cards and the *Recent Matches* list.
+  opens with the summary cards and the _Recent Matches_ list.
 - **Reproduce:** 1. Open any team page and expand Head-to-Head. 2. Press an
   opponent row, or its **View Details** control.
 - **Why (from the code):** `get_opponent_match_history` unions three sources.
@@ -1913,7 +1912,7 @@ finding read a superseded migration.
   position under the current sort — so it was not a missing case but a heading
   that should never have been wired up. It is no longer a control, which is what
   the career rankings table has always done. Because the default sort is already
-  power score descending, pressing `#` also *looked* like it worked: the first
+  power score descending, pressing `#` also _looked_ like it worked: the first
   press reproduced the default order and the second reversed it. Games, Game %
   and Streak were the three that visibly did nothing.
 - **Keyboard:** both rankings tables put the click handler on a bare `<th>`, so
@@ -1962,15 +1961,15 @@ finding read a superseded migration.
 - **Corrected on review — the proposed fix had no target.** "Have the badge read
   the stored career power score" is not actionable: **nothing stores a career
   power score.** The `career_power_score` column on `team_season_stats` and
-  `v_team_details` holds a *per-season* floored score, which is an input to the
+  `v_team_details` holds a _per-season_ floored score, which is an input to the
   career total, not the total. There is no materialised view and no career
   totals table; both sides compute it on demand. Badges must run in SQL inside
   the result transaction, and the app computes the whole league in one batch
   rather than one RPC per team, so both implementations have to stay.
 - **What was actually wrong, and by how much:** nine differences, of which the
   two newest mattered most. The plain/floored split landed in `20260818194322`,
-  five months after the SQL was last touched, so the badge read the *standings*
-  score where the app reads the *career* score. On the parity fixture the two
+  five months after the SQL was last touched, so the badge read the _standings_
+  score where the app reads the _career_ score. On the parity fixture the two
   formulas differ by **41 points**. The badge threshold is 25.
 - **Stopping the next drift:** the season formula already has this — fixture
   values asserted on both sides (`weights.test.ts` ↔
@@ -2028,7 +2027,7 @@ finding read a superseded migration.
   percentile's label. Clutch is now ranked against the league like the other
   five, so the "Nth" label is true.
 - **A consequence neither the entry nor the document noticed:** the GPA on a
-  team's card and the GPA on its own row in *View All GPAs* — shown one button
+  team's card and the GPA on its own row in _View All GPAs_ — shown one button
   apart — came from different maths and disagreed for the same team. They now
   agree, and a test asserts it.
 - **Unavailable rather than neutral:** a team that has never played a deciding
@@ -2064,19 +2063,19 @@ finding read a superseded migration.
 
 - **Where the user meets it:** a team's page. Press an opponent row in the
   head-to-head table to open the **Head-to-Head vs …** dialog, then read the W
-  and L badges down the *Recent Matches* list.
+  and L badges down the _Recent Matches_ list.
 - **What happens / what was expected:** the badge marks the match won whenever
   the **second-named** team won, no matter whose page it is. So on every match
   where the viewing team happens to be named first, a win reads **L** and a loss
   reads **W**. A match completed with no winner also reads **L**. Expected: the
   badge reflects the viewing team's own result, and a tie is not called a loss.
 - **Reproduce:** 1. Open a team page and expand Head-to-Head. 2. Press any
-  opponent row. 3. Count the **W** badges in *Recent Matches* and compare with
+  opponent row. 3. Count the **W** badges in _Recent Matches_ and compare with
   the **Wins** card at the top of the same dialog. They disagree whenever the
   team appears first in a fixture.
 - **Why (from the code):** `OpponentHistoryModal.tsx` decided the result with
   `match.winner_name === (teamId === match.team1_name ? match.team1_name :
-  match.team2_name)`. `teamId` is a **uuid** and `team1_name` is a **name**, so
+match.team2_name)`. `teamId` is a **uuid** and `team1_name` is a **name**, so
   that comparison is never true and the ternary always yielded
   `match.team2_name`. The rows returned by `get_opponent_match_history`
   (`supabase/migrations/20250906000458_*.sql:2-14`) carry names only, no ids, and
@@ -2095,7 +2094,7 @@ finding read a superseded migration.
   exactly as `winner_name` always was). `winner_name` stays for display.
 - **Why not compare names:** `public.teams.name` has **no unique constraint**
   and the create and update services both allow duplicates. With two teams
-  sharing a name, `winner_name` equals the opponent's name for *both* outcomes,
+  sharing a name, `winner_name` equals the opponent's name for _both_ outcomes,
   so a name comparison reads every non-tie as a loss — trading one wrong badge
   for another. A rename landing between the two reads could flip a result the
   same way. Raised on the pull request by the Codex reviewer.
@@ -2178,8 +2177,8 @@ finding read a superseded migration.
   returning an empty Map. A single team failing among others still drops just
   that team — it has data the rest do not, and one bad row is not an outage.
 
-  This is the same rule as B-36's follow-up, one layer down: *a failed fetch is
-  not an empty one.* B-36 closed it for the prerequisite team and match lists;
+  This is the same rule as B-36's follow-up, one layer down: _a failed fetch is
+  not an empty one._ B-36 closed it for the prerequisite team and match lists;
   the compute layer underneath was never covered and re-created the same shape.
   The report card and the GPA leaderboard already have a failure message with a
   **Try Again** button wired to this error, so both start working with no change
@@ -2190,7 +2189,7 @@ finding read a superseded migration.
   single failing team, no teams asked for, and a bulk fetch that returned
   nothing must all still resolve.
 
-  *Left alone at the time:* `useCareerRankingsWithHidden` was a near-copy of
+  _Left alone at the time:_ `useCareerRankingsWithHidden` was a near-copy of
   `useCareerRankings` carrying the same skip. The throw above fixed its compute
   failure too, but it still lacked the prerequisite-error fold that
   `useCareerRankings` gained in B-36. **Now closed — see
@@ -2206,13 +2205,13 @@ finding read a superseded migration.
   before anything has had a chance to fail. Expected: a failure is reported as
   a failure, with a way to try again.
 - **Reproduce:** 1. Make the team list request fail. 2. Open `/stats` and expand
-  *Career Statistics*.
+  _Career Statistics_.
 - **Why (from the code):** the section read `useCareerRankingsWithHidden`, a
   near-copy of `useCareerRankings` that never received the fold added in B-36.
   The rankings query stays disabled until the team list arrives, so it cannot
   report the team fetch's own failure: `error` stayed null and `data` stayed
   undefined, which the section rendered as "No career statistics available."
-  This is the same rule as B-36 and B-46 — *a failed fetch is not an empty one*
+  This is the same rule as B-36 and B-46 — _a failed fetch is not an empty one_
   — one file over.
 - **A second fault on the same line:** the copy returned the bare rankings
   `isLoading`. A disabled query is pending but not fetching, so that flag was
@@ -2248,13 +2247,13 @@ finding read a superseded migration.
   Five tests on the section, which had none; four fail against the unfixed
   code. The obvious test would have been the wrong one: mocking the rankings
   hook proves nothing, because before the change the section imported a
-  *different* hook, so the mock would not apply and the test would fail merely
+  _different_ hook, so the mock would not apply and the test would fail merely
   because an import line moved. They mock the team query one level down instead,
   against a real query client, so the same setup drives the old code and the
   new. A sixth test, in the hook's own suite, pins the rankings query key so a
   later tidy-up cannot collide the public and hidden-inclusive entries again.
 
-  *One guard covers a risk this change created rather than fixed.* Moving
+  _One guard covers a risk this change created rather than fixed._ Moving
   `divisionName` onto the shared hook puts it in front of four consumers that
   never read it, where it looks removable — and the CSV export declares it
   optional, so dropping it would empty the Division column with no type error
@@ -2274,7 +2273,7 @@ finding read a superseded migration.
   match counts wins from `games` alone, so a wrong result can reach the
   standings and the badges.
 - **Reproduce:** 1. File the winning round with no signal, so it parks. 2. Let
-  the signal come back. 3. Press *End Game* while the parked round is resuming.
+  the signal come back. 3. Press _End Game_ while the parked round is resuming.
 - **Severity:** `medium`. Narrow to reach, but what it writes is not
   recoverable from the app.
 - **Decision needed:** `fix`.
@@ -2282,7 +2281,7 @@ finding read a superseded migration.
 - **Status:** **the reported defect was already fixed; two real holes beside it
   were not, and now are.**
 
-  *The report as filed no longer applies.* It quotes a `LiveMatchView.tsx`
+  _The report as filed no longer applies._ It quotes a `LiveMatchView.tsx`
   render block whose only guard was `confirmGameComplete.isPending`. That code
   moved into `ActiveGamePanel.tsx`, which already computes a blocked reason from
   the round-save state, disables the trigger on it, refuses again in the confirm
@@ -2291,7 +2290,7 @@ finding read a superseded migration.
   **What was still wrong, 1: the gate missed a save that was not the latest
   one.** It read `submitRound.isPending`, which reports only the most recent
   save, alongside a count of rounds **parked** for a missing signal. A round
-  parked offline and now *sending* is in neither, so the button was enabled in
+  parked offline and now _sending_ is in neither, so the button was enabled in
   that gap — which is precisely the sequence the existing test's own comment
   describes ("reconnecting flips the signal back on … while the round it held is
   still on its way"). That test passed only because its mock made the resuming
@@ -2336,7 +2335,7 @@ finding read a superseded migration.
   with no way for either side to find out.
 - **Decision needed:** `fix`.
 - **Raised by:** reported directly, not by a feature document.
-- **Status:** **fixed.** The pattern now counts where each link *starts*
+- **Status:** **fixed.** The pattern now counts where each link _starts_
   (`/https?:\/\/(?:www\.)?|www\./gi`), with a `www.` directly after a scheme
   belonging to that scheme rather than opening a link of its own. A link with no
   scheme still counts: a suggested fix of `/https?:\/\/(?:www\.)?\S+/gi` was
@@ -2346,7 +2345,7 @@ finding read a superseded migration.
   six still score 6 and are still refused, and six bare `www.` links still
   score 6.
 
-  *Corrected in review.* The first version of this fix consumed the rest of each
+  _Corrected in review._ The first version of this fix consumed the rest of each
   link with `\S+`, and that was worse than the bug it fixed. A greedy tail runs
   straight through the punctuation between two links, so
   `https://a.test,https://b.test` read as **one** link and a sender could have
@@ -2357,7 +2356,7 @@ finding read a superseded migration.
   in all three forms. Two tests cover it, and both fail against the first
   version.
 
-  *The same bug was in two functions.* `send-support-email` and
+  _The same bug was in two functions._ `send-support-email` and
   `submit-contact-request` each carried their own byte-identical copy. The
   duplication is what let one bug be two, so `countUrls` and the limit now live
   in `supabase/functions/_shared/spam.ts` and both functions import them. This
@@ -2391,7 +2390,7 @@ finding read a superseded migration.
   [`cross-cutting/what-the-league-sees.md`](cross-cutting/what-the-league-sees.md),
   which now records it as a decision rather than an open question.
 
-  *Corrected on review.* The entry cited `sentry.ts:69-70`. The two sample rates
+  _Corrected on review._ The entry cited `sentry.ts:69-70`. The two sample rates
   are at lines 59-60. The claim itself is exactly right, and the lazily added
   recorder really is at line 211.
 
@@ -2411,7 +2410,7 @@ finding read a superseded migration.
 - **Raised by:** [`getting-started/sign-in-and-sign-up.md`](getting-started/sign-in-and-sign-up.md#open-questions-and-verification),
   [`admin/manage-teams-and-divisions.md`](admin/manage-teams-and-divisions.md#open-questions-and-verification),
   [`admin/build-the-schedule.md`](admin/build-the-schedule.md#open-questions-and-verification).
-- **Status:** **fixed.** In each pair the *inner* toast survives — the one closest
+- **Status:** **fixed.** In each pair the _inner_ toast survives — the one closest
   to the write, which is also the one that knows what was written. The team tab
   and the batch container dropped their copies; `useAuthForm` dropped its copy of
   the sign-up message. Three tests now pin one toast per action, and the batch
@@ -2420,11 +2419,11 @@ finding read a superseded migration.
   **The sign-up wording was the real defect, and removing a toast did not fix
   it.** The surviving toast said "Please check your email to confirm your
   account" unconditionally. A session comes back from `signUpWithEmail` only when
-  the league does *not* require email confirmation — precisely when the user is
+  the league does _not_ require email confirmation — precisely when the user is
   signed in already and has no email to check. It now reads the session: "You are
   signed in." when there is one, the confirmation sentence when there is not.
 
-  *Corrected on review.* **The title was wrong by the time it was read.** "the
+  _Corrected on review._ **The title was wrong by the time it was read.** "the
   second destroys the first" was true when `TOAST_LIMIT` was 1. B-13 raised it to
   3, so both toasts were showing, stacked — the same message twice rather than
   one message lost. The entry is retitled. The duplicate was still a defect, and
@@ -2437,7 +2436,7 @@ finding read a superseded migration.
   which is why it only ever appeared to a user who was signed in — the worst
   possible audience for "check your email".
 
-  *The sweep missed one.* It covered the *success* pairs and left the **failure**
+  _The sweep missed one._ It covered the _success_ pairs and left the **failure**
   path in the same file: `handleNativeGoogleSignIn` still raised a second toast
   over the one `signInWithGoogleNative` had already raised. Only the Capacitor
   build can reach it, which is why no web test caught it. Fixed separately as
@@ -2516,17 +2515,17 @@ finding read a superseded migration.
 - **Status:** **fixed, all nine.** Each was a case of the screen saying something
   it does not do.
 
-  | Was | Is |
-  | --- | --- |
-  | "Top 10 Teams" over four cards | "Top Teams" — four on a wide screen, ten in the phone carousel |
-  | "My Teams" going to `/teams` | "Teams", route unchanged |
-  | "your date range or team selection" | "the date or the bracket", the two filters that exist |
-  | "adjusting your search or add a new team" | "An admin adds teams from the admin dashboard", and no button |
-  | "Learn how seasons work" → `/rules` | → `/help`, through the router |
-  | "Stats Tab", "Matches Tab", … | "Stats", "Matches", … under "Open a section to read it" |
-  | delete says only "from the schedule" | adds "The standings, team records and statistics it counted towards are reversed with it." |
-  | "or another date for special events" | "Select a Thursday. League play runs on Thursdays, so other days cannot be chosen here." |
-  | `/oauth/consent` announced as Page Not Found | announced as "Authorize App" |
+  | Was                                          | Is                                                                                         |
+  | -------------------------------------------- | ------------------------------------------------------------------------------------------ |
+  | "Top 10 Teams" over four cards               | "Top Teams" — four on a wide screen, ten in the phone carousel                             |
+  | "My Teams" going to `/teams`                 | "Teams", route unchanged                                                                   |
+  | "your date range or team selection"          | "the date or the bracket", the two filters that exist                                      |
+  | "adjusting your search or add a new team"    | "An admin adds teams from the admin dashboard", and no button                              |
+  | "Learn how seasons work" → `/rules`          | → `/help`, through the router                                                              |
+  | "Stats Tab", "Matches Tab", …                | "Stats", "Matches", … under "Open a section to read it"                                    |
+  | delete says only "from the schedule"         | adds "The standings, team records and statistics it counted towards are reversed with it." |
+  | "or another date for special events"         | "Select a Thursday. League play runs on Thursdays, so other days cannot be chosen here."   |
+  | `/oauth/consent` announced as Page Not Found | announced as "Authorize App"                                                               |
 
   **Two of the nine needed more than a string change.** The team-list button did
   not just say the wrong thing, it called `window.location.reload()` — a full
@@ -2544,7 +2543,7 @@ finding read a superseded migration.
   because it renders only under `import.meta.env.DEV` and no league member can
   reach it.
 
-  *Corrected on review.* Four of the nine line references had drifted (the
+  _Corrected on review._ Four of the nine line references had drifted (the
   "Top 10 Teams" heading is at `TopTeams.tsx:92`, not `:139`, which is the grid of
   four; the team-list description is at `:78`; and the batch caption the report
   quotes lives in `DateSelectionSection.tsx`, not in `ThursdayDatePicker.tsx`,
@@ -2601,7 +2600,7 @@ finding read a superseded migration.
 
   **Review also found the expiry only half worked.** The one SELECT policy on
   `admin_notifications` allows a row while `expires_at IS NULL OR expires_at >
-  now()`, and it applies to admins as well — so an expired notification vanished
+now()`, and it applies to admins as well — so an expired notification vanished
   from the admin list, the EXPIRED tag could never be seen after a refresh, and
   the row could no longer be edited or deleted. Migration
   `20260901190000_admin_can_read_expired_notifications.sql` adds an admin-only
@@ -2616,10 +2615,10 @@ finding read a superseded migration.
   timeout and never re-armed, so only the first expiry was ever noticed; it now
   reschedules after every tick and caps the delay.
 
-  *Corrected on review.* Both dead features were exactly as described. Two small
+  _Corrected on review._ Both dead features were exactly as described. Two small
   references had drifted: the route is at `src/App.tsx:215`, not `:213`, and the
   `NotificationsAdmin.tsx` line numbers had moved. Note also that
-  `/admin/notifications` *was* already in the route-name map — the missing entry
+  `/admin/notifications` _was_ already in the route-name map — the missing entry
   in [B-30](#b-30-small-copy-and-labelling-slips) is `/oauth/consent` only.
 
 ### B-41: The "Confirm your team" card has no sign-in check and lists hidden teams
@@ -2668,7 +2667,7 @@ finding read a superseded migration.
 
 ### B-47: The scorer who reopens a game is sometimes the only one not told
 
-- **Where the user meets it:** the scorer who presses *Reopen game*. Their own
+- **Where the user meets it:** the scorer who presses _Reopen game_. Their own
   screen changes and says nothing about why.
 - **What happens / what was expected:** the other scorer always sees "Game N
   reopened"; the one who pressed the button sees it sometimes. Expected, and
@@ -2681,7 +2680,7 @@ finding read a superseded migration.
   including whoever acted, which is why the reopen raises no success message of
   its own (a second would have destroyed the first, which is B-27). It tells a
   reopen from a game merely starting by asking the cache whether that game
-  *was* completed. But `reopenGame` also refetches the match on settle, and
+  _was_ completed. But `reopenGame` also refetches the match on settle, and
   that refetch can land before the live change comes back — so the cache
   already reads `in_progress`, the check fails, and the actor gets **no**
   notice at all. Which signal wins is a matter of timing.
@@ -2720,7 +2719,7 @@ finding read a superseded migration.
   other ordering, a second change to the same game, a reopen that failed, and a
   screen that never reopened anything.
 
-  *Docs corrected with it.* `verification/live-scoring.md` FIX-12 still said "a
+  _Docs corrected with it._ `verification/live-scoring.md` FIX-12 still said "a
   successful reopen is silent" and FIX-23 that it "announces nothing at all" —
   both left behind by B-17's own change, which rewrote only FIX-08.
 
@@ -2728,7 +2727,7 @@ finding read a superseded migration.
 
 - `signInWithGoogleNative` reports its own failure through `handleAuthError`
   (`src/hooks/auth/utils/authErrorHandler.ts:18`), which raises a destructive
-  toast and records the message as `authError`. It then *returns*
+  toast and records the message as `authError`. It then _returns_
   `{ success: false }` rather than throwing, so `handleNativeGoogleSignIn`
   (`src/hooks/useAuthForm.ts`) saw `!success` and raised a second one. Two red
   toasts, same message, two different titles, one press.
@@ -2744,8 +2743,8 @@ finding read a superseded migration.
   sibling handlers in this file. The test that asserted the duplicate now asserts
   no toast at all, matching the sign-up convention test beside it.
 
-  **This is B-27's missed tail.** That sweep covered the *success* pairs and the
-  sign-up message; this is the same defect on a *failure* path, in a handler
+  **This is B-27's missed tail.** That sweep covered the _success_ pairs and the
+  sign-up message; this is the same defect on a _failure_ path, in a handler
   B-27 edited but did not finish.
 
 ### B-50: A failed load of pending matches raises a toast per attempt
@@ -2769,7 +2768,7 @@ finding read a superseded migration.
   message still wins through `getUIErrorMessage`.
 
   **The obvious fix was the wrong one.** A `useEffect` keyed on the query error,
-  as `useScoreSubmissions` does, fires once per *mounted consumer* — and
+  as `useScoreSubmissions` does, fires once per _mounted consumer_ — and
   `usePendingScoresMatches` is mounted three times on the home page, by `Index`,
   `PendingScoresCard` and `ScoreSubmissionModal`. On a background-refetch failure
   that keeps the card on screen it would have raised two or three toasts, no
@@ -2792,7 +2791,7 @@ finding read a superseded migration.
 - **Status:** **fixed.** The variant is dropped, so the toast falls back to
   `default`. The test asserted the destructive variant on the success path and so
   pinned the bug in place; it now asserts the title and that the success toast is
-  *not* destructive. The error-path assertions are unchanged.
+  _not_ destructive. The error-path assertions are unchanged.
 
   Most likely the original author read "deleting a match is destructive" as
   "use the destructive variant". The two are unrelated: the variant names a
@@ -2852,7 +2851,6 @@ finding read a superseded migration.
   ever goes back to the mutation flag. `verification/home-and-teams.md` NEXT-38
   is retagged from "suspected bug" to fixed.
 
-
 ### B-54: The AI caption button failed on every press
 
 - `supabase/functions/generate-recap-caption/index.ts` called the shared
@@ -2867,7 +2865,7 @@ finding read a superseded migration.
   itself was fixed. Neither the per-minute guard nor the daily spend cap applied.
 - Every sibling function — `submit-contact-request`, `submit-score-report`,
   `send-support-email`, `pageview` — passes `(client, { endpoint, ipHash,
-  windowSeconds, maxHits })` and branches on `.allowed`. This one was the only
+windowSeconds, maxHits })` and branches on `.allowed`. This one was the only
   outlier, and it was wrong from its first commit.
 - Nothing caught it. `tsconfig` covers no project under `supabase/`, CI runs
   `deno test` with `--no-check`, and the handler was written inside `serve()`,
@@ -2982,7 +2980,7 @@ finding read a superseded migration.
   basis. That overstates it, and the same overstatement is in the commit
   message. `invalidateQueries` only ever touches the `QueryClient` in the
   browser that ran the mutation, so this defect, and its fix, reach the admin's
-  own session and nothing else. A *viewer* holding the page open is a separate
+  own session and nothing else. A _viewer_ holding the page open is a separate
   and still-open problem, now recorded as
   [B-61](#b-61-an-unpublished-recap-stayed-on-a-viewers-screen-indefinitely).
 - **Severity:** `low`. One admin's own session shows a stale page and
@@ -3066,7 +3064,6 @@ finding read a superseded migration.
 - **Status:** **fixed.** `generateBlurbs` leaves `captionModel` alone. A test
   asserts it is still null after blurbs are generated on a fresh draft.
 
-
 ### B-61: An unpublished recap stayed on a viewer's screen indefinitely
 
 - Taking a recap down is a server-side change to one row. Nothing tells a
@@ -3075,7 +3072,7 @@ finding read a superseded migration.
   opens no realtime channel, and `foundations/saving-and-freshness.md` and
   `admin/weekly-content-pack.md` both record that this feature has no realtime
   by design.
-- **`staleTime` schedules nothing.** It only marks data stale so that the *next*
+- **`staleTime` schedules nothing.** It only marks data stale so that the _next_
   trigger refetches it. The triggers available here are a window refocus, a
   remount and a reconnect — all of which require the reader to do something. A
   reader who leaves `/recap/<season>/week-<n>` open and simply reads fires none
@@ -3095,11 +3092,11 @@ finding read a superseded migration.
   readable by the public after the admin has been told it is down.
 - **Corrected on review.** The first version of this entry said "for up to ten
   minutes", and was put to the league on that basis. That was wrong, for the
-  very reason the defect existed: ten minutes is when the data becomes *eligible*
+  very reason the defect existed: ten minutes is when the data becomes _eligible_
   to refetch, not when it refetches. The entry also offered "shorten `staleTime`"
   as one of three ways to close it. **That was never a real option** — a shorter
   window still schedules nothing, so it would have changed how soon a refetch
-  *could* happen without causing one. Caught by Codex reviewing
+  _could_ happen without causing one. Caught by Codex reviewing
   [#1529](https://github.com/DougZeThug/717rec/pull/1529), which is also where
   the real fix landed.
 - **Decision needed:** `product call`. With the behaviour stated correctly, two
@@ -3158,7 +3155,6 @@ finding read a superseded migration.
   tests in `src/components/compare/__tests__/ComparisonStatRow.test.tsx` cover
   it; two of them fail against the old component.
 
-
 ### B-70: Compare showed a record and judged it as a count, so 3-9 beat 2-0
 
 - **Where the user meets it:** the Compare page, on Playoff Record and on the
@@ -3182,7 +3178,6 @@ finding read a superseded migration.
   runs eight times per render. Four tests in
   `src/components/compare/__tests__/TeamComparisonView.test.tsx` cover it; three
   fail against the old component.
-
 
 ### B-71: Two percentiles were worked out on every page load and shown on no screen
 
@@ -3217,7 +3212,6 @@ finding read a superseded migration.
   ranked only among teams that have won one, exactly as playoff win percentage
   already works, so a team with no title carries no badge at all.
 
-
 ### B-73: A failed head-to-head read was reported as a first meeting
 
 - **Where the user meets it:** the Compare page, whenever the head-to-head read
@@ -3244,7 +3238,6 @@ finding read a superseded migration.
   `src/hooks/__tests__/useTeamComparison.headToHead.test.ts` cover the hook and
   three more cover the card; all four hook tests fail against the old hook.
 
-
 ### B-63: A link inside a link counted twice, so three archived pages were refused as spam
 
 - **Where the user meets it:** the Contact the League form and the support form,
@@ -3255,7 +3248,7 @@ finding read a superseded migration.
   wrong — the message held three links — and retrying the same text always
   failed. Nothing is stored before the check, so there is no record the message
   was ever attempted.
-- `countUrls` matched only where a link *starts*, with nothing stopping it
+- `countUrls` matched only where a link _starts_, with nothing stopping it
   matching part-way through a link it had already counted. A snapshot such as
   `https://web.archive.org/web/20230101/https://www.example.com` carries two
   further openings inside its own path; a redirect such as
@@ -3289,7 +3282,7 @@ finding read a superseded migration.
 - **Corrected again.** Naming the characters still was not enough on its own,
   because the list has to contain `/`, `.`, `-` and `:` — links carry them — and
   those join two links as well as a pipe does. Six joined on a hyphen read as
-  one. The body now also stops at a second link's opening *unless* it sits
+  one. The body now also stops at a second link's opening _unless_ it sits
   straight after a `/` or an `=`, which is where a path or a query value puts
   one. Measured: fourteen of the fifteen URL-legal joiners the review listed now
   count link by link.
@@ -3300,14 +3293,13 @@ finding read a superseded migration.
   here, and the spam limit is not the only signal these endpoints apply.
 - **A suggested fix that was not taken.** The review proposed stopping the body
   before every new scheme or bare `www.`. That reopens this entry: a Wayback
-  snapshot's path *is* a new scheme, so it would score 2, and it also breaks
+  snapshot's path _is_ a new scheme, so it would score 2, and it also breaks
   B-43's original case — `https://www.example.com` would score 2 again. Checked
   against all eighteen cases before deciding.
 - **Verification note:** there is no `deno` binary in the agent container, so
   these were run by transpiling the real `spam.ts` and `spam.test.ts` and
   executing them under Node with an `assertEquals` shim. CI runs them properly
   in `edge-function-tests`.
-
 
 ### B-64: A bracket in the model's closing sentence threw away a whole set of blurbs
 
@@ -3334,7 +3326,7 @@ finding read a superseded migration.
   array's opening and ignores brackets inside JSON strings, so a blurb reading
   `They went 3-0 [best in class].` cannot end the array early either. Each `[`
   is tried in turn, which also fixes the same fault in the other direction: a
-  bracket in a sentence *before* the array — `Here is the list [see below]:` —
+  bracket in a sentence _before_ the array — `Here is the list [see below]:` —
   used to be taken as its opening. Seven tests were added; the five that existed
   keep their expected values, and three of the seven fail against the old helper
   by returning null.
@@ -3342,7 +3334,6 @@ finding read a superseded migration.
   these were run by transpiling the real helper and the real test bodies and
   executing them under Node with an `assertEquals` shim. CI runs them properly
   in `edge-function-tests`.
-
 
 ### B-65: A reaction the reader had turned off kept coming back on a match card
 
@@ -3374,8 +3365,8 @@ finding read a superseded migration.
   the old hook; the two existing tests that pin the in-flight merge stay green,
   which is why the fix copies the tombstones rather than simply clearing them.
 - **Corrected on review.** The per-fetch clear was right for a row the server
-  has already removed, but wrong for a delete that has been *issued and has not
-  committed*: the server still reports that row, so a tombstone bridging only
+  has already removed, but wrong for a delete that has been _issued and has not
+  committed_: the server still reports that row, so a tombstone bridging only
   the one fetch already in flight let a second refetch landing in that window
   put the reaction back. Two of the three tombstone sites are of that kind — the
   clean-up after an optimistic cancellation, and the deferred clean-up in
@@ -3397,7 +3388,6 @@ finding read a superseded migration.
   that the match queryFn never clears its buffers — one in the hook, one in its
   test — were true when written and are corrected here.
 
-
 ### B-66: A fast on-off-on tap on a message reaction could lose the last tap
 
 - **Where the user meets it:** the message board, tapping one emoji on, off and
@@ -3408,7 +3398,7 @@ finding read a superseded migration.
 - `useMessageReactions` serialises taps for an emoji through
   `mutationChainsRef`. The clean-up delete that the realtime INSERT handler
   sends — when an echo for a reaction the reader has already toggled off arrives
-  — was sent straight out, outside that queue. A later "tap on again" *is*
+  — was sent straight out, outside that queue. A later "tap on again" _is_
   queued, so the two could be in flight at once. When the upsert reached
   Postgres first, its `ON CONFLICT DO UPDATE` matched the row still sitting
   there, and the trailing delete then removed it.
@@ -3424,13 +3414,12 @@ finding read a superseded migration.
   this clean-up's compensation, and a trailing one because nothing awaits a
   stored link until the next tap, which may never come, so a throw inside the
   compensation would otherwise surface as an unhandled rejection.
-- **What the test pins:** the call *order* is the same before and after
+- **What the test pins:** the call _order_ is the same before and after
   (add, remove, add); only the settlement order changes. The test therefore
   holds the delete open and asserts the second upsert has not been sent. It
   fails against the old hook with "expected 1 times, but got 2 times".
 - **No document changed.** `message-board/read-the-board.md` never described
   this ordering; the fix restores what the page was always meant to do.
-
 
 ### B-68: The same fast on-off-on tap could lose a match reaction too
 
@@ -3445,7 +3434,7 @@ finding read a superseded migration.
   out, outside that queue. `insertReaction` is an upsert on
   `user_id,match_id,emoji`, so a later tap's insert reaching Postgres first
   matched the row still sitting there and the trailing delete removed it.
-- A "tap on again" arriving *after* the realtime handler has run does not hit
+- A "tap on again" arriving _after_ the realtime handler has run does not hit
   the early return in `toggleReaction`, because the handler has already consumed
   that pending-removal key. It falls through to the queue, which is what put the
   two in flight together.
@@ -3458,7 +3447,6 @@ finding read a superseded migration.
   but the delete now waits for the in-flight insert, so the test has to let that
   finish first. That wait is the point of the fix, not a side effect. The new
   test fails against the old hook with "expected 1 times, but got 2 times".
-
 
 ### B-72: A message reaction removal could queue under a key nothing else used
 
@@ -3486,7 +3474,6 @@ finding read a superseded migration.
   old key with "expected not to be called at all, but actually been called 1
   times".
 
-
 ### B-69: Strength of schedule is read two opposite ways
 
 - **Where the user meets it:** the team page, most plainly. The career SOS
@@ -3496,16 +3483,16 @@ finding read a superseded migration.
 - **What happens / what was expected:** the app has no single answer to whether
   a hard schedule is good.
 
-  | Where | A high SOS is |
-  | --- | --- |
-  | Power score, 45 of 100 points (`stats/power-score.md`) | **Good** — "the term that rewards a hard schedule" |
-  | `useLeaguePercentiles` | **Good** — ranked higher-is-better |
-  | Compare's SOS row | **Good** — the tougher-schedule team is marked ahead |
-  | Insights "Toughest Schedule" (`stats/insights.md`) | **Good** — presented as an honour |
-  | `getSosColor` in `src/utils/colors.ts` | **Bad** — red at 0.75 and above, green when easy |
+  | Where                                                  | A high SOS is                                        |
+  | ------------------------------------------------------ | ---------------------------------------------------- |
+  | Power score, 45 of 100 points (`stats/power-score.md`) | **Good** — "the term that rewards a hard schedule"   |
+  | `useLeaguePercentiles`                                 | **Good** — ranked higher-is-better                   |
+  | Compare's SOS row                                      | **Good** — the tougher-schedule team is marked ahead |
+  | Insights "Toughest Schedule" (`stats/insights.md`)     | **Good** — presented as an honour                    |
+  | `getSosColor` in `src/utils/colors.ts`                 | **Bad** — red at 0.75 and above, green when easy     |
 
 - Four to one. `getSosColor` is the outlier, and it is defensible on its own
-  terms: it is a *difficulty* scale, not a quality one, and its comment says so
+  terms: it is a _difficulty_ scale, not a quality one, and its comment says so
   — "Higher SOS means tougher schedule (red), lower means easier (green)". The
   problem is that the two sibling helpers in the same file,
   `getPowerScoreColor` and `getSweepRateColor`, are quality scales, so the same
@@ -3528,7 +3515,6 @@ finding read a superseded migration.
   then says the opposite in a fifth.
 - **Status:** **documented.** No code changed. `compare-teams.md` now describes
   the contradiction rather than only the Compare half of it.
-
 
 ### B-74: The head-to-head record does not refresh while the page is open
 
@@ -3558,7 +3544,6 @@ finding read a superseded migration.
   that is intended is a product question".
 - **Status:** **documented.** No code changed. The document now gives the real
   settings and what they mean, rather than only "a long time".
-
 
 ### B-67: A game could start with only one team's players
 
@@ -3606,7 +3591,7 @@ finding read a superseded migration.
   properties on a returned object. This follows `0efbe8149`, which deleted an
   earlier dead `updateGamePlayers`.
 - **Corrected on review.** Two ordering faults in the first version of the
-  function. It checked `user_can_score_match` *before* taking the row lock,
+  function. It checked `user_can_score_match` _before_ taking the row lock,
   and that helper requires the match to be unfinished — so a scorer could pass
   the check while a finalize was in flight, block on the lock, and resume after
   `iscompleted` had been set, inserting an in-progress game into a completed
@@ -3614,7 +3599,7 @@ finding read a superseded migration.
   policy never runs to catch it, and a phantom in-progress game is the exact
   state `20260708120000` had to clean up once already. `finalize_live_match`
   gets this order right; the function now does too. Second, `PERFORM … FOR
-  UPDATE` sets `FOUND` and nothing read it, so a match id that does not exist
+UPDATE` sets `FOUND` and nothing read it, so a match id that does not exist
   fell through to the insert and failed on `games_match_id_fkey` — a 23503 the
   client describes as "this is still linked to other records". It now raises
   `Match not found`, deliberately without the user-visible hint because the id
@@ -3629,7 +3614,6 @@ finding read a superseded migration.
   `LiveMatchService` now calls `supabase.rpc('start_game_with_roster', …)`
   directly, and `npm run typecheck` passing is the proof the regenerated types
   carry the function with the argument names the service sends.
-
 
 ## Note: what the two DeepSource checks actually measure
 
@@ -3654,11 +3638,11 @@ the API, and it cost a round here.
 **`DeepSource: JavaScript` was normally red on this repo, and the league merged
 through it.** That was the reading at the time:
 
-| PR | DeepSource: JavaScript | DeepSource: Test coverage | merged |
-| --- | --- | --- | --- |
-| #1311 | failure | failure | yes |
-| #1312 | failure | failure | yes |
-| #1315 | failure | **success** | — |
+| PR    | DeepSource: JavaScript | DeepSource: Test coverage | merged |
+| ----- | ---------------------- | ------------------------- | ------ |
+| #1311 | failure                | failure                   | yes    |
+| #1312 | failure                | failure                   | yes    |
+| #1315 | failure                | **success**               | —      |
 
 **Where to read the actual finding.** The status carries no detail, DeepSource
 posts no inline comment for it, and its PR summary comment says "see the
@@ -3681,13 +3665,13 @@ argument fails `npm run typecheck` with "Expected 1 arguments, but got 0"
 whenever the mock is typed. Five call sites already carry
 `// skipcq: JS-W1042` for exactly this; follow them.
 
-*No longer the only fix.* `cab1dca8` removed the same `undefined`s by code
+_No longer the only fix._ `cab1dca8` removed the same `undefined`s by code
 change rather than suppression: typing the redundant argument as
 `const UNSET: string | undefined = undefined` and passing `UNSET`, and swapping
 `mockResolvedValue(undefined)` for `mockImplementation(() => Promise.resolve())`.
 Both typecheck without a `// skipcq`; new code can suppress or fix either way.
 
-*No longer true, and the difference matters.* **#1470**, merged into `main` on
+_No longer true, and the difference matters._ **#1470**, merged into `main` on
 2026-09-16, carried `DeepSource: JavaScript — Analysis passed`. The backlog that
 kept this status red has been worked off, so **a red JavaScript status is now
 your branch's to fix**, not a standing condition to merge through. Measured on
@@ -3713,27 +3697,27 @@ Open that before changing any code.
 made green.** Measured on #1315, where nothing changed between the first two
 rows except four tests covering that branch's own uncovered lines:
 
-| Head | Line coverage (new code) | DeepSource: Test coverage |
-| --- | --- | --- |
-| `71df0ce` | 99.3% | failure |
-| `06e8527` | 100% | **success** |
-| `37e562f` | 100% | **success** |
+| Head      | Line coverage (new code) | DeepSource: Test coverage |
+| --------- | ------------------------ | ------------------------- |
+| `71df0ce` | 99.3%                    | failure                   |
+| `06e8527` | 100%                     | **success**               |
+| `37e562f` | 100%                     | **success**               |
 
 So the status keys on **new-code line coverage**, and it appears to want all of
 it: 99.3% failed while every Threshold column still read `N/A`. Thresholds are
 set in DeepSource's web UI rather than in `.deepsource.toml` and none are set
 here, so `N/A` in that column does **not** mean nothing is being enforced.
 
-*Superseded, kept as the only other measurement anyone took.* An earlier reading
+_Superseded, kept as the only other measurement anyone took._ An earlier reading
 of this note said the status counted uncovered-line annotations across every file
-a pull request *touches*, and therefore "cannot be made green by covering the
+a pull request _touches_, and therefore "cannot be made green by covering the
 code a branch actually adds" — on the B-11 to B-14 branch, seven of ~180
 reported lines were the branch's, all seven were tested, and it still read
 Failure. #1315 contradicts the conclusion. That branch cannot be re-run, so
 whether DeepSource changed, or something else there was uncovered, is unknown.
 **Trust the table above; it is the more recent measurement.**
 
-*Incomplete too, measured 2026-11-13 on #1738.* The coverage status failed
+_Incomplete too, measured 2026-11-13 on #1738._ The coverage status failed
 although new-code line coverage read 100% (new branch 82.8%, new composite
 93.7%, every threshold `N/A`). DeepSource listed 132 uncovered lines in 13
 files: 71 in two files that moved (a diff without rename detection shows a moved
@@ -3744,7 +3728,7 @@ statements were uncovered on `main`, and `main` was green for this status. So
 file is **UNKNOWN**. This note claims no cause. Check the run page at the status
 `target_url` (publicly readable, see above) before guessing.
 
-*Passed with listed lines left, measured 2026-11-13 on #1739.* That PR added
+_Passed with listed lines left, measured 2026-11-13 on #1739._ That PR added
 tests only. DeepSource had listed 132 lines; 88 are covered and 44 were left
 uncovered on purpose. The coverage status turned **success**, and overall line
 coverage read 89.7% (up 0.4% from `main`). So the status can pass while listed
@@ -3775,8 +3759,8 @@ patterns involved use unicode escapes or astral characters — em-dashes and
 middots are single code units — so the flag changes no behaviour. Adding it to
 one branch's files makes those files the odd ones out and fixes nothing.
 
-*That last sentence assumed the status was red regardless, which it no longer
-is — but the advice still holds.* #1474 tested it directly: two new
+_That last sentence assumed the status was red regardless, which it no longer
+is — but the advice still holds._ #1474 tested it directly: two new
 `name: /…/i` regexes in a Testing Library query were replaced with exact strings
 and the JavaScript status stayed red, because JS-0117 was never what it was
 reporting. So a branch adding a regex does **not**, on this evidence, turn the

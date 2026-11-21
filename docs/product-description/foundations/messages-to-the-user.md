@@ -97,7 +97,7 @@ revisited inside that window shows no loading state at all.
 ## The two error screens
 
 **The route error screen** replaces a page that failed to load or whose first
-render threw. A warning triangle, "Failed to load *page name*", the sentence
+render threw. A warning triangle, "Failed to load _page name_", the sentence
 "Something went wrong loading this page. You can try again or navigate
 elsewhere.", and three buttons: Try Again, Go Back, Home. In a development build
 the underlying error message is shown; in the published build it is not. See
@@ -106,7 +106,7 @@ the underlying error message is shown; in the published build it is not. See
 **The Page Not Found screen** is an ordinary empty state on a route that matched
 nothing.
 
-A failed *data* request produces neither. It is the page's own business and
+A failed _data_ request produces neither. It is the page's own business and
 becomes an empty state, a toast, or both.
 
 ## Notifications
@@ -127,28 +127,28 @@ tells anybody anything.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | The "Access Denied" toast is the only message that exists solely because of a role. | An admin flag revoked mid-session produces no message; writes simply begin failing. |
-| The record's state | No effect on how messages are shown. | No effect. |
-| The season's state | No effect. A season changing over produces no message at all. | No effect. |
-| Viewport | Below 640 pixels a toast appears at the **top**, full width. At 640 and above it appears **bottom-right**, at most 420 pixels wide. | Resizing across 640 pixels moves an open toast from one end of the screen to the other. |
-| Keys the app honours | A toast can be dismissed from the keyboard. | No effect. |
+| Modifier             | Set at arrival                                                                                                                      | Changed while editing                                                                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| The user's role      | The "Access Denied" toast is the only message that exists solely because of a role.                                                 | An admin flag revoked mid-session produces no message; writes simply begin failing.     |
+| The record's state   | No effect on how messages are shown.                                                                                                | No effect.                                                                              |
+| The season's state   | No effect. A season changing over produces no message at all.                                                                       | No effect.                                                                              |
+| Viewport             | Below 640 pixels a toast appears at the **top**, full width. At 640 and above it appears **bottom-right**, at most 420 pixels wide. | Resizing across 640 pixels moves an open toast from one end of the screen to the other. |
+| Keys the app honours | A toast can be dismissed from the keyboard.                                                                                         | No effect.                                                                              |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Dismisses a toast if one is focused. | Does not stop a toast that is about to be raised by a request in flight. |
-| In-app navigation away, or switching tab within the page | A visible toast survives the navigation. | **The result toast still appears, on whatever page the user is now on.** A success message can therefore appear over an unrelated page. |
-| Browser back or forward | Same. | Same. |
-| Reload, or the tab closed | Toasts are lost. | The result toast is never seen. The write may still have landed. |
-| Network lost mid-request | Nothing to show. | The failure toast appears normally; toasts need no network. |
-| The request fails or times out | Not applicable. | One destructive toast, generically worded. |
-| The session expires | No message. | No message about the session. The user sees whatever failure message the refused write produces. |
-| The same record changed in another tab, or by another user | No message. Nothing announces a change that arrives by realtime either. | No message. |
-| Browser autofill or a password manager writes into the form | No message. | No message. |
-| The window loses focus | No message. | Returning to the tab refetches stale data with no message, so numbers change silently. |
+| Event                                                       | Before the first edit                                                   | While editing or submitting                                                                                                             |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Dismisses a toast if one is focused.                                    | Does not stop a toast that is about to be raised by a request in flight.                                                                |
+| In-app navigation away, or switching tab within the page    | A visible toast survives the navigation.                                | **The result toast still appears, on whatever page the user is now on.** A success message can therefore appear over an unrelated page. |
+| Browser back or forward                                     | Same.                                                                   | Same.                                                                                                                                   |
+| Reload, or the tab closed                                   | Toasts are lost.                                                        | The result toast is never seen. The write may still have landed.                                                                        |
+| Network lost mid-request                                    | Nothing to show.                                                        | The failure toast appears normally; toasts need no network.                                                                             |
+| The request fails or times out                              | Not applicable.                                                         | One destructive toast, generically worded.                                                                                              |
+| The session expires                                         | No message.                                                             | No message about the session. The user sees whatever failure message the refused write produces.                                        |
+| The same record changed in another tab, or by another user  | No message. Nothing announces a change that arrives by realtime either. | No message.                                                                                                                             |
+| Browser autofill or a password manager writes into the form | No message.                                                             | No message.                                                                                                                             |
+| The window loses focus                                      | No message.                                                             | Returning to the tab refetches stale data with no message, so numbers change silently.                                                  |
 
 After an interrupt, any message the app wanted to give is either shown wherever
 the user now is, or lost. Nothing is queued for next time.

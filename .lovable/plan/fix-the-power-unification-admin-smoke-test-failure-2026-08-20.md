@@ -13,6 +13,7 @@ fails with:
 `ERROR: column "career_power_score" does not exist`
 
 Confirmed by inspection:
+
 - Live `v_team_season_agg` **does** have `career_power_score`.
 - `upsert_team_season_stats` **does** reference it.
 - `admin_revert_power_score_unification` and

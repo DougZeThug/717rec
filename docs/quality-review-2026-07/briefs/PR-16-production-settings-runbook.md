@@ -21,7 +21,7 @@ Documentation + Doug's dashboard actions. Zero code.
 
 ## 5. Implementation steps
 
-1. Create `docs/PRODUCTION_SETTINGS.md` with a table: *setting · where · expected value · why · last verified (date + initials)*. Rows at minimum:
+1. Create `docs/PRODUCTION_SETTINGS.md` with a table: _setting · where · expected value · why · last verified (date + initials)_. Rows at minimum:
    - Auth → Email confirmations: **decide the policy first — do not blindly set ON.** The repo's current, deliberate policy is **OFF**: `docs/OPERATIONS.md:20` documents it ("internal rec-league app used by trusted team members") and `supabase/config.toml:17` sets `enable_confirmations = false`. If Doug keeps OFF, record that with its rationale and verified date. If production policy changes to ON, update `docs/OPERATIONS.md` and `supabase/config.toml` in the same PR so repo and dashboard agree. Secure email change = ON either way.
    - Auth → Passwords: minimum length ≥ 8; **leaked-password protection (HaveIBeenPwned) = ON**.
    - Auth → Rate limits: confirm defaults are active (sign-in, OTP, verifications) — record actual numbers.
@@ -58,7 +58,7 @@ npm run lint  # docs-only; markdown link check if configured
 - [ ] Every row in `PRODUCTION_SETTINGS.md` has a real "last verified" date filled by you.
 - [ ] Test signup with a fresh email → confirmation email arrives → account unusable until confirmed.
 - [ ] Backups page shows a recent successful backup.
-- [ ] You know where the restore button is *before* you need it.
+- [ ] You know where the restore button is _before_ you need it.
 
 ## 11. Acceptance criteria
 

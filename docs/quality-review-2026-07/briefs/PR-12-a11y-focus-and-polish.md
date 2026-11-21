@@ -11,7 +11,7 @@ The accessibility baseline is strong — verified in this review: skip-link on a
 1. **Admin screens have never been axe-scanned.** `e2e/a11y.spec.ts` covers 6 public routes only; the 18-section admin console — where Doug spends league night — has zero automated a11y checking.
 2. `fetchPriority` React prop warning on `<img>` (`src/components/home/HeroSection.tsx:54,128`) — React 18 wants the lowercase DOM attribute; fires a console error on every home load (observed at all 3 viewports in the review walk).
 3. A `ref is not a prop` warning on /stats (a component passing `ref` without `forwardRef` — trace via the warning's component stack in dev).
-4. Optional polish, decide-don't-drift: `RouteFocusManager` focuses the `<main>` landmark; focusing the page `<h1>` instead would announce the new page's *name* to screen readers rather than a generic landmark. Small UX judgment call — if adopted, adjust the existing component and its test; if not, record the decision in the component's doc comment.
+4. Optional polish, decide-don't-drift: `RouteFocusManager` focuses the `<main>` landmark; focusing the page `<h1>` instead would announce the new page's _name_ to screen readers rather than a generic landmark. Small UX judgment call — if adopted, adjust the existing component and its test; if not, record the decision in the component's doc comment.
 
 ## 2. Objective
 

@@ -37,21 +37,21 @@ Power Score    = 40 x match win rate
 
 ## What it does to real teams (career scores, live data)
 
-| Team | Now | After |
-|---|---|---|
-| Cuzzo's Clinic | 86.7 | 86.7 |
-| Jager Bombers | 78.1 | 78.1 |
-| Pepperoni Cheesers | 69.6 | 69.6 |
-| Buttery Nips | 64.9 | 64.9 |
-| Zoo Pals | 62.1 | 62.1 |
-| Miracle @ Marion | 59.3 | 59.3 |
-| Here for Fireball | 46.1 | 43.9 |
-| The Cornholy Trinity | 47.3 | 47.0 |
-| Jerm | 42.2 | 30.9 |
-| Killa Queens | 42.0 | 35.1 |
-| The Great Cornholios | 43.3 | 37.1 |
-| Corn Kitties | 34.2 | 18.4 |
-| Smacked | 29.6 | 12.0 |
+| Team                 | Now  | After |
+| -------------------- | ---- | ----- |
+| Cuzzo's Clinic       | 86.7 | 86.7  |
+| Jager Bombers        | 78.1 | 78.1  |
+| Pepperoni Cheesers   | 69.6 | 69.6  |
+| Buttery Nips         | 64.9 | 64.9  |
+| Zoo Pals             | 62.1 | 62.1  |
+| Miracle @ Marion     | 59.3 | 59.3  |
+| Here for Fireball    | 46.1 | 43.9  |
+| The Cornholy Trinity | 47.3 | 47.0  |
+| Jerm                 | 42.2 | 30.9  |
+| Killa Queens         | 42.0 | 35.1  |
+| The Great Cornholios | 43.3 | 37.1  |
+| Corn Kitties         | 34.2 | 18.4  |
+| Smacked              | 29.6 | 12.0  |
 
 Teams above the 30% performance line are unchanged or within a point. The worst teams drop from a 30-45
 cluster to a real 10-35 range, with the very bottom falling below 20. A hard schedule still helps — it just

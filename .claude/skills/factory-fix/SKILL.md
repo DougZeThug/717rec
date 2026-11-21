@@ -1,7 +1,7 @@
 ---
 name: factory-fix
 description: Investigate and fix a bug. Reproduces it first, finds the root cause, applies a targeted fix with a regression test, verifies, checks nearby behavior, and gets an independent review. Use for "X is broken", "why does Y happen", error messages, failing tests.
-argument-hint: "<bug description, error text, or failing test>"
+argument-hint: '<bug description, error text, or failing test>'
 disable-model-invocation: true
 ---
 

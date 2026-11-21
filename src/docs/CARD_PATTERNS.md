@@ -13,31 +13,31 @@
 ## When to Use Each
 
 ### Use `Card` (base component) for:
+
 - Simple containers with custom content layout
 - Loading states with centered spinners
 - Empty states
 - Admin panels and forms
 
 ```tsx
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 <Card>
   <CardHeader>
     <CardTitle>Settings</CardTitle>
   </CardHeader>
-  <CardContent>
-    {/* Custom content */}
-  </CardContent>
-</Card>
+  <CardContent>{/* Custom content */}</CardContent>
+</Card>;
 ```
 
 ### Use `SummaryCard` for:
+
 - Key metric displays (win %, power score, SOS)
 - Dashboard stat cards
 - Summary information with icon + value + description
 
 ```tsx
-import { SummaryCard } from "@/components/ui/summary-card";
+import { SummaryCard } from '@/components/ui/summary-card';
 
 <SummaryCard
   icon={Trophy}
@@ -48,24 +48,26 @@ import { SummaryCard } from "@/components/ui/summary-card";
   description="Across all divisions"
   gradient="amber"
   index={0}
-/>
+/>;
 ```
 
 ### Use `EntityCard` for:
+
 - Team display cards
 - Ranking cards
 - Any interactive entity that needs hover/tap animations
 - Cards that support winter theme
 
 ```tsx
-import { EntityCard } from "@/components/ui/entity-card";
+import { EntityCard } from '@/components/ui/entity-card';
 
 <EntityCard division={team.divisionName} isInteractive>
   {/* Team content */}
-</EntityCard>
+</EntityCard>;
 ```
 
 ### Use Tables for:
+
 - Structured data with many columns
 - Sortable data displays
 - Rankings with multiple comparable metrics
@@ -75,6 +77,7 @@ import { EntityCard } from "@/components/ui/entity-card";
 ## Card Style Checklist
 
 All cards should have:
+
 - [ ] Consistent border radius: use `rounded-lg` (default) or `rounded-xl` (summary)
 - [ ] Consistent borders: `border border-border`
 - [ ] Appropriate shadow: `shadow-sm` (default), `shadow-md` (elevated)
@@ -90,13 +93,13 @@ All cards should have:
 Use gradients from the design system:
 
 ```tsx
-import { cardPresets, cardGradients } from "@/styles/design-system/cards";
+import { cardPresets, cardGradients } from '@/styles/design-system/cards';
 
 // Preset gradients
-cardGradients.amber   // Amber summary card
-cardGradients.green   // Green summary card
-cardGradients.blue    // Blue summary card
-cardGradients.purple  // Purple summary card
+cardGradients.amber; // Amber summary card
+cardGradients.green; // Green summary card
+cardGradients.blue; // Blue summary card
+cardGradients.purple; // Purple summary card
 ```
 
 ---

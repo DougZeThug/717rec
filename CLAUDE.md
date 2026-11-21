@@ -22,16 +22,16 @@ Read `docs/agents/LEAGUE_CONTEXT.md` before scoring, data or league-rule work.
 It holds verified facts and the corrections log. **Do not trust old memory** of
 Power Score weights, division weights, or a native Android app. Verify in code.
 
-| Agent | Job | Access |
-|---|---|---|
-| `product-league-operations` | Does it help real league-night operation? | read-only |
-| `frontend-mobile-ux` | Phone use, navigation, forms, accessibility, admin UX | read-only |
-| `supabase-data` | Schema, migrations, RLS, queries, history safety | read-only |
-| `competition-scoring` | Standings, SOS, Power Score, playoffs, stats math | read-only |
-| `security-reliability` | RLS, admin-only actions, duplicates, recovery | read-only |
-| `skeptic` | Challenges findings and the plan; finds the smallest change | read-only |
-| `implementer` | Executes ONE approved plan | edits code |
-| `qa-verifier` | Checks code and league use; PASS / PARTIAL / FAIL | runs checks, no source edits |
+| Agent                       | Job                                                         | Access                       |
+| --------------------------- | ----------------------------------------------------------- | ---------------------------- |
+| `product-league-operations` | Does it help real league-night operation?                   | read-only                    |
+| `frontend-mobile-ux`        | Phone use, navigation, forms, accessibility, admin UX       | read-only                    |
+| `supabase-data`             | Schema, migrations, RLS, queries, history safety            | read-only                    |
+| `competition-scoring`       | Standings, SOS, Power Score, playoffs, stats math           | read-only                    |
+| `security-reliability`      | RLS, admin-only actions, duplicates, recovery               | read-only                    |
+| `skeptic`                   | Challenges findings and the plan; finds the smallest change | read-only                    |
+| `implementer`               | Executes ONE approved plan                                  | edits code                   |
+| `qa-verifier`               | Checks code and league use; PASS / PARTIAL / FAIL           | runs checks, no source edits |
 
 ### Workflow
 
@@ -243,21 +243,25 @@ export const ExampleService = {
 - **Running tests from an agent shell (Codex / Claude Code):** the `vitest`
   binary is local to `node_modules/.bin` and is often not on `PATH` in
   sandboxed shells. Do not call bare `vitest`. Use one of:
+
   ```bash
   npm test                                                 # full suite
   npm run test:file -- src/path/to/File.test.tsx           # single file
   npx vitest run src/path/to/File.test.tsx                 # equivalent
   ```
+
   Use `npm` only — this repo does not use `pnpm` or `yarn`.
 
 - **Typechecking: never use bare `tsc --noEmit`.** The root `tsconfig.json` has
   `"files": []` and delegates through project references, so `npx tsc --noEmit`
   compiles nothing and exits 0 **even when types are broken**. It looks like a
   clean pass and proves nothing. Use:
+
   ```bash
   npm run typecheck        # tsc -b — the real check, follows the references
   npm run typecheck:full   # tsc -b --force, ignores stale build info
   ```
+
   CI runs `npm run typecheck` (`.github/workflows/ci.yml`), so this is only a
   hazard when checking by hand.
 
@@ -286,7 +290,7 @@ export const ExampleService = {
     surfaces the last-active file if anything truly stalls)
   - Whole suite → `npm test`. It is large (~880 files / ~8.4k tests) and takes
     **~4 minutes in parallel** — that is expected, **not** a hang. Reserve it for CI or
-    final checks. Running it *serially* (e.g. `--maxWorkers=1 --fileParallelism=false`)
+    final checks. Running it _serially_ (e.g. `--maxWorkers=1 --fileParallelism=false`)
     drops that parallelism and can take several times longer, which is what previously
     looked like a hang.
 
@@ -307,4 +311,4 @@ export const ExampleService = {
 
 ---
 
-*Last updated: 2026-11-12*
+_Last updated: 2026-11-12_

@@ -26,7 +26,10 @@ Test-file-only changes. **No product code changes.**
 
 1. In `useTimeslotMutation.test.ts`, test "batchAssignDoubleHeaders: validates empty team list" (~line 250): stub the validator explicitly before invoking:
    ```typescript
-   validateBatchAssignmentMock.mockReturnValue({ valid: false, error: 'At least one team must be selected' });
+   validateBatchAssignmentMock.mockReturnValue({
+     valid: false,
+     error: 'At least one team must be selected',
+   });
    ```
    Keep `resolves.toBeNull()` and `expect(batchAssignDoubleHeadersMock).not.toHaveBeenCalled()`; update the expected toast description to the validator's message.
 2. Hygiene in the same file: the neighboring "missing slots", "duplicate slots", and success-path tests currently rely on a leaked `{valid:true}` implementation. Give each an explicit `validateBatchAssignmentMock.mockReturnValue(...)` so no test depends on stub leakage order.
@@ -39,7 +42,7 @@ Test-file-only changes. **No product code changes.**
    expect(setMatches).toHaveBeenCalledTimes(1);
    expect(setMatches).toHaveBeenCalledWith([incompleteMatch]); // rollback to the untouched original
    ```
-   Why exactly one call: in `useMatchUpdate.ts` the service call (`await updateMatch(...)`, line 143) runs **before** the optimistic `setMatches(updatedMatches)` (line 172). When the update itself throws, execution never reaches the optimistic write — only the catch block's rollback `setMatches(previousMatches)` (line 199) fires. (A failure *after* line 172, e.g. in `applyStatChanges`, would produce two calls — that scenario is a different test.)
+   Why exactly one call: in `useMatchUpdate.ts` the service call (`await updateMatch(...)`, line 143) runs **before** the optimistic `setMatches(updatedMatches)` (line 172). When the update itself throws, execution never reaches the optimistic write — only the catch block's rollback `setMatches(previousMatches)` (line 199) fires. (A failure _after_ line 172, e.g. in `applyStatChanges`, would produce two calls — that scenario is a different test.)
 4. Run the two files, then the full gate (commands below).
 
 ## 6. Database requirements
@@ -52,7 +55,7 @@ None (no product change).
 
 ## 8. Testing requirements
 
-- The two named tests pass and still assert the *behavioral* contract (empty list blocked before any service call; failed update leaves visible state equal to the original).
+- The two named tests pass and still assert the _behavioral_ contract (empty list blocked before any service call; failed update leaves visible state equal to the original).
 - No reduction in assertions — the rollback test must still verify state equals the original snapshot, not merely "was called".
 
 ## 9. Validation commands

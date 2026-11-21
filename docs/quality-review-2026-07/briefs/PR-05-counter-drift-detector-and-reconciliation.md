@@ -35,7 +35,7 @@ One migration (view + two functions), one service function, one small admin-dash
 
 ## 5. Implementation steps
 
-1. Migration — detector view. **Do NOT compare against `v_team_match_stats`'s game columns**: that view sums `team1_game_wins`/`team2_game_wins` for every completed match *including ties*, while the scoring RPCs deliberately leave ties contributing **nothing** to `teams` counters (`mark_match_as_tie` reverses the match's entire counter contribution — verified in migration `20260310151239`). A naive comparison would flag every completed tie as drift and "Repair now" would corrupt tie counters. Derive the expectation with exactly the RPC semantics — only matches with a winner contribute:
+1. Migration — detector view. **Do NOT compare against `v_team_match_stats`'s game columns**: that view sums `team1_game_wins`/`team2_game_wins` for every completed match _including ties_, while the scoring RPCs deliberately leave ties contributing **nothing** to `teams` counters (`mark_match_as_tie` reverses the match's entire counter contribution — verified in migration `20260310151239`). A naive comparison would flag every completed tie as drift and "Repair now" would corrupt tie counters. Derive the expectation with exactly the RPC semantics — only matches with a winner contribute:
    ```sql
    CREATE OR REPLACE VIEW public.v_counter_drift
    WITH (security_invoker = true) AS

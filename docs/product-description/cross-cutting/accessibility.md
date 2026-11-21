@@ -69,7 +69,7 @@ missing match said nothing at all.
 An automated scan blocks a merge that reintroduces any of this: it checks for
 duplicate or nested main landmarks, unnamed duplicate landmarks, and a missing
 first-level heading, on thirteen routes — twelve public pages, plus live scoring
-for a match that does not exist. Skipped heading *levels* inside a page are a
+for a match that does not exist. Skipped heading _levels_ inside a page are a
 separate, unfinished piece of work and are not in that gate.
 
 ## Keyboard
@@ -153,7 +153,7 @@ destination rather than gliding.
 knows the app is still working, and a skeleton pulses its opacity rather than
 moving. Stopping either would take away information rather than motion.
 
-> *Technical note:* three mechanisms are needed, because no one of them reaches
+> _Technical note:_ three mechanisms are needed, because no one of them reaches
 > everything. A stylesheet covers the CSS animations and transitions; a
 > framer-motion setting covers the components that animate through inline
 > styles; and a React hook covers what neither can — the snowfall, which is
@@ -181,7 +181,7 @@ themes are unaffected; both are light text on a dark ground.
 each colour twice by hand, once for light and once for dark, which is how the
 contrast above went unnoticed for so long: nobody checked the light half, and
 the dark half did nothing at all under the winter theme. Every screen now names
-the *role* — "this is muted text", "this is a border" — and the theme supplies
+the _role_ — "this is muted text", "this is a border" — and the theme supplies
 the value. Three more contrast failures fell out of that: a power score with no
 data read 2.57:1 on a white card, and two greys read 4.83:1. A scan of the six
 main pages reports no contrast failures in either theme, and that scan runs on
@@ -259,18 +259,18 @@ on screen and the element focused can disagree.
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Escape closes any dialog, menu, popover, or select and returns focus to whatever opened it. It closes the hamburger menu too, and returns focus to the hamburger button. | Escape closes the dialog and abandons what was in it. It does not abort a request already sent. |
-| In-app navigation away, or switching tab within the page | A link to another page is announced, focus moves to its main content, and the page opens at the top, so a sighted user and a reader are looking at the same place. Switching a tab within the page does none of these: nothing is announced, focus is not moved, and the scroll position is kept. Pressing Tab afterwards moves focus into the tab panel, and the browser scrolls the panel into view if it is hidden. | Work is discarded with no warning and nothing is announced about the loss. |
-| Browser back or forward | The new page is announced but **focus is not moved**, so the next Tab continues from wherever focus happened to be. | Same, and the discarded work is silent. |
-| Reload, or the tab closed | The first load after a reload announces nothing and moves no focus, by design. The reader starts at the top of the document. | Nothing is announced about a write that may or may not have landed. |
-| Network lost mid-request | Silent. Nothing announces going offline, because nothing detects it. | The failure toast is announced. It says the feature failed, never that the connection did. |
-| The request fails or times out | A page that falls back to an empty state announces nothing. A page that shows the shared error bar announces it assertively. | One toast, announced once. A second failure replaces the first and the first is never heard. |
-| The session expires | Silent. | The refused write's toast is announced with the feature's ordinary wording. Nothing says the session ended. |
-| The same record changed in another tab, or by another user | Silent everywhere. On live scoring the score moves with no announcement; elsewhere nothing arrives at all. | Silent. |
-| Browser autofill or a password manager writes into the form | A filled field reads correctly, because every field has a real label. The contact form's hidden bot trap is removed from tab order and hidden from readers, so it is never reached by keyboard or voice. | Same. Validation still does not run until submit. |
-| The window loses focus | Nothing. | Returning refetches stale data and numbers change with no announcement — the single most common silent change in the product. |
+| Event                                                       | Before the first edit                                                                                                                                                                                                                                                                                                                                                                                                  | While editing or submitting                                                                                                   |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Escape closes any dialog, menu, popover, or select and returns focus to whatever opened it. It closes the hamburger menu too, and returns focus to the hamburger button.                                                                                                                                                                                                                                               | Escape closes the dialog and abandons what was in it. It does not abort a request already sent.                               |
+| In-app navigation away, or switching tab within the page    | A link to another page is announced, focus moves to its main content, and the page opens at the top, so a sighted user and a reader are looking at the same place. Switching a tab within the page does none of these: nothing is announced, focus is not moved, and the scroll position is kept. Pressing Tab afterwards moves focus into the tab panel, and the browser scrolls the panel into view if it is hidden. | Work is discarded with no warning and nothing is announced about the loss.                                                    |
+| Browser back or forward                                     | The new page is announced but **focus is not moved**, so the next Tab continues from wherever focus happened to be.                                                                                                                                                                                                                                                                                                    | Same, and the discarded work is silent.                                                                                       |
+| Reload, or the tab closed                                   | The first load after a reload announces nothing and moves no focus, by design. The reader starts at the top of the document.                                                                                                                                                                                                                                                                                           | Nothing is announced about a write that may or may not have landed.                                                           |
+| Network lost mid-request                                    | Silent. Nothing announces going offline, because nothing detects it.                                                                                                                                                                                                                                                                                                                                                   | The failure toast is announced. It says the feature failed, never that the connection did.                                    |
+| The request fails or times out                              | A page that falls back to an empty state announces nothing. A page that shows the shared error bar announces it assertively.                                                                                                                                                                                                                                                                                           | One toast, announced once. A second failure replaces the first and the first is never heard.                                  |
+| The session expires                                         | Silent.                                                                                                                                                                                                                                                                                                                                                                                                                | The refused write's toast is announced with the feature's ordinary wording. Nothing says the session ended.                   |
+| The same record changed in another tab, or by another user  | Silent everywhere. On live scoring the score moves with no announcement; elsewhere nothing arrives at all.                                                                                                                                                                                                                                                                                                             | Silent.                                                                                                                       |
+| Browser autofill or a password manager writes into the form | A filled field reads correctly, because every field has a real label. The contact form's hidden bot trap is removed from tab order and hidden from readers, so it is never reached by keyboard or voice.                                                                                                                                                                                                               | Same. Validation still does not run until submit.                                                                             |
+| The window loses focus                                      | Nothing.                                                                                                                                                                                                                                                                                                                                                                                                               | Returning refetches stale data and numbers change with no announcement — the single most common silent change in the product. |
 
 After any interrupt, nothing is announced about what was lost. The app has one
 live region for route names and nothing that reports state.
@@ -358,7 +358,7 @@ or sent anywhere.
 - Resolved: **the hamburger menu's keyboard and screen-reader behaviour.** It was
   treated as a bug
   ([B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog)). It is fixed as
-  a *disclosure* rather than the dialog that entry proposed: the panel expands in
+  a _disclosure_ rather than the dialog that entry proposed: the panel expands in
   place and covers nothing, so `aria-expanded` with `aria-controls` is the right
   pattern and a focus trap is not. Still read from the component rather than
   tried with a reader.
@@ -381,7 +381,7 @@ or sent anywhere.
 - Resolved: **pages without a first-level heading, and two pages with a second
   main landmark.** Both are covered by the scan described under
   [Landmarks and headings](#landmarks-and-headings).
-- Not confirmed by hand: whether heading *levels* run in order within a page.
+- Not confirmed by hand: whether heading _levels_ run in order within a page.
   Several pages skip from h1 to h3; the scan deliberately leaves that rule out
   until they are fixed.
 - Not confirmed by hand: contrast ratios beyond the muted text, the in-text

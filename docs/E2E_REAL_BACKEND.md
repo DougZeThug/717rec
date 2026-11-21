@@ -15,13 +15,13 @@ Use a dedicated Supabase branch or a throwaway project — **never** production
 Add these to GitHub Actions repo secrets (and to your local `.env.e2e` when
 running locally):
 
-| Name | Purpose |
-| --- | --- |
-| `E2E_SUPABASE_URL` | Staging project URL |
-| `E2E_SUPABASE_ANON_KEY` | Publishable / anon key (baked into the browser build) |
+| Name                            | Purpose                                                                            |
+| ------------------------------- | ---------------------------------------------------------------------------------- |
+| `E2E_SUPABASE_URL`              | Staging project URL                                                                |
+| `E2E_SUPABASE_ANON_KEY`         | Publishable / anon key (baked into the browser build)                              |
 | `E2E_SUPABASE_SERVICE_ROLE_KEY` | Service role — used **only** by the Node seed helper, never shipped to the browser |
-| `E2E_TEST_USER_EMAIL` | Login account |
-| `E2E_TEST_USER_PASSWORD` | Login password. Rotated onto the user on each run. |
+| `E2E_TEST_USER_EMAIL`           | Login account                                                                      |
+| `E2E_TEST_USER_PASSWORD`        | Login password. Rotated onto the user on each run.                                 |
 
 When wired into CI (see **CI status** below), the `e2e-real-backend` job is
 designed to fail fast: its first step (`Require E2E secrets`) checks all five

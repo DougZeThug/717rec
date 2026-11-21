@@ -17,6 +17,7 @@ Is this a button/action state?
 ## Loading State Types
 
 ### 1. Full Page Loading
+
 Use a full-page Skeleton component (e.g., `CardSkeleton` with appropriate sizing) for page-level loading.
 
 ```tsx
@@ -30,13 +31,16 @@ import { LoadingState } from "@/components/ui/loading-state";
 ```
 
 ### 2. Content Skeleton Loaders
+
 Use content-shaped skeleton components for data sections and lists. These provide better perceived performance by showing the structure of upcoming content.
 
 **Available Skeleton Components:**
+
 - `ShimmerSkeleton` - Base skeleton with shimmer animation
 - `AvatarSkeleton` - Circular avatar placeholder
 
 **Component-specific Skeletons:**
+
 - `FinalStandingsSkeleton` - Playoff final standings
 - `SeasonAccordionSkeleton` - History season content
 - `SignupsListSkeleton` - Blind draw signups table
@@ -46,15 +50,16 @@ Use content-shaped skeleton components for data sections and lists. These provid
 - `TeamListSkeleton` - Teams list/grid
 
 ### 3. Button/Action Loading
+
 Use `Loader2` from lucide-react for inline loading states during user actions.
 
 ```tsx
-import { Loader2 } from "lucide-react";
+import { Loader2 } from 'lucide-react';
 
 <Button disabled={isLoading}>
   {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
   Save
-</Button>
+</Button>;
 ```
 
 ## Best Practices
@@ -68,18 +73,21 @@ import { Loader2 } from "lucide-react";
 ## Examples
 
 ### ❌ Don't
+
 ```tsx
 if (isLoading) return <div>Loading...</div>;
 ```
 
 ### ✅ Do
+
 ```tsx
-import FinalStandingsSkeleton from "./FinalStandingsSkeleton";
+import FinalStandingsSkeleton from './FinalStandingsSkeleton';
 
 if (isLoading) return <FinalStandingsSkeleton />;
 ```
 
 ### ❌ Don't (for data sections)
+
 ```tsx
 if (isLoading) {
   return (
@@ -91,8 +99,9 @@ if (isLoading) {
 ```
 
 ### ✅ Do
+
 ```tsx
-import MatchesTableSkeleton from "./MatchesTableSkeleton";
+import MatchesTableSkeleton from './MatchesTableSkeleton';
 
 if (isLoading) return <MatchesTableSkeleton />;
 ```

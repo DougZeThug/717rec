@@ -13,6 +13,7 @@ The auto-scheduler system supports two scheduling modes to accommodate different
 **Algorithm:** Greedy Back-to-Back Scheduler (`src/utils/scheduling/greedy/`)
 
 **Features:**
+
 - Each team gets exactly 2 matches in consecutive slots (S1 and S2)
 - Fast O(N²) greedy selection algorithm
 - Deterministic output (same input = same result every time)
@@ -22,18 +23,21 @@ The auto-scheduler system supports two scheduling modes to accommodate different
 
 **Odd Team Handling:**
 When there's an odd number of teams:
+
 1. **Bye1** sits out Slot 1, plays in Slot 2 + Slot 3
 2. **Bye2** sits out Slot 2, plays in Slot 1 + Slot 3
 3. Slot 3 is created specifically for Bye1 vs Bye2
 4. All other teams play in Slot 1 + Slot 2
 
 **Constraints:**
+
 - Maximum tier gap: 1 (prevents T1 vs T3+ matchups)
 - No season rematches (teams that played before)
 - No session rematches (can't play same opponent twice tonight)
 - Division priority: Same division > Adjacent tier > Never extreme gaps
 
 **Performance:**
+
 - Generation time: <100ms for 20 teams
 - Predictable and debuggable
 - No quality optimization needed
@@ -49,6 +53,7 @@ When there's an odd number of teams:
 **Algorithm:** Edmonds' Blossom Algorithm (`src/utils/autoSchedule/blossom/`)
 
 **Features:**
+
 - Optimal maximum weight matching
 - Compatibility score by division: 10 for the same division, 5 for neighbouring divisions, 0 for Competitive against Recreational (blocked)
 - With "Prioritize Match Quality" ON, a small skill term is taken off that score (see Quality Optimization)
@@ -62,6 +67,7 @@ This works in Standard mode only. Dual Match Mode does not read the weights.
 The switch is ON when the screen sends weights. Both screens send the same four
 fixed numbers. No screen lets the admin change them. They are not the Power Score
 weights (default 40/45/15) and not the division weights.
+
 - `powerScoreWeight`: 5 - Balance team power scores
 - `sosWeight`: 3 - Consider strength of schedule
 - `recordWeight`: 3.5 - Match teams with similar records
@@ -76,6 +82,7 @@ screen sends the same four from
 type in `src/types/autoSchedule.ts:22` still has an optional one).
 
 How the weights are used (`src/hooks/scheduling/utils/standardPairing.ts`):
+
 - **Switch OFF** (no weights): every pair is scored by
   `calculateDivisionOnlyCompatibility`: 10 for the same division, 5 for
   neighbouring divisions, 0 for Competitive against Recreational. Nothing extra is
@@ -147,11 +154,13 @@ The old scorers `calculateTeamCompatibility` and
 `generateDualBlockPairings` that called them, were removed. Nothing called them.
 
 **Constraints:**
+
 - Configurable rematch avoidance
 - Flexible tier gap limits
 - Compatibility score maximization
 
 **Performance:**
+
 - Generation time: O(N³) - slower but optimal
 - Non-deterministic (can vary slightly between runs)
 - Best for quality-focused scheduling
@@ -165,15 +174,18 @@ The old scorers `calculateTeamCompatibility` and
 ### Algorithm Settings (UI)
 
 **Dual Match Mode:**
+
 - Toggles between greedy (ON) and Blossom (OFF) schedulers
 - Hides the "Prioritize Match Quality" switch while Dual Match Mode is ON (Dual does not read the weights)
 
 **Avoid Rematches:**
+
 - Both modes: Prevents scheduling teams that played in current season
 - Greedy: Strict enforcement (never allows rematches)
 - Blossom: Soft constraint (prefers non-rematches but may allow if needed)
 
 **Prioritize Match Quality:**
+
 - Only available in Standard Mode (Blossom)
 - Hidden when Dual Match Mode is enabled
 - Sends four fixed weights. Standard mode reads them (see Quality Optimization). Dual Match Mode does not
@@ -185,17 +197,21 @@ The old scorers `calculateTeamCompatibility` and
 ### Core Files
 
 **Greedy Scheduler:**
+
 - `src/utils/scheduling/greedy/` - Main algorithm
 - `src/utils/scheduling/__tests__/greedyBackToBackScheduler.test.ts` - Unit tests
 
 **Blossom Scheduler:**
+
 - `src/utils/autoSchedule/blossom/` - Main algorithm
 
 **Integration:**
+
 - `src/hooks/scheduling/usePairingGenerator.ts` - Hook that switches between algorithms
 - `src/hooks/useAutoSchedule/` - Higher-level scheduling hooks
 
 **UI Components:**
+
 - `src/components/admin/auto-schedule/DateSettingsPanel.tsx` - Date & settings panel
 - `src/components/admin/batch-matches/auto-schedule/components/AlgorithmSettings.tsx` - Batch settings
 
@@ -255,6 +271,7 @@ from being built or saved against the wrong day:
 Run tests: `npm test greedyBackToBackScheduler`
 
 **Coverage:**
+
 - Even team counts (10 teams → 5+5 matches)
 - Odd team counts (9 teams → 4+4+1 matches)
 - History constraints (no rematches)
@@ -267,6 +284,7 @@ Run tests: `npm test greedyBackToBackScheduler`
 Run tests: `npm test blossomPairingAlgorithm`
 
 **Coverage:**
+
 - Compatibility scoring (division only)
 - Rematch avoidance
 - Unmatched team handling
@@ -280,6 +298,7 @@ generator, and the seeded ON-versus-OFF grid.
 ## Migration Notes
 
 The greedy scheduler was introduced to handle the specific back-to-back scheduling requirement:
+
 - Replaced complex dual-block logic with simple greedy algorithm
 - Maintained Blossom for standard single-block scheduling
 - UI updated to hide the quality switch in dual match mode (Dual does not read the quality weights)
@@ -293,6 +312,7 @@ The greedy scheduler was introduced to handle the specific back-to-back scheduli
 ## Future Enhancements
 
 Possible improvements:
+
 1. Add configurable tier gap limits to UI
 2. Support for more than 2 consecutive matches
 3. Advanced bye team selection strategies

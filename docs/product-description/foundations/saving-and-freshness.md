@@ -59,13 +59,13 @@ and no exponential backoff on ordinary reads.
 **A few things do poll**, on a timer, and they are the exception rather than the
 rule:
 
-| What | How often |
-| --- | --- |
-| The timeslots for a chosen date, on the schedule and on the admin timeslots page | every 60 seconds |
-| Team join requests, for an admin | every 30 seconds |
-| The league's operational health panel | every 30 and 60 seconds |
-| The daily traffic figures | every 5 minutes |
-| The published recap page, while a viewer holds it open | every 5 minutes |
+| What                                                                             | How often               |
+| -------------------------------------------------------------------------------- | ----------------------- |
+| The timeslots for a chosen date, on the schedule and on the admin timeslots page | every 60 seconds        |
+| Team join requests, for an admin                                                 | every 30 seconds        |
+| The league's operational health panel                                            | every 30 and 60 seconds |
+| The daily traffic figures                                                        | every 5 minutes         |
+| The published recap page, while a viewer holds it open                           | every 5 minutes         |
 
 Each of these stops polling while the tab is hidden or the device is offline, and
 resumes on return. Nothing else in the app re-fetches on a timer.
@@ -107,14 +107,14 @@ the same match stay in step, and lets anyone else watch.
 
 It is not the only one. These also subscribe:
 
-| Where | What arrives |
-| --- | --- |
+| Where                                                               | What arrives                                 |
+| ------------------------------------------------------------------- | -------------------------------------------- |
 | A match's comments and reactions, wherever a match card is expanded | new comments and reactions from other people |
-| The message board | new messages and reactions |
-| The playoffs bracket | bracket changes as results land |
-| Notifications | new notifications |
-| Contact requests, for an admin | new requests |
-| The operational health panel, for an admin | health changes |
+| The message board                                                   | new messages and reactions                   |
+| The playoffs bracket                                                | bracket changes as results land              |
+| Notifications                                                       | new notifications                            |
+| Contact requests, for an admin                                      | new requests                                 |
+| The operational health panel, for an admin                          | health changes                               |
 
 Every one of them uses the same connection handling described below.
 
@@ -165,28 +165,28 @@ moment they press one.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | No effect on caching. A role does change which queries run, so an admin's page fetches more. | Signing out does not clear the cache of what was already read. |
-| The record's state | No effect on caching. | No effect. |
-| The season's state | Season data is cached for ten minutes rather than five. | A season activated elsewhere does not reach this browser for up to ten minutes. |
-| Viewport | No effect. | No effect. |
-| Keys the app honours | No effect. | No effect. |
+| Modifier             | Set at arrival                                                                               | Changed while editing                                                           |
+| -------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| The user's role      | No effect on caching. A role does change which queries run, so an admin's page fetches more. | Signing out does not clear the cache of what was already read.                  |
+| The record's state   | No effect on caching.                                                                        | No effect.                                                                      |
+| The season's state   | Season data is cached for ten minutes rather than five.                                      | A season activated elsewhere does not reach this browser for up to ten minutes. |
+| Viewport             | No effect.                                                                                   | No effect.                                                                      |
+| Keys the app honours | No effect.                                                                                   | No effect.                                                                      |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect on the cache. | Does not abort a request in flight. No write in the app can be cancelled once sent. |
-| In-app navigation away, or switching tab within the page | The cache is kept; returning is instant. | **The request still completes.** The write lands, the toast is never seen, and the cache invalidation still runs — so the change appears next time the user looks, with no explanation of when it happened. |
-| Browser back or forward | Cache kept. | As above. |
-| Reload, or the tab closed | **The whole cache is lost.** Every page re-fetches from scratch. | A sent request still lands. An unsent one is gone. Nothing tells the user which. |
-| Network lost mid-request | Nothing to lose. | The request fails and is retried once for a read, not at all for a write. Nothing is queued. |
-| The request fails or times out | A failed read is retried once, then the page shows its own empty or error state. | A failed write reports through that feature's message and rolls back anything optimistic. |
-| The session expires | Reads of public data still work. | Writes fail. The cache still holds data read while signed in, so the app keeps *looking* signed in. |
-| The same record changed in another tab, or by another user | On live scoring the change arrives. Everywhere else it does not, and the user keeps the old value. | Same. Two people editing the same thing outside live scoring will overwrite each other with no warning and no sign that it happened. |
-| Browser autofill or a password manager writes into the form | No effect on the cache. | No effect on the cache. |
-| The window loses focus | Polling stops while the tab is hidden. | **Returning refetches anything past its fresh window**, and restarts the pollers. A number can change under the user's cursor the moment they come back to the tab. |
+| Event                                                       | Before the first edit                                                                              | While editing or submitting                                                                                                                                                                                 |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect on the cache.                                                                            | Does not abort a request in flight. No write in the app can be cancelled once sent.                                                                                                                         |
+| In-app navigation away, or switching tab within the page    | The cache is kept; returning is instant.                                                           | **The request still completes.** The write lands, the toast is never seen, and the cache invalidation still runs — so the change appears next time the user looks, with no explanation of when it happened. |
+| Browser back or forward                                     | Cache kept.                                                                                        | As above.                                                                                                                                                                                                   |
+| Reload, or the tab closed                                   | **The whole cache is lost.** Every page re-fetches from scratch.                                   | A sent request still lands. An unsent one is gone. Nothing tells the user which.                                                                                                                            |
+| Network lost mid-request                                    | Nothing to lose.                                                                                   | The request fails and is retried once for a read, not at all for a write. Nothing is queued.                                                                                                                |
+| The request fails or times out                              | A failed read is retried once, then the page shows its own empty or error state.                   | A failed write reports through that feature's message and rolls back anything optimistic.                                                                                                                   |
+| The session expires                                         | Reads of public data still work.                                                                   | Writes fail. The cache still holds data read while signed in, so the app keeps _looking_ signed in.                                                                                                         |
+| The same record changed in another tab, or by another user  | On live scoring the change arrives. Everywhere else it does not, and the user keeps the old value. | Same. Two people editing the same thing outside live scoring will overwrite each other with no warning and no sign that it happened.                                                                        |
+| Browser autofill or a password manager writes into the form | No effect on the cache.                                                                            | No effect on the cache.                                                                                                                                                                                     |
+| The window loses focus                                      | Polling stops while the tab is hidden.                                                             | **Returning refetches anything past its fresh window**, and restarts the pollers. A number can change under the user's cursor the moment they come back to the tab.                                         |
 
 After an interrupt, whatever reached the database is what happened. The app makes
 no attempt to reconcile a user's screen with a write it never saw the answer to.

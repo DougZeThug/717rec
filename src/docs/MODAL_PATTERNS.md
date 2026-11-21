@@ -3,22 +3,26 @@
 ## Component Selection
 
 ### Use ResponsiveDialog for:
+
 - Any dialog with form content
 - Any dialog with lists or complex content
 - Any dialog that users will interact with on mobile
 
 ResponsiveDialog automatically:
+
 - Shows as centered Dialog on desktop
 - Shows as bottom Drawer on mobile (swipe to dismiss)
 - Provides better touch targets and scrolling on mobile
 - Caps desktop dialogs at 90% of the screen height and scrolls them when content is taller
 
 ### Use AlertDialog for:
+
 - Confirmation dialogs (delete, archive, etc.)
 - Simple yes/no decisions
 - Short content that fits on mobile screens
 
 ### Use Sheet for:
+
 - Side panels (navigation, settings)
 - Content that slides in from edge
 
@@ -32,8 +36,8 @@ import {
   ResponsiveDialogTitle,
   ResponsiveDialogDescription,
   ResponsiveDialogFooter,
-} from "@/components/ui/responsive-dialog";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/responsive-dialog';
+import { Button } from '@/components/ui/button';
 
 const MyModal = ({ open, onOpenChange }) => {
   return (
@@ -47,9 +51,7 @@ const MyModal = ({ open, onOpenChange }) => {
         </ResponsiveDialogHeader>
 
         {/* Modal content goes here */}
-        <div className="space-y-4">
-          {/* Form fields, lists, etc. */}
-        </div>
+        <div className="space-y-4">{/* Form fields, lists, etc. */}</div>
 
         <ResponsiveDialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
@@ -66,9 +68,9 @@ const MyModal = ({ open, onOpenChange }) => {
 ## ResponsiveDialog with Form
 
 ```tsx
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -76,17 +78,24 @@ import {
   ResponsiveDialogTitle,
   ResponsiveDialogDescription,
   ResponsiveDialogFooter,
-} from "@/components/ui/responsive-dialog";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+} from '@/components/ui/responsive-dialog';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 
 const schema = z.object({
-  name: z.string().min(1, "Required"),
+  name: z.string().min(1, 'Required'),
 });
 
 const FormModal = ({ open, onOpenChange }) => {
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { name: "" },
+    defaultValues: { name: '' },
   });
 
   const onSubmit = async (data) => {
@@ -99,9 +108,7 @@ const FormModal = ({ open, onOpenChange }) => {
       <ResponsiveDialogContent>
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Add Item</ResponsiveDialogTitle>
-          <ResponsiveDialogDescription>
-            Fill in the details below.
-          </ResponsiveDialogDescription>
+          <ResponsiveDialogDescription>Fill in the details below.</ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
         <Form {...form}>
@@ -125,7 +132,7 @@ const FormModal = ({ open, onOpenChange }) => {
                 Cancel
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Saving..." : "Save"}
+                {form.formState.isSubmitting ? 'Saving...' : 'Save'}
               </Button>
             </ResponsiveDialogFooter>
           </form>
@@ -148,7 +155,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 const DeleteConfirmation = ({ open, onOpenChange, onConfirm }) => {
   return (
@@ -176,7 +183,14 @@ When migrating from Dialog to ResponsiveDialog:
 
 ```tsx
 // Before
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 <Dialog open={open} onOpenChange={onOpenChange}>
   <DialogContent>
@@ -185,14 +199,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
       <DialogDescription>Description</DialogDescription>
     </DialogHeader>
     {/* content */}
-    <DialogFooter>
-      {/* buttons */}
-    </DialogFooter>
+    <DialogFooter>{/* buttons */}</DialogFooter>
   </DialogContent>
-</Dialog>
+</Dialog>;
 
 // After
-import { ResponsiveDialog, ResponsiveDialogContent, ResponsiveDialogHeader, ResponsiveDialogTitle, ResponsiveDialogDescription, ResponsiveDialogFooter } from "@/components/ui/responsive-dialog";
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+} from '@/components/ui/responsive-dialog';
 
 <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
   <ResponsiveDialogContent>
@@ -201,11 +220,9 @@ import { ResponsiveDialog, ResponsiveDialogContent, ResponsiveDialogHeader, Resp
       <ResponsiveDialogDescription>Description</ResponsiveDialogDescription>
     </ResponsiveDialogHeader>
     {/* content */}
-    <ResponsiveDialogFooter>
-      {/* buttons */}
-    </ResponsiveDialogFooter>
+    <ResponsiveDialogFooter>{/* buttons */}</ResponsiveDialogFooter>
   </ResponsiveDialogContent>
-</ResponsiveDialog>
+</ResponsiveDialog>;
 ```
 
 The migration is mostly a 1:1 replacement of component names.
@@ -264,6 +281,7 @@ two-field picker that fits at 320px.
 ### ResponsiveDialog on a phone
 
 ResponsiveDialog uses a Drawer on mobile which:
+
 - Takes up to 90% of viewport height
 - Scrolls content within 80% viewport height
 - Has built-in padding (px-4 pb-4)
@@ -286,6 +304,7 @@ the form cannot throw the edits away. On desktop it is the centred pop-up, and
 Escape and a click outside still close it with no question.
 
 Ensure your modal content:
+
 - Uses proper spacing (space-y-4 for vertical rhythm)
 - Has reasonable max-heights for scrollable lists
 - Doesn't have fixed heights that break on mobile

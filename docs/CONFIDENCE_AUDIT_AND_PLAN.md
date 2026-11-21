@@ -11,7 +11,7 @@ independently reality-checked._
 **Confidence score: 86 / 100 — "high / production-grade."**
 
 This is a genuinely well-built, well-maintained webapp. Every engineering
-fundamental I could measure is not just *claimed* to be good — it *is* good when
+fundamental I could measure is not just _claimed_ to be good — it _is_ good when
 you actually run it. For a league-management app owned by a non-coder and built
 largely through Lovable, this is well above the norm.
 
@@ -29,37 +29,37 @@ gaps — not a rebuild.
 
 ## How the score was measured (ground truth, run on 2026-07-01)
 
-| Check | Command | Result |
-|---|---|---|
-| Production build | `npm run build` | ✅ Pass — 41s, main bundle 127 KB gzip, charts lazy-loaded |
-| Type checking | `npm run typecheck` | ✅ Pass — full **strict** TypeScript |
-| Linting | `npm run lint` | ✅ Pass — **zero** warnings or errors |
-| Test suite | `npm run test:coverage` | ✅ **2,511 tests across 316 files, all passing** |
-| Coverage | (same run) | 50% lines overall; **services ~72%, utils ~67%**, UI components/pages low |
-| Prod dependency security | `npm audit --omit=dev` | ✅ **Clean** (3 advisories exist, all dev/build-only) |
-| Architecture discipline | grep sweep | 0 bare `select('*')`, **1** `any`, 0 `@ts-ignore`, 0 `TODO/FIXME` |
-| Data layer | file review | 313 migrations, 284 RLS policies, 28 RLS-enabled tables |
-| Backend functions | file review | Edge functions with shared auth + rate-limiting + security headers |
-| End-to-end tests | `e2e/` | 7 Playwright specs on critical flows (score submission, admin, playoffs, a11y, real-backend golden path) |
-| CI gates | `.github/workflows` | 12 workflows: test, lint/typecheck, coverage floor, a11y (axe), Lighthouse, bundle size, e2e, secret scan, security audit, Supabase schema CI |
+| Check                    | Command                 | Result                                                                                                                                        |
+| ------------------------ | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Production build         | `npm run build`         | ✅ Pass — 41s, main bundle 127 KB gzip, charts lazy-loaded                                                                                    |
+| Type checking            | `npm run typecheck`     | ✅ Pass — full **strict** TypeScript                                                                                                          |
+| Linting                  | `npm run lint`          | ✅ Pass — **zero** warnings or errors                                                                                                         |
+| Test suite               | `npm run test:coverage` | ✅ **2,511 tests across 316 files, all passing**                                                                                              |
+| Coverage                 | (same run)              | 50% lines overall; **services ~72%, utils ~67%**, UI components/pages low                                                                     |
+| Prod dependency security | `npm audit --omit=dev`  | ✅ **Clean** (3 advisories exist, all dev/build-only)                                                                                         |
+| Architecture discipline  | grep sweep              | 0 bare `select('*')`, **1** `any`, 0 `@ts-ignore`, 0 `TODO/FIXME`                                                                             |
+| Data layer               | file review             | 313 migrations, 284 RLS policies, 28 RLS-enabled tables                                                                                       |
+| Backend functions        | file review             | Edge functions with shared auth + rate-limiting + security headers                                                                            |
+| End-to-end tests         | `e2e/`                  | 7 Playwright specs on critical flows (score submission, admin, playoffs, a11y, real-backend golden path)                                      |
+| CI gates                 | `.github/workflows`     | 12 workflows: test, lint/typecheck, coverage floor, a11y (axe), Lighthouse, bundle size, e2e, secret scan, security audit, Supabase schema CI |
 
 ---
 
 ## Dimension scorecard
 
-| Dimension | Grade | One-line verdict |
-|---|:---:|---|
-| Architecture & separation of concerns | 88 | Its own rules are followed with near-total discipline |
-| Type safety | 88 | Strict TS + CI-enforced no-`any`; casts are narrow & at library edges |
-| Security | 88 | RLS-first, hardened edge functions, no dangerous DOM sinks |
-| Code health & maintainability | 88 | Near-zero tech-debt markers; consistent patterns |
-| Data layer & Supabase correctness | 83 | Migrations run against real Postgres in CI; a few small nits |
-| UX polish & product completeness | 83 | Skeletons, empty states, mobile safe-areas; a few inconsistencies |
-| Accessibility | 82 | axe CI gate, correct primitives, universal alt text; SPA-nav gaps |
-| Performance & bundle | 82 | Mature bundle + fetch strategy; bounded realtime fan-out |
-| Test coverage & quality | 78 | Excellent service/util tests; UI-component layer is thin |
-| Error handling & resilience | 78 | Strong infra; "errors shown as empty screens" in a few read paths |
-| **Average** | **83.8** | Every dimension lands "positive" or "strongly positive" |
+| Dimension                             |  Grade   | One-line verdict                                                      |
+| ------------------------------------- | :------: | --------------------------------------------------------------------- |
+| Architecture & separation of concerns |    88    | Its own rules are followed with near-total discipline                 |
+| Type safety                           |    88    | Strict TS + CI-enforced no-`any`; casts are narrow & at library edges |
+| Security                              |    88    | RLS-first, hardened edge functions, no dangerous DOM sinks            |
+| Code health & maintainability         |    88    | Near-zero tech-debt markers; consistent patterns                      |
+| Data layer & Supabase correctness     |    83    | Migrations run against real Postgres in CI; a few small nits          |
+| UX polish & product completeness      |    83    | Skeletons, empty states, mobile safe-areas; a few inconsistencies     |
+| Accessibility                         |    82    | axe CI gate, correct primitives, universal alt text; SPA-nav gaps     |
+| Performance & bundle                  |    82    | Mature bundle + fetch strategy; bounded realtime fan-out              |
+| Test coverage & quality               |    78    | Excellent service/util tests; UI-component layer is thin              |
+| Error handling & resilience           |    78    | Strong infra; "errors shown as empty screens" in a few read paths     |
+| **Average**                           | **83.8** | Every dimension lands "positive" or "strongly positive"               |
 
 ---
 
@@ -117,35 +117,39 @@ priced in). Think of them as "how much more would I trust this app afterward,"
 not exact math.
 
 ### Tier 1 — Reliability & trust · **86 → ~90** · small effort, high visibility
+
 The best return on investment. Mostly small, user-facing fixes.
+
 - **Stop disguising errors as empty states.** Surface `error` + a retry button
-  in the teams list, homepage Top Teams, Insights, rankings, and Compare.  **(~+3–4)**
+  in the teams list, homepage Top Teams, Insights, rankings, and Compare. **(~+3–4)**
 - **Add web security headers** (CSP, X-Frame-Options, X-Content-Type-Options,
-  Referrer-Policy, HSTS) to the served app.  **(~+2)**
-- **Give the homepage a real page title & meta description** (SEO/shareability).  **(~+1)**
+  Referrer-Policy, HSTS) to the served app. **(~+2)**
+- **Give the homepage a real page title & meta description** (SEO/shareability). **(~+1)**
 - **Fix the silent 1,000-row truncation** on the admin mass-score screen (scope
-  by season or paginate) and add an explicit sort to the paginator.  **(~+1–2)**
+  by season or paginate) and add an explicit sort to the paginator. **(~+1–2)**
 
 ### Tier 2 — Depth & accessibility · **~90 → ~92** · medium effort
+
 - **Add tests for the untested stateful UI folders** (notifications, timeslots,
   insights, message-board & schedule interactions) plus the global
-  ErrorBoundary and the 404 page.  **(~+3)**
+  ErrorBoundary and the 404 page. **(~+3)**
 - **Announce route changes & manage focus** on navigation for keyboard/screen-
-  reader users.  **(~+2)**
+  reader users. **(~+2)**
 - **Harden realtime**: handle channel errors/reconnects; fix a channel-cleanup
-  leak in `useBracketCompletion`.  **(~+1)**
+  leak in `useBracketCompletion`. **(~+1)**
 
 ### Tier 3 — Consistency & polish · **~92 → ~94** · low urgency
+
 - **Lock the good state in with lint** so future changes can't regress it
   (forbid direct Supabase client imports outside services; forbid wildcard
-  `select`).  **(~+1)**
+  `select`). **(~+1)**
 - **Replace base-table `*` join-selects with explicit columns** and add explicit
-  return types to services.  **(~+1)**
+  return types to services. **(~+1)**
 - **Make the last error-swallowing services throw** (e.g. `RankingTrendsService`)
-  and delete dead code (`useErrorHandler`, a leftover compat hook).  **(~+1)**
+  and delete dead code (`useErrorHandler`, a leftover compat hook). **(~+1)**
 - **Polish pass**: memoize hot list rows, extend virtualization to more growable
   lists, standardize skeleton loaders, add accessible names to icon-only admin
-  buttons.  **(~+1)**
+  buttons. **(~+1)**
 
 ---
 
@@ -157,28 +161,31 @@ needs judgment. Each PR is intentionally small and independently shippable
 (matches the "small, safe diffs" house rule).
 
 ### Phase 1 — Reliability & trust (Tier 1)
-| PR | Tool | Scope |
-|---|---|---|
-| 1 | **Claude Code** | Propagate `error` from `useTeams` / `useTeamRankings` / `useLeagueInsights`; render a shared retryable error state in `TeamList`, homepage `TopTeams`, `TeamsContainer`, `LeagueInsightsContainer`, `Compare`. |
-| 2 | **Claude Code** | Add HTTP security headers to the served SPA (host `_headers` / `wrangler` / Lovable publish config) + a smoke test. |
-| 3 | **Lovable** | Add `SeoHead` (title + meta description + OG tags) to the homepage `Index` page. |
-| 4 | **Claude Code** | Scope or paginate the admin mass-score match query (`fetchMatchesWithTeams` then; the screen now uses `fetchMatchesForAdmin`) to remove the 1,000-row silent cap; add explicit `ORDER BY` to the range paginator. |
+
+| PR  | Tool            | Scope                                                                                                                                                                                                             |
+| --- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Claude Code** | Propagate `error` from `useTeams` / `useTeamRankings` / `useLeagueInsights`; render a shared retryable error state in `TeamList`, homepage `TopTeams`, `TeamsContainer`, `LeagueInsightsContainer`, `Compare`.    |
+| 2   | **Claude Code** | Add HTTP security headers to the served SPA (host `_headers` / `wrangler` / Lovable publish config) + a smoke test.                                                                                               |
+| 3   | **Lovable**     | Add `SeoHead` (title + meta description + OG tags) to the homepage `Index` page.                                                                                                                                  |
+| 4   | **Claude Code** | Scope or paginate the admin mass-score match query (`fetchMatchesWithTeams` then; the screen now uses `fetchMatchesForAdmin`) to remove the 1,000-row silent cap; add explicit `ORDER BY` to the range paginator. |
 
 ### Phase 2 — Depth & accessibility (Tier 2)
-| PR | Tool | Scope |
-|---|---|---|
-| 5 | **Codex** | Add render + interaction tests for untested stateful component folders (notifications, timeslots, insights, message-board, schedule). |
-| 6 | **Codex** | Add tests for the global `ErrorBoundary` and the `NotFound` (404) page. |
-| 7 | **Claude Code** | On route change, move focus to `<main>` and announce the new page via an `aria-live` region. |
-| 8 | **Claude Code** | Add channel error/reconnect handling to realtime hooks; fix the `useBracketCompletion` cleanup to call `removeChannel`. |
+
+| PR  | Tool            | Scope                                                                                                                                 |
+| --- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 5   | **Codex**       | Add render + interaction tests for untested stateful component folders (notifications, timeslots, insights, message-board, schedule). |
+| 6   | **Codex**       | Add tests for the global `ErrorBoundary` and the `NotFound` (404) page.                                                               |
+| 7   | **Claude Code** | On route change, move focus to `<main>` and announce the new page via an `aria-live` region.                                          |
+| 8   | **Claude Code** | Add channel error/reconnect handling to realtime hooks; fix the `useBracketCompletion` cleanup to call `removeChannel`.               |
 
 ### Phase 3 — Consistency & polish (Tier 3)
-| PR | Tool | Scope |
-|---|---|---|
-| 9 | **Codex** | ESLint `no-restricted-imports` to forbid `@/integrations/supabase/client` outside `src/services` (+ allowed exceptions); rule flagging wildcard `select`; enable `ban-ts-comment`. |
-| 10 | **Codex** | Replace base-table `*` in join-selects with explicit columns (~4–5 queries); add explicit return types to service functions. |
-| 11 | **Claude Code** | Route `RankingTrendsService` (and any peers) through `handleDatabaseError` so they throw; delete unused `useErrorHandler` and the leftover compat hook. |
-| 12 | **Codex / Lovable** | Memoize hot list rows; extend virtualization to more growable lists; standardize skeleton loaders; add `aria-label` to icon-only admin buttons. |
+
+| PR  | Tool                | Scope                                                                                                                                                                              |
+| --- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 9   | **Codex**           | ESLint `no-restricted-imports` to forbid `@/integrations/supabase/client` outside `src/services` (+ allowed exceptions); rule flagging wildcard `select`; enable `ban-ts-comment`. |
+| 10  | **Codex**           | Replace base-table `*` in join-selects with explicit columns (~4–5 queries); add explicit return types to service functions.                                                       |
+| 11  | **Claude Code**     | Route `RankingTrendsService` (and any peers) through `handleDatabaseError` so they throw; delete unused `useErrorHandler` and the leftover compat hook.                            |
+| 12  | **Codex / Lovable** | Memoize hot list rows; extend virtualization to more growable lists; standardize skeleton loaders; add `aria-label` to icon-only admin buttons.                                    |
 
 ---
 

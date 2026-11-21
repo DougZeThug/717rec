@@ -4,12 +4,12 @@
 
 Update 4 dev packages to their new versions. No app code changes.
 
-| Package | From | To |
-|---|---|---|
-| @types/node | ^26.6.2 | ^26.6.4 |
+| Package             | From           | To             |
+| ------------------- | -------------- | -------------- |
+| @types/node         | ^26.6.2        | ^26.6.4        |
 | @vitest/coverage-v8 | 5.0.2 (pinned) | 5.0.3 (pinned) |
-| typescript-eslint | ^8.70.1 | ^8.71.0 |
-| vitest | 5.0.2 (pinned) | 5.0.3 (pinned) |
+| typescript-eslint   | ^8.70.1        | ^8.71.0        |
+| vitest              | 5.0.2 (pinned) | 5.0.3 (pinned) |
 
 Vitest and @vitest/coverage-v8 stay pinned to the same exact version — coverage needs the matching Vitest.
 

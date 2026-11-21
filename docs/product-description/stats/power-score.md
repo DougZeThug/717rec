@@ -116,11 +116,11 @@ Power score = weighted match win rate × 40
             + strength of schedule     × 45
 ```
 
-| Term | What it is |
-| --- | --- |
+| Term                        | What it is                                                                                                                                                                                                                                                                |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Weighted match win rate** | Wins divided by wins plus losses, with every match weighted by the opponent's division weight. A tie is left out of both, so it neither helps nor hurts this term. Winning every match reads 1.0 whoever was played, so this term rewards winning, not opponent strength. |
-| **Weighted game win rate** | The same shape, counted in games rather than matches. A tied match still counts here: its games were played, so a 1–1 tie adds one game won and one game lost. |
-| **Strength of schedule** | The average division weight of the opponents faced, held between 0.1 and 1.0. **This is the term that rewards a hard schedule.** It is not the average power score of opponents, which is what most people assume. |
+| **Weighted game win rate**  | The same shape, counted in games rather than matches. A tied match still counts here: its games were played, so a 1–1 tie adds one game won and one game lost.                                                                                                            |
+| **Strength of schedule**    | The average division weight of the opponents faced, held between 0.1 and 1.0. **This is the term that rewards a hard schedule.** It is not the average power score of opponents, which is what most people assume.                                                        |
 
 Three consequences follow, and all three surprise people:
 
@@ -179,11 +179,11 @@ number of pinned team-seasons are in [`OPERATIONS.md`](../../OPERATIONS.md) sect
 There are **three** power scores in the product and they are computed three
 different ways.
 
-| Number | Where it appears | How it is built |
-| --- | --- | --- |
-| **Season power score** | The standings, the team page gauge, insights, trends | The formula above, for the active season. |
-| **Season career score** | Stored per season, feeding the career number | The same formula with an earned-schedule floor: a team performing below a threshold keeps only part of its schedule credit. A single rough season should not crush a live standing, so the floor applies to the long run only. |
-| **Career power score** | The "Career Statistics" card, the all-teams career chart | A weighted average of each season's score, weighted by matches played, plus playoff bonuses for titles, runner-up finishes, and a playoff record over .500 — each scaled by the square of the division the result happened in, and capped in total by the strongest such division. |
+| Number                  | Where it appears                                         | How it is built                                                                                                                                                                                                                                                                    |
+| ----------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Season power score**  | The standings, the team page gauge, insights, trends     | The formula above, for the active season.                                                                                                                                                                                                                                          |
+| **Season career score** | Stored per season, feeding the career number             | The same formula with an earned-schedule floor: a team performing below a threshold keeps only part of its schedule credit. A single rough season should not crush a live standing, so the floor applies to the long run only.                                                     |
+| **Career power score**  | The "Career Statistics" card, the all-teams career chart | A weighted average of each season's score, weighted by matches played, plus playoff bonuses for titles, runner-up finishes, and a playoff record over .500 — each scaled by the square of the division the result happened in, and capped in total by the strongest such division. |
 
 Because they are built differently, **a team can be higher in the standings than
 in the career table, or the other way round, with nothing wrong**. Nothing in the
@@ -228,21 +228,20 @@ above, through green, blue, orange, amber, pink and purple, to red below 20. A
 missing score is neutral grey. In the light theme each band's text reaches
 4.5:1 or more (changed 2026-11-10: gold, green, orange and amber use a darker
 shade; measured 4.93, 4.95, 5.22 and 5.03). The band floors did not change, and
-the dark theme did not change. In light, the gold (85 and up) and amber (40 to
-49) shades both look brown. Doug (2026-11-11) chose to leave them as they are:
+the dark theme did not change. In light, the gold (85 and up) and amber (40 to 49) shades both look brown. Doug (2026-11-11) chose to leave them as they are:
 the number and the band name (in the legend, on hover and for a screen
 reader) tell the two apart. The sweep rate colours stay as
 they are too.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | No effect. Everyone sees the same number. Only an admin can change anything that feeds it. | No effect. |
-| The record's state | A team with no completed match has no score and shows "—". A hidden team keeps the score it earned. A completed match feeds the score; a pending score submission does not, until it is approved. | A match being reopened reverses everything the original result contributed. |
-| The season's state | An active season's scores move. **An archived season's scores are frozen** against a formula change or a re-tiering. **A Power Score weight change is the exception:** saving new weights in the sandbox recomputes every season, archived included. | Archiving a season freezes it at that moment. Saving new weights, an admin's deliberate recompute of an archived season, or a one-off rule change shipped as a migration (such as the 2026-10 rule that ties leave the match term) are the only ways a frozen number changes. |
-| Viewport | On a wide screen the score is a coloured number in a table cell. On a phone it is a number in a card, and in detailed view an animated circular gauge. | No effect. |
-| Keys the app honours | None. A power score is text, not a control. | None. |
+| Modifier             | Set at arrival                                                                                                                                                                                                                                       | Changed while editing                                                                                                                                                                                                                                                         |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The user's role      | No effect. Everyone sees the same number. Only an admin can change anything that feeds it.                                                                                                                                                           | No effect.                                                                                                                                                                                                                                                                    |
+| The record's state   | A team with no completed match has no score and shows "—". A hidden team keeps the score it earned. A completed match feeds the score; a pending score submission does not, until it is approved.                                                    | A match being reopened reverses everything the original result contributed.                                                                                                                                                                                                   |
+| The season's state   | An active season's scores move. **An archived season's scores are frozen** against a formula change or a re-tiering. **A Power Score weight change is the exception:** saving new weights in the sandbox recomputes every season, archived included. | Archiving a season freezes it at that moment. Saving new weights, an admin's deliberate recompute of an archived season, or a one-off rule change shipped as a migration (such as the 2026-10 rule that ties leave the match term) are the only ways a frozen number changes. |
+| Viewport             | On a wide screen the score is a coloured number in a table cell. On a phone it is a number in a card, and in detailed view an animated circular gauge.                                                                                               | No effect.                                                                                                                                                                                                                                                                    |
+| Keys the app honours | None. A power score is text, not a control.                                                                                                                                                                                                          | None.                                                                                                                                                                                                                                                                         |
 
 **Two seasons' power scores are not always comparable**, because they may have
 been produced by different formulas or different division weights. Nothing in the
@@ -250,18 +249,18 @@ app says so.
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. A power score has no controls. | No effect. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. The number is on the server. | Nothing. A recalculation already running on the server finishes whether or not anybody is watching. |
-| Browser back or forward | No effect. | No effect. |
-| Reload, or the tab closed | Refetches the number. | The number is refetched, so a reload is the fastest way to see a recalculation land. |
-| Network lost mid-request | The number cannot load and its page shows its own failure state. | A number already on screen stays on screen, unchanged and possibly wrong, with nothing marking it stale. |
-| The request fails or times out | As above. | As above. |
-| The session expires | No effect. Power scores are public. | No effect. |
-| The same record changed in another tab, or by another user | Not applicable. | **This is the normal case.** Somebody else's match being completed changes the whole league's numbers. There is no realtime anywhere power score is shown, so every screen keeps its old number until it refetches — up to five minutes on the standings, ten on the career tables. |
-| Browser autofill or a password manager writes into the form | No effect. | No effect. |
-| The window loses focus | No effect. | Returning to the tab refetches, which is the most common moment for a number to change under the reader. |
+| Event                                                       | Before the first edit                                            | While editing or submitting                                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. A power score has no controls.                        | No effect.                                                                                                                                                                                                                                                                          |
+| In-app navigation away, or switching tab within the page    | Nothing is lost. The number is on the server.                    | Nothing. A recalculation already running on the server finishes whether or not anybody is watching.                                                                                                                                                                                 |
+| Browser back or forward                                     | No effect.                                                       | No effect.                                                                                                                                                                                                                                                                          |
+| Reload, or the tab closed                                   | Refetches the number.                                            | The number is refetched, so a reload is the fastest way to see a recalculation land.                                                                                                                                                                                                |
+| Network lost mid-request                                    | The number cannot load and its page shows its own failure state. | A number already on screen stays on screen, unchanged and possibly wrong, with nothing marking it stale.                                                                                                                                                                            |
+| The request fails or times out                              | As above.                                                        | As above.                                                                                                                                                                                                                                                                           |
+| The session expires                                         | No effect. Power scores are public.                              | No effect.                                                                                                                                                                                                                                                                          |
+| The same record changed in another tab, or by another user  | Not applicable.                                                  | **This is the normal case.** Somebody else's match being completed changes the whole league's numbers. There is no realtime anywhere power score is shown, so every screen keeps its old number until it refetches — up to five minutes on the standings, ten on the career tables. |
+| Browser autofill or a password manager writes into the form | No effect.                                                       | No effect.                                                                                                                                                                                                                                                                          |
+| The window loses focus                                      | No effect.                                                       | Returning to the tab refetches, which is the most common moment for a number to change under the reader.                                                                                                                                                                            |
 
 ## Interactions with other systems
 
@@ -327,6 +326,7 @@ looks like a bug to anyone watching one team.
   > divisions the old seasons use, the league's live read on 2026-11-17 shows one row
   > each, so today's weight applies to every old game date. The steps and the checks
   > are in [`OPERATIONS.md`](../../OPERATIONS.md) section 6g.
+
 - **The Intermediate 1 / Intermediate 2 mapping is believed, not proven, in all three
   old seasons.** The stored names "Intermediate 1" and "Intermediate 2" came from
   alphabetical bracket titles, not from strength. The league chose Intermediate High

@@ -208,7 +208,7 @@ The public recap page (`/recap/<season>/week-<n>`) fits a 320-pixel phone
 keeps at least 112 pixels, so names and notes wrap on whole words. Where a table
 is still too wide (the power rankings at 320 pixels), it scrolls sideways inside
 its card; the page does not. Each table box is a named region ("Power rankings
-table", "*Division* standings table") that the keyboard can reach. At 390 and
+table", "_Division_ standings table") that the keyboard can reach. At 390 and
 1280 pixels every table fits and does not scroll. The "Home" link at the top is
 24 pixels tall.
 

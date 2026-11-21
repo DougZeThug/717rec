@@ -8,13 +8,13 @@
 
 - `index.html:53` — `<script src="https://cdn.gpteng.co/gptengineer.js" type="module">` loads **unconditionally in production**. This is Lovable's editor bridge; league visitors never need it. It is a render-path third-party script and a standing supply-chain exposure (whatever that CDN serves, your users run).
 - `index.html:43-44` — Google Fonts CSS (4 families, 11 weights). Render-blocking-adjacent; one more origin.
-- `index.html:46-47` — Progressier (PWA/push) — this one is a product feature; keep it, but it should be the *only* third-party runtime script.
+- `index.html:46-47` — Progressier (PWA/push) — this one is a product feature; keep it, but it should be the _only_ third-party runtime script.
 
 During the review's browser walk, all three failed at the sandbox's network edge and the app rendered fine without them — direct evidence none of them is load-bearing for visitors (the fonts fall back to system faces).
 
 ## 2. Objective
 
-**`index.html` scope:** production HTML contains no Lovable editor script (tag *and* `dns-prefetch`) and no Google Fonts origin; fonts are self-hosted; Progressier remains. Note: this brief covers `index.html` resources only — the playoff pages separately inject `brackets-viewer` from jsDelivr at runtime (`src/components/playoffs/viewer/useBracketsViewerScript.ts:7`); vendoring that is owned by **PR-13 step 8**, so after both PRs land, Progressier is the sole third-party runtime script.
+**`index.html` scope:** production HTML contains no Lovable editor script (tag _and_ `dns-prefetch`) and no Google Fonts origin; fonts are self-hosted; Progressier remains. Note: this brief covers `index.html` resources only — the playoff pages separately inject `brackets-viewer` from jsDelivr at runtime (`src/components/playoffs/viewer/useBracketsViewerScript.ts:7`); vendoring that is owned by **PR-13 step 8**, so after both PRs land, Progressier is the sole third-party runtime script.
 
 ## 3. Exact scope
 

@@ -15,4 +15,4 @@ allowed-tools: Bash(node factory/bin/factory.mjs status*) Bash(git status*) Bash
    - **Failing / blocked:** with the one thing needed to unblock.
    - **Done recently:** from the ledger.
    - **Next:** one recommended action.
-Do not change anything.
+     Do not change anything.

@@ -37,12 +37,12 @@ A season carries four independent true-or-false flags. They are not a status
 field and they are not mutually exclusive, so a season can be in combinations
 that do not obviously make sense.
 
-| Flag | What it means to the user |
-| --- | --- |
-| **Active** | This is the season the app means by "now". At most one season has it. Pages that do not name a season show this one. |
-| **Archived** | The season is finished and frozen. Its numbers no longer move. It appears in history. |
+| Flag                  | What it means to the user                                                                                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Active**            | This is the season the app means by "now". At most one season has it. Pages that do not name a season show this one.                                                            |
+| **Archived**          | The season is finished and frozen. Its numbers no longer move. It appears in history.                                                                                           |
 | **Confirmation open** | Teams can confirm their place for this season. When it is off, the confirmation controls are **absent**, not disabled — the user sees nothing rather than something greyed out. |
-| **Playoffs active** | The playoffs page shows a live bracket instead of a placeholder, and the regular season stops being the centre of the app. |
+| **Playoffs active**   | The playoffs page shows a live bracket instead of a placeholder, and the regular season stops being the centre of the app.                                                      |
 
 A season also stores its own **champion**, **runner up**, and **third place**
 teams. These are written when the playoffs finish and are what the history pages
@@ -93,7 +93,7 @@ says otherwise:
 - A team's identity. The same team persists across seasons, which is what makes
   career numbers possible.
 - A player, a profile, and an account.
-- Divisions and their names. Division *weights* are versioned over time rather
+- Divisions and their names. Division _weights_ are versioned over time rather
   than per season.
 - The message board.
 - Career power score, career records, and head-to-head, all of which look across

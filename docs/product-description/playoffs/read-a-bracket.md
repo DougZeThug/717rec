@@ -9,7 +9,7 @@ match card means, and what the empty slots say before a team reaches them.
 
 The drawing is done by an external library, not by 717rec. The league's own
 rules — best of three, first to 21, win by two — do not appear here at all. What
-the bracket shows is a *match* score in games, and the shape of the tree comes
+the bracket shows is a _match_ score in games, and the shape of the tree comes
 from the library's rules about seeding and byes rather than the league's.
 
 Opening a bracket is owned by
@@ -107,7 +107,7 @@ its own card; the page behind it does not. Until it has been scrolled, a phone
 shows **"Swipe to see later rounds →"** underneath, which goes away for good
 after the first swipe and never appears when the whole bracket already fits. The
 scrolling box takes keyboard focus, so the arrow keys reach the later rounds
-without a pointer, and it is named "Playoff Bracket: *title*. Scroll sideways to
+without a pointer, and it is named "Playoff Bracket: _title_. Scroll sideways to
 see later rounds."
 
 Team logos are marked decorative. The library builds those images itself and has
@@ -122,18 +122,18 @@ action, described in
 
 ## What a match card shows
 
-| Part | What it means |
-| --- | --- |
-| Two rows | The two sides of the match, top and bottom. |
-| A name | The team. Names come from the bracket's own participant list, so a team renamed after the bracket was built keeps its old name here. |
-| A logo | The team's image, if it has one. |
-| A number before a name | The team's seed. The first round gets its seed markers from the library; later rounds get a "#N" badge added afterwards, so a team's seed follows it through the bracket. |
-| A number after a name | The team's score for that match, in **games won**, not points. A best-of-three final therefore reads 2–1, never 21–18. |
-| A highlighted row | The winner. |
-| "Winner of WB 1.1" | The slot is empty and will be filled by the winner of that match. `WB` is the winners bracket, `LB` the losers bracket, and `1.1` is round one, match one. |
-| "Loser of WB Semi 1" | Same, for a slot in the losers bracket fed by a loss. |
-| "BYE" | The slot will never be filled. The team facing it advances without playing. |
-| An empty slot with no text | Its feeder match is already finished, or the flow could not be worked out. |
+| Part                       | What it means                                                                                                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Two rows                   | The two sides of the match, top and bottom.                                                                                                                               |
+| A name                     | The team. Names come from the bracket's own participant list, so a team renamed after the bracket was built keeps its old name here.                                      |
+| A logo                     | The team's image, if it has one.                                                                                                                                          |
+| A number before a name     | The team's seed. The first round gets its seed markers from the library; later rounds get a "#N" badge added afterwards, so a team's seed follows it through the bracket. |
+| A number after a name      | The team's score for that match, in **games won**, not points. A best-of-three final therefore reads 2–1, never 21–18.                                                    |
+| A highlighted row          | The winner.                                                                                                                                                               |
+| "Winner of WB 1.1"         | The slot is empty and will be filled by the winner of that match. `WB` is the winners bracket, `LB` the losers bracket, and `1.1` is round one, match one.                |
+| "Loser of WB Semi 1"       | Same, for a slot in the losers bracket fed by a loss.                                                                                                                     |
+| "BYE"                      | The slot will never be filled. The team facing it advances without playing.                                                                                               |
+| An empty slot with no text | Its feeder match is already finished, or the flow could not be worked out.                                                                                                |
 
 Round headings and the labels inside the cells use **two different naming
 schemes**. The column heading says "Winners Final"; a hint pointing at that same
@@ -157,28 +157,28 @@ appears stuck.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | A visitor and a player get an identical, inert bracket. An admin gets clickable match cards and a toolbar above the bracket: Repair Bracket, Rearrange Teams, Update Seeding, Edit Bracket, Delete, and — on a completed bracket missing its standings — Recalculate Standings. On a phone those six are behind a single **⋯** menu. | Admin granted or revoked elsewhere does not reach this card until it refetches. |
-| The record's state | A completed bracket shows the Final Standings card and greys out Rearrange and Update Seeding. Those two buttons stay pressable on an in-progress bracket, but the dialog behind Update Seeding refuses to save once a single result has been entered — see [`glossary.md`](../glossary.md) on *bracket state*. | A bracket completing while it is open adds the standings card and announces "Tournament Complete! Final standings have been calculated." |
-| The season's state | No effect. A bracket is drawn the same way whatever season it belongs to, including an archived one. | No effect. |
-| Viewport | The bracket scrolls sideways in its own container at every width; it is never scaled down to fit. Below 768px the match cards narrow and the swipe hint appears while the bracket overflows. On a phone the admin toolbar collapses from a row of buttons into one **⋯** menu. | No effect beyond re-flowing on rotation. |
-| Keys the page honours | Nothing is focused and there are no shortcuts. The bracket is drawn as plain elements, so Tab does not step through matches. | No shortcuts. |
+| Modifier              | Set at arrival                                                                                                                                                                                                                                                                                                                       | Changed while editing                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| The user's role       | A visitor and a player get an identical, inert bracket. An admin gets clickable match cards and a toolbar above the bracket: Repair Bracket, Rearrange Teams, Update Seeding, Edit Bracket, Delete, and — on a completed bracket missing its standings — Recalculate Standings. On a phone those six are behind a single **⋯** menu. | Admin granted or revoked elsewhere does not reach this card until it refetches.                                                          |
+| The record's state    | A completed bracket shows the Final Standings card and greys out Rearrange and Update Seeding. Those two buttons stay pressable on an in-progress bracket, but the dialog behind Update Seeding refuses to save once a single result has been entered — see [`glossary.md`](../glossary.md) on _bracket state_.                      | A bracket completing while it is open adds the standings card and announces "Tournament Complete! Final standings have been calculated." |
+| The season's state    | No effect. A bracket is drawn the same way whatever season it belongs to, including an archived one.                                                                                                                                                                                                                                 | No effect.                                                                                                                               |
+| Viewport              | The bracket scrolls sideways in its own container at every width; it is never scaled down to fit. Below 768px the match cards narrow and the swipe hint appears while the bracket overflows. On a phone the admin toolbar collapses from a row of buttons into one **⋯** menu.                                                       | No effect beyond re-flowing on rotation.                                                                                                 |
+| Keys the page honours | Nothing is focused and there are no shortcuts. The bracket is drawn as plain elements, so Tab does not step through matches.                                                                                                                                                                                                         | No shortcuts.                                                                                                                            |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel here. | Closes an admin's score editor. If a typed score differs from the stored one, it asks first (a tap outside the pop-up does the same). It does not close the bracket. |
-| In-app navigation away, or switching tab within the page | The drawing is discarded and both subscriptions close. Nothing is recorded. | An admin switching to the Teams tab keeps the bracket mounted but hidden; coming back shows it without reloading. |
-| Browser back or forward | Back removes `?bracket=<id>` and returns to the list. | Same. Nothing about the drawn bracket is in the history, so back never steps through rounds. |
-| Reload, or the tab closed | The bracket in the address reloads from scratch, behind the "Loading bracket..." spinner. | An admin's unsaved score in the editor is lost. Everything drawn is rebuilt from the database. |
-| Network lost mid-request | The four-step load stops and the failure state appears with a "Try Again" button: "Failed to load bracket: *reason*" when a real reason is known, otherwise "Failed to load bracket. Please try again." | The realtime pill disappears and the bracket freezes at its last drawing. Nothing is queued. |
-| The request fails or times out | As above. The read is retried twice automatically before the failure is shown. | An admin's failed save is reported and rolled back; the bracket redraws from the server. |
-| The session expires | No effect. Brackets are public to read. | An admin keeps seeing the toolbar and the clickable cards; the next save fails. |
-| The same record changed in another tab, or by another user | Not applicable before arriving. | **Expected.** A score entered anywhere arrives over realtime and the bracket redraws in place, with a toast. Winners advance into the next round as the redraw happens. |
-| Browser autofill or a password manager writes into the form | No effect. There are no text fields in a bracket. | No effect except inside an admin's score editor. |
-| The window loses focus | No effect. | The subscription stays open. The bracket does not refetch when focus returns, so anything realtime missed stays missing until something else refetches. |
+| Event                                                       | Before the first edit                                                                                                                                                                                   | While editing or submitting                                                                                                                                             |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. There is no Cancel here.                                                                                                                                                                     | Closes an admin's score editor. If a typed score differs from the stored one, it asks first (a tap outside the pop-up does the same). It does not close the bracket.    |
+| In-app navigation away, or switching tab within the page    | The drawing is discarded and both subscriptions close. Nothing is recorded.                                                                                                                             | An admin switching to the Teams tab keeps the bracket mounted but hidden; coming back shows it without reloading.                                                       |
+| Browser back or forward                                     | Back removes `?bracket=<id>` and returns to the list.                                                                                                                                                   | Same. Nothing about the drawn bracket is in the history, so back never steps through rounds.                                                                            |
+| Reload, or the tab closed                                   | The bracket in the address reloads from scratch, behind the "Loading bracket..." spinner.                                                                                                               | An admin's unsaved score in the editor is lost. Everything drawn is rebuilt from the database.                                                                          |
+| Network lost mid-request                                    | The four-step load stops and the failure state appears with a "Try Again" button: "Failed to load bracket: _reason_" when a real reason is known, otherwise "Failed to load bracket. Please try again." | The realtime pill disappears and the bracket freezes at its last drawing. Nothing is queued.                                                                            |
+| The request fails or times out                              | As above. The read is retried twice automatically before the failure is shown.                                                                                                                          | An admin's failed save is reported and rolled back; the bracket redraws from the server.                                                                                |
+| The session expires                                         | No effect. Brackets are public to read.                                                                                                                                                                 | An admin keeps seeing the toolbar and the clickable cards; the next save fails.                                                                                         |
+| The same record changed in another tab, or by another user  | Not applicable before arriving.                                                                                                                                                                         | **Expected.** A score entered anywhere arrives over realtime and the bracket redraws in place, with a toast. Winners advance into the next round as the redraw happens. |
+| Browser autofill or a password manager writes into the form | No effect. There are no text fields in a bracket.                                                                                                                                                       | No effect except inside an admin's score editor.                                                                                                                        |
+| The window loses focus                                      | No effect.                                                                                                                                                                                              | The subscription stays open. The bracket does not refetch when focus returns, so anything realtime missed stays missing until something else refetches.                 |
 
 ## Interactions with other systems
 
@@ -190,7 +190,7 @@ around a bracket is admin-only and hidden from everyone else. See
 stored data, so an archived season's bracket is drawn exactly as it finished.
 
 **Validation and error display.** Three separate failure screens can replace the
-bracket: "Invalid bracket ID", "Failed to load bracket: *reason*" with a retry,
+bracket: "Invalid bracket ID", "Failed to load bracket: _reason_" with a retry,
 and "Data Structure Error — Bracket found but matches data is corrupted". A crash
 inside the drawing itself is caught and shown as "Bracket Rendering Error" with
 the message and the bracket id, and a retry that redraws.
@@ -218,7 +218,7 @@ desktop. It used to be shrunk to 80%, which made the names about 8px. The admin 
 header, holding the same six controls. See
 [`cross-cutting/on-a-phone.md`](../cross-cutting/on-a-phone.md).
 
-**Accessibility.** The bracket is a labelled region: "Playoff Bracket: *name*".
+**Accessibility.** The bracket is a labelled region: "Playoff Bracket: _name_".
 Inside it, the drawing is the library's own markup — the match cards are not
 buttons, are not in the tab order, and carry no roles, so a keyboard or screen
 reader user cannot reach an individual match. Flow hints are added as plain text

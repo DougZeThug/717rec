@@ -4,14 +4,14 @@ Claude Code, set up as a small software team. You describe the goal. It plans, b
 
 ## Start work
 
-| Type this | What happens |
-|---|---|
-| `/factory-build Add a "forfeit" badge to the schedule` | Plan, build, test, review, deliver |
+| Type this                                                                  | What happens                                |
+| -------------------------------------------------------------------------- | ------------------------------------------- |
+| `/factory-build Add a "forfeit" badge to the schedule`                     | Plan, build, test, review, deliver          |
 | `/factory-fix The playoff bracket shows the wrong seed after a score edit` | Reproduce, find cause, fix, regression test |
-| `/factory-polish The standings page on my phone` | Before/after screenshots, small fixes only |
-| `/factory-review 1730` | Independent review of a PR, no edits |
-| `/factory-status` | What is open, failing, blocked, next |
-| `/factory-maintain tests` | Audit, then repair branches |
+| `/factory-polish The standings page on my phone`                           | Before/after screenshots, small fixes only  |
+| `/factory-review 1730`                                                     | Independent review of a PR, no edits        |
+| `/factory-status`                                                          | What is open, failing, blocked, next        |
+| `/factory-maintain tests`                                                  | Audit, then repair branches                 |
 
 ## Parts
 

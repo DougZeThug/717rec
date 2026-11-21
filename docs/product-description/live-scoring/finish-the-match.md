@@ -13,7 +13,7 @@ one true commit in live scoring; everything else is preparation.
 
 ## The simple case
 
-The second game is ended. A bordered panel says "*Team name* wins the match 2–0",
+The second game is ended. A bordered panel says "_Team name_ wins the match 2–0",
 with the line "Save the official result to update standings and team records."
 
 A full-width button reads "Save official result". Pressing it opens a dialog
@@ -102,7 +102,7 @@ result…". This write is **not optimistic**; the screen waits.
 
 Three outcomes:
 
-**Saved.** A toast: "Match result saved — Final: *N*–*N*. Standings updated." The
+**Saved.** A toast: "Match result saved — Final: _N_–_N_. Standings updated." The
 match, the schedule, the standings, and every team record are re-fetched. The
 screen becomes the review.
 
@@ -152,28 +152,28 @@ themselves say it is at, and scoring is possible again.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | Saving needs the right to score — an approved member of either team, or an admin. **Reopening the match needs admin**, unlike reopening a game, which any scorer can do. | Losing the right to score leaves the button on screen until the screen refetches; the write then fails. |
-| The record's state | A decided match shows the save panel. A saved one shows the review. The review is read-only for every role. | The other scorer saving first moves this screen to the review, mid-dialog. |
-| The season's state | No effect on saving. The result feeds the season the match belongs to. | No effect. |
-| Viewport | The review is a long scroll on a phone; the statistics table scrolls sideways inside its own box. The match score in the decided panel ("wins the match 2–0") and each game score in the save dialog stay on one line (measured at 768 and 1024 pixels wide). | No effect. |
-| Keys the app honours | Both dialogs are proper dialogs: Escape closes, focus is trapped and returns. | Escape is the same as "Not yet" or "Cancel". |
+| Modifier             | Set at arrival                                                                                                                                                                                                                                                | Changed while editing                                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| The user's role      | Saving needs the right to score — an approved member of either team, or an admin. **Reopening the match needs admin**, unlike reopening a game, which any scorer can do.                                                                                      | Losing the right to score leaves the button on screen until the screen refetches; the write then fails. |
+| The record's state   | A decided match shows the save panel. A saved one shows the review. The review is read-only for every role.                                                                                                                                                   | The other scorer saving first moves this screen to the review, mid-dialog.                              |
+| The season's state   | No effect on saving. The result feeds the season the match belongs to.                                                                                                                                                                                        | No effect.                                                                                              |
+| Viewport             | The review is a long scroll on a phone; the statistics table scrolls sideways inside its own box. The match score in the decided panel ("wins the match 2–0") and each game score in the save dialog stay on one line (measured at 768 and 1024 pixels wide). | No effect.                                                                                              |
+| Keys the app honours | Both dialogs are proper dialogs: Escape closes, focus is trapped and returns.                                                                                                                                                                                 | Escape is the same as "Not yet" or "Cancel".                                                            |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. | **Escape closes either dialog and nothing is written.** It cannot stop a save already sent. |
-| In-app navigation away, or switching tab within the page | The match stays decided-but-unsaved, indefinitely. | A save already sent still completes. The scorer never sees the toast, but the result is recorded and the standings have moved. |
-| Browser back or forward | As above. | As above. |
-| Reload, or the tab closed | The decided panel returns, worked out from the games. | A sent save may have landed. Reloading shows which: the review means it did. |
-| Network lost mid-request | The match will not load. | "Could not finalize match" with the reason, and the alert stays in the panel. Nothing is written and nothing is queued. |
-| The request fails or times out | Not applicable. | As above. The persistent alert means the scorer still knows about it after the toast has gone. |
-| The session expires | Watching still works. | The write fails with the league's refusal as the message. |
-| The same record changed in another tab, or by another user | The other scorer may reopen a game from under this panel, withdrawing the decision. | **If the other scorer saves first, this save does nothing and says "Match already finalized".** Nothing is double-counted. This is the case the idempotent write exists for. |
-| Browser autofill or a password manager writes into the form | No effect. | No effect. |
-| The window loses focus | No effect. | No effect. |
+| Event                                                       | Before the first edit                                                               | While editing or submitting                                                                                                                                                  |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Nothing to cancel.                                                                  | **Escape closes either dialog and nothing is written.** It cannot stop a save already sent.                                                                                  |
+| In-app navigation away, or switching tab within the page    | The match stays decided-but-unsaved, indefinitely.                                  | A save already sent still completes. The scorer never sees the toast, but the result is recorded and the standings have moved.                                               |
+| Browser back or forward                                     | As above.                                                                           | As above.                                                                                                                                                                    |
+| Reload, or the tab closed                                   | The decided panel returns, worked out from the games.                               | A sent save may have landed. Reloading shows which: the review means it did.                                                                                                 |
+| Network lost mid-request                                    | The match will not load.                                                            | "Could not finalize match" with the reason, and the alert stays in the panel. Nothing is written and nothing is queued.                                                      |
+| The request fails or times out                              | Not applicable.                                                                     | As above. The persistent alert means the scorer still knows about it after the toast has gone.                                                                               |
+| The session expires                                         | Watching still works.                                                               | The write fails with the league's refusal as the message.                                                                                                                    |
+| The same record changed in another tab, or by another user  | The other scorer may reopen a game from under this panel, withdrawing the decision. | **If the other scorer saves first, this save does nothing and says "Match already finalized".** Nothing is double-counted. This is the case the idempotent write exists for. |
+| Browser autofill or a password manager writes into the form | No effect.                                                                          | No effect.                                                                                                                                                                   |
+| The window loses focus                                      | No effect.                                                                          | No effect.                                                                                                                                                                   |
 
 After an interrupt, whether the result was saved is answered by the screen: the
 review means yes, the decided panel means no. There is no third state.

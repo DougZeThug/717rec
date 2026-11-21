@@ -12,9 +12,9 @@ all read it without an auth session.
 
 ### Canonical policies
 
-| Policy | Cmd | Role | Rule |
-|---|---|---|---|
-| Anyone can view seasons | SELECT | `public` | `true` |
+| Policy                    | Cmd    | Role            | Rule                      |
+| ------------------------- | ------ | --------------- | ------------------------- |
+| Anyone can view seasons   | SELECT | `public`        | `true`                    |
 | Admins can insert seasons | INSERT | `authenticated` | `current_user_is_admin()` |
 | Admins can update seasons | UPDATE | `authenticated` | `current_user_is_admin()` |
 | Admins can delete seasons | DELETE | `authenticated` | `current_user_is_admin()` |
@@ -48,6 +48,7 @@ The seasons read policy has been dropped or rewritten multiple times in the
 past (`20260202182410`, `20260410153406`). The
 `<ts>_seasons_rls_canonical.sql` migration pins the intended state and adds
 the drift detector so the next accidental narrowing is caught fast.
+
 ## `public.team_season_stats`
 
 Season stats are public. Stats, History, Insights, team pages and the public

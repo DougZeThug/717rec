@@ -7,12 +7,12 @@ This guide documents the conventions and patterns used in this codebase to ensur
 Before marking any feature or bugfix as complete, ensure it meets the criteria in [Definition of Done](./src/docs/DEFINITION_OF_DONE.md).
 
 **Quick checklist:**
+
 - [ ] No TypeScript errors (`npm run typecheck`) and the build works (`npm run build`)
 - [ ] Tests pass (`npm run test`)
 - [ ] Loading/empty/error states handled
 - [ ] Accessible via keyboard
 - [ ] Follows pattern documentation
-
 
 ## Dependency Update Rules
 
@@ -59,22 +59,22 @@ src/
 
 ### Folders
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Feature folders | kebab-case, plural | `components/teams/`, `hooks/matches/` |
-| Utility folders | kebab-case | `utils/power-score/` |
-| Hook folders | kebab-case (no "use" prefix) | `hooks/auto-schedule/` |
+| Type            | Convention                   | Example                               |
+| --------------- | ---------------------------- | ------------------------------------- |
+| Feature folders | kebab-case, plural           | `components/teams/`, `hooks/matches/` |
+| Utility folders | kebab-case                   | `utils/power-score/`                  |
+| Hook folders    | kebab-case (no "use" prefix) | `hooks/auto-schedule/`                |
 
 ### Files
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Components | PascalCase | `TeamCard.tsx`, `MessageBoard.tsx` |
-| Hooks | camelCase with `use` prefix | `useTeams.ts`, `useToast.ts` |
-| Utils | camelCase | `dateUtils.ts`, `validation.ts` |
-| Types | camelCase | `match.ts`, `team.ts` |
-| Services | PascalCase with `Service` suffix | `TeamSeasonStatsService.ts`, `RankingsService.ts` |
-| Constants | camelCase for files | `divisionColors.ts` |
+| Type       | Convention                       | Example                                           |
+| ---------- | -------------------------------- | ------------------------------------------------- |
+| Components | PascalCase                       | `TeamCard.tsx`, `MessageBoard.tsx`                |
+| Hooks      | camelCase with `use` prefix      | `useTeams.ts`, `useToast.ts`                      |
+| Utils      | camelCase                        | `dateUtils.ts`, `validation.ts`                   |
+| Types      | camelCase                        | `match.ts`, `team.ts`                             |
+| Services   | PascalCase with `Service` suffix | `TeamSeasonStatsService.ts`, `RankingsService.ts` |
+| Constants  | camelCase for files              | `divisionColors.ts`                               |
 
 ### Constants Values
 
@@ -186,13 +186,13 @@ interface MyComponentProps {
 export const MyComponent: React.FC<MyComponentProps> = ({ title, onAction }) => {
   // hooks first
   const [state, setState] = useState();
-  
+
   // derived values
   const computedValue = useMemo(() => {}, []);
-  
+
   // handlers
   const handleClick = () => {};
-  
+
   // render
   return <div>{title}</div>;
 };

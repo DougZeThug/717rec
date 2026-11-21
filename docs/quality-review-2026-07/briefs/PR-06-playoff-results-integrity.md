@@ -6,9 +6,9 @@
 
 Three verified defects cluster in the playoff pipeline:
 
-1. **Final standings are written client-side by whoever is watching.** `useBracketCompletion` (src/hooks/useBracketCompletion.ts:38-66) reacts to a realtime "bracket completed" event by calling `bracketManagerService.calculateFinalStandings(bracketId)` *from the browser*, then writes `playoff_team_records`. If the completion event is seen only by public viewers, the write fails against RLS (admin-gated) and standings are silently never recorded; if no browser is open, the same. Champions' records depend on which tab happened to be open.
-2. **The match editor accepts tied scores.** `useMatchEditorState.ts:128-142`: a tie maps to loss/loss, which brackets-manager rejects — but only *after* a pre-update "unlock" write already mutated match status, with no rollback (src/components/playoffs/match-score-editor/).
-3. **Seed-management latch never resyncs.** `useSeedManagement.ts:36` initializes `processedTeams` behind a one-shot `isInitializedRef`; after "Reset to Auto" (or any server-side seed change) the UI keeps stale seed overrides which can flow into bracket creation. *(Flagged high by the investigation; the adversarial re-check could not run — treat step 3 as "verify then fix".)*
+1. **Final standings are written client-side by whoever is watching.** `useBracketCompletion` (src/hooks/useBracketCompletion.ts:38-66) reacts to a realtime "bracket completed" event by calling `bracketManagerService.calculateFinalStandings(bracketId)` _from the browser_, then writes `playoff_team_records`. If the completion event is seen only by public viewers, the write fails against RLS (admin-gated) and standings are silently never recorded; if no browser is open, the same. Champions' records depend on which tab happened to be open.
+2. **The match editor accepts tied scores.** `useMatchEditorState.ts:128-142`: a tie maps to loss/loss, which brackets-manager rejects — but only _after_ a pre-update "unlock" write already mutated match status, with no rollback (src/components/playoffs/match-score-editor/).
+3. **Seed-management latch never resyncs.** `useSeedManagement.ts:36` initializes `processedTeams` behind a one-shot `isInitializedRef`; after "Reset to Auto" (or any server-side seed change) the UI keeps stale seed overrides which can flow into bracket creation. _(Flagged high by the investigation; the adversarial re-check could not run — treat step 3 as "verify then fix".)_
 
 Note: the suspected "public users can open the admin score editor" issue was **refuted** during verification — `BracketDetail.tsx:138` passes `onEditMatch` only when `isAdminAccessGranted`. No work needed there.
 
@@ -31,9 +31,9 @@ One migration (finalization RPC or trigger), hook rewiring, two focused UI-logic
 
 ## 5. Implementation steps
 
-1. **Server-side finalization — trigger-driven, not RPC-optional.** Create `public.finalize_bracket_standings(p_bracket_id uuid)` (SECURITY DEFINER, pinned search_path, idempotent — safe to call repeatedly), and wire it to an **AFTER UPDATE trigger on the bracket-completion state transition** so it runs in the **same transaction** as the write that completes the bracket. This is the load-bearing part: a standalone RPC that clients are *supposed* to call cannot meet the zero-browser acceptance criterion — today's completion path already shows why (the client invokes the state update and then best-effort calls standings calculation as a separate request). The RPC form exists only as an admin-callable manual re-run for repair; the trigger is the mechanism of record. The existing client TypeScript standings logic becomes the reference for the SQL implementation; port its ordering rules 1:1 and add a SQL smoke test comparing a seeded 4-team bracket's output to hand-computed placements.
+1. **Server-side finalization — trigger-driven, not RPC-optional.** Create `public.finalize_bracket_standings(p_bracket_id uuid)` (SECURITY DEFINER, pinned search_path, idempotent — safe to call repeatedly), and wire it to an **AFTER UPDATE trigger on the bracket-completion state transition** so it runs in the **same transaction** as the write that completes the bracket. This is the load-bearing part: a standalone RPC that clients are _supposed_ to call cannot meet the zero-browser acceptance criterion — today's completion path already shows why (the client invokes the state update and then best-effort calls standings calculation as a separate request). The RPC form exists only as an admin-callable manual re-run for repair; the trigger is the mechanism of record. The existing client TypeScript standings logic becomes the reference for the SQL implementation; port its ordering rules 1:1 and add a SQL smoke test comparing a seeded 4-team bracket's output to hand-computed placements.
 2. Reduce `useBracketCompletion` to display-only (toast when the server has written standings; retry/read, never write).
-3. **Tie rejection.** In `useMatchEditorState`, validate scores *before* the unlock write; block equal scores with an inline error ("Playoff matches cannot end tied") — and reorder so no write happens until validation passes.
+3. **Tie rejection.** In `useMatchEditorState`, validate scores _before_ the unlock write; block equal scores with an inline error ("Playoff matches cannot end tied") — and reorder so no write happens until validation passes.
 4. **Seed latch.** Replace the `isInitializedRef` latch with state that resyncs when `initialTeams` identity changes (e.g. key the memo on team ids+seeds, or `useEffect` sync gated on a `dirty` flag so in-progress drags aren't clobbered). First write a failing test reproducing: load → Reset to Auto → assert UI shows auto seeds.
 5. SQL smoke test for the finalization function in `supabase/tests/`.
 
@@ -49,7 +49,7 @@ One migration (finalization RPC or trigger), hook rewiring, two focused UI-logic
 
 ## 8. Testing requirements
 
-- SQL: finalization idempotency (run twice → identical rows), permission (non-admin caller can still *trigger* via match completion but not call directly unless admin — decide and test).
+- SQL: finalization idempotency (run twice → identical rows), permission (non-admin caller can still _trigger_ via match completion but not call directly unless admin — decide and test).
 - Unit: editor rejects ties pre-write; seed resync test from step 4.
 
 ## 9. Validation commands

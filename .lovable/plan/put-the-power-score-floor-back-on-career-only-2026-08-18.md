@@ -36,11 +36,11 @@ The floor was added inside that one function, so it hit Standings too.
 
 ## What changes on screen
 
-| Page | Before this fix | After |
-|---|---|---|
-| Standings (current season) | floored, weak teams near 0 | back to pre-floor values |
-| Team page / History season rows | floored | back to pre-floor values |
-| Career rankings | floored | unchanged (still floored) |
+| Page                            | Before this fix            | After                     |
+| ------------------------------- | -------------------------- | ------------------------- |
+| Standings (current season)      | floored, weak teams near 0 | back to pre-floor values  |
+| Team page / History season rows | floored                    | back to pre-floor values  |
+| Career rankings                 | floored                    | unchanged (still floored) |
 
 ## Technical changes
 

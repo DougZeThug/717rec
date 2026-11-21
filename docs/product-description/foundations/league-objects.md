@@ -39,8 +39,8 @@ A named run of the league with a start date and an end date. See
 
 The important fact for every other document: **almost every number in the app is
 scoped to one season.** A team's record, its power score, its standings position,
-and its badges all silently mean "in this season". The exceptions are *career*
-numbers and *head to head*, which look across seasons and say so.
+and its badges all silently mean "in this season". The exceptions are _career_
+numbers and _head to head_, which look across seasons and say so.
 
 ### Division
 
@@ -49,7 +49,7 @@ A competitive tier. The league runs four: **Recreational**, **Intermediate**,
 
 A division carries a **division weight**, a number used to rate how hard it is to
 beat a team from that division. Weights are **versioned over time**: a match is
-rated against the division its opponents were in *on the date of that match*, not
+rated against the division its opponents were in _on the date of that match_, not
 the division they are in today. This is what stops an archived season's numbers
 moving when the league re-tiers a team.
 
@@ -85,8 +85,8 @@ A person on a team's roster. A player is a row that **may or may not be linked t
 a signed-in account**. Someone can appear as a player, be recorded as throwing in
 rounds, and accumulate statistics, without ever having visited the app.
 
-This is the single most common source of confusion in the product: *player* and
-*account* are different things. A signed-in account has a
+This is the single most common source of confusion in the product: _player_ and
+_account_ are different things. A signed-in account has a
 [profile](accounts-and-roles.md); a player has a roster entry. They are joined by
 a **membership** only when someone asks to join a team and an admin approves it.
 
@@ -175,7 +175,7 @@ signups and settings. See
 
 **Permissions and roles.** None of these objects is visible only to some roles,
 with one exception: hidden teams are filtered out of the lists a visitor or
-player sees, and admins see them. What a role may *change* is a different
+player sees, and admins see them. What a role may _change_ is a different
 question, answered in
 [`cross-cutting/permissions.md`](../cross-cutting/permissions.md).
 

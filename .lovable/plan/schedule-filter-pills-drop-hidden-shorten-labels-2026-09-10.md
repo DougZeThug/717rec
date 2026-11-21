@@ -13,13 +13,16 @@ The collector signup / guest-pull merge flow does **not** exist in this project.
 ## Technical detail
 
 `src/utils/schedule/matchFilters.ts`
+
 - `buildDivisionOptions` skips any division whose display label is `Hidden` (case-insensitive, also covers `Hidden2`), same rule `teamGrouping.ts` and the playoff view model already use.
 - `DivisionOption` gains a `shortLabel` field: Competitive -> Comp, Intermediate -> Int, Recreational -> Rec; unknown labels fall back to the full label.
 
 `src/components/schedule/ScheduleFilters.tsx`
+
 - Chip renders `shortLabel`, with `aria-label` set to the full label so the accessible name stays clear.
 - Colour lookup keeps using the full label.
 
 Tests
+
 - `src/components/schedule/__tests__/ScheduleFilters.test.tsx` updated to query by accessible name (full division names still work) and to assert the short visible text.
 - Add a case to the matchFilters tests: a `Hidden` division produces no option.

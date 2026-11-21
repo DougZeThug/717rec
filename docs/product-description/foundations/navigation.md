@@ -24,33 +24,33 @@ stop them, and nothing warns before leaving a page with unsaved work.
 
 ## The routes
 
-| Route | What it is | Signed out |
-| --- | --- | --- |
-| `/` | The home dashboard | Readable |
-| `/teams` | The teams list | Readable |
-| `/teams/:teamId` | One team | Readable |
-| `/recap/:seasonSlug/:week` | One weekly recap, for example `/recap/<season>/week-<n>` | Readable |
-| `/schedule` | The season schedule | Readable |
-| `/stats` | Standings and rankings | Readable |
-| `/playoffs` | The bracket | Readable |
-| `/history` | Past seasons | Readable |
-| `/compare` | Compare two teams | Readable |
-| `/insights` | League insights | Readable |
-| `/message-board` | The message board | Not guarded; behaviour when signed out is unconfirmed |
-| `/my-team` | Manage your team | Not guarded; behaviour when signed out is unconfirmed |
-| `/matches/:matchId/live` | A match being scored live | **Readable.** Watching is public; scoring is not |
-| `/help` | Help | Readable |
-| `/contact` | The contact form | Readable and writable |
-| `/join` | Join the League: the league's details and a sign-up button | Readable |
-| `/auth` | Sign in and register | Readable |
-| `/forgot-password` | Ask for a password-reset email | Readable |
-| `/reset-password` | Choose a new password, from the link in that email | Readable |
-| `/setup-profile` | Finish your profile | Not guarded |
-| `/oauth/consent` | Authorise another app | Not guarded |
-| `/admin` | The admin dashboard; redirects to the section last open | **Guarded**: redirects to `/auth` |
-| `/admin/:section` | One admin section, e.g. `/admin/scores` | **Guarded**: redirects to `/auth` when signed out |
-| `/timeslots` | Nothing of its own; redirects to `/admin/timeslots` | **Guarded**: redirects to `/auth` when signed out |
-| anything else | Page not found | Readable |
+| Route                      | What it is                                                 | Signed out                                            |
+| -------------------------- | ---------------------------------------------------------- | ----------------------------------------------------- |
+| `/`                        | The home dashboard                                         | Readable                                              |
+| `/teams`                   | The teams list                                             | Readable                                              |
+| `/teams/:teamId`           | One team                                                   | Readable                                              |
+| `/recap/:seasonSlug/:week` | One weekly recap, for example `/recap/<season>/week-<n>`   | Readable                                              |
+| `/schedule`                | The season schedule                                        | Readable                                              |
+| `/stats`                   | Standings and rankings                                     | Readable                                              |
+| `/playoffs`                | The bracket                                                | Readable                                              |
+| `/history`                 | Past seasons                                               | Readable                                              |
+| `/compare`                 | Compare two teams                                          | Readable                                              |
+| `/insights`                | League insights                                            | Readable                                              |
+| `/message-board`           | The message board                                          | Not guarded; behaviour when signed out is unconfirmed |
+| `/my-team`                 | Manage your team                                           | Not guarded; behaviour when signed out is unconfirmed |
+| `/matches/:matchId/live`   | A match being scored live                                  | **Readable.** Watching is public; scoring is not      |
+| `/help`                    | Help                                                       | Readable                                              |
+| `/contact`                 | The contact form                                           | Readable and writable                                 |
+| `/join`                    | Join the League: the league's details and a sign-up button | Readable                                              |
+| `/auth`                    | Sign in and register                                       | Readable                                              |
+| `/forgot-password`         | Ask for a password-reset email                             | Readable                                              |
+| `/reset-password`          | Choose a new password, from the link in that email         | Readable                                              |
+| `/setup-profile`           | Finish your profile                                        | Not guarded                                           |
+| `/oauth/consent`           | Authorise another app                                      | Not guarded                                           |
+| `/admin`                   | The admin dashboard; redirects to the section last open    | **Guarded**: redirects to `/auth`                     |
+| `/admin/:section`          | One admin section, e.g. `/admin/scores`                    | **Guarded**: redirects to `/auth` when signed out     |
+| `/timeslots`               | Nothing of its own; redirects to `/admin/timeslots`        | **Guarded**: redirects to `/auth` when signed out     |
+| anything else              | Page not found                                             | Readable                                              |
 
 Only three routes are guarded. See
 [`accounts-and-roles.md`](accounts-and-roles.md#how-pages-are-gated) for what
@@ -162,7 +162,7 @@ Not applicable to navigation itself. Individual pages own this.
 Most page state is held in the page and lost on navigation: sort orders, most
 tabs, which panels are expanded, and the scroll position are not in the URL and
 cannot be linked to or bookmarked. (Four routes do keep the scroll position for
-Back, in the tab's session storage; see *Arrive*.) Several pages do write some state to the
+Back, in the tab's session storage; see _Arrive_.) Several pages do write some state to the
 address, so that a view can be linked to, bookmarked or reloaded:
 
 - `/teams/:teamId` and `/matches/:matchId/live` carry a record id. The team page
@@ -194,41 +194,41 @@ Not applicable to navigation itself.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while on the page |
-| --- | --- | --- |
-| The user's role | Decides only whether the three guarded routes render, redirect, or refuse. Every other route renders the same for every role. | Signing out in another tab takes effect here immediately and can remove controls under the cursor. It does not force a redirect off an unguarded page. |
-| The record's state | A team and a live match are read from the URL (`/teams/:teamId`, `/matches/:matchId/live`). Compare reads two team ids, the playoffs page a bracket id, and the consent page a request number. For a team or a match, a missing or invalid id gives that page's own empty state, not the 404 page. | No effect on routing. |
-| The season's state | No effect on which routes exist. | No effect. |
-| Viewport | The navigation bar collapses to a menu on a narrow screen. | Re-flows on rotation. |
-| Keys the app honours | **Cmd/Ctrl+K opens a command palette** for searching and jumping to one of nine pages, or to a team by name. It is the app's one global shortcut and it exists only on a screen 768 pixels or wider — on a phone there is no way to reach it. It lives in the top bar as a search icon, whose tooltip names the shortcut. Tab reaches a skip link to the main content first. | The palette can be opened at any time and closed with Escape. |
+| Modifier             | Set at arrival                                                                                                                                                                                                                                                                                                                                                               | Changed while on the page                                                                                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The user's role      | Decides only whether the three guarded routes render, redirect, or refuse. Every other route renders the same for every role.                                                                                                                                                                                                                                                | Signing out in another tab takes effect here immediately and can remove controls under the cursor. It does not force a redirect off an unguarded page. |
+| The record's state   | A team and a live match are read from the URL (`/teams/:teamId`, `/matches/:matchId/live`). Compare reads two team ids, the playoffs page a bracket id, and the consent page a request number. For a team or a match, a missing or invalid id gives that page's own empty state, not the 404 page.                                                                           | No effect on routing.                                                                                                                                  |
+| The season's state   | No effect on which routes exist.                                                                                                                                                                                                                                                                                                                                             | No effect.                                                                                                                                             |
+| Viewport             | The navigation bar collapses to a menu on a narrow screen.                                                                                                                                                                                                                                                                                                                   | Re-flows on rotation.                                                                                                                                  |
+| Keys the app honours | **Cmd/Ctrl+K opens a command palette** for searching and jumping to one of nine pages, or to a team by name. It is the app's one global shortcut and it exists only on a screen 768 pixels or wider — on a phone there is no way to reach it. It lives in the top bar as a search icon, whose tooltip names the shortcut. Tab reaches a skip link to the main content first. | The palette can be opened at any time and closed with Escape.                                                                                          |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No global effect. There is no global Escape handler. | No global effect; individual dialogs handle their own. |
-| In-app navigation away, or switching tab within the page | A link to another page loads it and opens it at the top (the position passes through two in-between values on the way, see *Arrive*). Switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). | **The page's state is discarded with no warning.** No route in the app blocks navigation for unsaved work. Requests already sent still complete, unseen. |
-| Browser back or forward | Works normally; the app cannot intercept it. | Same as navigating away. Coming back gives a freshly mounted page, not the one that was left. |
-| Reload, or the tab closed | The whole app is re-fetched and re-initialised. Sign-in state survives; everything else does not. | Everything in memory is lost. |
-| Network lost mid-request | If the page's own code has not arrived, the loading spinner stays indefinitely — there is no timeout and no error for a chunk that never loads. | Data requests fail and each page reports it in its own way. |
-| The request fails or times out | A page whose code fails to load, or whose first render throws, is replaced by the route error screen described below. | Data failures do not reach the error screen; they are the page's own business. |
-| The session expires | No effect on unguarded routes. On the three guarded ones, the next visit redirects to `/auth`. | No redirect happens on a page already open. The user finds out when a write fails. |
-| The same record changed in another tab, or by another user | No effect on routing. | No effect on routing. |
-| Browser autofill or a password manager writes into the form | No effect on routing. | No effect on routing. |
-| The window loses focus | No effect. | Returning focus causes cached data older than five minutes to refetch. See [`saving-and-freshness.md`](saving-and-freshness.md). |
+| Event                                                       | Before the first edit                                                                                                                                                                                                                                                                                           | While editing or submitting                                                                                                                              |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No global effect. There is no global Escape handler.                                                                                                                                                                                                                                                            | No global effect; individual dialogs handle their own.                                                                                                   |
+| In-app navigation away, or switching tab within the page    | A link to another page loads it and opens it at the top (the position passes through two in-between values on the way, see _Arrive_). Switching a tab within the page keeps the scroll position (pressing Tab afterwards moves focus into the tab panel, and the browser scrolls it into view if it is hidden). | **The page's state is discarded with no warning.** No route in the app blocks navigation for unsaved work. Requests already sent still complete, unseen. |
+| Browser back or forward                                     | Works normally; the app cannot intercept it.                                                                                                                                                                                                                                                                    | Same as navigating away. Coming back gives a freshly mounted page, not the one that was left.                                                            |
+| Reload, or the tab closed                                   | The whole app is re-fetched and re-initialised. Sign-in state survives; everything else does not.                                                                                                                                                                                                               | Everything in memory is lost.                                                                                                                            |
+| Network lost mid-request                                    | If the page's own code has not arrived, the loading spinner stays indefinitely — there is no timeout and no error for a chunk that never loads.                                                                                                                                                                 | Data requests fail and each page reports it in its own way.                                                                                              |
+| The request fails or times out                              | A page whose code fails to load, or whose first render throws, is replaced by the route error screen described below.                                                                                                                                                                                           | Data failures do not reach the error screen; they are the page's own business.                                                                           |
+| The session expires                                         | No effect on unguarded routes. On the three guarded ones, the next visit redirects to `/auth`.                                                                                                                                                                                                                  | No redirect happens on a page already open. The user finds out when a write fails.                                                                       |
+| The same record changed in another tab, or by another user  | No effect on routing.                                                                                                                                                                                                                                                                                           | No effect on routing.                                                                                                                                    |
+| Browser autofill or a password manager writes into the form | No effect on routing.                                                                                                                                                                                                                                                                                           | No effect on routing.                                                                                                                                    |
+| The window loses focus                                      | No effect.                                                                                                                                                                                                                                                                                                      | Returning focus causes cached data older than five minutes to refetch. See [`saving-and-freshness.md`](saving-and-freshness.md).                         |
 
 After any interrupt the user is wherever the browser put them. The app never
 returns a user to an interrupted page. It restores only what a page chose to keep:
-what is in the address (see *While editing*), a few choices saved in the browser (for
+what is in the address (see _While editing_), a few choices saved in the browser (for
 example the teams page's style and grouping and the schedule's tab), and, on four
-pages, the scroll position (see *Arrive*).
+pages, the scroll position (see _Arrive_).
 
 ## When a page fails
 
 Two different failures produce two different screens.
 
 **A page that fails to load or render** is replaced by a route error screen: a
-warning triangle, "Failed to load *page name*", the sentence "Something went
+warning triangle, "Failed to load _page name_", the sentence "Something went
 wrong loading this page. You can try again or navigate elsewhere.", and three
 buttons — Try Again, Go Back, and Home. In a development build the underlying
 error message is shown as well; in the published build it is not. "Home" is a
@@ -274,7 +274,7 @@ the loading spinner with no error.
 page is still visible on the next, because there is one toast area for the whole
 app.
 
-**URL state.** See *While editing* above for what each page writes to the address.
+**URL state.** See _While editing_ above for what each page writes to the address.
 Sort orders, most tabs, expanded panels and the scroll position are not in the
 address and cannot be linked to. Four routes keep the scroll position for Back in
 the tab's session storage.
@@ -283,7 +283,7 @@ the tab's session storage.
 
 **Accessibility.** A skip link reaches the main content. Route changes are
 announced and move focus to the main content, except on the first load, and the
-new page opens at the top (after two in-between positions, see *Arrive*), so once it settles what is on
+new page opens at the top (after two in-between positions, see _Arrive_), so once it settles what is on
 screen matches where focus went. The
 command palette is the only keyboard route to fast navigation and it
 is absent below 768 pixels.
@@ -298,7 +298,7 @@ development build the analytics call does nothing.
   back where they were left; nobody has checked it by hand, and Forward was not
   tried in a browser. Every other page comes back wherever the browser puts it.**
   The four routes jump to the saved spot and hold it for a moment, and give way
-  when the reader scrolls (see *Arrive*). A user who presses Back to `/schedule`
+  when the reader scrolls (see _Arrive_). A user who presses Back to `/schedule`
   gets what the browser gives: the top, in the 2026-11-05 test. Data that arrives
   after the watch window (one quiet second, three at most) is not caught; see
   [Open questions](#open-questions-and-verification).

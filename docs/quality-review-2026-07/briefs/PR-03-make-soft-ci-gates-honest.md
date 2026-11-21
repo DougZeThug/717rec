@@ -33,7 +33,8 @@ Every green check on the repo means something real ran and passed; anything that
 ## 5. Implementation steps
 
 **Real-backend E2E (choose one):**
-- **Preferred:** Doug creates a **separate, dedicated Supabase project** for E2E and sets repo secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`, `E2E_TEST_USER_EMAIL`, `E2E_TEST_USER_PASSWORD`. A "staging schema" inside the production project is **not** acceptable: the e2e helper's service-role client and every table operation target the default `public` schema, so pointing these secrets at production-with-a-schema would seed and delete rows in real tables. Then add a guard step that **fails** the job when configuration is incomplete — it must bind and check **all five** secrets (the spec skips if *any* is absent, and a bare `run:` step sees none of them without an `env:` mapping):
+
+- **Preferred:** Doug creates a **separate, dedicated Supabase project** for E2E and sets repo secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`, `E2E_TEST_USER_EMAIL`, `E2E_TEST_USER_PASSWORD`. A "staging schema" inside the production project is **not** acceptable: the e2e helper's service-role client and every table operation target the default `public` schema, so pointing these secrets at production-with-a-schema would seed and delete rows in real tables. Then add a guard step that **fails** the job when configuration is incomplete — it must bind and check **all five** secrets (the spec skips if _any_ is absent, and a bare `run:` step sees none of them without an `env:` mapping):
   ```yaml
   - name: Require E2E secrets
     env:
@@ -51,6 +52,7 @@ Every green check on the repo means something real ran and passed; anything that
 - **If no second project for now:** remove the `e2e-real-backend` job from `ci.yml` entirely (keep the spec and helper in the repo), and note in the README's CI table that real-backend E2E is not yet active. Deleting beats disabling with `if: ${{ vars.E2E_REAL_BACKEND_ENABLED == 'true' }}`, because GitHub reports a conditionally-skipped job as **Skipped, which still satisfies a required status check** — a disabled-but-required "E2E (real Supabase)" would keep green-lighting merges while testing nothing, which is exactly the failure mode this brief exists to fix. If the flag approach is used anyway (e.g. to keep the YAML in place), the job must never appear in any branch-protection required-checks list until the secrets exist and the flag is on. Restore the job in the same PR that adds the secrets, guard step included.
 
 **Lighthouse:**
+
 - In `lighthouserc.json`, promote to `"error"` with realistic floors measured from the current build (review measured entry 130.97 kB gz; CI Lighthouse historically passes):
   ```json
   "categories:performance": ["error", { "minScore": 0.65 }],

@@ -19,6 +19,7 @@ No personal data, no admin tools, no counter-drift, no service-role key.
 ## What gets built
 
 New public tools (no auth, `anon` role only):
+
 - `list_teams` — teams in the active season with division and record
 - `get_standings` — active-season standings by power score, optional division filter
 - `get_schedule` — upcoming / recent / all matches, optional team filter

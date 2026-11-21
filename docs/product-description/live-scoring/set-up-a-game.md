@@ -76,7 +76,7 @@ they would have to untick first.
 Adding a player is different: it **writes immediately**. A text box at the foot
 of each dropdown reads "Add a player…". Typing a name and pressing the button —
 or Enter — adds that person to the team's roster for good, and a toast says
-"Player added — *name* joined the roster." This is a real change to the team, not
+"Player added — _name_ joined the roster." This is a real change to the team, not
 a choice for this game, and there is no undo for it on this screen.
 
 An empty or whitespace-only name is refused by the button staying dead.
@@ -111,28 +111,28 @@ press again.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | A scorer sees the panel. Anyone else sees "Waiting for a scorekeeper to start Game N…" and nothing else. | Losing the right to score does not remove the panel until the screen refetches; the write then fails. |
-| The record's state | The panel is headed with the next game's number, worked out from the games that already exist. Before Game 1 both dropdowns are empty; before Games 2 and 3 they are pre-filled. | If the other scorer starts the game first, the panel disappears and the round input replaces it. |
-| The season's state | No effect. | No effect. |
-| Viewport | Built for a phone: full-width dropdowns, a 48-pixel-high start button, a scrolling roster list capped at about eight names before it scrolls. | No effect. |
-| Keys the app honours | Tab reaches both dropdowns and the button. Enter in the "Add a player…" box adds the player. | Enter in the add box adds; there is no key that starts the game. |
+| Modifier             | Set at arrival                                                                                                                                                                   | Changed while editing                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| The user's role      | A scorer sees the panel. Anyone else sees "Waiting for a scorekeeper to start Game N…" and nothing else.                                                                         | Losing the right to score does not remove the panel until the screen refetches; the write then fails. |
+| The record's state   | The panel is headed with the next game's number, worked out from the games that already exist. Before Game 1 both dropdowns are empty; before Games 2 and 3 they are pre-filled. | If the other scorer starts the game first, the panel disappears and the round input replaces it.      |
+| The season's state   | No effect.                                                                                                                                                                       | No effect.                                                                                            |
+| Viewport             | Built for a phone: full-width dropdowns, a 48-pixel-high start button, a scrolling roster list capped at about eight names before it scrolls.                                    | No effect.                                                                                            |
+| Keys the app honours | Tab reaches both dropdowns and the button. Enter in the "Add a player…" box adds the player.                                                                                     | Enter in the add box adds; there is no key that starts the game.                                      |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. | Closes the open dropdown, keeping the ticks. There is no Cancel for the panel and no way to clear a selection except by unticking. |
-| In-app navigation away, or switching tab within the page | Nothing lost. | **The selection is lost.** A player added to the roster is not — that was already written. A start already sent still completes, so the game may exist when the scorer returns. |
-| Browser back or forward | Nothing lost. | As above. |
-| Reload, or the tab closed | The panel returns, pre-filled from the previous game. | The selection is lost; an added player survives; a sent start may have landed. |
-| Network lost mid-request | The match will not load at all. | "Could not start game" with the reason. The selection is kept. Adding a player fails with "Could not add player". |
-| The request fails or times out | Not applicable. | As above. The scorer can press again immediately; there is no lockout. |
-| The session expires | Spectator view only. | The write fails. The panel stays and the reason is shown. |
-| The same record changed in another tab, or by another user | Not applicable. | **The other scorer starting the game replaces this panel mid-selection**, discarding whatever was ticked here. Their choice of players wins. Nothing warns that this happened. |
-| Browser autofill or a password manager writes into the form | No effect. | The "Add a player…" box is a plain text field and could in principle be autofilled; nothing depends on it. |
-| The window loses focus | No effect. | No effect. |
+| Event                                                       | Before the first edit                                 | While editing or submitting                                                                                                                                                     |
+| ----------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Nothing to cancel.                                    | Closes the open dropdown, keeping the ticks. There is no Cancel for the panel and no way to clear a selection except by unticking.                                              |
+| In-app navigation away, or switching tab within the page    | Nothing lost.                                         | **The selection is lost.** A player added to the roster is not — that was already written. A start already sent still completes, so the game may exist when the scorer returns. |
+| Browser back or forward                                     | Nothing lost.                                         | As above.                                                                                                                                                                       |
+| Reload, or the tab closed                                   | The panel returns, pre-filled from the previous game. | The selection is lost; an added player survives; a sent start may have landed.                                                                                                  |
+| Network lost mid-request                                    | The match will not load at all.                       | "Could not start game" with the reason. The selection is kept. Adding a player fails with "Could not add player".                                                               |
+| The request fails or times out                              | Not applicable.                                       | As above. The scorer can press again immediately; there is no lockout.                                                                                                          |
+| The session expires                                         | Spectator view only.                                  | The write fails. The panel stays and the reason is shown.                                                                                                                       |
+| The same record changed in another tab, or by another user  | Not applicable.                                       | **The other scorer starting the game replaces this panel mid-selection**, discarding whatever was ticked here. Their choice of players wins. Nothing warns that this happened.  |
+| Browser autofill or a password manager writes into the form | No effect.                                            | The "Add a player…" box is a plain text field and could in principle be autofilled; nothing depends on it.                                                                      |
+| The window loses focus                                      | No effect.                                            | No effect.                                                                                                                                                                      |
 
 After an interrupt the scorer comes back to a panel rebuilt from the previous
 game, not from what they had ticked. The only thing that survives is a player

@@ -24,19 +24,21 @@ brackets (tournament)
 
 Represents a stage in the tournament (e.g., "Main Stage", "Finals").
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier |
-| `tournament_id` | uuid | NOT NULL, FK → brackets(id) | Reference to parent bracket |
-| `name` | text | NOT NULL | Stage name |
-| `type` | text | NOT NULL | Stage type (single_elimination, double_elimination) |
-| `number` | integer | NOT NULL | Stage number in sequence |
-| `settings` | jsonb | DEFAULT '{}' | Additional stage configuration |
+| Column          | Type    | Constraints                 | Description                                         |
+| --------------- | ------- | --------------------------- | --------------------------------------------------- |
+| `id`            | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier                                   |
+| `tournament_id` | uuid    | NOT NULL, FK → brackets(id) | Reference to parent bracket                         |
+| `name`          | text    | NOT NULL                    | Stage name                                          |
+| `type`          | text    | NOT NULL                    | Stage type (single_elimination, double_elimination) |
+| `number`        | integer | NOT NULL                    | Stage number in sequence                            |
+| `settings`      | jsonb   | DEFAULT '{}'                | Additional stage configuration                      |
 
 **Indexes:**
+
 - `idx_stage_tournament` on `tournament_id`
 
 **Foreign Keys:**
+
 - `fk_stage_tournament`: `tournament_id` → `brackets(id)` ON DELETE CASCADE
 
 ---
@@ -45,17 +47,19 @@ Represents a stage in the tournament (e.g., "Main Stage", "Finals").
 
 Represents a group within a stage (used for round-robin or group stages).
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier |
-| `stage_id` | integer | NOT NULL, FK → stage(id) | Reference to parent stage |
-| `number` | integer | NOT NULL | Group number in sequence |
-| `name` | text | NULL | Optional group name |
+| Column     | Type    | Constraints                 | Description               |
+| ---------- | ------- | --------------------------- | ------------------------- |
+| `id`       | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier         |
+| `stage_id` | integer | NOT NULL, FK → stage(id)    | Reference to parent stage |
+| `number`   | integer | NOT NULL                    | Group number in sequence  |
+| `name`     | text    | NULL                        | Optional group name       |
 
 **Indexes:**
+
 - `idx_group_stage` on `stage_id`
 
 **Foreign Keys:**
+
 - `fk_group_stage`: `stage_id` → `stage(id)` ON DELETE CASCADE
 
 ---
@@ -64,19 +68,21 @@ Represents a group within a stage (used for round-robin or group stages).
 
 Represents a round within a group (e.g., "Quarterfinals", "Semifinals").
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier. A single serial shared by every bracket in the database, so it only ever climbs — **never** the round number |
-| `group_id` | integer | NOT NULL, FK → group(id) | Reference to parent group |
-| `stage_id` | integer | NOT NULL, FK → stage(id) | Denormalized reference to stage for performance |
-| `number` | integer | NOT NULL | The round's 1-based place **within its group**. Restarts at 1 for the winners bracket, the losers bracket and the grand final. This is the round number to show a reader |
-| `name` | text | NULL | Optional round name |
+| Column     | Type    | Constraints                 | Description                                                                                                                                                              |
+| ---------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`       | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier. A single serial shared by every bracket in the database, so it only ever climbs — **never** the round number                                          |
+| `group_id` | integer | NOT NULL, FK → group(id)    | Reference to parent group                                                                                                                                                |
+| `stage_id` | integer | NOT NULL, FK → stage(id)    | Denormalized reference to stage for performance                                                                                                                          |
+| `number`   | integer | NOT NULL                    | The round's 1-based place **within its group**. Restarts at 1 for the winners bracket, the losers bracket and the grand final. This is the round number to show a reader |
+| `name`     | text    | NULL                        | Optional round name                                                                                                                                                      |
 
 **Indexes:**
+
 - `idx_round_group` on `group_id`
 - `idx_round_stage_id` on `stage_id`
 
 **Foreign Keys:**
+
 - `fk_round_group`: `group_id` → `group(id)` ON DELETE CASCADE
 - `fk_round_stage`: `stage_id` → `stage(id)` ON DELETE CASCADE
 
@@ -88,23 +94,23 @@ Represents a round within a group (e.g., "Quarterfinals", "Semifinals").
 
 Represents an individual match between two opponents.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier |
-| `stage_id` | integer | NOT NULL, FK → stage(id) | Reference to stage |
-| `group_id` | integer | NOT NULL, FK → group(id) | Reference to group |
-| `round_id` | integer | NOT NULL, FK → round(id) | Reference to round. This is `round.id` (a global serial), not the round number — join to `round` and read `round.number` |
-| `number` | integer | NOT NULL | Match number within round |
-| `status` | integer | NOT NULL, DEFAULT 1 | brackets-manager status (0=Locked, 1=Waiting, 2=Ready, 3=Running, 4=Completed, 5=Archived) |
-| `opponent1_id` | integer | NULL | First opponent (participant ID; NULL for TBD/BYE — see `opponent1_result`) |
-| `opponent2_id` | integer | NULL | Second opponent (participant ID; NULL for TBD/BYE — see `opponent2_result`) |
-| `opponent1_score` | integer | NULL | First opponent's score |
-| `opponent2_score` | integer | NULL | Second opponent's score |
-| `opponent1_result` | text | NULL | First opponent's result (win/loss/draw), or the `'bye'` sentinel marking a strict BYE slot |
-| `opponent2_result` | text | NULL | Second opponent's result (win/loss/draw), or the `'bye'` sentinel marking a strict BYE slot |
-| `opponent1_position` | integer | NULL | brackets-manager structural feeder marker for slot 1 (written at stage creation; used for winner/loser routing) |
-| `opponent2_position` | integer | NULL | brackets-manager structural feeder marker for slot 2 |
-| `child_count` | integer | NOT NULL, DEFAULT 0 | Number of child matches feeding into this match |
+| Column               | Type    | Constraints                 | Description                                                                                                              |
+| -------------------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `id`                 | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier                                                                                                        |
+| `stage_id`           | integer | NOT NULL, FK → stage(id)    | Reference to stage                                                                                                       |
+| `group_id`           | integer | NOT NULL, FK → group(id)    | Reference to group                                                                                                       |
+| `round_id`           | integer | NOT NULL, FK → round(id)    | Reference to round. This is `round.id` (a global serial), not the round number — join to `round` and read `round.number` |
+| `number`             | integer | NOT NULL                    | Match number within round                                                                                                |
+| `status`             | integer | NOT NULL, DEFAULT 1         | brackets-manager status (0=Locked, 1=Waiting, 2=Ready, 3=Running, 4=Completed, 5=Archived)                               |
+| `opponent1_id`       | integer | NULL                        | First opponent (participant ID; NULL for TBD/BYE — see `opponent1_result`)                                               |
+| `opponent2_id`       | integer | NULL                        | Second opponent (participant ID; NULL for TBD/BYE — see `opponent2_result`)                                              |
+| `opponent1_score`    | integer | NULL                        | First opponent's score                                                                                                   |
+| `opponent2_score`    | integer | NULL                        | Second opponent's score                                                                                                  |
+| `opponent1_result`   | text    | NULL                        | First opponent's result (win/loss/draw), or the `'bye'` sentinel marking a strict BYE slot                               |
+| `opponent2_result`   | text    | NULL                        | Second opponent's result (win/loss/draw), or the `'bye'` sentinel marking a strict BYE slot                              |
+| `opponent1_position` | integer | NULL                        | brackets-manager structural feeder marker for slot 1 (written at stage creation; used for winner/loser routing)          |
+| `opponent2_position` | integer | NULL                        | brackets-manager structural feeder marker for slot 2                                                                     |
+| `child_count`        | integer | NOT NULL, DEFAULT 0         | Number of child matches feeding into this match                                                                          |
 
 **BYE vs TBD:** brackets-manager distinguishes a strict BYE (opponent object is
 `null` — no participant will ever occupy the slot) from a TBD slot
@@ -215,15 +221,18 @@ to prove no team ends up in two matches (`footprint.ts`).
   the "bracket changed since this screen was opened" message.
 
 **Indexes:**
+
 - `idx_match_stage` on `stage_id`
 - `idx_match_round` on `round_id`
 
 **Foreign Keys:**
+
 - `fk_match_stage`: `stage_id` → `stage(id)` ON DELETE CASCADE
 - `fk_match_group`: `group_id` → `group(id)` ON DELETE CASCADE
 - `fk_match_round`: `round_id` → `round(id)` ON DELETE CASCADE
 
 **Status Values:**
+
 1. `LOCKED` (0) - Match not yet ready
 2. `WAITING` (1) - One opponent resolved, awaiting the other
 3. `READY` (2) - Match ready to be played
@@ -237,19 +246,21 @@ to prove no team ends up in two matches (`footprint.ts`).
 
 Represents individual games within a best-of-N match.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier |
-| `match_id` | integer | NOT NULL, FK → match(id) | Reference to parent match |
-| `number` | integer | NOT NULL | Game number within match |
-| `opponent1_score` | integer | NULL | First opponent's score in this game |
-| `opponent2_score` | integer | NULL | Second opponent's score in this game |
-| `status` | integer | NOT NULL, DEFAULT 1 | Game status (same as match status) |
+| Column            | Type    | Constraints                 | Description                          |
+| ----------------- | ------- | --------------------------- | ------------------------------------ |
+| `id`              | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier                    |
+| `match_id`        | integer | NOT NULL, FK → match(id)    | Reference to parent match            |
+| `number`          | integer | NOT NULL                    | Game number within match             |
+| `opponent1_score` | integer | NULL                        | First opponent's score in this game  |
+| `opponent2_score` | integer | NULL                        | Second opponent's score in this game |
+| `status`          | integer | NOT NULL, DEFAULT 1         | Game status (same as match status)   |
 
 **Indexes:**
+
 - `idx_match_game_match` on `match_id`
 
 **Foreign Keys:**
+
 - `fk_match_game_match`: `match_id` → `match(id)` ON DELETE CASCADE
 
 ---
@@ -258,16 +269,18 @@ Represents individual games within a best-of-N match.
 
 Represents a team/player participating in the bracket.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier for participant |
-| `tournament_id` | uuid | NOT NULL, FK → brackets(id) | Reference to bracket |
-| `name` | text | NOT NULL | Participant name (team name) |
+| Column          | Type    | Constraints                 | Description                       |
+| --------------- | ------- | --------------------------- | --------------------------------- |
+| `id`            | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier for participant |
+| `tournament_id` | uuid    | NOT NULL, FK → brackets(id) | Reference to bracket              |
+| `name`          | text    | NOT NULL                    | Participant name (team name)      |
 
 **Indexes:**
+
 - `idx_participant_tournament` on `tournament_id`
 
 **Foreign Keys:**
+
 - `fk_participant_tournament`: `tournament_id` → `brackets(id)` ON DELETE CASCADE
 
 ---
@@ -291,10 +304,12 @@ This ensures referential integrity and prevents orphaned records.
 All tables have RLS enabled with the following policies:
 
 ### Read Access (SELECT)
+
 - **Public**: All users can view all bracket data
 - Policy: `Public read <table_name>`
 
 ### Write Access (INSERT/UPDATE/DELETE)
+
 - **Admins Only**: Only authenticated admin users can modify bracket data
 - Policy: `Admin write <table_name>`
 - Uses function: `current_user_is_admin()`
@@ -344,14 +359,14 @@ await service.updateMatch({
 
 ## Migration History
 
-| Migration | Date | Description |
-|-----------|------|-------------|
-| Initial setup | 2025-01-22 | Created base tables for brackets-manager |
-| Add `round.stage_id` | 2025-10-22 | Added denormalized stage_id to round table |
-| Add `match.child_count` | 2025-10-22 | Added child_count tracking to match table |
-| Add FK constraints | 2025-10-22 | Added all foreign key constraints with CASCADE |
-| Fix playoff status mapping | 2026-07-22 | Shared `map_bm_status_to_playoff_status()` used by the match → playoff_matches sync triggers (PR-13) |
-| Add `match.opponent1_position` / `opponent2_position` | 2026-07-22 | Persist brackets-manager's structural feeder positions on opponent slots (PR-13) |
+| Migration                                             | Date       | Description                                                                                          |
+| ----------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------- |
+| Initial setup                                         | 2025-01-22 | Created base tables for brackets-manager                                                             |
+| Add `round.stage_id`                                  | 2025-10-22 | Added denormalized stage_id to round table                                                           |
+| Add `match.child_count`                               | 2025-10-22 | Added child_count tracking to match table                                                            |
+| Add FK constraints                                    | 2025-10-22 | Added all foreign key constraints with CASCADE                                                       |
+| Fix playoff status mapping                            | 2026-07-22 | Shared `map_bm_status_to_playoff_status()` used by the match → playoff_matches sync triggers (PR-13) |
+| Add `match.opponent1_position` / `opponent2_position` | 2026-07-22 | Persist brackets-manager's structural feeder positions on opponent slots (PR-13)                     |
 
 ---
 
@@ -360,6 +375,7 @@ await service.updateMatch({
 ### Indexes
 
 All foreign key columns have indexes for optimal query performance:
+
 - Stage lookups by tournament
 - Group lookups by stage
 - Round lookups by group/stage
@@ -421,6 +437,7 @@ stopped at 16 and silently mis-seeded the lower bracket of 32-team brackets.
 ### Common Issues
 
 **Error: "column X does not exist"**
+
 - Ensure all migrations have been run
 - Check that `round.stage_id` and `match.child_count` exist
 - PGRST204 "Could not find the 'opponent1_position' column of 'match'" means
@@ -430,10 +447,12 @@ stopped at 16 and silently mis-seeded the lower bracket of 32-team brackets.
   in `docs/OPERATIONS.md`
 
 **Error: "violates foreign key constraint"**
+
 - Ensure parent records exist before creating child records
 - Verify UUIDs/IDs are valid
 
 **Error: "new row violates row-level security policy"**
+
 - Ensure user is authenticated and has admin privileges
 - Check that `current_user_is_admin()` returns true
 

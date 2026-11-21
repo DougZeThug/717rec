@@ -1,7 +1,7 @@
 ---
 name: factory-maintain
 description: Run a maintenance audit (checks, dependency and security alerts, dead code, flaky or failing tests, docs drift), investigate what it finds, and prepare repair branches or pull requests for the safe fixes. Never merges or deploys.
-argument-hint: "[focus: deps | tests | security | docs | all]"
+argument-hint: '[focus: deps | tests | security | docs | all]'
 disable-model-invocation: true
 ---
 

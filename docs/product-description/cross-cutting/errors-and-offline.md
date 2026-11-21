@@ -151,7 +151,7 @@ submit. See
 [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
 
 The app is installable as a home-screen app through a third-party service, which
-caches the shell. That makes an offline visit *open* rather than fail, which is
+caches the shell. That makes an offline visit _open_ rather than fail, which is
 arguably worse: the app looks alive and nothing works.
 
 > **Technical note:** the app used to carry a helper that turned a failure whose
@@ -164,13 +164,13 @@ arguably worse: the app looks alive and nothing works.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | No effect on how failure is reported. A refused-by-permission write produces the same generic toast as a broken connection. | No effect. |
-| The record's state | No effect. A stale or already-changed record fails the same way as any other. | No effect. |
-| The season's state | No effect. No error message anywhere mentions a season. | No effect. |
-| Viewport | On a narrow screen the toast is full width at the **top**; from 640 pixels up it is bottom right and at most 420 pixels wide. | Re-flows on rotation. |
-| Keys the app honours | A toast can be dismissed from the keyboard. The route error screen's three buttons are reachable by Tab. | No shortcuts. |
+| Modifier             | Set at arrival                                                                                                                | Changed while editing |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| The user's role      | No effect on how failure is reported. A refused-by-permission write produces the same generic toast as a broken connection.   | No effect.            |
+| The record's state   | No effect. A stale or already-changed record fails the same way as any other.                                                 | No effect.            |
+| The season's state   | No effect. No error message anywhere mentions a season.                                                                       | No effect.            |
+| Viewport             | On a narrow screen the toast is full width at the **top**; from 640 pixels up it is bottom right and at most 420 pixels wide. | Re-flows on rotation. |
+| Keys the app honours | A toast can be dismissed from the keyboard. The route error screen's three buttons are reachable by Tab.                      | No shortcuts.         |
 
 A development build shows the underlying error message on both error screens; the
 published build does not. A developer and a player therefore report different
@@ -178,18 +178,18 @@ things about the same failure.
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Dismisses a toast that is focused. There is no global Escape handler. | **Does not abort anything.** No request in the app can be cancelled once sent. Escape closes the dialog and the write still lands. |
-| In-app navigation away, or switching tab within the page | A visible toast survives and stays on the next page. | The request finishes unseen. Its failure toast appears over whatever page the user is now on, with no clue which page it came from. |
-| Browser back or forward | Same as navigating away; the app cannot intercept it. | Same. Coming back gives a freshly mounted page with no memory of the failure. |
-| Reload, or the tab closed | Every toast is lost and every page refetches from nothing. | The request may still have landed. Nothing tells the user whether it did, so a retry after a reload can duplicate the write. |
-| Network lost mid-request | Nothing is in flight, so nothing fails yet. Cached data keeps showing and looks current. | The request fails at once. The message is the feature's ordinary sentence, never a statement about the network. Nothing is queued. |
-| The request fails or times out | A read is retried once, then the page falls back to its own empty or error state. | One red toast. Any optimistic display rolls back. The specific reason is discarded. |
-| The session expires | Public reads keep working, so the app looks healthy. | Writes fail with the feature's generic message. No message mentions the session, so an expired session looks exactly like a bug. |
-| The same record changed in another tab, or by another user | Outside live scoring the change does not arrive; the user keeps the old value. | Two people writing the same record outside live scoring overwrite each other with no conflict, no warning, and no error. |
-| Browser autofill or a password manager writes into the form | No effect on error handling. | No effect. A value written by a tool fails validation exactly as a typed one would. |
-| The window loses focus | Nothing. | The request continues. Returning to the tab refetches stale data, so a value can correct itself silently just after a failure the user is still reading about. |
+| Event                                                       | Before the first edit                                                                    | While editing or submitting                                                                                                                                    |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Dismisses a toast that is focused. There is no global Escape handler.                    | **Does not abort anything.** No request in the app can be cancelled once sent. Escape closes the dialog and the write still lands.                             |
+| In-app navigation away, or switching tab within the page    | A visible toast survives and stays on the next page.                                     | The request finishes unseen. Its failure toast appears over whatever page the user is now on, with no clue which page it came from.                            |
+| Browser back or forward                                     | Same as navigating away; the app cannot intercept it.                                    | Same. Coming back gives a freshly mounted page with no memory of the failure.                                                                                  |
+| Reload, or the tab closed                                   | Every toast is lost and every page refetches from nothing.                               | The request may still have landed. Nothing tells the user whether it did, so a retry after a reload can duplicate the write.                                   |
+| Network lost mid-request                                    | Nothing is in flight, so nothing fails yet. Cached data keeps showing and looks current. | The request fails at once. The message is the feature's ordinary sentence, never a statement about the network. Nothing is queued.                             |
+| The request fails or times out                              | A read is retried once, then the page falls back to its own empty or error state.        | One red toast. Any optimistic display rolls back. The specific reason is discarded.                                                                            |
+| The session expires                                         | Public reads keep working, so the app looks healthy.                                     | Writes fail with the feature's generic message. No message mentions the session, so an expired session looks exactly like a bug.                               |
+| The same record changed in another tab, or by another user  | Outside live scoring the change does not arrive; the user keeps the old value.           | Two people writing the same record outside live scoring overwrite each other with no conflict, no warning, and no error.                                       |
+| Browser autofill or a password manager writes into the form | No effect on error handling.                                                             | No effect. A value written by a tool fails validation exactly as a typed one would.                                                                            |
+| The window loses focus                                      | Nothing.                                                                                 | The request continues. Returning to the tab refetches stale data, so a value can correct itself silently just after a failure the user is still reading about. |
 
 After any interrupt, what the database accepted is what happened. The app never
 reconciles the screen with a write whose answer it never saw.

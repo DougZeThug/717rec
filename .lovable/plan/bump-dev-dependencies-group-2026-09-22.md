@@ -2,17 +2,17 @@
 
 Update the 9 dev dependencies listed below to their target versions.
 
-| Package | From | To |
-|---|---|---|
-| @testing-library/dom | ^10.4.1 | ^10.4.2 |
-| @testing-library/react | ^16.3.2 | ^16.3.3 |
-| @testing-library/user-event | ^14.6.4 | ^14.6.7 |
-| @types/node | ^26.2.0 | ^26.6.1 |
-| eslint | ^10.8.1 | ^10.10.0 |
-| eslint-plugin-react-refresh | ^0.5.4 | ^0.5.7 |
-| typescript | 6.0.3 | 7.0.2 |
-| typescript-eslint | ^8.64.0 | ^8.70.0 |
-| vitest | ^4.1.10 | ^5.0.1 |
+| Package                     | From    | To       |
+| --------------------------- | ------- | -------- |
+| @testing-library/dom        | ^10.4.1 | ^10.4.2  |
+| @testing-library/react      | ^16.3.2 | ^16.3.3  |
+| @testing-library/user-event | ^14.6.4 | ^14.6.7  |
+| @types/node                 | ^26.2.0 | ^26.6.1  |
+| eslint                      | ^10.8.1 | ^10.10.0 |
+| eslint-plugin-react-refresh | ^0.5.4  | ^0.5.7   |
+| typescript                  | 6.0.3   | 7.0.2    |
+| typescript-eslint           | ^8.64.0 | ^8.70.0  |
+| vitest                      | ^4.1.10 | ^5.0.1   |
 
 ## Steps
 

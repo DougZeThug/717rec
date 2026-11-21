@@ -6,13 +6,13 @@
 
 Overall coverage is healthy (65.4% lines) but concentrated: pages and services are well covered while several **live, data-mutating admin subtrees have near-zero automated verification at any layer** (unit, e2e, or SQL). Measured from this review's coverage run:
 
-| Subtree | Coverage | Risk |
-|---|---|---|
-| Admin auto-schedule (~27 files, ~2,300 lines) | **1.16% stmts** | generates the league's entire weekly schedule |
-| Admin live-corrections (5 files) | **0%** | edits/deletes completed live-scoring rounds, changes game winners |
-| Auth UI + AuthContext | ~32% | the front door for every admin/member |
-| Blind-draw, dashboard shell, themes, contact-inbox, help sections | 0% | lower risk, still live admin surface |
-| History drag-and-drop standings rewrite | ~0% | rewrites historical records |
+| Subtree                                                           | Coverage        | Risk                                                              |
+| ----------------------------------------------------------------- | --------------- | ----------------------------------------------------------------- |
+| Admin auto-schedule (~27 files, ~2,300 lines)                     | **1.16% stmts** | generates the league's entire weekly schedule                     |
+| Admin live-corrections (5 files)                                  | **0%**          | edits/deletes completed live-scoring rounds, changes game winners |
+| Auth UI + AuthContext                                             | ~32%            | the front door for every admin/member                             |
+| Blind-draw, dashboard shell, themes, contact-inbox, help sections | 0%              | lower risk, still live admin surface                              |
+| History drag-and-drop standings rewrite                           | ~0%             | rewrites historical records                                       |
 
 Two systemic test-hygiene issues compound this: `vi.clearAllMocks()` clears call history but **not** mock implementations, which is exactly how PR-01's stale-stub leak happened (`useTimeslotMutation.test.ts`); and `vitest.config.ts:76-98` sets no coverage floor for `src/components` / `src/pages`, so component regressions only dent the global aggregate.
 
@@ -50,7 +50,7 @@ None.
 
 ## 8. Testing requirements
 
-This PR *is* tests. Keep total runtime reasonable: prefer pure-function tests over rendering where possible (the auto-schedule utils especially).
+This PR _is_ tests. Keep total runtime reasonable: prefer pure-function tests over rendering where possible (the auto-schedule utils especially).
 
 ## 9. Validation commands
 

@@ -5,6 +5,7 @@
 **The History page reads champions from `team_season_stats`, and for Summer 1 2026 every row has `champion = false` and `playoff_rank = NULL`.** The playoff data itself is fine.
 
 Verified in the database:
+
 - Summer 1 2026 has 27 stat rows, 0 champions, 0 playoff ranks.
 - All three Summer 1 brackets are `state = completed` and each has a 1st-place row in `playoff_team_records`:
   - Competitive: Baggin' & Braggin'
