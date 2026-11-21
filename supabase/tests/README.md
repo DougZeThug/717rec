@@ -261,6 +261,7 @@ because other objects depend on it` (script 07 never uses CASCADE) and thirteen
   dropped, disabled or widened trigger and a missing function. The log holds two
   expected `WARNING:  audit_live_scoring_correction failed on ...` lines (case 9
   fails the audit on purpose).
+- `match_delete_audit.sql` — asserts the match delete log (`20261121120000`). An admin delete through `delete_match_with_stats_reversal` (an open match, and a completed match that is not archived) and a delete with no signed-in person each write one `match_delete` row in `security_audit_log` with the whole old row (`user_id` empty for the no-person case). `archive_season` and `partial_archive_season` move completed matches into `matches_archive` and write 0 rows; a refused non-admin delete writes 0 rows. A `CHECK (false)` on `security_audit_log` shows the delete still lands when the audit fails (one expected `WARNING:  audit_match_delete failed on matches DELETE: ...` line). It pins the function (SECURITY DEFINER, pinned search path, no EXECUTE for anon or signed-in users) and the trigger (AFTER, row-level, DELETE only, no WHEN, enabled).
 - `username_availability.sql` — asserts `is_username_taken(text)`, the profile
   form's name check, answers past RLS: as an ordinary player a plain read of
   another player's profile finds nothing, while the function reports that name
