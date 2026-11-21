@@ -1469,17 +1469,18 @@ after. There is **no screen for it**. You read it in the Supabase SQL Editor.
 - An admin save that changes nothing (the Edit Round dialog always re-sends both
   scores).
 - Rounds and games that go away because a whole match or game was deleted. The
-  match or game delete is the event. A match delete itself is not logged either
-  (the `matches` table has no audit).
-- A change made in the SQL Editor or by a background job. There is no signed-in
-  person to name.
+  match or game delete is the event. A match delete has its own log. See "Who
+  deleted a match?" below.
+- A change to a round or a game made in the SQL Editor or by a background job.
+  There is no signed-in person to name.
 - An admin changing the winner of a game that is still **in progress**.
 - If the audit itself ever fails, the scorer's change still goes through. The
   database only prints a warning. So a missing row is possible, but a blocked score
   is not.
 
-Other open gaps (match delete audit, the audit screen) are listed in
-`docs/audits/open-follow-ups.md`.
+Other open gaps (the audit screen) are listed in `docs/audits/open-follow-ups.md`.
+The match delete log is a second, separate change (built 2026-11-21, **not live
+until Doug applies it**). It is described at the end of this section.
 
 ### Applying it (Supabase SQL Editor, not Lovable)
 
@@ -1589,8 +1590,9 @@ If step 5 or 7 shows no row, or step 4 or 6 adds one, stop and tell Claude.
 
 **Remove the practice match.** Do not press "finish the match". Delete it: in
 `/admin`, open **Scores**, find the match, press the bin on its row, and press
-**Delete**. This also reverses any statistics it made. A match delete writes **no**
-audit rows, on purpose (its rounds and games go with it).
+**Delete**. This also reverses any statistics it made. The rounds and games of the
+match go with it and write **no** `live_*` rows, on purpose. The match itself is
+logged by the match delete log (below), once that is applied.
 
 ### If it needs undoing
 
@@ -1605,3 +1607,140 @@ DROP FUNCTION IF EXISTS public.live_scoring_audit_coverage_drift();
 ```
 
 `supabase/tests/live_scoring_audit_triggers.sql` covers it in CI.
+
+### Who deleted a match? (the match delete log)
+
+Built 2026-11-21 (`supabase/migrations/20261121120000_audit_match_deletes.sql`). Doug
+decided on 2026-11-21: "We can do the delete log." **A hand-apply is needed** (§6).
+Until it is applied, a match delete still leaves no record. Nothing else breaks.
+It is a separate file from the live-scoring audit above. You can apply either one
+first.
+
+**What it does.** Each time a match is deleted, the database writes **one** row in
+`security_audit_log`:
+
+| Column       | What it holds                                                                       |
+| ------------ | ----------------------------------------------------------------------------------- |
+| `action`     | `match_delete`                                                                      |
+| `table_name` | `matches`                                                                           |
+| `record_id`  | The id of the deleted match.                                                        |
+| `old_values` | The whole match row before the delete (teams, scores, winner, season, date, round). |
+| `user_id`    | Who deleted it. **Empty** if no one was signed in (the SQL Editor, a job).          |
+| `created_at` | When.                                                                               |
+
+**What it does NOT do, on purpose:**
+
+- It does **not keep the games and rounds** of the deleted match. They go away with
+  the match, before the log row is written. So a delete **cannot be undone from the
+  log alone**. The log tells you who deleted the match and what the match row held.
+- It does **not log a season archive**. Archiving a season moves its finished
+  matches to the archive and removes them from the live table. That is a move, not
+  a delete. It writes **no** rows.
+- A delete made in the SQL Editor **is** logged, with an empty `deleted_by` in the
+  report. Doug chose this: that delete is the one nobody else would see.
+- It is **not tamper-proof**. Someone with full database access can edit the log or
+  switch the trigger off.
+- If the log itself ever fails, the delete still goes through. The database only
+  prints a warning. So a missing row is possible, but a blocked delete is not.
+- Deletes made **before** you apply it are not in the log. There is no back-fill.
+
+#### Applying it (Supabase SQL Editor, not Lovable)
+
+**A merged migration does not reach production.** You must run the file by hand.
+No app change goes with it.
+
+**Who runs it:** the project owner (Doug), in the Supabase dashboard SQL Editor. The
+editor runs as the database owner, so no app login is needed.
+
+1. Pick a **quiet time**: when no one is deleting a match in `/admin` Scores. The
+   file takes a very short lock on `matches`.
+2. **First, check that the log table writes at all** (read only). **Expect a few
+   recent rows.** If it shows **nothing**, **stop and tell Claude**. Do not apply
+   the file yet.
+
+   ```sql
+   SELECT table_name, action, created_at
+   FROM security_audit_log
+   ORDER BY created_at DESC
+   LIMIT 5;
+   ```
+
+3. Run the BEFORE check below. Expect **0 rows**. If you see 1 row, it is already
+   applied: skip to step 7.
+4. Open the SQL Editor. Paste the **whole** file
+   `20261121120000_audit_match_deletes.sql` and run it. The file sets its own 5
+   second lock limit at the top and resets it at the end. You need no extra line.
+   If it stops with "lock timeout", wait a minute and run it again. It is safe to
+   run twice.
+5. The editor may warn about a "destructive operation". The file drops nothing. The
+   word DROP only appears in a comment (the undo note). Click through.
+6. Run the AFTER check below. Expect **1 row**.
+7. Do the practice-match proof below.
+
+**BEFORE and AFTER check:**
+
+```sql
+SELECT tgrelid::regclass AS on_table, tgname, tgenabled
+FROM pg_trigger
+WHERE tgname = 'audit_match_delete' AND NOT tgisinternal;
+```
+
+**Before:** 0 rows. **After:** this 1 row (from a run on a test database):
+
+| on_table  | tgname               | tgenabled |
+| --------- | -------------------- | --------- |
+| `matches` | `audit_match_delete` | `O`       |
+
+`O` means the trigger is on. If the AFTER check shows 0 rows, or `tgenabled` is not
+`O`, stop and tell Claude.
+
+#### Who deleted a match? (the report)
+
+Run this any time. Newest first. `deleted_by` is who did it. An **empty**
+`deleted_by` means no one was signed in (the SQL Editor or a job).
+
+```sql
+SELECT l.created_at, p.username AS deleted_by, l.record_id AS match_id,
+       t1.name AS team1, t2.name AS team2,
+       l.old_values->>'iscompleted' AS was_completed,
+       l.old_values->>'round_number' AS round_number,
+       l.old_values->>'date' AS match_date,
+       l.old_values
+FROM security_audit_log l
+LEFT JOIN profiles p ON p.id = l.user_id
+LEFT JOIN teams t1 ON t1.id = (l.old_values->>'team1_id')::uuid
+LEFT JOIN teams t2 ON t2.id = (l.old_values->>'team2_id')::uuid
+WHERE l.action = 'match_delete'
+ORDER BY l.created_at DESC
+LIMIT 50;
+```
+
+`old_values` is the whole match row as it was. The team names come from the `teams`
+table. If a team was deleted too, its name is empty but its id is still in
+`old_values`.
+
+#### The real proof (one practice match)
+
+Use a **throwaway match** (never a real one). **Do not finish it. Keep it not
+completed.**
+
+1. In `/admin`, open **Match Creation**. Pick a date and pair two teams, then press
+   **Create Matches**. Use two test teams if you have them.
+2. Run the report above. Note how many `match_delete` rows you see (it may be 0).
+3. In `/admin`, open **Scores**, find the practice match, press the bin on its row,
+   and press **Delete**.
+4. Run the report again. **Expect exactly one new row**, with your username, the
+   two team names and `was_completed` = `false`.
+
+If you see no new row, or two, stop and tell Claude.
+
+#### If it needs undoing
+
+Run these two lines. Rows already written stay in `security_audit_log`:
+
+```sql
+DROP TRIGGER IF EXISTS audit_match_delete ON public.matches;
+DROP FUNCTION IF EXISTS public.audit_match_delete();
+```
+
+`supabase/tests/match_delete_audit.sql` covers it in CI.

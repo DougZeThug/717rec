@@ -412,11 +412,13 @@ two disagree until someone re-saves — which the admin dashboard now lists and
   game delete writes one row to `security_audit_log` with who did it (a scorer's
   undo too), when, and the whole row before and after. It is read with SQL only
   ([`OPERATIONS.md` section 6h](../../OPERATIONS.md#6h-who-changed-a-live-score-the-live-scoring-audit-trail)).
-  Entering rounds and finishing a game are not logged. A change made in the SQL
-  Editor is not logged, and neither is a match-level action (reopen a match,
-  save it as finished, delete it). The dashboard card shows the *state*, not the
-  history: once a match is re-saved it drops off the list and nothing on screen
-  says it was ever corrected.
+  Entering rounds and finishing a game are not logged. A round or game change
+  made in the SQL Editor is not logged, and neither is reopening a match or
+  saving it as finished. Deleting a match has its own log (migration
+  `20261121120000`, also hand-applied): one `match_delete` row with who deleted
+  it and the match row, but not its games and rounds. The dashboard card shows
+  the *state*, not the history: once a match is re-saved it drops off the list
+  and nothing on screen says it was ever corrected.
 - **Reopening a match needs admin; reopening a game does not.** The two look
   alike and differ completely in reach.
 
