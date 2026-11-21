@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useDeleteMatchWithReversal } from '@/hooks/matches/updates/useDeleteMatchWithReversal';
 import { invalidateAllDataQueries } from '@/hooks/matches/updates/utils/queryInvalidation';
 import { useToast } from '@/hooks/useToast';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
-import { deleteMatchWithStatsReversal } from '@/services/matches/MatchWriteService';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
@@ -35,6 +35,7 @@ const SubmitBar: React.FC<React.ComponentProps<typeof SubmitButton>> = (props) =
 const MassScoreEntryTool: React.FC = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const deleteMatch = useDeleteMatchWithReversal();
   const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -92,7 +93,7 @@ const MassScoreEntryTool: React.FC = () => {
       // Atomic delete + stats reversal + season-stats refresh happens
       // inside a single Postgres transaction, so a stats failure rolls
       // back the delete and prevents standings drift.
-      await deleteMatchWithStatsReversal(deleteMatchId);
+      await deleteMatch.mutateAsync(deleteMatchId);
 
       // removeMatch drops the row from both the tool's local state and its
       // query cache, preserving unsaved edits on other rows — an invalidation

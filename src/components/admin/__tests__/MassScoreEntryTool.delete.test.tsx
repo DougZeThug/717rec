@@ -145,6 +145,22 @@ describe('MassScoreEntryTool delete flow', () => {
     await waitFor(() => expect(screen.queryByText('Are you sure?')).not.toBeInTheDocument());
   });
 
+  it('after a good delete: removes the row, then shows the toast, then refreshes the data', async () => {
+    mockDeleteMatchWithStatsReversal.mockImplementation(() => Promise.resolve());
+    const user = userEvent.setup();
+    renderTool();
+
+    await user.click(screen.getByRole('button', { name: /delete match/i }));
+    await user.click(await screen.findByRole('button', { name: /^delete$/i }));
+
+    await waitFor(() => expect(mockInvalidateAllDataQueries).toHaveBeenCalledTimes(1));
+    const removeOrder = mockRemoveMatch.mock.invocationCallOrder[0];
+    const toastOrder = mockToast.mock.invocationCallOrder[0];
+    const invalidateOrder = mockInvalidateAllDataQueries.mock.invocationCallOrder[0];
+    expect(removeOrder).toBeLessThan(toastOrder);
+    expect(toastOrder).toBeLessThan(invalidateOrder);
+  });
+
   it('closes the dialog and deletes nothing when the admin cancels', async () => {
     const user = userEvent.setup();
     renderTool();
