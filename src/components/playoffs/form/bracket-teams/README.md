@@ -4,6 +4,8 @@
 
 This module provides components and utilities for team selection in bracket creation forms. It uses a simplified architecture with direct team selection management.
 
+See also: [Import Guidelines](./IMPORT_GUIDELINES.md) for how to import from this module.
+
 ## Architecture
 
 ### Components

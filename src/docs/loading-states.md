@@ -18,7 +18,7 @@ Is this a button/action state?
 
 ### 1. Full Page Loading
 
-Use a full-page Skeleton component (e.g., `CardSkeleton` with appropriate sizing) for page-level loading.
+Use a full-page Skeleton component (e.g., `ScheduleContentSkeleton`, which the Schedule page shows while its matches load) for page-level loading.
 
 ```tsx
 import { LoadingState } from "@/components/ui/loading-state";

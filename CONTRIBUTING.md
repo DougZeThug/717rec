@@ -272,6 +272,9 @@ export const useMyFeature = (id: string) => {
 - [Form Patterns](./src/docs/FORM_PATTERNS.md)
 - [Modal Patterns](./src/docs/MODAL_PATTERNS.md)
 - [Folder Conventions](./src/docs/FOLDER_CONVENTIONS.md)
+- [Loading States](./src/docs/loading-states.md)
+- [Error Handling](./src/docs/error-handling.md)
+- [Table Patterns](./src/docs/TABLE_PATTERNS.md)
 
 ## Questions?
 
