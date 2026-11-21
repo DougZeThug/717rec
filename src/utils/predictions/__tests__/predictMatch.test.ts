@@ -282,7 +282,7 @@ describe('predictMatch', () => {
   // The weekly recap lists one head-to-head pair per match with no de-duplication.
   // When two matches of the week have the same teams in the same order, the batch
   // SQL function multiplies the counts: a pair listed twice reads x4, three times
-  // x9 (docs/untangle-decision-log.md, "Slice 5 result"). That is harmless: both
+  // x9 (docs/audits/archive/untangle-decision-log.md, "Slice 5 result"). That is harmless: both
   // matches are decided, so both are already counted and the total is past
   // MIN_H2H_MATCHES either way, and the rating reads only wins / (wins + losses).
   // The recap reads only probA and probB. These pins fail if the rating ever

@@ -634,7 +634,7 @@ preview any mix safely: nothing changes until you press **Save & rescore**.
   numbers equal the live numbers, so a save with the same weights (the screen says
   "reasserted") needs a stale tab or a second admin. Revert works the scores out
   again from the live rules: it does not restore old stored numbers. See
-  `docs/untangle-decision-log.md`, "Power Score check result (2026-11-17)" and "Job
+  `docs/audits/archive/untangle-decision-log.md`, "Power Score check result (2026-11-17)" and "Job
   C result".
 
 Caveats:
@@ -1477,6 +1477,9 @@ after. There is **no screen for it**. You read it in the Supabase SQL Editor.
 - If the audit itself ever fails, the scorer's change still goes through. The
   database only prints a warning. So a missing row is possible, but a blocked score
   is not.
+
+Other open gaps (match delete audit, the audit screen) are listed in
+`docs/audits/open-follow-ups.md`.
 
 ### Applying it (Supabase SQL Editor, not Lovable)
 

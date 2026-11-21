@@ -1,3 +1,5 @@
+ARCHIVED 2026-11-21. The untangle series is finished. This is a historical record: other docs cite its sections as evidence. Still-open items are in docs/audits/open-follow-ups.md. Do not treat anything here as an open task.
+
 # Untangle decision log (temporary)
 
 Started 2026-11-11 from the `/untangle-codebase` skill. **Delete this file when the last slice is done** (CLAUDE.md: executed plan files are deleted).

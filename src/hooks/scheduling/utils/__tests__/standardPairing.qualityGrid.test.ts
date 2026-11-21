@@ -29,7 +29,7 @@ import { scheduleStandardPairings } from '../standardPairing';
  * on every call. In all three the vendored strict copy, used for full rounds and for the retry,
  * stays real.
  *
- * What the grid shows is written up in docs/untangle-decision-log.md, "Quality switch result".
+ * What the grid shows is written up in docs/audits/archive/untangle-decision-log.md, "Quality switch result".
  */
 const library = vi.hoisted(() => ({
   mode: 'plain' as 'plain' | 'real browser' | 'all-throw',

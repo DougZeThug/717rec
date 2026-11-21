@@ -8,7 +8,7 @@
  * The original assigns b and path (addBlossom) and v (expandBlossom) without declaring them. Node
  * runs it as sloppy CommonJS, where that makes silent globals. A browser bundle is a strict ES
  * module, where it throws "ReferenceError: b is not defined" as soon as a round needs a blossom
- * contraction. Nothing else is changed. See docs/untangle-decision-log.md ("Browser finding").
+ * contraction. Nothing else is changed. See docs/audits/archive/untangle-decision-log.md ("Browser finding").
  * Delete this copy when upstream declares these variables.
  *
  * ---------------------------------------------------------------------------------------------
