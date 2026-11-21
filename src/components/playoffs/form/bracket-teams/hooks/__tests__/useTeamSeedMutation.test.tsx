@@ -23,6 +23,8 @@ vi.mock('../../utils/mutationErrorHandling', () => ({
   withRetry: (fn: () => unknown) => fn(),
 }));
 
+import { PLAYOFF_TEAMS_QUERY_KEY } from '@/hooks/playoffs/usePlayoffTeams';
+
 import { useTeamSeedMutation } from '../useTeamSeedMutation';
 
 const wrapper = ({ children }: { children: React.ReactNode }) =>
@@ -74,5 +76,42 @@ describe('useTeamSeedMutation toasts', () => {
     });
 
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
+  });
+});
+
+describe('useTeamSeedMutation refreshes the list the picker reads', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockBulk.mockResolvedValue([]);
+    mockReset.mockResolvedValue({});
+    mockSingle.mockResolvedValue({});
+  });
+
+  const run = async (act_: (api: ReturnType<typeof useTeamSeedMutation>) => Promise<unknown>) => {
+    const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    client.setQueryData(PLAYOFF_TEAMS_QUERY_KEY, []);
+    const clientWrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client }, children);
+    const { result } = renderHook(() => useTeamSeedMutation(), { wrapper: clientWrapper });
+    await act(async () => {
+      await act_(result.current);
+    });
+    return client.getQueryState(PLAYOFF_TEAMS_QUERY_KEY)?.isInvalidated;
+  };
+
+  it('marks the picker list stale after a bulk Save', async () => {
+    await expect(
+      run((api) => api.bulkUpdateSeeds.mutateAsync({ updates: [], divisionId: 'd1' }))
+    ).resolves.toBe(true);
+  });
+
+  it('marks the picker list stale after a single seed Save', async () => {
+    await expect(
+      run((api) => api.updateSingleTeamSeed.mutateAsync({ teamId: 't1', seed: 1 }))
+    ).resolves.toBe(true);
+  });
+
+  it('marks the picker list stale after a division reset', async () => {
+    await expect(run((api) => api.resetDivisionSeeds.mutateAsync('d1'))).resolves.toBe(true);
   });
 });

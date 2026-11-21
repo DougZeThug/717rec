@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { PLAYOFF_TEAMS_QUERY_KEY } from '@/hooks/playoffs/usePlayoffTeams';
 import { useToast } from '@/hooks/useToast';
 import {
   bulkUpdateTeamSeeds,
@@ -36,7 +37,7 @@ export const useTeamSeedMutation = () => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
+      queryClient.invalidateQueries({ queryKey: PLAYOFF_TEAMS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ['seed-validation'] });
     },
     onError: (error) => {
@@ -55,7 +56,7 @@ export const useTeamSeedMutation = () => {
       return await bulkUpdateTeamSeeds(updates);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
+      queryClient.invalidateQueries({ queryKey: PLAYOFF_TEAMS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ['seed-validation'] });
       toast({
         title: 'Seeds updated',
@@ -83,7 +84,7 @@ export const useTeamSeedMutation = () => {
       return await resetDivisionSeedsService(divisionId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
+      queryClient.invalidateQueries({ queryKey: PLAYOFF_TEAMS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ['seed-validation'] });
       toast({
         title: 'Seeds reset',

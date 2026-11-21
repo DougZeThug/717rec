@@ -144,6 +144,28 @@ describe('ChallongeFallbackSection', () => {
     });
   });
 
+  it('leaves no unhandled rejection when saving the settings fails', async () => {
+    const user = userEvent.setup();
+    // Once: resetMocks() clears calls only, so a plain mockImplementation would leak.
+    hookMocks.mutations.updateConfig.mockImplementationOnce(() =>
+      Promise.reject(new Error('Save failed'))
+    );
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+    try {
+      render(<ChallongeFallbackSection />);
+
+      await user.click(screen.getByRole('button', { name: /save settings/i }));
+
+      expect(hookMocks.mutations.updateConfig).toHaveBeenCalledTimes(1);
+      // Give Node time to report a rejection nobody handled.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(unhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off('unhandledRejection', unhandled);
+    }
+  });
+
   it('saves an edited subtitle and the embeds switch together', async () => {
     const user = userEvent.setup();
     render(<ChallongeFallbackSection />);
@@ -216,6 +238,54 @@ describe('ChallongeFallbackSection', () => {
       slug: 'abc123',
       sort_order: 0,
     });
+  });
+
+  it('leaves no unhandled rejection when updating a bracket fails', async () => {
+    const user = userEvent.setup();
+    hookMocks.mutations.updateBracket.mockImplementationOnce(() =>
+      Promise.reject(new Error('Update failed'))
+    );
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+    try {
+      render(<ChallongeFallbackSection />);
+
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+
+      expect(hookMocks.mutations.updateBracket).toHaveBeenCalledTimes(1);
+      // Give Node time to report a rejection nobody handled.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(unhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off('unhandledRejection', unhandled);
+    }
+  });
+
+  it('leaves no unhandled rejection when adding a bracket fails', async () => {
+    const user = userEvent.setup();
+    hookMocks.mutations.createBracket.mockImplementationOnce(() =>
+      Promise.reject(new Error('Create failed'))
+    );
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+    try {
+      render(<ChallongeFallbackSection />);
+
+      await user.click(screen.getByRole('button', { name: /add bracket/i }));
+      const titleInputs = screen.getAllByPlaceholderText('Competitive');
+      const slugInputs = screen.getAllByPlaceholderText('5hy558bb');
+      await user.type(titleInputs[titleInputs.length - 1], 'Intermediate');
+      await user.type(slugInputs[slugInputs.length - 1], 'def456');
+      const addButtons = screen.getAllByRole('button', { name: 'Add' });
+      await user.click(addButtons[addButtons.length - 1]);
+
+      expect(hookMocks.mutations.createBracket).toHaveBeenCalledTimes(1);
+      // Give Node time to report a rejection nobody handled.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(unhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off('unhandledRejection', unhandled);
+    }
   });
 
   it('deletes an existing bracket via deleteBracket, after confirming', async () => {
