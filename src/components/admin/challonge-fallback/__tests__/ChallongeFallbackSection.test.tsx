@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -230,6 +230,32 @@ describe('ChallongeFallbackSection', () => {
 
     await user.click(screen.getByRole('button', { name: /^remove$/i }));
     expect(hookMocks.mutations.deleteBracket).toHaveBeenCalledWith('b-1');
+  });
+
+  it('closes the prompt and leaves no unhandled rejection when the delete fails', async () => {
+    const user = userEvent.setup();
+    // Once: resetMocks() clears calls only, so a plain mockImplementation would leak.
+    hookMocks.mutations.deleteBracket.mockImplementationOnce(() =>
+      Promise.reject(new Error('Delete failed'))
+    );
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+    try {
+      render(<ChallongeFallbackSection />);
+
+      await user.click(screen.getByRole('button', { name: /remove bracket/i }));
+      await user.click(screen.getByRole('button', { name: /^remove$/i }));
+
+      await waitFor(() => {
+        expect(screen.queryByText('Remove this saved bracket?')).not.toBeInTheDocument();
+      });
+      expect(hookMocks.mutations.deleteBracket).toHaveBeenCalledTimes(1);
+      // Give Node time to report a rejection nobody handled.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(unhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off('unhandledRejection', unhandled);
+    }
   });
 
   it('keeps the bracket when the prompt is cancelled', async () => {

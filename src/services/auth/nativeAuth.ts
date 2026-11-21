@@ -26,6 +26,10 @@ const extractIdToken = (result: NativeGoogleLoginResult): string | undefined => 
   return typeof tokenValue === 'string' ? tokenValue : undefined;
 };
 
+// Field names only. Never log the values: they hold the Google ID token.
+const fieldNames = (value: unknown): string[] =>
+  typeof value === 'object' && value !== null ? Object.keys(value) : [];
+
 export const isNativePlatform = (): boolean => {
   return Capacitor.isNativePlatform();
 };
@@ -47,8 +51,11 @@ export const loginWithGoogleNative = async () => {
       options: {}, // Empty options object to satisfy the type requirement
     });
 
-    // Log the response structure to understand what we're getting
-    authLog('Google login response structure:', JSON.stringify(response));
+    // Log the response shape (field names only) to understand what we're getting
+    authLog('Google login response fields:', {
+      keys: fieldNames(response),
+      resultKeys: fieldNames((response as NativeGoogleLoginResult | null)?.result),
+    });
 
     const idToken = extractIdToken(response as NativeGoogleLoginResult);
 

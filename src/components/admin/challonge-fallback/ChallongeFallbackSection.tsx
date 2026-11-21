@@ -204,6 +204,9 @@ const ChallongeFallbackSection: React.FC = () => {
     if (!pendingDelete) return;
     try {
       await deleteBracket(pendingDelete.id);
+    } catch {
+      // The mutation's onError already shows the red toast. Without this catch
+      // the rejection would be unhandled, because ConfirmDialog ignores the promise.
     } finally {
       setPendingDelete(null);
     }
