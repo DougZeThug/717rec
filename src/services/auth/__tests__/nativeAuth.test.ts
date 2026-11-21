@@ -121,6 +121,19 @@ describe('loginWithGoogleNative on a native phone', () => {
     expect(logged).not.toContain('x@y.z');
   });
 
+  it("falls back to the server auth code when there is no ID token (today's behaviour)", async () => {
+    mockSocialLogin.mockResolvedValue({
+      provider: 'google',
+      result: { serverAuthCode: 'server-auth-code' },
+    });
+    mockSignInWithIdToken.mockResolvedValue({ user: { id: 'u2' } });
+
+    const result = await loginWithGoogleNative();
+
+    expect(result).toEqual({ success: true, user: { id: 'u2' } });
+    expect(mockSignInWithIdToken).toHaveBeenCalledWith('google', 'server-auth-code');
+  });
+
   it('fails without signing in when the response has no token', async () => {
     mockSocialLogin.mockResolvedValue({ provider: 'google', result: {} });
 
