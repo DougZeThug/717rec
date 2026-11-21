@@ -1479,8 +1479,8 @@ after. There is **no screen for it**. You read it in the Supabase SQL Editor.
   is not.
 
 Other open gaps (the audit screen) are listed in `docs/audits/open-follow-ups.md`.
-The match delete log is a second, separate change (built 2026-11-21, **not live
-until Doug applies it**). It is described at the end of this section.
+The match delete log is a second, separate change (built 2026-11-21, **live**:
+Doug applied it by hand on 2026-11-21). It is described at the end of this section.
 
 ### Applying it (Supabase SQL Editor, not Lovable)
 
@@ -1592,7 +1592,7 @@ If step 5 or 7 shows no row, or step 4 or 6 adds one, stop and tell Claude.
 `/admin`, open **Scores**, find the match, press the bin on its row, and press
 **Delete**. This also reverses any statistics it made. The rounds and games of the
 match go with it and write **no** `live_*` rows, on purpose. The match itself is
-logged by the match delete log (below), once that is applied.
+logged by the match delete log (below), which is live.
 
 ### If it needs undoing
 
@@ -1611,10 +1611,11 @@ DROP FUNCTION IF EXISTS public.live_scoring_audit_coverage_drift();
 ### Who deleted a match? (the match delete log)
 
 Built 2026-11-21 (`supabase/migrations/20261121120000_audit_match_deletes.sql`). Doug
-decided on 2026-11-21: "We can do the delete log." **A hand-apply is needed** (§6).
-Until it is applied, a match delete still leaves no record. Nothing else breaks.
-It is a separate file from the live-scoring audit above. You can apply either one
-first.
+decided on 2026-11-21: "We can do the delete log." **Applied by hand on 2026-11-21
+(Doug applied it and reported that all steps worked).** It is **live**. The apply
+steps below stay here for a database rebuild.
+It is a separate file from the live-scoring audit above. Each one is applied on
+its own.
 
 **What it does.** Each time a match is deleted, the database writes **one** row in
 `security_audit_log`:
@@ -1646,7 +1647,8 @@ first.
   another session holds a conflicting lock on `security_audit_log`, or if the
   database cancels a long wait (a timeout). Only admin work in the database takes
   such a lock. If a delete in `/admin` fails, wait a minute and try again.
-- Deletes made **before** you apply it are not in the log. There is no back-fill.
+- Deletes made **before** it was applied (2026-11-21) are not in the log. There is
+  no back-fill.
 
 #### Applying it (Supabase SQL Editor, not Lovable)
 

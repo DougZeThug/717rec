@@ -415,7 +415,7 @@ two disagree until someone re-saves — which the admin dashboard now lists and
   Entering rounds and finishing a game are not logged. A round or game change
   made in the SQL Editor is not logged, and neither is reopening a match or
   saving it as finished. Deleting a match has its own log (migration
-  `20261121120000`, also hand-applied): one `match_delete` row with who deleted
+  `20261121120000`, hand-applied by Doug on 2026-11-21): one `match_delete` row with who deleted
   it and the match row, but not its games and rounds. The dashboard card shows
   the *state*, not the history: once a match is re-saved it drops off the list
   and nothing on screen says it was ever corrected.
