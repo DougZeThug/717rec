@@ -1,7 +1,7 @@
 # 717rec — Confidence Assessment & Improvement Roadmap
 
 > **Status: ARCHIVED (2026-07-23).** Superseded by
-> [`docs/quality-review-2026-07/`](../../quality-review-2026-07/). Kept for
+> [`docs/audits/archive/quality-review-2026-07/`](quality-review-2026-07/). Kept for
 > historical context only — do not treat statements below as current.
 
 ## Context

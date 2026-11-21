@@ -17,7 +17,7 @@
 - **Observed** — seen in a screenshot or measured by the harness (axe-core 4.13, tap-target and font-size scans, console capture). Screenshot paths are relative to `docs/audits/ux-audit-2026-09/screenshots/`.
 - **Inferred from code** — read in the source but not reproduced in the browser (mostly things a screenshot cannot show: focus handling, guards, mutation feedback). Cited as `file:line`.
 - **Preference** — a design opinion, labelled as such.
-- Prior triaged defects are cited by their `B-xx` id from `docs/product-description/bug-triage.md`; the July 2026 quality review is at `docs/quality-review-2026-07/`.
+- Prior triaged defects are cited by their `B-xx` id from `docs/product-description/bug-triage.md`; the July 2026 quality review is archived at `docs/audits/archive/quality-review-2026-07/` (all briefs Resolved or Superseded).
 
 ---
 

@@ -66,8 +66,9 @@ delete from teams where name like 'E2E Alpha %' or name like 'E2E Beta %';
 **As of 2026-07-23, `.github/workflows/ci.yml` does not define an
 `e2e-real-backend` job** — the real-backend spec runs locally only (see
 "Running locally" above). Wiring it into CI, with the guard step below so it
-can't be green while skipping, is tracked in
-`docs/quality-review-2026-07/briefs/PR-03-make-soft-ci-gates-honest.md`.
+can't be green while skipping, is described in the archived 2026-07 review
+brief `docs/audits/archive/quality-review-2026-07/briefs/PR-03-make-soft-ci-gates-honest.md`
+(the review is archived; the CI job is still not wired).
 
 Once added, the job's first step (`Require E2E secrets`) should fail the run if
 any of the five secrets above is unset, so on pushes and same-repo PRs the job

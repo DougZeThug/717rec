@@ -217,8 +217,9 @@ Be precise about which kind of confidence a claim rests on:
   currently run in CI** — `ci.yml` has no `e2e-real-backend` job. It runs only
   locally/manually when the `E2E_SUPABASE_*` and `E2E_TEST_USER_*` variables
   are set (`npx playwright test --project=real-backend`). Wiring it back into
-  CI is tracked in
-  `docs/quality-review-2026-07/briefs/PR-03-make-soft-ci-gates-honest.md`.
+  CI is described in the archived 2026-07 review brief
+  `docs/audits/archive/quality-review-2026-07/briefs/PR-03-make-soft-ci-gates-honest.md`
+  (the review is archived; the CI job is still not wired).
 - **Automated at the database layer (advisory, path-filtered):** when
   `supabase/**` changes, `supabase-ci.yml` applies every migration and runs
   the SQL smoke tests under `supabase/tests/` (e.g. finalize standings,

@@ -1,5 +1,7 @@
 # 717REC — Full Quality Review (2026-07-15)
 
+> **Status: ARCHIVED (2026-11-21).** Every brief is Resolved or Superseded (see `briefs/STATUS.md`). PR-07's remaining production tasks live in `docs/OPERATIONS.md` and `docs/PRODUCTION_SETTINGS.md`. Do not treat these briefs as open findings.
+
 **Reviewed commit:** `79744a0dedbebe9a43c3984e1b54b5c8ae2742fd` (tip of `main`, 2026-07-15 14:20 EDT, merge of PR #1043)
 **Review branch:** `claude/717rec-quality-review-vyt20i`
 **Supersedes:** the 2026-07-13 review (84/100) previously stored in this folder — see §3 for what changed in the intervening two days.

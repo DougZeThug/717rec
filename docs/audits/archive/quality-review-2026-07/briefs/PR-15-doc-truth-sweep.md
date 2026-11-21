@@ -26,7 +26,7 @@ Documentation and one lockfile decision. Zero product code.
 
 ## 4. Files to modify / delete
 
-Listed above, plus `.github/workflows/supabase-ci.yml` and a new `deno.json` if option (a) in step 4 is chosen, plus a one-line "Resolved in <PR/commit>" annotation pass over `docs/audits/*` and the previous `docs/quality-review-2026-07` briefs.
+Listed above, plus `.github/workflows/supabase-ci.yml` and a new `deno.json` if option (a) in step 4 is chosen, plus a one-line "Resolved in <PR/commit>" annotation pass over `docs/audits/*` and the previous `docs/audits/archive/quality-review-2026-07` briefs.
 
 ## 5. Implementation steps
 
