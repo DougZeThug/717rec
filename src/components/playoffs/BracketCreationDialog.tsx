@@ -12,7 +12,7 @@ import {
 import { MAX_BRACKET_TEAMS, MIN_BRACKET_TEAMS } from '@/constants/brackets';
 import { useCreateBracket } from '@/hooks/playoffs/useCreateBracket';
 import { useToast } from '@/hooks/useToast';
-import { BracketFormData } from '@/services/brackets/types/BracketFormData';
+import type { BracketFormData } from '@/services/brackets/types/BracketFormData';
 import { BracketValidationService } from '@/services/brackets/validation/BracketValidationService';
 import { Team } from '@/types';
 import type { BracketRecord } from '@/types/bracketRecord';

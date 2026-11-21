@@ -22,7 +22,7 @@ import {
   useRevertPowerMigration,
 } from '@/hooks/admin/usePowerMigrationReview';
 import { toast } from '@/hooks/useToast';
-import { PowerMigrationStatus } from '@/services/admin/PowerMigrationService';
+import type { PowerMigrationStatus } from '@/services/admin/PowerMigrationService';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
 import ComparisonTable from './ComparisonTable';

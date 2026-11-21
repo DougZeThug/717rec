@@ -120,14 +120,15 @@ the fallback.
 - `types` and `utils` never import services, hooks, components or pages.
 - Services never import hooks, components or pages.
 - Hooks never import components or pages. Hook folders that sit beside their component (`components/**/hooks`) are fine.
+- Components and pages never import services. Use a hook. A type import (`import type`, or `import { type A }` with every name marked `type`) is fine. A `use*` hook file that sits beside its component is fine. A short list of component files may import a pure helper or constant that lives in a service: it is `COMPONENT_SERVICE_EXCEPTIONS` in `eslint.config.js` (the one source of truth; do not add a file that fetches or writes data).
 
-**What lint enforces today** (`eslint.config.js`): the direction rule, for static imports only (`import`, `import type`, `export ... from`, `export *`) on `@/` and `../` paths in `src/types`, `src/utils`, `src/services` and `src/hooks`. Tests are exempt. The files that may use the Supabase client (the realtime hooks, `imageUpload.ts`) still obey the direction rule.
+**What lint enforces today** (`eslint.config.js`): the direction rule, for static imports only (`import`, `import type`, `export ... from`, `export *`) on `@/` and `../` paths in `src/types`, `src/utils`, `src/services`, `src/hooks`, `src/components` and `src/pages`. In components and pages the rule bans services only, and type imports pass. Tests are exempt. The files that may use the Supabase client (the realtime hooks, `imageUpload.ts`) still obey the direction rule.
 
 One known file keeps a per-file exception in the config. It allows exactly one module and still bans every other layer:
 
 - `src/hooks/useToast.ts` → `components/ui/toast` (types only; this one stays)
 
-Lint does **not** cover dynamic `import()`, `require()`, type-position `import('x').T`, or a hop through `contexts` or `lib`. Those stay a convention.
+Lint does **not** cover dynamic `import()` (the only 4 dynamic service imports are in `src/hooks`), `require()`, type-position `import('x').T`, or a hop through `contexts` or `lib`. Those stay a convention.
 
 Code outside a service folder (components, hooks, tests) imports that folder through its public `index.ts`, not its internal files (example: `@/services/brackets/manager/services/BracketAdmin`); this is a convention for new code, and lint does not enforce it. Some older files still reach into other service folders (for example `components/playoffs/viewer/bracketDecorations.ts` into `services/brackets/viewer/`).
 
