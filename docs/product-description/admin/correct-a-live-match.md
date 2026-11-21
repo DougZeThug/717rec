@@ -9,19 +9,19 @@ altogether. It also owns **Live Corrections**, the admin panel that edits the
 rounds and games underneath a match, and now carries the one control that makes
 the official result follow them.
 
-| Action | Where | What it moves |
-| --- | --- | --- |
-| Edit a round, delete a round, change a game's winner | `/admin` → **Live Corrections** | Rounds and games only. Never the official result. |
-| **Reopen & re-save result** | `/admin` → **Live Corrections**, on a finalised match | Reverses the recorded result and both teams' records, then works the result out again from the games and saves it |
-| Reopen the match | `/matches/:matchId/live`, admin only | Clears the result and reverses both teams' records |
-| Resubmit a result | `/admin` → **Scores** | Reverses the old result and applies a new one |
-| Reverse and remove | `/admin` → **Scores**, the bin on a row | Deletes the match and reverses its statistics |
+| Action                                               | Where                                                 | What it moves                                                                                                     |
+| ---------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Edit a round, delete a round, change a game's winner | `/admin` → **Live Corrections**                       | Rounds and games only. Never the official result.                                                                 |
+| **Reopen & re-save result**                          | `/admin` → **Live Corrections**, on a finalised match | Reverses the recorded result and both teams' records, then works the result out again from the games and saves it |
+| Reopen the match                                     | `/matches/:matchId/live`, admin only                  | Clears the result and reverses both teams' records                                                                |
+| Resubmit a result                                    | `/admin` → **Scores**                                 | Reverses the old result and applies a new one                                                                     |
+| Reverse and remove                                   | `/admin` → **Scores**, the bin on a row               | Deletes the match and reverses its statistics                                                                     |
 
 An archived season is **read-only here**. Its matches are still listed and still
 readable; none of the editing controls appears, and the service refuses the write
 even if one were reached. See [Season scoping](#interactions-with-other-systems).
 
-Correcting a round *before* the result is saved is a different job and belongs to
+Correcting a round _before_ the result is saved is a different job and belongs to
 the scorers; see [`live-scoring/correct-a-round.md`](../live-scoring/correct-a-round.md).
 
 ## The simple case
@@ -125,8 +125,8 @@ most recent night, with nothing selected.
 
 ### Begin editing
 
-Choosing a match loads it and draws one card per game: "Game 2 · *Team A* 21 –
-15 *Team B*", the winner named beside it, then each round as "Round 9" with its
+Choosing a match loads it and draws one card per game: "Game 2 · _Team A_ 21 –
+15 _Team B_", the winner named beside it, then each round as "Round 9" with its
 score under it and a pencil and a bin on the right.
 
 A **Change winner** button appears on the card header of every game whose status
@@ -147,11 +147,11 @@ still shown; nothing on it can be pressed.
 fields — In, On, Off — and a Thrower list holding that game's players plus
 "Unassigned". It is checked live and the Save button stays dead until it passes:
 
-| Rule | Message |
-| --- | --- |
-| A round score must be 0–10 or 12 | "*Team* score is invalid" |
-| Bag fields are all filled or all blank | "*Team*: fill all bag fields or leave all blank" |
-| Four bags per side, three points per bag in the hole and one on the board | "*Team* bag breakdown doesn't add up" |
+| Rule                                                                      | Message                                          |
+| ------------------------------------------------------------------------- | ------------------------------------------------ |
+| A round score must be 0–10 or 12                                          | "_Team_ score is invalid"                        |
+| Bag fields are all filled or all blank                                    | "_Team_: fill all bag fields or leave all blank" |
+| Four bags per side, three points per bag in the hole and one on the board | "_Team_ bag breakdown doesn't add up"            |
 
 11 is not a possible round score, which is why it is missing from the list.
 
@@ -173,8 +173,8 @@ a typed correction away. The sheet does not put focus in the first box, so the
 phone keyboard does not open by itself. From 768 pixels up it is the same
 centred dialog as before.
 
-**Delete round** asks first: "Delete round *N*? This removes round *N* from game
-*M*. The game totals shown here recompute at once, but the game's stored winner
+**Delete round** asks first: "Delete round _N_? This removes round _N_ from game
+_M_. The game totals shown here recompute at once, but the game's stored winner
 does not: if deleting this round changes who won, use 'Change winner' above to
 fix it. On a finalized match, finish with 'Reopen & re-save result' so the
 official result follows." The choices are "Keep round" and "Delete round". The
@@ -188,7 +188,7 @@ follows."
 
 **An amber warning appears while the rounds do not support the team selected**,
 and follows the selection as it changes. It reads either "The rounds give this
-game to *the other team*" or, when the rounds reach no winner at all, "The rounds
+game to _the other team_" or, when the rounds reach no winner at all, "The rounds
 do not decide this game. No side has reached 21 with a lead of 2." It then says
 the change is still allowed and that League Night Status will list the match
 under "Matches that disagree with their rounds" until the two agree. **It does
@@ -204,12 +204,12 @@ or not** (it is a Radix alert dialog, and its Delete button closes it). On a
 failure the red toast "Could not delete round" gives the reason and the screen
 refreshes.
 
-| Action | On success | On failure |
-| --- | --- | --- |
-| Save changes | Toast "Round updated" | Red toast "Could not update round" with the league's own reason |
-| Delete round | Toast "Round deleted" | Red toast "Could not delete round" with the reason |
-| Set winner | Toast "Game winner updated" | Red toast "Could not change game winner" with the reason |
-| Reopen & re-save | Toast "Result re-saved" with the final game score | Red toast "Could not re-save the result" with the reason |
+| Action           | On success                                        | On failure                                                      |
+| ---------------- | ------------------------------------------------- | --------------------------------------------------------------- |
+| Save changes     | Toast "Round updated"                             | Red toast "Could not update round" with the league's own reason |
+| Delete round     | Toast "Round deleted"                             | Red toast "Could not delete round" with the reason              |
+| Set winner       | Toast "Game winner updated"                       | Red toast "Could not change game winner" with the reason        |
+| Reopen & re-save | Toast "Result re-saved" with the final game score | Red toast "Could not re-save the result" with the reason        |
 
 These failure toasts are unusual in this app: they carry the real reason rather
 than a fixed sentence. **A delete that removes nothing counts as a failure:** if
@@ -233,14 +233,14 @@ the games. One toast reports the outcome, not two.
 
 **If the second half is refused** — the games no longer decide a winner, say —
 the old result is already reversed and the match is left open. The toast says so:
-"The old result was reversed, but the new one could not be saved: *reason* The
+"The old result was reversed, but the new one could not be saved: _reason_ The
 match is open now — fix the games, then save the result again." Nothing is
-hidden and nothing claims success. If the *reopen* itself is refused, nothing was
+hidden and nothing claims success. If the _reopen_ itself is refused, nothing was
 touched and the message does not suggest otherwise.
 
 **If there was nothing to reverse** — the match was already open — the message
 says that instead: "The match was already open, and the result could not be
-saved: *reason* Nothing was reversed — fix the games, then save the result
+saved: _reason_ Nothing was reversed — fix the games, then save the result
 again." The two cases are never worded the same way, because an admin told the
 records moved will go looking for a standings change that did not happen.
 
@@ -276,28 +276,28 @@ in a single press. See [`site-settings.md`](site-settings.md).
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | Admin only, by the guard on `/admin`. Reopening a match likewise needs admin; **reopening a single game does not** — any scorer can do that from the live page. | Losing admin leaves the panel on screen; the writes then fail with the league's refusal as the message. |
-| The record's state | A finalised match shows the amber warning, offers **Reopen & re-save result**, and refreshes standings after each edit. An unfinalised one does none of the three. Only a completed game offers Change winner. | A match finalised elsewhere while the panel is open does not show the warning until the panel is re-read. |
-| The season's state | An **archived** season is read-only: a grey banner replaces the amber one, and the pencil, the bin, **Change winner** and **Reopen & re-save result** are all absent. The service refuses the write as well, naming the season. | Read from **the open match's own season**, not from the filter, so a match selected under one filter keeps the right answer after the filter changes. |
-| Viewport | From 768 pixels wide the list (at most 320 pixels wide) sits beside the panel; below that it stacks above it. On a tablet the open admin sidebar takes 240 pixels of that width, so the panel is narrow there, and a score such as 3 – 0 stays on one line instead of breaking after the dash (before, 14 of 23 round rows split at 768 to 940 pixels wide). Below 768 pixels, selecting a match scrolls to the panel and the clear button reads "Back to list" with a left arrow; at or above it there is no scroll and the button reads "Clear selection". On a phone Edit round is a bottom sheet (since 2026-11-10; see While editing). Change winner and Delete round stay centred boxes with a 16-pixel gap each side, never taller than the screen minus 32 pixels. Before the 2026-11-09 phone polish all three were full-width, and Edit round ran 14 pixels off the top and the bottom of a 640-pixel-tall phone (measured in headless Chromium with fake data). On a narrow game card the Change winner button drops under the game title; before 2026-11-10 it was squeezed to 54 to 64 pixels and its words ran over the title and past the card. | No effect. |
-| Keys the app honours | All three dialogs are proper dialogs: Escape closes, Tab is trapped, focus returns to the trigger. | Escape is the same as Cancel or "Keep round" and never writes. On a phone, Escape does nothing in the Edit round sheet once a field has changed or while it saves. |
+| Modifier             | Set at arrival                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Changed while editing                                                                                                                                              |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The user's role      | Admin only, by the guard on `/admin`. Reopening a match likewise needs admin; **reopening a single game does not** — any scorer can do that from the live page.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Losing admin leaves the panel on screen; the writes then fail with the league's refusal as the message.                                                            |
+| The record's state   | A finalised match shows the amber warning, offers **Reopen & re-save result**, and refreshes standings after each edit. An unfinalised one does none of the three. Only a completed game offers Change winner.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | A match finalised elsewhere while the panel is open does not show the warning until the panel is re-read.                                                          |
+| The season's state   | An **archived** season is read-only: a grey banner replaces the amber one, and the pencil, the bin, **Change winner** and **Reopen & re-save result** are all absent. The service refuses the write as well, naming the season.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Read from **the open match's own season**, not from the filter, so a match selected under one filter keeps the right answer after the filter changes.              |
+| Viewport             | From 768 pixels wide the list (at most 320 pixels wide) sits beside the panel; below that it stacks above it. On a tablet the open admin sidebar takes 240 pixels of that width, so the panel is narrow there, and a score such as 3 – 0 stays on one line instead of breaking after the dash (before, 14 of 23 round rows split at 768 to 940 pixels wide). Below 768 pixels, selecting a match scrolls to the panel and the clear button reads "Back to list" with a left arrow; at or above it there is no scroll and the button reads "Clear selection". On a phone Edit round is a bottom sheet (since 2026-11-10; see While editing). Change winner and Delete round stay centred boxes with a 16-pixel gap each side, never taller than the screen minus 32 pixels. Before the 2026-11-09 phone polish all three were full-width, and Edit round ran 14 pixels off the top and the bottom of a 640-pixel-tall phone (measured in headless Chromium with fake data). On a narrow game card the Change winner button drops under the game title; before 2026-11-10 it was squeezed to 54 to 64 pixels and its words ran over the title and past the card. | No effect.                                                                                                                                                         |
+| Keys the app honours | All three dialogs are proper dialogs: Escape closes, Tab is trapped, focus returns to the trigger.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Escape is the same as Cancel or "Keep round" and never writes. On a phone, Escape does nothing in the Edit round sheet once a field has changed or while it saves. |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. "Clear selection" — "Back to list" on a phone — empties the right-hand panel. It appears at the top of the panel only while a match is selected. | The edit-round dialog **asks first** when a field has been changed; the other two close straight away. Nothing is written either way, and neither can stop a save already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | Switching dashboard section **asks first** while the edit-round dialog holds changes, then loses them. A save already sent still lands; the admin never sees the toast. |
-| Browser back or forward | As above. | **Asks first** now, the same question a section switch asks; see [`the-admin-dashboard.md`](the-admin-dashboard.md). |
-| Reload, or the tab closed | The panel returns with no match selected. | An unsaved edit is gone. A sent write may have landed; the round list after reloading says which. |
-| Network lost mid-request | The list fails with "Failed to load matches." | The write fails and its red toast carries the reason. Nothing is queued and the dialog stays open with the input intact. |
-| The request fails or times out | As above. | As above. The admin can press Save again without retyping. |
-| The session expires | The list will not load. | The write is refused and the refusal is shown as the toast's description. |
-| The same record changed in another tab, or by another user | No effect. **This panel opens no realtime connection**, so it shows what it read. | If the round being edited is deleted elsewhere, the dialog closes itself as soon as the panel next re-reads the match — which, with no realtime, is after the admin's own next write. |
-| Browser autofill or a password manager writes into the form | No effect. The round fields are numeric and unnamed. | No effect. |
-| The window loses focus | No effect. | No effect. Nothing refetches on focus here. |
+| Event                                                       | Before the first edit                                                                                                                                               | While editing or submitting                                                                                                                                                           |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Nothing to cancel. "Clear selection" — "Back to list" on a phone — empties the right-hand panel. It appears at the top of the panel only while a match is selected. | The edit-round dialog **asks first** when a field has been changed; the other two close straight away. Nothing is written either way, and neither can stop a save already sent.       |
+| In-app navigation away, or switching tab within the page    | Nothing is lost.                                                                                                                                                    | Switching dashboard section **asks first** while the edit-round dialog holds changes, then loses them. A save already sent still lands; the admin never sees the toast.               |
+| Browser back or forward                                     | As above.                                                                                                                                                           | **Asks first** now, the same question a section switch asks; see [`the-admin-dashboard.md`](the-admin-dashboard.md).                                                                  |
+| Reload, or the tab closed                                   | The panel returns with no match selected.                                                                                                                           | An unsaved edit is gone. A sent write may have landed; the round list after reloading says which.                                                                                     |
+| Network lost mid-request                                    | The list fails with "Failed to load matches."                                                                                                                       | The write fails and its red toast carries the reason. Nothing is queued and the dialog stays open with the input intact.                                                              |
+| The request fails or times out                              | As above.                                                                                                                                                           | As above. The admin can press Save again without retyping.                                                                                                                            |
+| The session expires                                         | The list will not load.                                                                                                                                             | The write is refused and the refusal is shown as the toast's description.                                                                                                             |
+| The same record changed in another tab, or by another user  | No effect. **This panel opens no realtime connection**, so it shows what it read.                                                                                   | If the round being edited is deleted elsewhere, the dialog closes itself as soon as the panel next re-reads the match — which, with no realtime, is after the admin's own next write. |
+| Browser autofill or a password manager writes into the form | No effect. The round fields are numeric and unnamed.                                                                                                                | No effect.                                                                                                                                                                            |
+| The window loses focus                                      | No effect.                                                                                                                                                          | No effect. Nothing refetches on focus here.                                                                                                                                           |
 
 After an interrupt the round list is the record. What it shows is what is
 stored; whether the official result agrees is a separate question the screen
@@ -360,8 +360,8 @@ full-width select 44 pixels high. From 768 pixels wide they sit side by side. A
 round's pencil and bin buttons are 44 pixels wide with an 8-pixel gap between
 them.
 
-**Accessibility.** Each round's buttons are labelled "Edit round *N*" and
-"Delete round *N*". The delete confirmation is a proper alert dialog. The
+**Accessibility.** Each round's buttons are labelled "Edit round _N_" and
+"Delete round _N_". The delete confirmation is a proper alert dialog. The
 validation message is announced. The amber finalised warning is plain text and
 is not announced.
 
@@ -398,7 +398,7 @@ two disagree until someone re-saves — which the admin dashboard now lists and
 - **Only live-scored matches appear.** A match resulted in bulk has no rounds to
   correct, so the only correction available is re-scoring or deleting it.
 - **Changing the season clears the night and the selection**, because both
-  belong to the season they were picked in. Changing the *night* keeps the
+  belong to the season they were picked in. Changing the _night_ keeps the
   selection, so the panel can show a match the list beside it no longer contains.
   Whether it is read-only is read from that match's own season, so the answer
   stays right.
@@ -417,7 +417,7 @@ two disagree until someone re-saves — which the admin dashboard now lists and
   saving it as finished. Deleting a match has its own log (migration
   `20261121120000`, hand-applied by Doug on 2026-11-21): one `match_delete` row with who deleted
   it and the match row, but not its games and rounds. The dashboard card shows
-  the *state*, not the history: once a match is re-saved it drops off the list
+  the _state_, not the history: once a match is re-saved it drops off the list
   and nothing on screen says it was ever corrected.
 - **Reopening a match needs admin; reopening a game does not.** The two look
   alike and differ completely in reach.
