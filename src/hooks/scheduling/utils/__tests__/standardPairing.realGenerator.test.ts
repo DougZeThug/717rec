@@ -226,6 +226,40 @@ describe('scheduleStandardPairings with the real Blossom generator', () => {
     expect(result.unmatchedTeamIds).toEqual([]);
   });
 
+  it("plays the same 2 teams twice, the second time as a rematch, when they are in Early and Late (today's behaviour)", async () => {
+    // Doug decided 2026-11-21: keep as is. Two teams have no other opponent, so the second
+    // match is a repeat. It is flagged so the preview shows the amber rematch note.
+    const teams = makeTeams('A', 2);
+
+    const result = await scheduleStandardPairings({ Early: teams, Late: teams }, config, []);
+
+    expect(Object.keys(result.pairings)).toEqual(['Early', 'Late']);
+    expect(result.pairings.Early).toHaveLength(1);
+    expect(result.pairings.Late).toHaveLength(1);
+    expect(pairKey((result.pairings.Early ?? [])[0])).toBe('A1-A2');
+    expect(pairKey((result.pairings.Late ?? [])[0])).toBe('A1-A2');
+    expect(result.pairings.Early?.[0]?.hasPlayedBefore).toBe(false);
+    expect(result.pairings.Late?.[0]?.hasPlayedBefore).toBe(true);
+    expect(result.unmatchedTeamIds).toEqual([]);
+  });
+
+  it("pairs a Competitive team with a Recreational team in a block of 2 anyway (today's behaviour)", async () => {
+    // Doug decided 2026-11-21: keep as is. With two teams there is no other opponent, so the
+    // division rule gives way. The pair is still one match and neither team is unmatched.
+    const teams = [
+      createMockTeam({ id: 'A1', name: 'A1', divisionName: 'Competitive' }),
+      createMockTeam({ id: 'A2', name: 'A2', divisionName: 'Recreational' }),
+    ];
+
+    const result = await scheduleStandardPairings({ Early: teams }, config, []);
+
+    expect(Object.keys(result.pairings)).toEqual(['Early']);
+    expect(result.pairings.Early).toHaveLength(1);
+    expect(pairKey((result.pairings.Early ?? [])[0])).toBe('A1-A2');
+    expect(matchesPerTeam(result.pairings.Early, teams)).toEqual([1, 1]);
+    expect(result.unmatchedTeamIds).toEqual([]);
+  });
+
   it("gives the same result when the same night is generated twice (today's behaviour)", async () => {
     const early = makeTeams('A', 6);
     const late = makeTeams('B', 8);
