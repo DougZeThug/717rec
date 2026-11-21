@@ -71,6 +71,35 @@ const layerBan = (zone, allow = []) => ({
   caseSensitive: true,
   message: WHY[zone],
 });
+// Components and pages must not import services: they go through a hook. A type
+// import is fine (it is erased at build time). Static imports only, like the bans above.
+const COMPONENT_SERVICE_BAN = {
+  regex: String.raw`^${FROM}services(?:/|$)`,
+  caseSensitive: true,
+  allowTypeImports: true,
+  message:
+    'Components and pages do not call services. Use a hook (src/hooks, or a use* hook file next to the component). Type imports are fine (see ARCHITECTURE.md → Layer rules).',
+};
+// Component files that may still import a service, listed BY FILE (no folder glob).
+// Each one takes a pure helper or constant that lives in services; none touches the
+// database. They keep the Supabase ban. Do not add a file that fetches or writes data:
+// give it a hook instead.
+const COMPONENT_SERVICE_EXCEPTIONS = [
+  // contact topic options and limits
+  'src/components/contact/ContactForm.tsx',
+  // CONTACT_TOPIC_OPTIONS
+  'src/components/contact/ContactTopicField.tsx',
+  // contact topic constants and helpers
+  'src/components/contact/contactFormSchema.ts',
+  // toPowerScoreWeights (pure converter)
+  'src/components/admin/power-sandbox/PowerScoreSandboxTab.tsx',
+  // BracketValidationService (pure check, no database call)
+  'src/components/playoffs/BracketCreationDialog.tsx',
+  // simulateRearrange (pure preview of a rearranged bracket)
+  'src/components/playoffs/admin/RearrangeBracketDialog.tsx',
+  // buildSlotHints (pure label helper)
+  'src/components/playoffs/viewer/bracketDecorations.ts',
+];
 const imports = (...patterns) => ({ rules: { 'no-restricted-imports': ['error', { patterns }] } });
 const inZone = (zone) => `src/${zone}/**/*.{ts,tsx}`;
 
@@ -243,7 +272,15 @@ export default tseslint.config(
     files: ['src/hooks/useToast.ts'],
     ...imports(SUPABASE_CLIENT, layerBan('hooks', ['components/ui/toast'])),
   },
-  // 4. Last: files exempt from both rules.
+  // 4. Components and pages: no service imports (type imports allowed). Colocated
+  //    use* hook files and the files in COMPONENT_SERVICE_EXCEPTIONS are skipped by
+  //    this block, so they fall back to the base rule (Supabase ban only).
+  {
+    files: ['src/components/**/*.{ts,tsx}', 'src/pages/**/*.{ts,tsx}'],
+    ignores: ['**/use[A-Z]*.{ts,tsx}', ...COMPONENT_SERVICE_EXCEPTIONS],
+    ...imports(SUPABASE_CLIENT, COMPONENT_SERVICE_BAN),
+  },
+  // 5. Last: files exempt from both rules.
   //    - src/lib/mcp/**    → builds its own clients with createClient
   //    - OAuthConsent.tsx  → auth calls
   //    - test files        → import the client to mock it
