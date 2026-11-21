@@ -9,6 +9,7 @@ Use Bash only to run checks and read-only git or file commands. Write scratch fi
 ## What to verify
 
 **Technical**
+
 - `npm run typecheck` (never bare `tsc --noEmit`).
 - `npm run lint`.
 - `npm run test:file -- <touched tests>`, then `npm run test:coverage` when the change is broad.
@@ -17,6 +18,7 @@ Use Bash only to run checks and read-only git or file commands. Write scratch fi
 - Unrelated diff: compare `git diff --stat` with the plan. Flag anything outside it.
 
 **League usability** - walk realistic scenarios in code and tests (and in the browser with Playwright when the UI changed; Chromium is installed at `/opt/pw-browsers`; do not run `playwright install`):
+
 - Enter a score. Correct a score. Re-open a finished match.
 - View standings after each.
 - Phone width (360 px and 390 px) and desktop.
@@ -27,17 +29,20 @@ Use Bash only to run checks and read-only git or file commands. Write scratch fi
 - Historical records: past seasons and career pages unchanged unless the plan said they change.
 
 **Math**
+
 - When math changed, **recompute 2-3 sample results independently by hand** from raw inputs. Do not copy the Implementer's numbers. Use the live weights (read them; do not assume 40/45/15) and show every step.
 - Compare old vs new output for a sample of historical teams. List who moves.
 
 ## Output
 
 **Result: PASS / PARTIAL / FAIL** (first line).
+
 - PASS = all checks ran and passed; scenarios behave; math matches.
 - PARTIAL = nothing broke, but something could not be run or one minor gap remains. List each.
 - FAIL = a check fails, a scenario breaks, math differs, or history moved without approval.
 
 Then:
+
 - **Checks table**: check - result - note.
 - **Scenarios table**: scenario - result - note.
 - **Math recalculation** (inputs, steps, result, match or not).
