@@ -8,7 +8,7 @@ moved since the last snapshot. It is the page a player checks to see where their
 team sits.
 
 The page is read-only and public. Nothing on it can be changed by anybody,
-including an admin. What a user *can* change is how it is arranged: by division
+including an admin. What a user _can_ change is how it is arranged: by division
 or as one list, sorted by any column that has values of its own — eight on a
 wide screen, four on a phone — and, on a phone, compact or detailed. None of those choices is in the address, so none of them survives
 leaving the page.
@@ -139,19 +139,19 @@ rank is the row's position in the full sorted list.
 
 ## What each column means
 
-| Column | What it is | Shown |
-| --- | --- | --- |
-| # | Division rank, with overall rank in brackets. In All view, overall rank alone. **Not sortable** — the number is the row's position under the current sort, so it has no values of its own. | always |
-| Team | Name, logo, and up to four badges. Links to the team's page. A compare icon appears on hover. | always |
-| Division | The team's division. | All view only |
-| Power | Power score, one decimal, coloured in eight bands from gold down to red. "—" when the team has not played. | always |
-| W-L | Matches won and lost. | always |
-| Win % | Match win percentage, one decimal, coloured in four bands. Wins divided by wins plus losses: a tie is left out. | always |
-| Games | Games won and lost across all matches. | wide screens |
-| Game % | Game win percentage. | very wide screens |
-| SOS | Strength of schedule, three decimals. The average division weight of the opponents faced — **not** the average power score of opponents. | always |
-| Streak | The current run, as `W3` or `L2`. "N/A" for a team with no completed match. | always |
-| Trend | How far the team has moved since the last snapshot: a green up arrow, a red down arrow, or nothing. | always |
+| Column   | What it is                                                                                                                                                                                 | Shown             |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- |
+| #        | Division rank, with overall rank in brackets. In All view, overall rank alone. **Not sortable** — the number is the row's position under the current sort, so it has no values of its own. | always            |
+| Team     | Name, logo, and up to four badges. Links to the team's page. A compare icon appears on hover.                                                                                              | always            |
+| Division | The team's division.                                                                                                                                                                       | All view only     |
+| Power    | Power score, one decimal, coloured in eight bands from gold down to red. "—" when the team has not played.                                                                                 | always            |
+| W-L      | Matches won and lost.                                                                                                                                                                      | always            |
+| Win %    | Match win percentage, one decimal, coloured in four bands. Wins divided by wins plus losses: a tie is left out.                                                                            | always            |
+| Games    | Games won and lost across all matches.                                                                                                                                                     | wide screens      |
+| Game %   | Game win percentage.                                                                                                                                                                       | very wide screens |
+| SOS      | Strength of schedule, three decimals. The average division weight of the opponents faced — **not** the average power score of opponents.                                                   | always            |
+| Streak   | The current run, as `W3` or `L2`. "N/A" for a team with no completed match.                                                                                                                | always            |
+| Trend    | How far the team has moved since the last snapshot: a green up arrow, a red down arrow, or nothing.                                                                                        | always            |
 
 The streak counts **playoff matches too**. The matches this page loads include
 completed playoff matches for the season being shown, so a team that lost its
@@ -159,28 +159,28 @@ first playoff match shows `L1` even after a winning regular season.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | No effect. A visitor, a player, and an admin see an identical table. Nothing is highlighted for the signed-in user's own team. | No effect. |
-| The record's state | A team with no completed match shows "—" for Power, "N/A" for Streak, and sorts to the bottom. A hidden team is absent. | A result approved elsewhere changes a team's numbers on the next refetch, with no announcement. |
-| The season's state | The table always shows the active season and never says which one, except through the season badge above it. There is no season picker here — past seasons are at [`history/past-seasons.md`](../history/past-seasons.md). | A season activated elsewhere changes the whole table under the user once the ten-minute season cache expires. |
-| Viewport | On a wide screen the table is a real table, with Games appearing at medium width and Game % at large. On a phone it is a list of cards with a top-three leaderboard above it, a compact/detailed toggle, and four sort pills (44 pixels tall) instead of column headings. | Rotating a phone into landscape does not switch to the desktop table; the breakpoint is width alone. |
-| Keys the page honours | Nothing is focused on arrival and there are no shortcuts. Tab reaches the Insights button, the toggles, each sortable column heading, then each team link and compare link in turn. | A focused heading sorts on Enter or Space. Each heading also carries its sort state for screen readers. |
+| Modifier              | Set at arrival                                                                                                                                                                                                                                                            | Changed while editing                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| The user's role       | No effect. A visitor, a player, and an admin see an identical table. Nothing is highlighted for the signed-in user's own team.                                                                                                                                            | No effect.                                                                                                    |
+| The record's state    | A team with no completed match shows "—" for Power, "N/A" for Streak, and sorts to the bottom. A hidden team is absent.                                                                                                                                                   | A result approved elsewhere changes a team's numbers on the next refetch, with no announcement.               |
+| The season's state    | The table always shows the active season and never says which one, except through the season badge above it. There is no season picker here — past seasons are at [`history/past-seasons.md`](../history/past-seasons.md).                                                | A season activated elsewhere changes the whole table under the user once the ten-minute season cache expires. |
+| Viewport              | On a wide screen the table is a real table, with Games appearing at medium width and Game % at large. On a phone it is a list of cards with a top-three leaderboard above it, a compact/detailed toggle, and four sort pills (44 pixels tall) instead of column headings. | Rotating a phone into landscape does not switch to the desktop table; the breakpoint is width alone.          |
+| Keys the page honours | Nothing is focused on arrival and there are no shortcuts. Tab reaches the Insights button, the toggles, each sortable column heading, then each team link and compare link in turn.                                                                                       | A focused heading sorts on Enter or Space. Each heading also carries its sort state for screen readers.       |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel on this page. | No effect. Nothing on this page can be cancelled, because nothing is in progress. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | The sort and the expanded row are lost. The division-or-all choice is in the address as `?view=all`: it comes back with Back and with a reload, not when the reader returns by a link to plain `/stats`. The compact/detailed choice on a phone survives, because it is stored in the browser. |
-| Browser back or forward | Returns to the previous page. | Coming back from a team page restores the scroll position and the view, but not the sort (a top-bar link landed at the top in the one test that tried it; see the last paragraph of this document). A user who sorted by SOS, opened a team, and came back is looking at a differently-ordered table at the same scroll offset. |
-| Reload, or the tab closed | Reloads everything. | After a reload the sort and the expanded row are lost, the view stays (it is in the address), and the scroll position stays where it was (300px before, 300px after in the 2026-11-05 test). A closed tab was not tested. The page keeps its scroll position in the tab's memory, and a new visit to `/stats` starts from the default sort and view. |
-| Network lost mid-request | The page shows a full-screen red panel: "There was an error loading the statistics data. Please try refreshing the page", with the underlying message and a "Try again" button. | Nothing in flight to lose. A background refetch that fails leaves the old numbers on screen with no sign that it failed. |
-| The request fails or times out | As above. Reads are retried once before the panel appears. | As above. |
-| The session expires | No effect. The standings are public. | No effect. |
-| The same record changed in another tab, or by another user | Not applicable before arriving. | **There is no realtime here.** A score approved by an admin does not reach the table until something causes a refetch — returning to the tab, or remounting the page. Numbers then change under the user with no announcement and no highlight. |
-| Browser autofill or a password manager writes into the form | No effect. There are no fields on this page. | No effect. |
-| The window loses focus | No effect. | Returning to the tab refetches the teams and matches. The table can therefore re-order itself while the user is reading it, and the trend arrows re-run their flash animation. |
+| Event                                                       | Before the first edit                                                                                                                                                           | While editing or submitting                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. There is no Cancel on this page.                                                                                                                                     | No effect. Nothing on this page can be cancelled, because nothing is in progress.                                                                                                                                                                                                                                                                    |
+| In-app navigation away, or switching tab within the page    | Nothing is lost.                                                                                                                                                                | The sort and the expanded row are lost. The division-or-all choice is in the address as `?view=all`: it comes back with Back and with a reload, not when the reader returns by a link to plain `/stats`. The compact/detailed choice on a phone survives, because it is stored in the browser.                                                       |
+| Browser back or forward                                     | Returns to the previous page.                                                                                                                                                   | Coming back from a team page restores the scroll position and the view, but not the sort (a top-bar link landed at the top in the one test that tried it; see the last paragraph of this document). A user who sorted by SOS, opened a team, and came back is looking at a differently-ordered table at the same scroll offset.                      |
+| Reload, or the tab closed                                   | Reloads everything.                                                                                                                                                             | After a reload the sort and the expanded row are lost, the view stays (it is in the address), and the scroll position stays where it was (300px before, 300px after in the 2026-11-05 test). A closed tab was not tested. The page keeps its scroll position in the tab's memory, and a new visit to `/stats` starts from the default sort and view. |
+| Network lost mid-request                                    | The page shows a full-screen red panel: "There was an error loading the statistics data. Please try refreshing the page", with the underlying message and a "Try again" button. | Nothing in flight to lose. A background refetch that fails leaves the old numbers on screen with no sign that it failed.                                                                                                                                                                                                                             |
+| The request fails or times out                              | As above. Reads are retried once before the panel appears.                                                                                                                      | As above.                                                                                                                                                                                                                                                                                                                                            |
+| The session expires                                         | No effect. The standings are public.                                                                                                                                            | No effect.                                                                                                                                                                                                                                                                                                                                           |
+| The same record changed in another tab, or by another user  | Not applicable before arriving.                                                                                                                                                 | **There is no realtime here.** A score approved by an admin does not reach the table until something causes a refetch — returning to the tab, or remounting the page. Numbers then change under the user with no announcement and no highlight.                                                                                                      |
+| Browser autofill or a password manager writes into the form | No effect. There are no fields on this page.                                                                                                                                    | No effect.                                                                                                                                                                                                                                                                                                                                           |
+| The window loses focus                                      | No effect.                                                                                                                                                                      | Returning to the tab refetches the teams and matches. The table can therefore re-order itself while the user is reading it, and the trend arrows re-run their flash animation.                                                                                                                                                                       |
 
 ## Interactions with other systems
 
@@ -208,7 +208,7 @@ offline reading.
 **Toasts and notifications.** None. This page produces no messages at all.
 
 **URL state.** The Division / All choice is in the address: `/stats?view=all`.
-Divisions is the default and is written as *no* parameter, so a plain `/stats`
+Divisions is the default and is written as _no_ parameter, so a plain `/stats`
 stays plain and `/stats?view=all` is the shareable form. The choice replaces the
 current history entry rather than adding one, so Back leaves the page rather than
 stepping through view changes.
@@ -234,7 +234,7 @@ positions". Rows are deliberately not focusable, because they contain links.
 Trend arrows animate on every render.
 
 A team link is spoken by its visible name, then the record (changed
-2026-11-10). It used to be "View *Team* team details", which did not start with
+2026-11-10). It used to be "View _Team_ team details", which did not start with
 the name a voice-control user reads on screen. The logo inside the link is
 hidden from screen readers, so the name is read once. The same holds for the
 career rankings cards.

@@ -71,7 +71,7 @@ dropdowns.
 ### Begin editing
 
 Choosing a team in either dropdown is the whole of it. There is no form, no
-draft, and no dirty state — the selection *is* the state, and it takes effect
+draft, and no dirty state — the selection _is_ the state, and it takes effect
 immediately.
 
 Each dropdown leaves out whatever the other one has chosen, so the same team
@@ -97,28 +97,28 @@ Nothing is submitted. This page only reads.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | No effect. A visitor, a player, and an admin see the same page and the same numbers. | No effect. |
-| The record's state | A hidden team cannot be chosen and cannot be loaded from a link. A team with no completed matches shows zeros throughout and "First Meeting" in the last block. | A team hidden elsewhere stays selectable until the list refetches. |
-| The season's state | No effect on the numbers, which are career. The team list itself is not season-scoped either. | No effect. |
-| Viewport | The two dropdowns stack with the swap button between them; on a wide screen they sit side by side. Every comparison row stays three columns at every width, so long values are tight on a phone. | Re-flows on rotation. |
-| Keys the app honours | Tab reaches the first dropdown, the swap button, then the second dropdown. | Enter or Space opens a dropdown; arrow keys move through it; Escape closes it. |
+| Modifier             | Set at arrival                                                                                                                                                                                   | Changed while editing                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| The user's role      | No effect. A visitor, a player, and an admin see the same page and the same numbers.                                                                                                             | No effect.                                                                     |
+| The record's state   | A hidden team cannot be chosen and cannot be loaded from a link. A team with no completed matches shows zeros throughout and "First Meeting" in the last block.                                  | A team hidden elsewhere stays selectable until the list refetches.             |
+| The season's state   | No effect on the numbers, which are career. The team list itself is not season-scoped either.                                                                                                    | No effect.                                                                     |
+| Viewport             | The two dropdowns stack with the swap button between them; on a wide screen they sit side by side. Every comparison row stays three columns at every width, so long values are tight on a phone. | Re-flows on rotation.                                                          |
+| Keys the app honours | Tab reaches the first dropdown, the swap button, then the second dropdown.                                                                                                                       | Enter or Space opens a dropdown; arrow keys move through it; Escape closes it. |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes an open dropdown. There is no way to clear a chosen team once it is chosen — the dropdowns have no "none". |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | Nothing is lost either: the selection is in the address, so the browser's own history holds it. |
-| Browser back or forward | Leaves the page. | **Back leaves the page rather than undoing a selection**, because every change replaces the history entry instead of adding one. Coming forward again returns to the last comparison. |
-| Reload, or the tab closed | Gives two empty dropdowns. | **The comparison survives**, because it is in the address. |
-| Network lost mid-request | The team list never arrives and the retry card appears. | The comparison stays on "Loading comparison..." with no error and no timeout. |
-| The request fails or times out | The read is retried once, then the retry card. | The numbers for one side fail and that side draws zeros rather than saying anything. |
-| The session expires | No effect. Everything here is public. | No effect. |
-| The same record changed in another tab, or by another user | No realtime. A result entered elsewhere does not reach an open comparison. | Same, and more so than elsewhere: the head-to-head block is deliberately told **not** to refetch when the page is opened or when the tab regains focus, so an open page never refetches it at all and reopening within ten minutes reuses the cached record. See B-74. |
-| Browser autofill or a password manager writes into the form | No effect. There are no text fields. | No effect. |
-| The window loses focus | Nothing. | Returning refetches the team list and the career numbers if they are over five minutes old. The head-to-head block does not refetch. |
+| Event                                                       | Before the first edit                                                      | While editing or submitting                                                                                                                                                                                                                                            |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. There is no Cancel on this page.                                | Closes an open dropdown. There is no way to clear a chosen team once it is chosen — the dropdowns have no "none".                                                                                                                                                      |
+| In-app navigation away, or switching tab within the page    | Nothing is lost.                                                           | Nothing is lost either: the selection is in the address, so the browser's own history holds it.                                                                                                                                                                        |
+| Browser back or forward                                     | Leaves the page.                                                           | **Back leaves the page rather than undoing a selection**, because every change replaces the history entry instead of adding one. Coming forward again returns to the last comparison.                                                                                  |
+| Reload, or the tab closed                                   | Gives two empty dropdowns.                                                 | **The comparison survives**, because it is in the address.                                                                                                                                                                                                             |
+| Network lost mid-request                                    | The team list never arrives and the retry card appears.                    | The comparison stays on "Loading comparison..." with no error and no timeout.                                                                                                                                                                                          |
+| The request fails or times out                              | The read is retried once, then the retry card.                             | The numbers for one side fail and that side draws zeros rather than saying anything.                                                                                                                                                                                   |
+| The session expires                                         | No effect. Everything here is public.                                      | No effect.                                                                                                                                                                                                                                                             |
+| The same record changed in another tab, or by another user  | No realtime. A result entered elsewhere does not reach an open comparison. | Same, and more so than elsewhere: the head-to-head block is deliberately told **not** to refetch when the page is opened or when the tab regains focus, so an open page never refetches it at all and reopening within ten minutes reuses the cached record. See B-74. |
+| Browser autofill or a password manager writes into the form | No effect. There are no text fields.                                       | No effect.                                                                                                                                                                                                                                                             |
+| The window loses focus                                      | Nothing.                                                                   | Returning refetches the team list and the career numbers if they are over five minutes old. The head-to-head block does not refetch.                                                                                                                                   |
 
 After an interrupt the address is the state. Anything the address holds comes
 back; anything it does not, does not.

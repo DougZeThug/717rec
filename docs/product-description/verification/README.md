@@ -6,17 +6,17 @@ time.
 
 ## What is here
 
-| File | Covers |
-| --- | --- |
-| [foundations.md](foundations.md) | `foundations/*` |
-| [getting-started.md](getting-started.md) | `getting-started/*` |
-| [home-and-teams.md](home-and-teams.md) | `home/*` and `teams/*` |
-| [schedule-and-scores.md](schedule-and-scores.md) | `schedule/*` and `scores/*` |
-| [live-scoring.md](live-scoring.md) | `live-scoring/*` |
-| [standings.md](standings.md) | `playoffs/*`, `stats/*`, and `history/*` |
-| [community.md](community.md) | `message-board/*` and `help/*` |
-| [admin.md](admin.md) | `admin/*` |
-| [cross-cutting.md](cross-cutting.md) | `cross-cutting/*` |
+| File                                             | Covers                                   |
+| ------------------------------------------------ | ---------------------------------------- |
+| [foundations.md](foundations.md)                 | `foundations/*`                          |
+| [getting-started.md](getting-started.md)         | `getting-started/*`                      |
+| [home-and-teams.md](home-and-teams.md)           | `home/*` and `teams/*`                   |
+| [schedule-and-scores.md](schedule-and-scores.md) | `schedule/*` and `scores/*`              |
+| [live-scoring.md](live-scoring.md)               | `live-scoring/*`                         |
+| [standings.md](standings.md)                     | `playoffs/*`, `stats/*`, and `history/*` |
+| [community.md](community.md)                     | `message-board/*` and `help/*`           |
+| [admin.md](admin.md)                             | `admin/*`                                |
+| [cross-cutting.md](cross-cutting.md)             | `cross-cutting/*`                        |
 
 There are **1,994 items** across the nine files. **113** P1 rows and **2** P2
 rows (NAV-10 and MSG-07) are marked **(suspected bug)**. `admin.md` is the
@@ -52,7 +52,7 @@ timing.
    There is no seeded test data and no local database.
 
 2. **Confirm the commit.** Every document ends with ``Verified against `717rec`
-   commit `ea5c8f4` ``. Run `git rev-parse --short HEAD`. If the app code has
+commit `ea5c8f4` ``. Run `git rev-parse --short HEAD`. If the app code has
    moved on since `ea5c8f4`, some failures will be drift rather than defects.
 
 3. **Keep the document open beside the app.** Read the linked section before each
@@ -89,7 +89,7 @@ timing.
   and grants nothing; several items depend on the difference.
 - **admin** — signed in with the admin flag. There is no partial admin.
 - **second scorer** — a second account, on a second device or in a second
-  browser, with an approved membership of the *other* team in the same match. A
+  browser, with an approved membership of the _other_ team in the same match. A
   second tab in the same browser is **not** the same thing for realtime items:
   it shares a session and can mask a bug that two real users would hit.
 - **offline** — the network genuinely unavailable. The devtools offline toggle is
@@ -97,7 +97,7 @@ timing.
   websocket the way losing signal does; for live-scoring items, use aeroplane
   mode on a real phone.
 - **slow** — a throttled connection. Needed for any claim about what is visible
-  *while* a request is in flight; on a fast connection those states flash past.
+  _while_ a request is in flight; on a fast connection those states flash past.
 
 ## Driving the app from a script
 
@@ -124,18 +124,18 @@ dev server, in Chromium, **signed out only**.
 
 What it covered and what it found:
 
-| Item | Result |
-| --- | --- |
-| All 13 public routes render content when signed out | pass (13/13) |
-| `/admin`, and the two paths that redirect into it, `/admin/notifications` and `/timeslots`, send a signed-out visitor to `/auth` | pass (3/3) |
-| An unknown route shows "Page Not Found" | pass |
-| `/my-team` signed out shows a "Join a team to participate…" prompt, not an error | pass — answers an open question in `foundations/accounts-and-roles.md` |
-| `/message-board` signed out shows "Sign in to post messages" and a Sign In button | pass — answers the same open question |
-| Submitting an empty contact form shows all four field messages and sends nothing | pass |
-| No field is focused on arrival at `/contact` | pass |
-| The contact form's hidden bot trap exists, with `tabindex="-1"` and `aria-hidden="true"` | pass |
-| **Scroll position carries across an in-app navigation** | **confirmed defect, since fixed ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation))** — scrolled to 337px on `/schedule`, clicked through to `/help`, still at 337px; at 0 when measured again on 2026-11-05 |
-| **The support function refuses the dev origin** | **confirmed defect** — a preflight from `https://717rec.app` returns `access-control-allow-origin`; one from `http://localhost:8080` returns none |
+| Item                                                                                                                             | Result                                                                                                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| All 13 public routes render content when signed out                                                                              | pass (13/13)                                                                                                                                                                                                                                    |
+| `/admin`, and the two paths that redirect into it, `/admin/notifications` and `/timeslots`, send a signed-out visitor to `/auth` | pass (3/3)                                                                                                                                                                                                                                      |
+| An unknown route shows "Page Not Found"                                                                                          | pass                                                                                                                                                                                                                                            |
+| `/my-team` signed out shows a "Join a team to participate…" prompt, not an error                                                 | pass — answers an open question in `foundations/accounts-and-roles.md`                                                                                                                                                                          |
+| `/message-board` signed out shows "Sign in to post messages" and a Sign In button                                                | pass — answers the same open question                                                                                                                                                                                                           |
+| Submitting an empty contact form shows all four field messages and sends nothing                                                 | pass                                                                                                                                                                                                                                            |
+| No field is focused on arrival at `/contact`                                                                                     | pass                                                                                                                                                                                                                                            |
+| The contact form's hidden bot trap exists, with `tabindex="-1"` and `aria-hidden="true"`                                         | pass                                                                                                                                                                                                                                            |
+| **Scroll position carries across an in-app navigation**                                                                          | **confirmed defect, since fixed ([B-14](../bug-triage.md#b-14-scroll-position-carries-across-every-in-app-navigation))** — scrolled to 337px on `/schedule`, clicked through to `/help`, still at 337px; at 0 when measured again on 2026-11-05 |
+| **The support function refuses the dev origin**                                                                                  | **confirmed defect** — a preflight from `https://717rec.app` returns `access-control-allow-origin`; one from `http://localhost:8080` returns none                                                                                               |
 
 **What this pass did not cover, and why it matters:**
 

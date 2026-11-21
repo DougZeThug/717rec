@@ -27,7 +27,7 @@ nor archived also has **Activate** and **Archive** buttons. A season whose
 playoffs are still running also has a **Finalize Playoffs** button.
 
 Pressing Create New Season opens a small form: a name, a start date, and an
-optional end date. Pressing Create Season saves it, a toast reads "*name* created.
+optional end date. Pressing Create Season saves it, a toast reads "_name_ created.
 Press Activate on its card to start it.", and the new season appears at the top of
 the list as **Inactive**. Creating a season does not start it: the toast says so,
 and the season sits in the list until an admin presses **Activate** on its card. That lets next season be set
@@ -97,11 +97,11 @@ is dirty.
 
 Validation runs on submit, not while typing:
 
-| Field | Rule | Message shown |
-| --- | --- | --- |
-| Season Name | at least one character | "Season name is required" |
-| Start Date | must be set | "Start date is required" |
-| End Date | may be left empty; if given, on or after the start date | "The end date cannot be before the start date" |
+| Field       | Rule                                                    | Message shown                                  |
+| ----------- | ------------------------------------------------------- | ---------------------------------------------- |
+| Season Name | at least one character                                  | "Season name is required"                      |
+| Start Date  | must be set                                             | "Start date is required"                       |
+| End Date    | may be left empty; if given, on or after the start date | "The end date cannot be before the start date" |
 
 Nothing checks whether the dates overlap another season. Two seasons can cover
 the same weeks.
@@ -124,7 +124,7 @@ The button reads "Creating..." or "Updating..." and is disabled while the reques
 is in flight. Cancel and the X in the form's corner both close it and discard
 what was typed, with no confirmation.
 
-On success the form closes and a toast reads "*name* created. Press Activate on
+On success the form closes and a toast reads "_name_ created. Press Activate on
 its card to start it." when creating, or "Season updated successfully" when
 editing. The season list re-fetches.
 
@@ -143,9 +143,9 @@ includes every un-archived season when no season is active at all — so a leagu
 that has just archived its last season can start over from this screen.
 Archived seasons never offer it: the `activate_season` function refuses them.
 
-Pressing it opens a dialog headed "Activate Season: *name*". When another season
+Pressing it opens a dialog headed "Activate Season: _name_". When another season
 is currently active, the dialog warns that it will be deactivated and offers a
-tick box, **Keep *X*'s playoffs active**:
+tick box, **Keep _X_'s playoffs active**:
 
 - **Unticked.** The target season becomes active and the previous one is simply
   deactivated. Its matches and bracket are left alone.
@@ -171,13 +171,13 @@ different season afterwards undoes it.
 
 Offered on **any season that is not already archived** — from the green header
 for the active season, and from an **Archive** button on the card of every
-inactive one. It opens a dialog headed "Archive Season: *name*" whose description
+inactive one. It opens a dialog headed "Archive Season: _name_" whose description
 ends "**This action cannot be undone.**" That is accurate: **nothing anywhere in
 the app un-archives a season.**
 
 A checkbox, "Keep playoffs active", chooses between two very different
 operations. It appears on the **active** season and on any season whose playoffs
-are already running — ticking it is the move that *starts* the playoffs, so the
+are already running — ticking it is the move that _starts_ the playoffs, so the
 season being played has to be offered it before its bracket exists. It is hidden
 only on an old season that is neither active nor in playoffs, which has no
 bracket to keep. It is unticked every time the dialog opens, even if it was
@@ -262,28 +262,28 @@ window could never be opened — see
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role (visitor, player, admin) | Only an admin reaches the dashboard at all; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). Every admin sees every control. | Losing admin elsewhere leaves the buttons on screen. The server refuses the writes. |
-| The record's state | An archived season shows an Archived badge and an Edit button, and no Activate button. A season that is neither active nor archived also shows Activate. A playoffs-in-progress season shows both Activate and Finalize Playoffs. Only the active season shows the **Archive Season** button in the header; every other un-archived season shows an **Archive** button on its card. | A season archived in another browser keeps showing its old badge here for up to ten minutes. |
-| The season's state (active, archived, playoffs on) | With no active season, the top card reads "None" and the Archive Season button is absent rather than disabled. Every un-archived season still offers Activate, and its dialog shows no deactivation warning and no tick box, so the league can be restarted from here. | If the active season changes elsewhere, this screen does not notice until it re-fetches. |
-| Viewport | The three cards stack on a narrow screen. The form's two date fields stack. The list is one card per season either way. The buttons and badges wrap onto more rows instead of running off the screen. The form's Cancel and Create buttons wrap onto two rows below 372 pixels wide, so Cancel stays on the screen. A confirm dialog (Activate, Archive) that is taller than the screen scrolls inside itself, so its title and confirm button can be reached on a short screen. | No effect beyond re-flowing. |
-| Keys the form honours | Tab moves through Name, Start Date, End Date, Cancel, and the submit button. | Enter in a text field submits the form. Escape closes an open dialog, which cancels the archive or the finalise. |
+| Modifier                                           | Set at arrival                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Changed while editing                                                                                            |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| The user's role (visitor, player, admin)           | Only an admin reaches the dashboard at all; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). Every admin sees every control.                                                                                                                                                                                                                                                                                              | Losing admin elsewhere leaves the buttons on screen. The server refuses the writes.                              |
+| The record's state                                 | An archived season shows an Archived badge and an Edit button, and no Activate button. A season that is neither active nor archived also shows Activate. A playoffs-in-progress season shows both Activate and Finalize Playoffs. Only the active season shows the **Archive Season** button in the header; every other un-archived season shows an **Archive** button on its card.                                                                                              | A season archived in another browser keeps showing its old badge here for up to ten minutes.                     |
+| The season's state (active, archived, playoffs on) | With no active season, the top card reads "None" and the Archive Season button is absent rather than disabled. Every un-archived season still offers Activate, and its dialog shows no deactivation warning and no tick box, so the league can be restarted from here.                                                                                                                                                                                                           | If the active season changes elsewhere, this screen does not notice until it re-fetches.                         |
+| Viewport                                           | The three cards stack on a narrow screen. The form's two date fields stack. The list is one card per season either way. The buttons and badges wrap onto more rows instead of running off the screen. The form's Cancel and Create buttons wrap onto two rows below 372 pixels wide, so Cancel stays on the screen. A confirm dialog (Activate, Archive) that is taller than the screen scrolls inside itself, so its title and confirm button can be reached on a short screen. | No effect beyond re-flowing.                                                                                     |
+| Keys the form honours                              | Tab moves through Name, Start Date, End Date, Cancel, and the submit button.                                                                                                                                                                                                                                                                                                                                                                                                     | Enter in a text field submits the form. Escape closes an open dialog, which cancels the archive or the finalise. |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. | Cancel and the X close the form and discard everything typed, with no confirmation. Escape closes a confirmation dialog and abandons the archive or finalise. Neither aborts a request already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | **Everything typed is lost, with no warning.** Switching dashboard section unmounts the form. An archive already sent still completes and its toast may appear over another section. |
-| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away. Coming back gives a closed, empty form. |
-| Reload, or the tab closed | Returns to the Season section, since the open section is remembered. | Everything typed is lost. A request already sent still lands. Nothing tells the admin which. |
-| Network lost mid-request | Nothing to lose. | The write fails, the dialog or form stays as it was, and a red toast carries the failure. Nothing is queued and nothing retries. |
-| The request fails or times out | Cannot happen. | The form or dialog keeps its contents and the button comes back. The message is the server's own reason, not a generic sentence. An archive that timed out may still have run. |
-| The session expires | No effect while reading. | Writes fail. Nothing signs the admin out or moves them; the first sign is a refused archive. |
-| The same record changed in another tab, or by another user | No realtime here. The list is up to ten minutes stale. | **Two admins can archive the same season twice** or archive different seasons at once. Nothing locks a season and nothing warns. |
-| Browser autofill or a password manager writes into the form | The name field may be autofilled by a browser. The date fields are native date inputs and are not. | Same. Validation still runs only on submit. |
-| The window loses focus | Returning re-fetches the season list once it is past its ten-minute window. | Returning can change the badges under the cursor while a dialog is open. |
+| Event                                                       | Before the first edit                                                                              | While editing or submitting                                                                                                                                                                          |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect.                                                                                         | Cancel and the X close the form and discard everything typed, with no confirmation. Escape closes a confirmation dialog and abandons the archive or finalise. Neither aborts a request already sent. |
+| In-app navigation away, or switching tab within the page    | Nothing is lost.                                                                                   | **Everything typed is lost, with no warning.** Switching dashboard section unmounts the form. An archive already sent still completes and its toast may appear over another section.                 |
+| Browser back or forward                                     | Steps to the previously opened section, or out of the dashboard from the first one.                | Same as navigating away. Coming back gives a closed, empty form.                                                                                                                                     |
+| Reload, or the tab closed                                   | Returns to the Season section, since the open section is remembered.                               | Everything typed is lost. A request already sent still lands. Nothing tells the admin which.                                                                                                         |
+| Network lost mid-request                                    | Nothing to lose.                                                                                   | The write fails, the dialog or form stays as it was, and a red toast carries the failure. Nothing is queued and nothing retries.                                                                     |
+| The request fails or times out                              | Cannot happen.                                                                                     | The form or dialog keeps its contents and the button comes back. The message is the server's own reason, not a generic sentence. An archive that timed out may still have run.                       |
+| The session expires                                         | No effect while reading.                                                                           | Writes fail. Nothing signs the admin out or moves them; the first sign is a refused archive.                                                                                                         |
+| The same record changed in another tab, or by another user  | No realtime here. The list is up to ten minutes stale.                                             | **Two admins can archive the same season twice** or archive different seasons at once. Nothing locks a season and nothing warns.                                                                     |
+| Browser autofill or a password manager writes into the form | The name field may be autofilled by a browser. The date fields are native date inputs and are not. | Same. Validation still runs only on submit.                                                                                                                                                          |
+| The window loses focus                                      | Returning re-fetches the season list once it is past its ten-minute window.                        | Returning can change the badges under the cursor while a dialog is open.                                                                                                                             |
 
 ## Interactions with other systems
 
@@ -352,7 +352,7 @@ them.
   button that opens the activation dialog for that season, including when no
   season is active at all. B-02 was raised as "no season can be activated at
   all", which was too strong — creating a season has always activated it, because
-  the database defaults `is_active` to true. The real gap was that no *existing*
+  the database defaults `is_active` to true. The real gap was that no _existing_
   season could be made active, so there was no way to switch back to an earlier
   season or to recover after archiving without creating a replacement.
 - Resolved: **the "confirmation open" flag could be read but not written**, so the

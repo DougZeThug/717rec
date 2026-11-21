@@ -15,13 +15,13 @@ Use a dedicated Supabase branch or a throwaway project — **never** production
 Add these to GitHub Actions repo secrets (and to your local `.env.e2e` when
 running locally):
 
-| Name | Purpose |
-| --- | --- |
-| `E2E_SUPABASE_URL` | Staging project URL |
-| `E2E_SUPABASE_ANON_KEY` | Publishable / anon key (baked into the browser build) |
+| Name                            | Purpose                                                                            |
+| ------------------------------- | ---------------------------------------------------------------------------------- |
+| `E2E_SUPABASE_URL`              | Staging project URL                                                                |
+| `E2E_SUPABASE_ANON_KEY`         | Publishable / anon key (baked into the browser build)                              |
 | `E2E_SUPABASE_SERVICE_ROLE_KEY` | Service role — used **only** by the Node seed helper, never shipped to the browser |
-| `E2E_TEST_USER_EMAIL` | Login account |
-| `E2E_TEST_USER_PASSWORD` | Login password. Rotated onto the user on each run. |
+| `E2E_TEST_USER_EMAIL`           | Login account                                                                      |
+| `E2E_TEST_USER_PASSWORD`        | Login password. Rotated onto the user on each run.                                 |
 
 When wired into CI (see **CI status** below), the `e2e-real-backend` job is
 designed to fail fast: its first step (`Require E2E secrets`) checks all five
@@ -66,8 +66,9 @@ delete from teams where name like 'E2E Alpha %' or name like 'E2E Beta %';
 **As of 2026-07-23, `.github/workflows/ci.yml` does not define an
 `e2e-real-backend` job** — the real-backend spec runs locally only (see
 "Running locally" above). Wiring it into CI, with the guard step below so it
-can't be green while skipping, is tracked in
-`docs/quality-review-2026-07/briefs/PR-03-make-soft-ci-gates-honest.md`.
+can't be green while skipping, is described in the archived 2026-07 review
+brief `docs/audits/archive/quality-review-2026-07/briefs/PR-03-make-soft-ci-gates-honest.md`
+(the review is archived; the CI job is still not wired).
 
 Once added, the job's first step (`Require E2E secrets`) should fail the run if
 any of the five secrets above is unset, so on pushes and same-repo PRs the job

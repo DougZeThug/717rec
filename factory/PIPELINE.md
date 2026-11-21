@@ -7,6 +7,7 @@ Project specialists are listed in `.factory/config.json` `specialists`. Call one
 The ledger CLI: `node factory/bin/factory.mjs` (called `F` below). It holds task state. Chat memory is not state.
 
 ## Rules that never bend
+
 1. **Evidence, not claims.** Only `F check`, QA's own observations and the reviewer's verdict count. A builder saying "done" counts for nothing.
 2. **Boundaries** (also enforced by hooks and permissions): no merge to a protected branch, no deploy, no production data or migration, no secrets, no deleting protected assets, no weakening tests or security. Hit one? Stop and report. Do not look for a way around it.
 3. **Smallest change.** Reuse existing systems. A trivial change gets no team: Director edits, runs checks, one reviewer pass.
@@ -18,6 +19,7 @@ The ledger CLI: `node factory/bin/factory.mjs` (called `F` below). It holds task
 6. Respect `productionBoundaries` and `projectContext` in `.factory/config.json`.
 
 ## Stages
+
 1. **Intake.** Do these in order. The task id exists only after step 1, so the branch comes after it.
    1. `F new "<title>" --kind <k> --request "<user's words>"`. It prints the task id. A build or polish task stops at the concurrency ceiling. It records the branch that is checked out right now.
    2. Make the task branch: `git switch -c factory/<id> <base>`. `<base>` is `baseBranch` in `.factory/config.json`. Skip this step if a branch is already checked out for this task.
@@ -38,6 +40,7 @@ The ledger CLI: `node factory/bin/factory.mjs` (called `F` below). It holds task
    - An independent code review approves the current commit.
 
    A `--trivial` task skips **only** the need for the last item: it passes with no review, or with a stale APPROVE. A latest code review of CHANGES or REJECT still blocks it, until a later review approves. If not ready, fix what it lists. Push the branch (`git push -u origin <branch>`). Open a PR only if the user asked for one or the project says to; the PR body needs: what changed, evidence, screenshots paths, risks, hand-apply steps. Never merge.
+
 10. **Report** (to the human, short, answer first):
     - Verdict: READY / BLOCKED / NEEDS DECISION.
     - What changed (plain words). Branch / PR.
@@ -45,7 +48,8 @@ The ledger CLI: `node factory/bin/factory.mjs` (called `F` below). It holds task
     - Repairs used, unresolved problems, decisions needed (with a recommendation).
     - Human interventions and elapsed minutes.
     - Next action for the human: approve, reject, or answer one question.
-    After the human approves: `F close <id>` (writes metrics, removes the task file).
+      After the human approves: `F close <id>` (writes metrics, removes the task file).
 
 ## Blocked tasks
+
 `F set <id> status blocked`, add `F note <id> "<what was tried, what the logs say>"`, commit the notes' diagnostic logs if useful, and tell the human the exact decision or step needed.

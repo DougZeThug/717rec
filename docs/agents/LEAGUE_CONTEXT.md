@@ -35,6 +35,7 @@ If the code disagrees with this file, the code wins. Then fix this file.
 
 - Migrations in `supabase/migrations/` do **not** reach production by themselves.
   Someone must apply them by hand or through Lovable. See `docs/OPERATIONS.md` section 6.
+- **Live (Doug's report, 2026-11-21):** the match delete log (`20261121120000_audit_match_deletes.sql`) was hand-applied. Doug reported that all steps worked. Each match delete now writes one `match_delete` row in `security_audit_log`. Deletes before that date are not logged. The live-scoring audit (`20261120130000`): live status **UNKNOWN**. See `docs/OPERATIONS.md` section 6h.
 - Repo SQL tests live in `supabase/tests/` (run by the `supabase-ci` workflow on a throwaway database).
 - Public data must stay public. Do not narrow SELECT policies on `seasons` or `team_season_stats`. See `docs/RLS_NOTES.md`.
 - Archived seasons are frozen against division and division-weight edits.

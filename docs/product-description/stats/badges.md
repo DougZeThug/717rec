@@ -94,11 +94,11 @@ Not applicable. No user action commits a badge.
 
 ### Playoff placings — nine badges, permanent
 
-| Badge | Awarded for |
-| --- | --- |
-| Recreational / Intermediate / Competitive **Champion** | Winning that division's playoff bracket. |
-| Recreational / Intermediate / Competitive **Runner-Up** | Second place in that division. |
-| Recreational / Intermediate / Competitive **Third Place** | Third place in that division. |
+| Badge                                                     | Awarded for                              |
+| --------------------------------------------------------- | ---------------------------------------- |
+| Recreational / Intermediate / Competitive **Champion**    | Winning that division's playoff bracket. |
+| Recreational / Intermediate / Competitive **Runner-Up**   | Second place in that division.           |
+| Recreational / Intermediate / Competitive **Third Place** | Third place in that division.            |
 
 All nine are written when a season is closed. The close works out each bracket's
 final placements, and writes a badge for first, second and third from them.
@@ -118,24 +118,24 @@ or "low" is renamed and recoloured — "Intermediate High Champion" in cyan,
 
 ### Patterns of results — nine badges, revocable
 
-| Badge | Awarded for | Revoked when |
-| --- | --- | --- |
-| **King Slayer** | Beating a team from a tougher division whose career power score — the one the career table shows — is 25 or more above yours. | No win this season qualifies any more — including when the win that earned it is voided. |
-| **Clutch Performer** | Winning five or more matches 2–1 this season. | The count drops below five. |
-| **Consistent Performer** | Beating five or more different teams in your own division this season. | The count drops below five. |
-| **Ice Cold** | Your last three completed matches this season are all 2–1 wins. | The next match is anything else. |
-| **Broom Crew** | Your last three completed matches this season are all 2–0 wins. | The next match is anything else. |
-| **Gatekeeper** | Winning three or more matches this season against teams with a higher power score than yours. | The count drops below three. |
-| **Chaos Agent** | Your last six matches this season alternate win, loss, win, loss exactly. | The run is broken. |
-| **Bully** | Winning four or more matches this season against teams whose division weight is more than 0.20 below yours. | The count drops below four. |
-| **Cool Fun Team** | Nothing. It is granted by hand and never revoked. | Never. It also survives a season being archived. |
+| Badge                    | Awarded for                                                                                                                   | Revoked when                                                                             |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **King Slayer**          | Beating a team from a tougher division whose career power score — the one the career table shows — is 25 or more above yours. | No win this season qualifies any more — including when the win that earned it is voided. |
+| **Clutch Performer**     | Winning five or more matches 2–1 this season.                                                                                 | The count drops below five.                                                              |
+| **Consistent Performer** | Beating five or more different teams in your own division this season.                                                        | The count drops below five.                                                              |
+| **Ice Cold**             | Your last three completed matches this season are all 2–1 wins.                                                               | The next match is anything else.                                                         |
+| **Broom Crew**           | Your last three completed matches this season are all 2–0 wins.                                                               | The next match is anything else.                                                         |
+| **Gatekeeper**           | Winning three or more matches this season against teams with a higher power score than yours.                                 | The count drops below three.                                                             |
+| **Chaos Agent**          | Your last six matches this season alternate win, loss, win, loss exactly.                                                     | The run is broken.                                                                       |
+| **Bully**                | Winning four or more matches this season against teams whose division weight is more than 0.20 below yours.                   | The count drops below four.                                                              |
+| **Cool Fun Team**        | Nothing. It is granted by hand and never revoked.                                                                             | Never. It also survives a season being archived.                                         |
 
 ### Streaks — two badges, revocable
 
-| Badge | Awarded for | Revoked when |
-| --- | --- | --- |
-| **Hot Streak** | A current run of four or more wins. | The run ends, or a Cold Streak is earned instead. |
-| **Cold Streak** | A current run of four or more losses. | The run ends, or a Hot Streak is earned instead. |
+| Badge           | Awarded for                           | Revoked when                                      |
+| --------------- | ------------------------------------- | ------------------------------------------------- |
+| **Hot Streak**  | A current run of four or more wins.   | The run ends, or a Cold Streak is earned instead. |
+| **Cold Streak** | A current run of four or more losses. | The run ends, or a Hot Streak is earned instead.  |
 
 A team can never hold both. Every badge check for a team runs on every result,
 for **both** teams, so a badge can appear on the losing team as easily as the
@@ -143,12 +143,12 @@ winning one.
 
 ## Where a badge appears
 
-| Place | How many |
-| --- | --- |
-| A standings row, desktop | Up to 4, then a "+N" chip |
-| A standings card, phone, detailed | Up to 3, then "+N" |
-| A standings card, phone, compact | 1, then "+N" |
-| A team's page, "Achievements" | Up to 12, with an empty state |
+| Place                             | How many                      |
+| --------------------------------- | ----------------------------- |
+| A standings row, desktop          | Up to 4, then a "+N" chip     |
+| A standings card, phone, detailed | Up to 3, then "+N"            |
+| A standings card, phone, compact  | 1, then "+N"                  |
+| A team's page, "Achievements"     | Up to 12, with an empty state |
 
 They are always ordered the same way: **championships first, then most recently
 awarded first**. The "+N" chip is not pressable and there is no way to see the
@@ -166,28 +166,28 @@ year in the season's name.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | No effect. A visitor, a player, and an admin see identical badges. No role can grant, revoke, or hide one from inside the app. | No effect. |
-| The record's state | Only completed matches count. A pending score submission earns nothing until it is approved — approving it now runs the checks. Reopening a match, or marking one a tie, does not re-run them. | A result completed elsewhere changes badges on the next refetch, up to five minutes later. |
-| The season's state | Every revocable badge is scoped to the active season and counts only that season's matches. Closing a season switches off **that season's** revocable badges and writes its placing badges. Other seasons are untouched, and placing badges are never switched off. | A season activated elsewhere leaves a team's badges apparently intact until the close of the old one runs, which is a separate admin action. |
-| Viewport | Badges are 24px on a desktop and 32px on a phone at the smallest size, and up to 48px on a phone in the largest. A desktop gets a hover tooltip; a phone gets a tap dialog. | No effect. |
-| Keys the app honours | **None.** A badge is a `<div>`, not a button or a link. It is not in the tab order and cannot be opened from a keyboard. | None. |
+| Modifier             | Set at arrival                                                                                                                                                                                                                                                      | Changed while editing                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| The user's role      | No effect. A visitor, a player, and an admin see identical badges. No role can grant, revoke, or hide one from inside the app.                                                                                                                                      | No effect.                                                                                                                                   |
+| The record's state   | Only completed matches count. A pending score submission earns nothing until it is approved — approving it now runs the checks. Reopening a match, or marking one a tie, does not re-run them.                                                                      | A result completed elsewhere changes badges on the next refetch, up to five minutes later.                                                   |
+| The season's state   | Every revocable badge is scoped to the active season and counts only that season's matches. Closing a season switches off **that season's** revocable badges and writes its placing badges. Other seasons are untouched, and placing badges are never switched off. | A season activated elsewhere leaves a team's badges apparently intact until the close of the old one runs, which is a separate admin action. |
+| Viewport             | Badges are 24px on a desktop and 32px on a phone at the smallest size, and up to 48px on a phone in the largest. A desktop gets a hover tooltip; a phone gets a tap dialog.                                                                                         | No effect.                                                                                                                                   |
+| Keys the app honours | **None.** A badge is a `<div>`, not a button or a link. It is not in the tab order and cannot be opened from a keyboard.                                                                                                                                            | None.                                                                                                                                        |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. Badges have no controls. | Escape closes a badge dialog on a phone. There is nothing else to cancel. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | Nothing is lost. The badge checks run on the server inside the result's own transaction, so navigating away cannot interrupt them. |
-| Browser back or forward | No effect. | Same as navigating away. |
-| Reload, or the tab closed | Refetches badges. | Same: the badges are already written, or the result was not saved either. |
-| Network lost mid-request | Badges do not load. The team page shows its grey circles; the standings show no badges at all, which is indistinguishable from a team having none. | The result and its badges are written together or not at all. |
-| The request fails or times out | As above. | As above. A single badge check that fails is recorded in the routine's return value and does not disturb the result or the other checks; the scorer sees no message. |
-| The session expires | No effect. Badges are public to read. | The write is refused, so no result and no badges. |
-| The same record changed in another tab, or by another user | Not applicable before arriving. | No realtime. A badge earned by somebody else's result appears on the next refetch with no announcement. |
-| Browser autofill or a password manager writes into the form | No effect. | No effect. |
-| The window loses focus | No effect. | No effect. The checks are not running in the browser. |
+| Event                                                       | Before the first edit                                                                                                                              | While editing or submitting                                                                                                                                          |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. Badges have no controls.                                                                                                                | Escape closes a badge dialog on a phone. There is nothing else to cancel.                                                                                            |
+| In-app navigation away, or switching tab within the page    | Nothing is lost.                                                                                                                                   | Nothing is lost. The badge checks run on the server inside the result's own transaction, so navigating away cannot interrupt them.                                   |
+| Browser back or forward                                     | No effect.                                                                                                                                         | Same as navigating away.                                                                                                                                             |
+| Reload, or the tab closed                                   | Refetches badges.                                                                                                                                  | Same: the badges are already written, or the result was not saved either.                                                                                            |
+| Network lost mid-request                                    | Badges do not load. The team page shows its grey circles; the standings show no badges at all, which is indistinguishable from a team having none. | The result and its badges are written together or not at all.                                                                                                        |
+| The request fails or times out                              | As above.                                                                                                                                          | As above. A single badge check that fails is recorded in the routine's return value and does not disturb the result or the other checks; the scorer sees no message. |
+| The session expires                                         | No effect. Badges are public to read.                                                                                                              | The write is refused, so no result and no badges.                                                                                                                    |
+| The same record changed in another tab, or by another user  | Not applicable before arriving.                                                                                                                    | No realtime. A badge earned by somebody else's result appears on the next refetch with no announcement.                                                              |
+| Browser autofill or a password manager writes into the form | No effect.                                                                                                                                         | No effect.                                                                                                                                                           |
+| The window loses focus                                      | No effect.                                                                                                                                         | No effect. The checks are not running in the browser.                                                                                                                |
 
 ## Interactions with other systems
 

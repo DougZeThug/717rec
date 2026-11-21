@@ -1,7 +1,7 @@
 ---
 name: factory-review
 description: Independent review of the current branch, a PR number, or the whole app area you name. Reads the diff, runs the checks, and looks at the real app in a browser. Reports findings with evidence. Makes no code changes. Use for "review this", "is this ready", "check PR 123".
-argument-hint: "[PR number | branch | area]  (empty = current branch vs base)"
+argument-hint: '[PR number | branch | area]  (empty = current branch vs base)'
 disable-model-invocation: true
 ---
 

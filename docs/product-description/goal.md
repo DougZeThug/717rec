@@ -82,7 +82,7 @@ comment as agreed with the league admin):
 - A match is **best of 3**. **2 game wins** takes the match.
 - A side has at most **2 players**.
 - Rounds are numbered from 1 within a game. Only one side scores in a round; the
-  round's *net points* is the difference between the two sides.
+  round's _net points_ is the difference between the two sides.
 
 **Seasons** (`seasons` table):
 
@@ -120,7 +120,7 @@ comment as agreed with the league admin):
 
 **Scores:**
 
-- A *pending score submission* is waiting for review. A *pending match* is a match
+- A _pending score submission_ is waiting for review. A _pending match_ is a match
   completed with no winner — a tie — waiting for an admin. These are different
   things and the word "pending" must always be qualified.
 - **Approving a score submission writes the result onto the match.** Approve
@@ -195,8 +195,8 @@ comment as agreed with the league admin):
 **Naming decisions:**
 
 - The schema's `iscompleted` is written as "completed" in prose.
-- The schema's `match_rounds` row is a *round*; `games` is a *game*; `matches` is
-  a *match*. Never use "game" and "match" interchangeably.
+- The schema's `match_rounds` row is a _round_; `games` is a _game_; `matches` is
+  a _match_. Never use "game" and "match" interchangeably.
 - The code's `v_team_details` and other `v_` views are never named in prose; say
   what the user sees.
 

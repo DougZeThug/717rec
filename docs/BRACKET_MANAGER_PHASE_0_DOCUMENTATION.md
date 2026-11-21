@@ -13,11 +13,13 @@ This document captures the **exact current behavior** of all public methods to e
 ### 1. createBracket()
 
 **Signature:**
+
 ```typescript
 async createBracket(options: CreateBracketOptions): Promise<void>
 ```
 
 **Interface:**
+
 ```typescript
 interface CreateBracketOptions {
   bracketId: string;
@@ -28,6 +30,7 @@ interface CreateBracketOptions {
 ```
 
 **Behavior:**
+
 - Calculates required bracket size (next power of 2)
 - Sorts teams by seed (ascending)
 - Creates seeding array with BYE slots
@@ -36,16 +39,19 @@ interface CreateBracketOptions {
 - Automatically handles BYE propagation
 
 **Success Case:**
+
 - Returns: `Promise<void>` (resolves on success)
 - Side effects: Creates stage, groups, rounds, matches, and participants in database
 - Logs: Multiple bracket logs showing progress
 
 **Error Cases:**
+
 - Throws: `Error("Failed to insert participants: ...")` if participant insertion fails
 - Throws: `Error("Bracket creation failed: ...")` for any other error
 - Logs: Comprehensive error details including timestamp, bracket ID, error type
 
 **Database Tables Modified:**
+
 - `participant` (inserts)
 - `stage` (via brackets-manager)
 - `group` (via brackets-manager)
@@ -57,11 +63,13 @@ interface CreateBracketOptions {
 ### 2. updateMatch()
 
 **Signature:**
+
 ```typescript
 async updateMatch(options: UpdateMatchOptions): Promise<void>
 ```
 
 **Interface:**
+
 ```typescript
 interface UpdateMatchOptions {
   matchId: number;
@@ -73,6 +81,7 @@ interface UpdateMatchOptions {
 ```
 
 **Behavior:**
+
 - Serialized via `matchUpdateQueue` to prevent race conditions
 - Fetches current match state before update
 - Special handling for BYE matches:
@@ -87,15 +96,18 @@ interface UpdateMatchOptions {
   - Logs all LB matches after update
 
 **Success Case:**
+
 - Returns: `Promise<void>` (resolves on success)
 - Side effects: Updates match, propagates winner to next matches, runs normalization
 - Logs: Current match state, update payload, updated match state, all LB matches
 
 **Error Cases:**
+
 - Throws: `Error("Match update failed: ...")` with error message
 - Logs: Failure log and full error details
 
 **Database Tables Modified:**
+
 - `match` (updates via brackets-manager or direct SQL for BYE unlock)
 
 ---
@@ -103,11 +115,13 @@ interface UpdateMatchOptions {
 ### 3. updateSeeding()
 
 **Signature:**
+
 ```typescript
 async updateSeeding(options: UpdateSeedingOptions): Promise<void>
 ```
 
 **Interface:**
+
 ```typescript
 interface UpdateSeedingOptions {
   bracketId: string;
@@ -117,6 +131,7 @@ interface UpdateSeedingOptions {
 ```
 
 **Behavior:**
+
 - Gets stage ID for bracket
 - Sorts teams by seed
 - Calculates bracket size and BYEs needed
@@ -126,17 +141,20 @@ interface UpdateSeedingOptions {
 - Updates participant positions in database
 
 **Success Case:**
+
 - Returns: `Promise<void>` (resolves on success)
 - Side effects: Updates stage seeding and participant positions
 - Logs: New seeding array prepared, success log
 
 **Error Cases:**
+
 - Throws: `Error("No stage found for bracket: ...")` if stage not found
 - Throws: `Error("Cannot update seeding: Changes would affect existing match results...")` if existing results would be impacted
 - Throws: `Error("Seeding update failed: ...")` for other errors
 - Logs: Failure log with error message
 
 **Database Tables Modified:**
+
 - `stage` (via brackets-manager)
 - `participant` (direct updates to position column)
 
@@ -145,28 +163,33 @@ interface UpdateSeedingOptions {
 ### 4. calculateFinalStandings()
 
 **Signature:**
+
 ```typescript
 async calculateFinalStandings(bracketId: string): Promise<void>
 ```
 
 **Behavior:**
+
 - Gets all stages for bracket
 - Calls `manager.get.finalStandings(stageId)`
 - Maps participant IDs to team IDs
 - Upserts final standings to `playoff_team_records` table
 
 **Success Case:**
+
 - Returns: `Promise<void>` (resolves on success)
 - Side effects: Upserts standings to playoff_team_records
 - Logs: Final standings calculated, success log
 
 **Error Cases:**
+
 - Returns early with warning if no stages found
 - Returns early with error log if no participants found
 - Throws: Database error if upsert fails
 - Throws: `Error("Final standings calculation failed: ...")` for other errors
 
 **Database Tables Modified:**
+
 - `playoff_team_records` (upsert with conflict resolution on team_id, bracket_id)
 
 ---
@@ -174,6 +197,7 @@ async calculateFinalStandings(bracketId: string): Promise<void>
 ### 5. checkByeEligibility()
 
 **Signature:**
+
 ```typescript
 async checkByeEligibility(matchId: number): Promise<{
   ok: boolean;
@@ -191,6 +215,7 @@ async checkByeEligibility(matchId: number): Promise<{
 ```
 
 **Behavior:**
+
 - Public wrapper for private `isLosersByeMatch()` method
 - Checks if match is in Losers Bracket (group number === 2)
 - Checks if exactly one real team exists (other slot is null or BYE)
@@ -198,13 +223,16 @@ async checkByeEligibility(matchId: number): Promise<{
   Ready, Ready (2) and Running (3) revert to Waiting, Completed (4) reopens
 
 **Success Case:**
+
 - Returns: Object with `ok: true` and `meta` object containing match details
 
 **Error Cases:**
+
 - Returns: Object with `ok: false` and `reason` string explaining why not eligible
 - Returns: Object with `ok: false` and `reason: "Error: ..."` if exception occurs
 
 **Database Tables Read:**
+
 - `match`, `round`, `group`, `participant`
 
 ---
@@ -212,6 +240,7 @@ async checkByeEligibility(matchId: number): Promise<{
 ### 6. adminToggleByeReady()
 
 **Signature:**
+
 ```typescript
 async adminToggleByeReady(
   matchId: number,
@@ -226,6 +255,7 @@ async adminToggleByeReady(
 ```
 
 **Behavior:**
+
 - Checks eligibility via `isLosersByeMatch()`
 - **For reopening completed matches** (status 4, makeReady = false):
   - If `clearDownstream = false`, checks if downstream matches populated and throws error if they are
@@ -239,6 +269,7 @@ async adminToggleByeReady(
   down. Both clears therefore omit the result column for any side that storage
   inflates to `null`, rather than blanking it — otherwise the slot silently
   degrades to an ordinary "to be decided" and nothing ever restores it.
+
 - **For normal toggle to Ready** (makeReady = true):
   - Validates eligibility
   - Sets status to 2 (Ready)
@@ -247,9 +278,11 @@ async adminToggleByeReady(
   - Sets status to 1 (Waiting)
 
 **Success Case:**
+
 - Returns: Object with matchId, status, statusName, and success message
 
 **Error Cases:**
+
 - Throws: `Error("Cannot set to Ready: ...")` if eligibility check fails
 - Throws: `Error("Cannot reopen completed match: downstream matches have been populated...")` if trying to reopen with downstream populated
 - Throws: `Error("Cannot revert: Match data unavailable")` if meta unavailable
@@ -257,6 +290,7 @@ async adminToggleByeReady(
 - Throws: `Error("Failed to toggle BYE match status: ...")` for other errors
 
 **Database Tables Modified:**
+
 - `match` (direct SQL updates to status and result fields)
 
 ---
@@ -264,14 +298,17 @@ async adminToggleByeReady(
 ### 7. getStorage()
 
 **Signature:**
+
 ```typescript
 getStorage(): SupabaseSqlStorage
 ```
 
 **Behavior:**
+
 - Returns the storage instance for direct access
 
 **Returns:**
+
 - `SupabaseSqlStorage` instance
 
 ---
@@ -279,11 +316,13 @@ getStorage(): SupabaseSqlStorage
 ### 8. normalizeLosersR1() ⚠️ PUBLIC (used externally)
 
 **Signature:**
+
 ```typescript
 async normalizeLosersR1(stageId: number): Promise<void>
 ```
 
 **Behavior:**
+
 - Clears participant cache
 - Finds LB group (group number 2)
 - Finds LB Round 1 (minimum round number in LB group)
@@ -294,16 +333,19 @@ async normalizeLosersR1(stageId: number): Promise<void>
 - Shifts opponent2 to opponent1 if opponent1 is empty
 
 **Success Case:**
+
 - Returns: `Promise<void>` (resolves on success)
 - Side effects: Fixes duplicate participants and normalizes match structure
 - Logs: Normalization progress and results
 
 **Error Cases:**
+
 - Returns early with log if no LB group found
 - Returns early with log if no LB R1 found
 - Logs errors but does NOT throw (defensive, non-critical)
 
 **Database Tables Modified:**
+
 - `match` (direct SQL updates to opponent fields and status)
 
 ---
@@ -350,11 +392,13 @@ export interface UpdateSeedingOptions {
 ## Error Message Patterns
 
 ### Consistent Error Format:
+
 - All public methods wrap errors with descriptive context
 - Error serialization via `serializeError()` function
 - Logs include timestamp, operation details, and full error object
 
 ### Example Error Messages:
+
 - `"Failed to insert participants: [details]"`
 - `"Bracket creation failed: [details]"`
 - `"Match update failed: [details]"`

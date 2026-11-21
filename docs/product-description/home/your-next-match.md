@@ -3,8 +3,8 @@
 ## Summary
 
 The next-match card is the one part of the [home page](the-home-page.md) that
-belongs to the signed-in user. It answers a single question — *when do I play
-next, and who against* — and it is the only place in the app that answers it
+belongs to the signed-in user. It answers a single question — _when do I play
+next, and who against_ — and it is the only place in the app that answers it
 without the user filtering the schedule themselves.
 
 It has a second job that is not obvious from its name. When there is nothing
@@ -72,12 +72,12 @@ after midnight in UTC still counts as the same evening.
 
 Each row shows:
 
-| Part | Upcoming | Completed |
-| --- | --- | --- |
-| Centre | the word **vs** | the two teams' **game wins**, as `2 - 1`, the leader in green and the trailer in red |
-| Under the centre | nothing | a green **Win** or a red **Loss** badge |
-| Date and time | the match's date and time | the same |
-| Below the row | **Score live**, when the user may score it | nothing |
+| Part             | Upcoming                                   | Completed                                                                            |
+| ---------------- | ------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Centre           | the word **vs**                            | the two teams' **game wins**, as `2 - 1`, the leader in green and the trailer in red |
+| Under the centre | nothing                                    | a green **Win** or a red **Loss** badge                                              |
+| Date and time    | the match's date and time                  | the same                                                                             |
+| Below the row    | **Score live**, when the user may score it | nothing                                                                              |
 
 Nothing is focused and nothing is recorded by the card being drawn.
 
@@ -104,28 +104,28 @@ Not applicable. The card writes nothing. Every action on it is a navigation.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | A visitor never sees the card. A player sees it only for the team they are approved on. An admin sees the same card as a player — being an admin does not show anyone else's matches — but an admin's **Score live** button appears on every match the card shows, because an admin may score any open match. | Approval granted elsewhere does not reach an open page. The card appears the next time the membership refetches, up to five minutes later. |
-| The record's state | Whether any match is unplayed decides which of the two cards is drawn. | A match completed elsewhere flips the card from next to last on the next refetch. |
-| The season's state | Only the active season is read. With no active season the card is absent, because the team has no matches. | A season changeover empties the card for up to ten minutes before refilling it. |
-| Viewport | On a narrow screen the date and time move above the teams and a chevron sits at the right of the row. On a wide screen they sit to the right of the teams. | Re-flows on rotation. |
-| Keys the app honours | Tab reaches each row, then **Score live** if it is there, then **See full schedule**. Enter follows the focused link. | No shortcuts. |
+| Modifier             | Set at arrival                                                                                                                                                                                                                                                                                                | Changed while editing                                                                                                                      |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| The user's role      | A visitor never sees the card. A player sees it only for the team they are approved on. An admin sees the same card as a player — being an admin does not show anyone else's matches — but an admin's **Score live** button appears on every match the card shows, because an admin may score any open match. | Approval granted elsewhere does not reach an open page. The card appears the next time the membership refetches, up to five minutes later. |
+| The record's state   | Whether any match is unplayed decides which of the two cards is drawn.                                                                                                                                                                                                                                        | A match completed elsewhere flips the card from next to last on the next refetch.                                                          |
+| The season's state   | Only the active season is read. With no active season the card is absent, because the team has no matches.                                                                                                                                                                                                    | A season changeover empties the card for up to ten minutes before refilling it.                                                            |
+| Viewport             | On a narrow screen the date and time move above the teams and a chevron sits at the right of the row. On a wide screen they sit to the right of the teams.                                                                                                                                                    | Re-flows on rotation.                                                                                                                      |
+| Keys the app honours | Tab reaches each row, then **Score live** if it is there, then **See full schedule**. Enter follows the focused link.                                                                                                                                                                                         | No shortcuts.                                                                                                                              |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is nothing to cancel. | No effect. |
-| In-app navigation away, or switching tab within the page | The card is discarded with the home page. Nothing is lost, because nothing was held. | No effect. The card sends no requests of its own. |
-| Browser back or forward | Returns to a freshly built card, which may differ from the one that was left. | No effect. |
-| Reload, or the tab closed | The card is rebuilt from the database. | No effect. |
-| Network lost mid-request | The membership or the matches fail to load, so the card is absent. The user cannot tell "you have no matches" from "we could not check". | No effect. |
-| The request fails or times out | The read is retried once, then the card stays absent, silently. No toast, no message. | No effect. |
-| The session expires | The card disappears at the next refetch, with no explanation. | No effect. |
-| The same record changed in another tab, or by another user | No realtime. A score entered by the opponent does not reach this card until a refetch. | Same. |
-| Browser autofill or a password manager writes into the form | No effect. There are no fields. | No effect. |
-| The window loses focus | Nothing. | **Returning refetches the team's matches immediately**, because they are never treated as fresh. The card can change from next to last while the user is looking at it. |
+| Event                                                       | Before the first edit                                                                                                                    | While editing or submitting                                                                                                                                             |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. There is nothing to cancel.                                                                                                   | No effect.                                                                                                                                                              |
+| In-app navigation away, or switching tab within the page    | The card is discarded with the home page. Nothing is lost, because nothing was held.                                                     | No effect. The card sends no requests of its own.                                                                                                                       |
+| Browser back or forward                                     | Returns to a freshly built card, which may differ from the one that was left.                                                            | No effect.                                                                                                                                                              |
+| Reload, or the tab closed                                   | The card is rebuilt from the database.                                                                                                   | No effect.                                                                                                                                                              |
+| Network lost mid-request                                    | The membership or the matches fail to load, so the card is absent. The user cannot tell "you have no matches" from "we could not check". | No effect.                                                                                                                                                              |
+| The request fails or times out                              | The read is retried once, then the card stays absent, silently. No toast, no message.                                                    | No effect.                                                                                                                                                              |
+| The session expires                                         | The card disappears at the next refetch, with no explanation.                                                                            | No effect.                                                                                                                                                              |
+| The same record changed in another tab, or by another user  | No realtime. A score entered by the opponent does not reach this card until a refetch.                                                   | Same.                                                                                                                                                                   |
+| Browser autofill or a password manager writes into the form | No effect. There are no fields.                                                                                                          | No effect.                                                                                                                                                              |
+| The window loses focus                                      | Nothing.                                                                                                                                 | **Returning refetches the team's matches immediately**, because they are never treated as fresh. The card can change from next to last while the user is looking at it. |
 
 After any interrupt the card is simply rebuilt. It never holds anything that can
 be lost.

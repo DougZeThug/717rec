@@ -117,12 +117,12 @@ wipe the format error. If "This name is already taken" is showing and the user
 edits to a name that is not checked (under 3 characters, or one that breaks these
 rules), that "taken" message goes away. It was for the old name.
 
-| Field | Rule | Message shown |
-| --- | --- | --- |
-| Display Name | at least 3 characters | "Display name must be at least 3 characters" |
+| Field        | Rule                                   | Message shown                                                     |
+| ------------ | -------------------------------------- | ----------------------------------------------------------------- |
+| Display Name | at least 3 characters                  | "Display name must be at least 3 characters"                      |
 | Display Name | letters, numbers, and underscores only | "Display name can only contain letters, numbers, and underscores" |
-| Display Name | not already taken | "This name is already taken" |
-| Full Name | none — anything, including nothing | none |
+| Display Name | not already taken                      | "This name is already taken"                                      |
+| Full Name    | none — anything, including nothing     | none                                                              |
 
 ### Submit
 
@@ -148,28 +148,28 @@ that is already taken and a network failure produce the same sentence.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role (visitor, player, admin) | A visitor is sent to `/auth` after three seconds, but sees the form in the meantime. A player and an admin see the same page; nothing here is admin-only. | An admin flag changing has no effect. Signing out in another tab leaves the form on screen and every save then fails. |
-| The record's state | A profile with no username gives empty fields and a greyed-out button. A finished profile gives prefilled fields and a usable button. A finished profile **plus** a `next` destination skips the page entirely. | No effect. The page does not notice the profile changing under it. |
-| The season's state (active, archived, playoffs on) | No effect. A profile is not scoped to a season. | No effect. |
-| Viewport | The card is centred and capped at a readable width. Fields are full width on a phone. | No effect beyond re-flowing on rotation. |
-| Keys the form honours | Tab reaches Display Name, Full Name, Save Profile, and then the team panel below. | Enter in either field submits, which can fire before the name check has finished and be refused. |
+| Modifier                                           | Set at arrival                                                                                                                                                                                                  | Changed while editing                                                                                                 |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| The user's role (visitor, player, admin)           | A visitor is sent to `/auth` after three seconds, but sees the form in the meantime. A player and an admin see the same page; nothing here is admin-only.                                                       | An admin flag changing has no effect. Signing out in another tab leaves the form on screen and every save then fails. |
+| The record's state                                 | A profile with no username gives empty fields and a greyed-out button. A finished profile gives prefilled fields and a usable button. A finished profile **plus** a `next` destination skips the page entirely. | No effect. The page does not notice the profile changing under it.                                                    |
+| The season's state (active, archived, playoffs on) | No effect. A profile is not scoped to a season.                                                                                                                                                                 | No effect.                                                                                                            |
+| Viewport                                           | The card is centred and capped at a readable width. Fields are full width on a phone.                                                                                                                           | No effect beyond re-flowing on rotation.                                                                              |
+| Keys the form honours                              | Tab reaches Display Name, Full Name, Save Profile, and then the team panel below.                                                                                                                               | Enter in either field submits, which can fire before the name check has finished and be refused.                      |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel button on this page and no way to say "not now" other than navigating away. | No effect. Escape does not revert the fields and does not abort a save in flight. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. There are no tabs on this page. | **Everything typed is lost, with no warning.** A save already sent still lands, and its toast appears on whatever page the user is now on. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Same as navigating away. Backing out of the gate works, because the gate does not re-fire until the next sign-in or the next reload of the app. |
-| Reload, or the tab closed | Gives the same prefilled form. A `next` in the URL survives; one carried in memory does not. | Everything typed is lost. A save already accepted holds. |
-| Network lost mid-request | The name check answers "unknown" and no tick or warning is shown. The Save button still works. | The save fails, the fields are kept, and the generic red toast appears. Nothing is queued. |
-| The request fails or times out | A failed name check is silent — no tick, no warning, no message — and the save is allowed to proceed. | The generic "Error updating profile" toast. The user cannot tell a taken name from a dropped connection. |
-| The session expires | The page finds no session, waits three seconds, and sends the user to `/auth` with this page remembered. | The save fails with the generic toast. Nothing tells the user their session ended, and the page does not redirect. |
-| The same record changed in another tab, or by another user | The fields are filled from the copy the app already has, which may be minutes old. | No effect. There is no subscription on profiles, so a name changed elsewhere does not reach this form and the save overwrites it. |
-| Browser autofill or a password manager writes into the form | Possible on both fields, which are ordinary text inputs. An autofilled display name starts the name check exactly as typing would. | Same. |
-| The window loses focus | No effect. | No effect. The name check's half-second timer keeps running and its request completes. |
+| Event                                                       | Before the first edit                                                                                                              | While editing or submitting                                                                                                                     |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. There is no Cancel button on this page and no way to say "not now" other than navigating away.                          | No effect. Escape does not revert the fields and does not abort a save in flight.                                                               |
+| In-app navigation away, or switching tab within the page    | Nothing is lost. There are no tabs on this page.                                                                                   | **Everything typed is lost, with no warning.** A save already sent still lands, and its toast appears on whatever page the user is now on.      |
+| Browser back or forward                                     | Returns to the previous page. Nothing is recorded.                                                                                 | Same as navigating away. Backing out of the gate works, because the gate does not re-fire until the next sign-in or the next reload of the app. |
+| Reload, or the tab closed                                   | Gives the same prefilled form. A `next` in the URL survives; one carried in memory does not.                                       | Everything typed is lost. A save already accepted holds.                                                                                        |
+| Network lost mid-request                                    | The name check answers "unknown" and no tick or warning is shown. The Save button still works.                                     | The save fails, the fields are kept, and the generic red toast appears. Nothing is queued.                                                      |
+| The request fails or times out                              | A failed name check is silent — no tick, no warning, no message — and the save is allowed to proceed.                              | The generic "Error updating profile" toast. The user cannot tell a taken name from a dropped connection.                                        |
+| The session expires                                         | The page finds no session, waits three seconds, and sends the user to `/auth` with this page remembered.                           | The save fails with the generic toast. Nothing tells the user their session ended, and the page does not redirect.                              |
+| The same record changed in another tab, or by another user  | The fields are filled from the copy the app already has, which may be minutes old.                                                 | No effect. There is no subscription on profiles, so a name changed elsewhere does not reach this form and the save overwrites it.               |
+| Browser autofill or a password manager writes into the form | Possible on both fields, which are ordinary text inputs. An autofilled display name starts the name check exactly as typing would. | Same.                                                                                                                                           |
+| The window loses focus                                      | No effect.                                                                                                                         | No effect. The name check's half-second timer keeps running and its request completes.                                                          |
 
 After any interrupt the user is left wherever the interrupt took them. Nothing is
 restored and nothing is warned about.

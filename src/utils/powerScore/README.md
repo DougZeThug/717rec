@@ -288,10 +288,10 @@ so SQL and TS cannot drift silently. Runbook for applying the migration:
 
 ## Utilities in This Directory
 
-| File                     | Purpose                                           |
-| ------------------------ | ------------------------------------------------- |
-| `normalizePowerScore.ts` | Converts between 0-1 and 0-100 scales             |
-| `formatPowerScore.ts`    | Renders a score to 1 decimal, `—` when null       |
+| File                     | Purpose                                     |
+| ------------------------ | ------------------------------------------- |
+| `normalizePowerScore.ts` | Converts between 0-1 and 0-100 scales       |
+| `formatPowerScore.ts`    | Renders a score to 1 decimal, `—` when null |
 
 ## Related Code
 

@@ -1,7 +1,7 @@
-
 # Import Guidelines for Bracket Teams Module
 
 ## Core Principle
+
 **Always import core types directly from their source to avoid circular dependencies.**
 
 ## Import Patterns
@@ -37,12 +37,14 @@ divisions?: import('@/types').Division[]; // Should be direct import
 ## Type Organization
 
 ### Core Types (`@/types`)
+
 - `Team` - Base team interface
-- `Division` - Division interface  
+- `Division` - Division interface
 - `Match` - Match interface
 - Other application-wide types
 
 ### Module Types (`./types`)
+
 - `ProcessedTeam` - Extended team for bracket processing
 - `BracketFormDataResult` - Module-specific data structures
 - `ValidationProgress` - Module-specific interfaces
@@ -50,6 +52,7 @@ divisions?: import('@/types').Division[]; // Should be direct import
 ## Prevention Checklist
 
 Before adding new exports to `index.ts`:
+
 - [ ] Is this a core type? → Import from `@/types`
 - [ ] Is this module-specific? → Export from `./types`
 - [ ] Does this create a circular dependency? → Use direct imports

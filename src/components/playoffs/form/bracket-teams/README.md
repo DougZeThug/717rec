@@ -1,4 +1,3 @@
-
 # Bracket Form Teams Module
 
 ## Overview
@@ -41,7 +40,7 @@ import BracketFormTeamsContainer from './bracket-teams/components/BracketFormTea
   onChange={({ ids, isValid }) => {
     // Handle team selection changes
   }}
-/>
+/>;
 ```
 
 ## Key Features
@@ -55,6 +54,7 @@ import BracketFormTeamsContainer from './bracket-teams/components/BracketFormTea
 ## Testing
 
 The module includes comprehensive test coverage:
+
 - Unit tests for individual hooks
 - Integration tests for component interactions
 - Mock data factories for consistent testing
@@ -62,6 +62,7 @@ The module includes comprehensive test coverage:
 ## Migration Notes
 
 This module replaces the deprecated `BracketFormTeams` component. All functionality has been preserved while improving:
+
 - Type safety
 - Performance
 - Maintainability

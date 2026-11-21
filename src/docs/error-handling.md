@@ -15,6 +15,7 @@ Services (throw) → Hooks (catch + handle) → Components (display)
 **Rule: ALWAYS throw errors, NEVER return null on error**
 
 Services are responsible for data fetching and mutations. They should:
+
 - Throw typed errors from `@/types/errors` (`DatabaseError`, `NotFoundError`,
   `ValidationError`, `AuthorizationError`, `BusinessLogicError`)
 - Call `handleDatabaseError(error, 'context')` for a failed query. It logs the
@@ -44,7 +45,7 @@ export const MyService = {
 // ❌ WRONG - Swallows error
 if (error) {
   console.error('Error:', error);
-  return null;  // Caller can't distinguish "no data" from "error"
+  return null; // Caller can't distinguish "no data" from "error"
 }
 ```
 
@@ -53,6 +54,7 @@ if (error) {
 **Rule: Catch errors, show toast, return error state**
 
 Hooks are the bridge between services and components. They should:
+
 - Catch service errors in try/catch blocks
 - Use `getUIErrorMessage(error, context)` for the message shown to the user
 - Return an `error` state for components to display
@@ -86,11 +88,11 @@ export function useMyData(id: string) {
     }
   }, [id]);
 
-  return { 
-    data, 
-    error,        // ← Expose error state
-    isLoading, 
-    refetch: fetchData 
+  return {
+    data,
+    error, // ← Expose error state
+    isLoading,
+    refetch: fetchData,
   };
 }
 ```
@@ -100,6 +102,7 @@ export function useMyData(id: string) {
 **Rule: Read error state, display ErrorDisplay, provide retry**
 
 Components should:
+
 - Read error state from hooks
 - Display errors using `<ErrorDisplay />` component
 - Provide retry actions when possible
@@ -114,8 +117,8 @@ function MyComponent() {
 
   if (error) {
     return (
-      <ErrorDisplay 
-        error={error} 
+      <ErrorDisplay
+        error={error}
         onRetry={refetch}
         context="Loading data"
       />
@@ -207,13 +210,13 @@ bracket seed mutations
 
 All of these are in `@/types/errors` and extend `ServiceError`:
 
-| Error Class | Use Case |
-|------------|----------|
-| `DatabaseError` | A failed Supabase query (thrown by `handleDatabaseError`) |
-| `NotFoundError` | A row that must exist is missing (thrown by `ensureFound`) |
-| `ValidationError` | Invalid input or a missing required field |
-| `AuthorizationError` | Not allowed to do this |
-| `BusinessLogicError` | A rule violation or an invalid state change |
+| Error Class          | Use Case                                                   |
+| -------------------- | ---------------------------------------------------------- |
+| `DatabaseError`      | A failed Supabase query (thrown by `handleDatabaseError`)  |
+| `NotFoundError`      | A row that must exist is missing (thrown by `ensureFound`) |
+| `ValidationError`    | Invalid input or a missing required field                  |
+| `AuthorizationError` | Not allowed to do this                                     |
+| `BusinessLogicError` | A rule violation or an invalid state change                |
 
 The file also holds a few feature-specific errors, for example
 `DuplicateRoundError` (live scoring).

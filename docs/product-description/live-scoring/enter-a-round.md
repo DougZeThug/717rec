@@ -25,7 +25,7 @@ blue and red.
 
 The scorer taps 6 on the blue grid. A second row appears asking how many bags
 went in the hole: 1 or 2. They tap 2. They tap 0 on the red grid. A line at the
-top right of the panel reads "*Blue team* +6". They press "Save Round".
+top right of the panel reads "_Blue team_ +6". They press "Save Round".
 
 The totals move, the round appears at the top of the round history, the grids
 clear, and the thrower bar advances to the other player on each side. Round 8 is
@@ -61,7 +61,7 @@ round, the first player picked in setup throws.
 > time rather than being remembered, so undoing a round, correcting one, or
 > reloading the page all leave the rotation correct. A round saved with nobody
 > named for a side does not reset that side's rotation; the app looks back for
-> the most recent round where somebody *was* named.
+> the most recent round where somebody _was_ named.
 
 ### Leave without changing anything
 
@@ -77,11 +77,11 @@ three and a bag on the board is worth one, so 11 cannot happen.
 ways. Tapping one of them opens a second row asking how many bags went in the
 hole:
 
-| Score | The two ways to get it |
-| --- | --- |
-| 3 | three bags on the board, or one in the hole |
-| 4 | four on the board, or one in and one on |
-| 6 | one in and three on, or two in |
+| Score | The two ways to get it                      |
+| ----- | ------------------------------------------- |
+| 3     | three bags on the board, or one in the hole |
+| 4     | four on the board, or one in and one on     |
+| 6     | one in and three on, or two in              |
 
 Every other score has exactly one answer and no second question is asked.
 Changing the score after answering clears the answer, so the question is asked
@@ -93,7 +93,7 @@ saved.
 ### While editing
 
 As soon as both sides have a number, a preview appears at the top right of the
-panel: either "*Team name* +N" or "**Wash — no points**" when the two are equal.
+panel: either "_Team name_ +N" or "**Wash — no points**" when the two are equal.
 This is the only place the cancellation rule is shown, and it updates on every
 tap. The preview stays on one line: a long team name ends in "…" and "+N" stays
 whole (changed 2026-11-10).
@@ -179,32 +179,32 @@ the screen.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | A scorer sees the thrower bar and the grids. Anyone else sees only the scoreboard and the round history, updating as rounds arrive. | Losing the right to score leaves the controls on screen until the screen refetches; the save then fails. |
-| The record's state | The round number comes from the rounds already saved. A game that has just been won shows the win banner instead of the grids. | If the other scorer's round wins the game, the grids are replaced by the banner mid-entry and the tapped scores are lost. |
-| The season's state | No effect. | No effect. |
-| Viewport | Built for a phone: the grids are large tap targets, the save button is 48 pixels high and full width, and the page has deep bottom padding so the button clears a thumb. | No effect. |
-| Keys the app honours | Every number is a button and reachable by Tab. There is no keyboard shortcut and no way to type a score. | No shortcuts. Enter on a focused number taps it. |
+| Modifier             | Set at arrival                                                                                                                                                           | Changed while editing                                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| The user's role      | A scorer sees the thrower bar and the grids. Anyone else sees only the scoreboard and the round history, updating as rounds arrive.                                      | Losing the right to score leaves the controls on screen until the screen refetches; the save then fails.                  |
+| The record's state   | The round number comes from the rounds already saved. A game that has just been won shows the win banner instead of the grids.                                           | If the other scorer's round wins the game, the grids are replaced by the banner mid-entry and the tapped scores are lost. |
+| The season's state   | No effect.                                                                                                                                                               | No effect.                                                                                                                |
+| Viewport             | Built for a phone: the grids are large tap targets, the save button is 48 pixels high and full width, and the page has deep bottom padding so the button clears a thumb. | No effect.                                                                                                                |
+| Keys the app honours | Every number is a button and reachable by Tab. There is no keyboard shortcut and no way to type a score.                                                                 | No shortcuts. Enter on a focused number taps it.                                                                          |
 
 Overriding the thrower is the one variant that can be changed mid-round and it
 applies to the coming round only.
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. | **There is no way to clear the grids.** No Cancel, no Escape handler, no clear button. A wrong tap is corrected by tapping the right number instead; a fully wrong round is corrected after saving, by undoing it. |
-| In-app navigation away, or switching tab within the page | Nothing lost. | **The tapped scores are lost.** A save already sent still lands, and the round appears when the scorer returns. |
-| Browser back or forward | Nothing lost. | As above. |
-| Reload, or the tab closed | The round input returns at the right round number, with any taps kept on the phone. | **The tapped scores come back** if the round number has not moved. A sent save may have landed; the round history after reloading says which. A round that was only *held* for a missing signal is not resent — its taps come back instead, for one more press. While a round is held or still sending, the browser first raises its own leave warning (not reliable on iPhone Safari). |
-| Network lost mid-request | The match will not load. | The save fails, the optimistic round rolls back, and a red toast gives the reason. **The tapped numbers stay selected.** The scorer presses Save Round again once the signal returns. |
-| Network already lost when Save Round is pressed | The match will not load. | The round is **held, not failed**: it shows in the log, the grids clear, and a line reads "Offline — 1 round waiting to sync. Keep this page open." It is sent on reconnect with nothing pressed. |
-| The request fails or times out | Not applicable. | As above. The scorer retries rather than re-entering the round. |
-| The session expires | Watching still works. | The save fails with the league's refusal as the message. |
-| The same record changed in another tab, or by another user | The round number and thrower advance as the other scorer's rounds arrive. | **The expected case.** The other scorer's round arrives and the totals move. The round number under the scorer's fingers advances, so any scores already tapped are dropped and a toast says so — **"The round number moved — Round 6 is now next, so your tapped scores were cleared."** This stops a kept score being filed under the wrong round. The message is only for a round taken by somebody else: the scorer's own save moves the round number too, and that never announces anything. If both save the same number, one wins and the other is told plainly. |
-| Browser autofill or a password manager writes into the form | No effect; there are no text fields. | No effect. |
-| The window loses focus | No effect. | No effect on a part-entered round. |
+| Event                                                       | Before the first edit                                                               | While editing or submitting                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | Nothing to cancel.                                                                  | **There is no way to clear the grids.** No Cancel, no Escape handler, no clear button. A wrong tap is corrected by tapping the right number instead; a fully wrong round is corrected after saving, by undoing it.                                                                                                                                                                                                                                                                                                                                                      |
+| In-app navigation away, or switching tab within the page    | Nothing lost.                                                                       | **The tapped scores are lost.** A save already sent still lands, and the round appears when the scorer returns.                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Browser back or forward                                     | Nothing lost.                                                                       | As above.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Reload, or the tab closed                                   | The round input returns at the right round number, with any taps kept on the phone. | **The tapped scores come back** if the round number has not moved. A sent save may have landed; the round history after reloading says which. A round that was only _held_ for a missing signal is not resent — its taps come back instead, for one more press. While a round is held or still sending, the browser first raises its own leave warning (not reliable on iPhone Safari).                                                                                                                                                                                 |
+| Network lost mid-request                                    | The match will not load.                                                            | The save fails, the optimistic round rolls back, and a red toast gives the reason. **The tapped numbers stay selected.** The scorer presses Save Round again once the signal returns.                                                                                                                                                                                                                                                                                                                                                                                   |
+| Network already lost when Save Round is pressed             | The match will not load.                                                            | The round is **held, not failed**: it shows in the log, the grids clear, and a line reads "Offline — 1 round waiting to sync. Keep this page open." It is sent on reconnect with nothing pressed.                                                                                                                                                                                                                                                                                                                                                                       |
+| The request fails or times out                              | Not applicable.                                                                     | As above. The scorer retries rather than re-entering the round.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| The session expires                                         | Watching still works.                                                               | The save fails with the league's refusal as the message.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| The same record changed in another tab, or by another user  | The round number and thrower advance as the other scorer's rounds arrive.           | **The expected case.** The other scorer's round arrives and the totals move. The round number under the scorer's fingers advances, so any scores already tapped are dropped and a toast says so — **"The round number moved — Round 6 is now next, so your tapped scores were cleared."** This stops a kept score being filed under the wrong round. The message is only for a round taken by somebody else: the scorer's own save moves the round number too, and that never announces anything. If both save the same number, one wins and the other is told plainly. |
+| Browser autofill or a password manager writes into the form | No effect; there are no text fields.                                                | No effect.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| The window loses focus                                      | No effect.                                                                          | No effect on a part-entered round.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 After an interrupt the scorer's screen is rebuilt from the saved rounds, which
 are always right. What is lost is only ever the round being typed.
@@ -259,7 +259,7 @@ selected score button is blue-600 or red-600 with white text, about 5.3:1 and
 **Accessibility.** Every number is a real button. The net preview is text and is
 readable, but it is not announced when it changes, so a screen reader user must
 seek it out. The grids clearing on a successful save is not announced either —
-though the grids being cleared *because the round moved on* does raise a toast.
+though the grids being cleared _because the round moved on_ does raise a toast.
 
 **Side effects the user can notice.** None until the match is finalised. Rounds
 feed per-player statistics only once the result is saved.
@@ -308,7 +308,7 @@ feed per-player statistics only once the result is saved.
   selections are dropped when the round moves and a toast names the new round.
   Still worth checking by hand with two devices that the toast fires when the
   round arrives over the subscription rather than from a save.
-- **A round the *other* scorer wins on still hides the panel mid-entry.** If
+- **A round the _other_ scorer wins on still hides the panel mid-entry.** If
   their round takes a side past 21, this screen's grids are replaced by the win
   banner and anything tapped is lost with nothing said. That game genuinely is
   won, so the round could not have been saved — but the silence is untested.

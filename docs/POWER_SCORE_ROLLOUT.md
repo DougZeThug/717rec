@@ -9,21 +9,21 @@ restored data matching the pre-rollout snapshot byte for byte.
 
 ## What changes
 
-| Migration | Effect |
-|---|---|
-| `20260811205000_power_score_rollout_backup` | **Backup only.** No behaviour change. |
-| `20260811210000_power_score_weighted_denominators` | Restores true weighted averages; lifts the `100 × avg opponent weight` ceiling |
-| `20260812110000_fix_member_update_guard_is_hidden` | Fixes a trigger that threw on every non-admin team edit |
-| `20260812120000_power_score_match_date` | Plumbing only. No behaviour change. |
+| Migration                                                 | Effect                                                                                                                                  |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `20260811205000_power_score_rollout_backup`               | **Backup only.** No behaviour change.                                                                                                   |
+| `20260811210000_power_score_weighted_denominators`        | Restores true weighted averages; lifts the `100 × avg opponent weight` ceiling                                                          |
+| `20260812110000_fix_member_update_guard_is_hidden`        | Fixes a trigger that threw on every non-admin team edit                                                                                 |
+| `20260812120000_power_score_match_date`                   | Plumbing only. No behaviour change.                                                                                                     |
 | `20260812130000_power_score_historical_opponent_division` | Rates opponents by the division they were in on the match date; versions division weights; **backfills, then freezes archived seasons** |
-| `20260812140000_power_score_formula_control_bypass` | Lets the Revert/Re-apply admin controls still write archived seasons |
+| `20260812140000_power_score_formula_control_bypass`       | Lets the Revert/Re-apply admin controls still write archived seasons                                                                    |
 
 Expect scores to move. On a reproduction of the real defect — a team that played
 in Recreational, dropped out, and was moved to `Hidden` — the numbers went:
 
-| Team | Before | After |
-|---|---|---|
-| 2-0 team that beat the dropout | 0.024 | 0.796 |
+| Team                           | Before     | After |
+| ------------------------------ | ---------- | ----- |
+| 2-0 team that beat the dropout | 0.024      | 0.796 |
 | 1-1 team that beat the dropout | **-0.182** | 0.460 |
 
 Yes, negative. Every opponent of a dropped-out team was being penalised for
@@ -62,7 +62,7 @@ Then apply the remaining five, in order.
 
 Two prompts, deliberately separate. The backup is cheap, additive and changes no
 behaviour, so there is no reason to couple it to the risky part — and if it
-captured less than expected you want to know *before* the rollout runs, not
+captured less than expected you want to know _before_ the rollout runs, not
 after.
 
 **Prompt 1 — backup only:**

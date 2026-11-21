@@ -162,7 +162,7 @@ there — … Remove it in the list of current timeslots."
 ### Removing an assignment
 
 The trash button opens a confirmation: "Remove Timeslot — Are you sure you want
-to remove the timeslot for *team* at *time*? This action cannot be undone."
+to remove the timeslot for _team_ at _time_? This action cannot be undone."
 Cancel closes it; Remove writes.
 
 **Removing one row removes the whole pair.** A back-to-back row is deleted by
@@ -173,7 +173,7 @@ removes all four rows.
 **The two columns fail separately.** If the team list will not load, the
 assignment column says "We couldn't load the teams. Please try again." with a
 Retry button, and the current timeslots beside it still read normally. Booking
-needs the team list; reading the night does not. A refresh that fails *after* a
+needs the team list; reading the night does not. A refresh that fails _after_ a
 good load leaves the form where it is, because the teams it holds are still
 usable.
 
@@ -212,14 +212,14 @@ the old one. A toast then names what was booked, and the card goes.
 The card says what it will remove as well as what it will add, because a move is
 both. It reads differently depending on what the team already has that night:
 
-| What the team has | What the card says | Button |
-| --- | --- | --- |
-| Nothing | "…has nothing on Thursday, 17 September. This books the 7:00 + 7:30 PM block." | **Book the block** |
-| One block, or a bye | "…This books the 7:00 + 7:30 PM block and removes what they have now." | **Move them** |
-| Anything, and the request is for a bye | "A bye means they are not playing, so this removes the 6:00 + 6:30 PM block." Every game is named. | **Give the bye** |
-| Already exactly what was asked for | "3 Amigos is already in the 7:00 + 7:30 PM block on Thursday, 17 September." | **None** |
-| **Two games that night** | "…The request does not say which game to move, so this cannot be done in one press. Remove the one you want to move from the list of current timeslots, then book the new block below." | **None** |
-| A requested time that is not a block | "The request asked for 'as early as possible', which is not one of the blocks. Pick a block below." — the team's own words are carried across and shown | **None** |
+| What the team has                      | What the card says                                                                                                                                                                      | Button             |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| Nothing                                | "…has nothing on Thursday, 17 September. This books the 7:00 + 7:30 PM block."                                                                                                          | **Book the block** |
+| One block, or a bye                    | "…This books the 7:00 + 7:30 PM block and removes what they have now."                                                                                                                  | **Move them**      |
+| Anything, and the request is for a bye | "A bye means they are not playing, so this removes the 6:00 + 6:30 PM block." Every game is named.                                                                                      | **Give the bye**   |
+| Already exactly what was asked for     | "3 Amigos is already in the 7:00 + 7:30 PM block on Thursday, 17 September."                                                                                                            | **None**           |
+| **Two games that night**               | "…The request does not say which game to move, so this cannot be done in one press. Remove the one you want to move from the list of current timeslots, then book the new block below." | **None**           |
+| A requested time that is not a block   | "The request asked for 'as early as possible', which is not one of the blocks. Pick a block below." — the team's own words are carried across and shown                                 | **None**           |
 
 **Not playing at all is the one case where a double header is still one press.**
 A bye means no games, so which game was meant does not arise, and the card names
@@ -249,13 +249,13 @@ expected, and it does not change a match already created for that night.
 
 ## The screen
 
-| | Dashboard **Timeslots** |
-| --- | --- |
-| Heading | "Assign Timeslots" |
-| Date control | A button that opens a calendar |
-| Layout | Two columns inside one card |
-| Double headers | Supported |
-| Reached from | The dashboard menu |
+|                | Dashboard **Timeslots**        |
+| -------------- | ------------------------------ |
+| Heading        | "Assign Timeslots"             |
+| Date control   | A button that opens a calendar |
+| Layout         | Two columns inside one card    |
+| Double headers | Supported                      |
+| Reached from   | The dashboard menu             |
 
 `/admin` is route-guarded; the gate is described in
 [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).
@@ -265,7 +265,7 @@ and a signed-out visitor still lands on `/auth`.
 
 ## Reading team preferences
 
-The glossary defines a *timeslot preference* as a team's statement about when it
+The glossary defines a _timeslot preference_ as a team's statement about when it
 can play. **No screen in the product lets a team state one.** What exists is:
 
 - A team sees its own assigned timeslot for the current week on its pages,
@@ -285,28 +285,28 @@ the player's side.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role (visitor, player, admin) | Only an admin reaches the screen; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). | Losing admin elsewhere leaves the screen on display and the writes fail. |
-| The record's state | A team already assigned on the chosen date is absent from the grid rather than shown as taken. | An assignment made in another browser reaches this screen within a minute, and the team then vanishes from the grid under the cursor. |
-| The season's state (active, archived, playoffs on) | **No effect.** Timeslots carry a date and a team and no season at all. | No effect. Archiving a season does not clear or archive its timeslots. |
-| Viewport | The section stacks its two columns. The team grid is one across below 640px and two above, so a long team name has room to wrap. On a 320 pixel phone both columns shrink to the card. The Current Timeslots table fits with its delete button in view, with no sideways swipe (since 2026-11-11; before, the button was reached only by scrolling the table sideways): the cells and the box have less padding below 640 pixels, the column heading over the button is for screen readers only, and a long team name wraps. Below 640 pixels the date button is full width. | No effect beyond re-flowing. |
-| Keys the form honours | Tab reaches Select All, then each team tile, then each block button, then submit. Team tiles respond to Enter and Space. | Enter on the submit button assigns. Escape closes the date popover or the confirmation dialog. |
+| Modifier                                           | Set at arrival                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Changed while editing                                                                                                                 |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| The user's role (visitor, player, admin)           | Only an admin reaches the screen; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).                                                                                                                                                                                                                                                                                                                                                                                                                                    | Losing admin elsewhere leaves the screen on display and the writes fail.                                                              |
+| The record's state                                 | A team already assigned on the chosen date is absent from the grid rather than shown as taken.                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | An assignment made in another browser reaches this screen within a minute, and the team then vanishes from the grid under the cursor. |
+| The season's state (active, archived, playoffs on) | **No effect.** Timeslots carry a date and a team and no season at all.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | No effect. Archiving a season does not clear or archive its timeslots.                                                                |
+| Viewport                                           | The section stacks its two columns. The team grid is one across below 640px and two above, so a long team name has room to wrap. On a 320 pixel phone both columns shrink to the card. The Current Timeslots table fits with its delete button in view, with no sideways swipe (since 2026-11-11; before, the button was reached only by scrolling the table sideways): the cells and the box have less padding below 640 pixels, the column heading over the button is for screen readers only, and a long team name wraps. Below 640 pixels the date button is full width. | No effect beyond re-flowing.                                                                                                          |
+| Keys the form honours                              | Tab reaches Select All, then each team tile, then each block button, then submit. Team tiles respond to Enter and Space.                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Enter on the submit button assigns. Escape closes the date popover or the confirmation dialog.                                        |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. Neither screen has a Cancel button for the assignment form. | Escape closes the date popover or the removal confirmation. It does not clear the selection and does not abort a request already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | **The ticked teams, the chosen block, and the date are all lost with no warning.** An assignment already sent still lands. |
-| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away. Coming back gives the next league night and an empty selection. |
-| Reload, or the tab closed | Returns to the next league night. | Everything selected is lost. A sent write still lands, and its rows appear on the reloaded list. |
-| Network lost mid-request | Nothing to lose. | The write fails and a generic red toast appears. Nothing is queued. The selection is **not** cleared, so the admin can press again. |
-| The request fails or times out | Cannot happen. | The selection stays and the button comes back from "Booking…". The message is generic, so any refusal reads the same as a lost connection. |
-| The session expires | No effect while reading. | Writes fail. Nothing signs the admin out or moves them. |
-| The same record changed in another tab, or by another user | No realtime, but the list polls every sixty seconds, so another admin's work appears within a minute. | **Two admins can still assign the same team to two different times on the same night** inside that minute, because each sees the team as available. Nothing detects the clash. |
-| Browser autofill or a password manager writes into the form | Nothing here is a text field a password manager would fill. | Same. |
-| The window loses focus | The poll stops while the tab is hidden and resumes on return, so the team grid and the list can both change the moment focus comes back. | A team can vanish from the grid mid-selection. It drops out of the count and is not sent, and it comes back ticked if it becomes free again. |
+| Event                                                       | Before the first edit                                                                                                                    | While editing or submitting                                                                                                                                                    |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Escape, or a Cancel button                                  | No effect. Neither screen has a Cancel button for the assignment form.                                                                   | Escape closes the date popover or the removal confirmation. It does not clear the selection and does not abort a request already sent.                                         |
+| In-app navigation away, or switching tab within the page    | Nothing is lost.                                                                                                                         | **The ticked teams, the chosen block, and the date are all lost with no warning.** An assignment already sent still lands.                                                     |
+| Browser back or forward                                     | Steps to the previously opened section, or out of the dashboard from the first one.                                                      | Same as navigating away. Coming back gives the next league night and an empty selection.                                                                                       |
+| Reload, or the tab closed                                   | Returns to the next league night.                                                                                                        | Everything selected is lost. A sent write still lands, and its rows appear on the reloaded list.                                                                               |
+| Network lost mid-request                                    | Nothing to lose.                                                                                                                         | The write fails and a generic red toast appears. Nothing is queued. The selection is **not** cleared, so the admin can press again.                                            |
+| The request fails or times out                              | Cannot happen.                                                                                                                           | The selection stays and the button comes back from "Booking…". The message is generic, so any refusal reads the same as a lost connection.                                     |
+| The session expires                                         | No effect while reading.                                                                                                                 | Writes fail. Nothing signs the admin out or moves them.                                                                                                                        |
+| The same record changed in another tab, or by another user  | No realtime, but the list polls every sixty seconds, so another admin's work appears within a minute.                                    | **Two admins can still assign the same team to two different times on the same night** inside that minute, because each sees the team as available. Nothing detects the clash. |
+| Browser autofill or a password manager writes into the form | Nothing here is a text field a password manager would fill.                                                                              | Same.                                                                                                                                                                          |
+| The window loses focus                                      | The poll stops while the tab is hidden and resumes on return, so the team grid and the list can both change the moment focus comes back. | A team can vanish from the grid mid-selection. It drops out of the count and is not sent, and it comes back ticked if it becomes free again.                                   |
 
 ## Interactions with other systems
 
@@ -318,7 +318,7 @@ season. Assignments from a finished season stay in the table forever.
 **Validation and error display.** Four checks run before anything is sent: a
 date, at least one team, a chosen time, and the date not being in the past. Those
 raise a specific "Validation Error" toast. Everything else fails at the server
-and is reported with a generic sentence. A failed *read* of the list is retried
+and is reported with a generic sentence. A failed _read_ of the list is retried
 twice with a growing delay, rather than the app's usual once.
 
 **Unsaved changes.** Not handled. A selection is lost by any navigation.

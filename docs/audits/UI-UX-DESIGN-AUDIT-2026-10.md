@@ -43,7 +43,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 ### Accessibility
 
 - [x] 11. Icon-only buttons with no accessible name (schedule pager, message controls,
-       history editing, team form). (Step 3)
+      history editing, team form). (Step 3)
 
 ### UX flows
 

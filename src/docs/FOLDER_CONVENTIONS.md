@@ -4,16 +4,16 @@ Quick reference for folder and file naming conventions in this project.
 
 ## Quick Reference
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Feature folders | kebab-case, plural | `components/teams/` |
-| Utility folders | kebab-case | `utils/colors/` |
-| Hook folders | kebab-case (no "use" prefix) | `hooks/message-board/` |
-| Component files | PascalCase | `TeamCard.tsx` |
-| Hook files | camelCase + use | `useTeamsQuery.ts` |
-| Service files | PascalCase + Service | `TeamSeasonStatsService.ts` |
-| Type files | camelCase | `matchStatus.ts` |
-| Util files | camelCase | `dateUtils.ts` |
+| Type            | Convention                   | Example                     |
+| --------------- | ---------------------------- | --------------------------- |
+| Feature folders | kebab-case, plural           | `components/teams/`         |
+| Utility folders | kebab-case                   | `utils/colors/`             |
+| Hook folders    | kebab-case (no "use" prefix) | `hooks/message-board/`      |
+| Component files | PascalCase                   | `TeamCard.tsx`              |
+| Hook files      | camelCase + use              | `useTeamsQuery.ts`          |
+| Service files   | PascalCase + Service         | `TeamSeasonStatsService.ts` |
+| Type files      | camelCase                    | `matchStatus.ts`            |
+| Util files      | camelCase                    | `dateUtils.ts`              |
 
 ## New Feature Checklist
 
@@ -73,7 +73,7 @@ These exist in the codebase but should not be replicated:
 ```
 hooks/
   useAutoSchedule/     # ❌ has "use" prefix - should be auto-schedule/
-  
+
 utils/
   teamDetailsUtils/    # ❌ camelCase folder - should be team-details/
 ```
@@ -82,26 +82,28 @@ utils/
 
 ### Where does it go?
 
-| If it's... | Put it in... |
-|------------|--------------|
-| A React component | `components/{feature}/` |
-| A custom hook | `hooks/{feature}/` or `hooks/` (if generic) |
-| Type definitions | `types/{feature}.ts` |
-| Pure utility functions | `utils/{feature}/` |
-| API/business logic | `services/{feature}/` |
-| React context | `contexts/` |
-| Page component | `pages/` |
-| App configuration | `config/` |
-| Constant values | `constants/` |
+| If it's...             | Put it in...                                |
+| ---------------------- | ------------------------------------------- |
+| A React component      | `components/{feature}/`                     |
+| A custom hook          | `hooks/{feature}/` or `hooks/` (if generic) |
+| Type definitions       | `types/{feature}.ts`                        |
+| Pure utility functions | `utils/{feature}/`                          |
+| API/business logic     | `services/{feature}/`                       |
+| React context          | `contexts/`                                 |
+| Page component         | `pages/`                                    |
+| App configuration      | `config/`                                   |
+| Constant values        | `constants/`                                |
 
 ### Generic vs Feature-Specific
 
 **Generic** (stays at folder root):
+
 - `hooks/useMobile.ts` - used everywhere
 - `hooks/useToast.ts` - used everywhere
 - `src/lib/utils.ts` - general utility (`cn`)
 
 **Feature-specific** (goes in subfolder):
+
 - `hooks/teams/useTeamsQuery.ts` - team-specific
 - `utils/powerScore/weights.ts` - power score specific
 
@@ -116,6 +118,7 @@ When refactoring existing code to match conventions:
 5. **Update barrel exports**
 
 Priority for migration (when time permits):
+
 1. Hook folders with "use" prefix → kebab-case
 2. Util folders with camelCase → kebab-case
 3. Root-level hooks → feature subfolders

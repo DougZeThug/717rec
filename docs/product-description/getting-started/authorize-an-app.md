@@ -20,8 +20,8 @@ footer.
 Another application opens `/oauth/consent?authorization_id=…` in the user's
 browser. The page reads "Loading…" for a moment.
 
-Then it shows a heading — "Connect *Name of app* to your 717rec account" — and one
-paragraph: "This will let *Name of app* use 717rec on your behalf: read standings,
+Then it shows a heading — "Connect _Name of app_ to your 717rec account" — and one
+paragraph: "This will let _Name of app_ use 717rec on your behalf: read standings,
 your team, your matches, and (if you are an admin) run admin ops tools as you."
 Under it are two buttons, **Approve** and **Deny**.
 
@@ -103,11 +103,11 @@ and no toast, because the page is replaced by another website.
 Two things can go wrong, and both replace the entire page with an error screen —
 the heading "Authorization error" and one line of text underneath:
 
-| What went wrong | What the user is told |
-| --- | --- |
-| The league refused the answer | The league's own words, unchanged |
+| What went wrong                                   | What the user is told                               |
+| ------------------------------------------------- | --------------------------------------------------- |
+| The league refused the answer                     | The league's own words, unchanged                   |
 | The league accepted it but returned nowhere to go | "No redirect returned by the authorization server." |
-| Anything else | "Failed to complete authorization" |
+| Anything else                                     | "Failed to complete authorization"                  |
 
 **The error screen is a dead end.** It has no Approve, no Deny, no Try Again, and
 no link back. The only way out is to reload the page or leave 717rec entirely, and
@@ -115,28 +115,28 @@ a reload starts the whole question again from the beginning.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role (visitor, player, admin) | A visitor is sent to sign in and returned. A player and an admin see the identical page — including the words "(if you are an admin) run admin ops tools as you", which are shown to everybody whether or not they are an admin. | No effect. The page reads the role once and never again. |
-| The record's state | An authorisation the league has already decided is not asked about again; the user is handed straight back. An unknown or expired request number gives the error screen. | No effect. The request cannot change state under the user except by their own answer. |
-| The season's state (active, archived, playoffs on) | No effect. This page is not scoped to a season. | No effect. |
-| Viewport | The text column is capped at a readable width and the two buttons sit side by side at every width. | No effect beyond re-flowing on rotation. |
-| Keys the page honours | Tab reaches Approve then Deny. Enter or Space presses the focused button. | No shortcuts. Escape does nothing. |
+| Modifier                                           | Set at arrival                                                                                                                                                                                                                   | Changed while editing                                                                 |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| The user's role (visitor, player, admin)           | A visitor is sent to sign in and returned. A player and an admin see the identical page — including the words "(if you are an admin) run admin ops tools as you", which are shown to everybody whether or not they are an admin. | No effect. The page reads the role once and never again.                              |
+| The record's state                                 | An authorisation the league has already decided is not asked about again; the user is handed straight back. An unknown or expired request number gives the error screen.                                                         | No effect. The request cannot change state under the user except by their own answer. |
+| The season's state (active, archived, playoffs on) | No effect. This page is not scoped to a season.                                                                                                                                                                                  | No effect.                                                                            |
+| Viewport                                           | The text column is capped at a readable width and the two buttons sit side by side at every width.                                                                                                                               | No effect beyond re-flowing on rotation.                                              |
+| Keys the page honours                              | Tab reaches Approve then Deny. Enter or Space presses the focused button.                                                                                                                                                        | No shortcuts. Escape does nothing.                                                    |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel button; Deny is an answer, not a cancel. | No effect. Escape does not abort an answer in flight. |
-| In-app navigation away, or switching tab within the page | The request is left undecided. There are no tabs on this page. | The answer already sent still reaches the league, but the browser is no longer here to be handed on, so the other application never gets its reply and the user sees nothing. |
-| Browser back or forward | Returns to the previous page, leaving the request undecided. | Same. Coming forward again reloads the page and re-asks the league, which may now answer "already decided" and hand the browser straight on. |
-| Reload, or the tab closed | The question is asked again from the start. The request number is in the URL, so a reload works. | An answer already accepted stands. A reload after approving is answered immediately and hands the browser on without asking again. |
-| Network lost mid-request | The page stays on "Loading…" **indefinitely**. There is no timeout and no error for a request that never returns. | The answer fails and the page is replaced by the dead-end error screen. Nothing is queued and nothing can be retried in place. |
-| The request fails or times out | The error screen replaces the page, carrying the league's own message. | As above. The dead end is the only outcome. |
-| The session expires | The page finds no session and sends the browser to sign in, remembering where to come back to. | The answer is refused and the raw refusal appears on the dead-end error screen. Nothing says the session ended. |
-| The same record changed in another tab, or by another user | The page reads the request once when it loads and never again. An authorisation answered in another tab is not noticed here. | No effect. Answering the same request twice from two tabs gives one success and one error screen. |
-| Browser autofill or a password manager writes into the form | No effect. There are no fields on this page. | No effect. |
-| The window loses focus | No effect. Nothing refetches and nothing revalidates. | No effect. An answer in flight continues. |
+| Event                                                       | Before the first edit                                                                                                        | While editing or submitting                                                                                                                                                   |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. There is no Cancel button; Deny is an answer, not a cancel.                                                       | No effect. Escape does not abort an answer in flight.                                                                                                                         |
+| In-app navigation away, or switching tab within the page    | The request is left undecided. There are no tabs on this page.                                                               | The answer already sent still reaches the league, but the browser is no longer here to be handed on, so the other application never gets its reply and the user sees nothing. |
+| Browser back or forward                                     | Returns to the previous page, leaving the request undecided.                                                                 | Same. Coming forward again reloads the page and re-asks the league, which may now answer "already decided" and hand the browser straight on.                                  |
+| Reload, or the tab closed                                   | The question is asked again from the start. The request number is in the URL, so a reload works.                             | An answer already accepted stands. A reload after approving is answered immediately and hands the browser on without asking again.                                            |
+| Network lost mid-request                                    | The page stays on "Loading…" **indefinitely**. There is no timeout and no error for a request that never returns.            | The answer fails and the page is replaced by the dead-end error screen. Nothing is queued and nothing can be retried in place.                                                |
+| The request fails or times out                              | The error screen replaces the page, carrying the league's own message.                                                       | As above. The dead end is the only outcome.                                                                                                                                   |
+| The session expires                                         | The page finds no session and sends the browser to sign in, remembering where to come back to.                               | The answer is refused and the raw refusal appears on the dead-end error screen. Nothing says the session ended.                                                               |
+| The same record changed in another tab, or by another user  | The page reads the request once when it loads and never again. An authorisation answered in another tab is not noticed here. | No effect. Answering the same request twice from two tabs gives one success and one error screen.                                                                             |
+| Browser autofill or a password manager writes into the form | No effect. There are no fields on this page.                                                                                 | No effect.                                                                                                                                                                    |
+| The window loses focus                                      | No effect. Nothing refetches and nothing revalidates.                                                                        | No effect. An answer in flight continues.                                                                                                                                     |
 
 After any interrupt the user is wherever the browser put them. This page never
 restores itself and never explains what happened to a request it was in the middle

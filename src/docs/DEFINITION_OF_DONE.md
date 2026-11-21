@@ -4,34 +4,38 @@ Every feature or bugfix must satisfy this checklist before it's considered "done
 
 ## Quick Reference
 
-| Scope | Required Checks |
-|-------|-----------------|
-| Bug Fix | Build passes, formatted, test for bug, error handling |
-| Feature | Above + loading/empty/error states, unit tests, pattern compliance, keyboard accessible |
-| Major Feature | Above + integration tests, docs updated, full a11y audit |
+| Scope         | Required Checks                                                                         |
+| ------------- | --------------------------------------------------------------------------------------- |
+| Bug Fix       | Build passes, formatted, test for bug, error handling                                   |
+| Feature       | Above + loading/empty/error states, unit tests, pattern compliance, keyboard accessible |
+| Major Feature | Above + integration tests, docs updated, full a11y audit                                |
 
 ---
 
 ## 1. Code Quality
 
 ### Build & Lint
+
 - [ ] No ESLint errors (`npm run lint`)
 - [ ] No TypeScript compile errors (`npm run typecheck` passes)
 - [ ] No `@ts-ignore` or `@ts-expect-error` without justification comment
 - [ ] No `any` types (use proper typing or `unknown`)
 
 ### Formatting
+
 - [ ] Code formatted with Prettier — run via `npx prettier --write <files>` or
       rely on editor auto-save (this repo does not define an `npm run format` script)
 - [ ] Imports sorted correctly (handled by ESLint plugin; `npm run lint -- --fix`)
 
 ### Error Handling
+
 - [ ] API calls wrapped in try/catch or use React Query error states
 - [ ] Errors logged via `errorLog()` from `@/utils/logger`
 - [ ] User-facing errors shown via toast or inline message
 - [ ] No swallowed errors (no empty catch blocks)
 
 ### Console Output
+
 - [ ] No `console.log` in production code
 - [ ] Use `debugLog` and `errorLog` from logger utils
 
@@ -41,21 +45,23 @@ Every feature or bugfix must satisfy this checklist before it's considered "done
 
 ### When Tests Are Required
 
-| Change Type | Test Requirement |
-|-------------|------------------|
-| Pure utility function | Unit test required |
-| Complex business logic | Unit test required |
-| Critical user flow | Integration test recommended |
-| Bug fix | Test that reproduces the bug |
-| UI component | Component test if complex logic |
+| Change Type            | Test Requirement                |
+| ---------------------- | ------------------------------- |
+| Pure utility function  | Unit test required              |
+| Complex business logic | Unit test required              |
+| Critical user flow     | Integration test recommended    |
+| Bug fix                | Test that reproduces the bug    |
+| UI component           | Component test if complex logic |
 
 ### Test Standards
+
 - [ ] Tests in `__tests__/` folder alongside source
 - [ ] Naming: `ComponentName.test.tsx` or `utilName.test.ts`
 - [ ] Uses Vitest + React Testing Library
 - [ ] All tests pass: `npm run test`
 
 ### What to Test
+
 - Rendering with different props
 - User interactions (clicks, inputs)
 - Loading/error/empty state handling
@@ -89,11 +95,13 @@ describe('MyComponent', () => {
 ## 3. UI/UX State Handling
 
 ### Required States for Data-Fetching Components
+
 - [ ] **Loading**: Use `<LoadingState />` component
 - [ ] **Empty**: Use `<EmptyState />` with icon, message, and CTA
 - [ ] **Error**: User-friendly message with retry option
 
 ### Pattern Compliance
+
 - [ ] Cards follow `src/docs/CARD_PATTERNS.md`
 - [ ] Forms follow `src/docs/FORM_PATTERNS.md`
 - [ ] Modals follow `src/docs/MODAL_PATTERNS.md`
@@ -104,18 +112,21 @@ describe('MyComponent', () => {
 ## 4. Accessibility
 
 ### Semantic HTML
+
 - [ ] Proper heading hierarchy (h1 → h2 → h3)
 - [ ] Buttons use `<button>` element
 - [ ] Links use `<a>` or `<Link>` component
 - [ ] Lists use `<ul>/<ol>` with `<li>`
 
 ### Interactive Elements
+
 - [ ] All buttons/links have accessible labels
 - [ ] Icons have `aria-label` or visible text
 - [ ] Form inputs have `<Label>` components
 - [ ] Error messages linked via `aria-describedby`
 
 ### Keyboard Navigation
+
 - [ ] All interactive elements focusable via Tab
 - [ ] Focus order matches visual order
 - [ ] Modals trap focus (Radix handles this)
@@ -123,6 +134,7 @@ describe('MyComponent', () => {
 - [ ] Enter/Space activates buttons
 
 ### Visual
+
 - [ ] Sufficient color contrast (use theme tokens)
 - [ ] Focus indicators visible
 - [ ] No info conveyed by color alone
@@ -132,12 +144,14 @@ describe('MyComponent', () => {
 ## 5. Documentation
 
 ### When Required
+
 - [ ] New environment variable → Add to README
 - [ ] New feature folder → Follow `FOLDER_CONVENTIONS.md`
 - [ ] Breaking change → Document migration steps
 - [ ] Deprecated code → Add `@deprecated` JSDoc
 
 ### Code Documentation
+
 - [ ] Complex functions have JSDoc comments
 - [ ] Non-obvious logic has inline comments
 - [ ] Public interfaces documented

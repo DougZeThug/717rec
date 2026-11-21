@@ -84,20 +84,20 @@ Not applicable. There is no commit on any of these numbers.
 
 ## Team season numbers
 
-| Number | What it is | Where it comes from |
-| --- | --- | --- |
-| **W-L** | Matches won and lost this season. | Counted on the server from completed matches. Every match counts, including ones whose opponent division could not be resolved. |
-| **Win %** | Wins divided by wins plus losses. A tie counts in neither, so it does not lower Win %. A team with only ties reads 0. | Server. |
-| **Games** | Games won and lost, summed across matches. | Server. |
-| **Game %** | Games won divided by games played. | Server. |
-| **SOS** | Strength of schedule: the average division weight of the opponents faced, held between 0.1 and 1.0, shown to three decimals. | Server. Not the average power score of opponents. |
-| **Power score** | The rating. | Server. See [`power-score.md`](power-score.md). |
-| **Rank** | Position in the whole league by power score. | Worked out in the browser from the sorted standings. |
-| **Trend** | Movement since the last weekly snapshot. | Compared in the browser against a stored snapshot. Blank for a team that has never been ranked. |
-| **Streak** | The current run of wins or losses, as `W3` or `L2`. | Worked out in the browser from the match list, newest first, stopping at the first result that breaks the run. Ties are skipped rather than breaking a streak. **Playoff matches count.** |
-| **Close losses** | Matches lost in which the team still won at least one game — a 1–2 defeat. | Server. |
-| **Sweeps and sweep rate** | Matches won 2–0, and that count as a percentage of matches with a winner (wins plus losses) — not of matches won. A tied match is left out of the bottom number, as it is in Win %. | Worked out in the browser from the team's match list. |
-| **Clutch record** | Wins and losses in matches that went to a deciding third game, and the win rate in them. | Worked out in the browser from game wins summing to three. |
+| Number                    | What it is                                                                                                                                                                          | Where it comes from                                                                                                                                                                       |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **W-L**                   | Matches won and lost this season.                                                                                                                                                   | Counted on the server from completed matches. Every match counts, including ones whose opponent division could not be resolved.                                                           |
+| **Win %**                 | Wins divided by wins plus losses. A tie counts in neither, so it does not lower Win %. A team with only ties reads 0.                                                               | Server.                                                                                                                                                                                   |
+| **Games**                 | Games won and lost, summed across matches.                                                                                                                                          | Server.                                                                                                                                                                                   |
+| **Game %**                | Games won divided by games played.                                                                                                                                                  | Server.                                                                                                                                                                                   |
+| **SOS**                   | Strength of schedule: the average division weight of the opponents faced, held between 0.1 and 1.0, shown to three decimals.                                                        | Server. Not the average power score of opponents.                                                                                                                                         |
+| **Power score**           | The rating.                                                                                                                                                                         | Server. See [`power-score.md`](power-score.md).                                                                                                                                           |
+| **Rank**                  | Position in the whole league by power score.                                                                                                                                        | Worked out in the browser from the sorted standings.                                                                                                                                      |
+| **Trend**                 | Movement since the last weekly snapshot.                                                                                                                                            | Compared in the browser against a stored snapshot. Blank for a team that has never been ranked.                                                                                           |
+| **Streak**                | The current run of wins or losses, as `W3` or `L2`.                                                                                                                                 | Worked out in the browser from the match list, newest first, stopping at the first result that breaks the run. Ties are skipped rather than breaking a streak. **Playoff matches count.** |
+| **Close losses**          | Matches lost in which the team still won at least one game — a 1–2 defeat.                                                                                                          | Server.                                                                                                                                                                                   |
+| **Sweeps and sweep rate** | Matches won 2–0, and that count as a percentage of matches with a winner (wins plus losses) — not of matches won. A tied match is left out of the bottom number, as it is in Win %. | Worked out in the browser from the team's match list.                                                                                                                                     |
+| **Clutch record**         | Wins and losses in matches that went to a deciding third game, and the win rate in them.                                                                                            | Worked out in the browser from game wins summing to three.                                                                                                                                |
 
 The browser-side numbers and the server-side numbers are built from different
 sources, which is why they can briefly disagree after a result changes: the
@@ -125,14 +125,14 @@ Two things are worth knowing:
 
 The report card turns percentiles into letter grades, in six categories:
 
-| Category | Graded on |
-| --- | --- |
-| Overall | Power score |
-| Consistency | Win rate |
-| Games | Game win rate |
-| Offense | Sweep rate |
-| Clutch | Game-3 win rate |
-| Schedule | Strength of schedule |
+| Category    | Graded on            |
+| ----------- | -------------------- |
+| Overall     | Power score          |
+| Consistency | Win rate             |
+| Games       | Game win rate        |
+| Offense     | Sweep rate           |
+| Clutch      | Game-3 win rate      |
+| Schedule    | Strength of schedule |
 
 Grades run A+ down to F, banded by percentile: A+ at 95, A at 90, down to D at
 25 and F below it. A weighted GPA combines them, with Overall counting three
@@ -188,14 +188,14 @@ Player statistics come from rounds, which exist only for matches scored live. A
 league that never uses live scoring gets full team statistics and no player
 statistics at all.
 
-| Number | What it is |
-| --- | --- |
-| **Rounds** | Rounds the player threw in this season. |
-| **PPR** | Points per round: points scored while they were throwing, divided by rounds thrown. Shown to two decimals, or "–" when they have thrown none. |
-| **DPR** | Differential per round: their points minus the opponents' points over the same rounds, divided by rounds. Green when positive, red when negative. |
+| Number                 | What it is                                                                                                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rounds**             | Rounds the player threw in this season.                                                                                                                               |
+| **PPR**                | Points per round: points scored while they were throwing, divided by rounds thrown. Shown to two decimals, or "–" when they have thrown none.                         |
+| **DPR**                | Differential per round: their points minus the opponents' points over the same rounds, divided by rounds. Green when positive, red when negative.                     |
 | **Hole / Board / Off** | Where their bags landed, as three percentages of all bags thrown, drawn as one three-colour bar. Reads "Bag placement not tracked" when the detail was never entered. |
-| **4B** | Four-baggers: rounds where every bag went in. |
-| **Games** | Games won and lost in the games they played. |
+| **4B**                 | Four-baggers: rounds where every bag went in.                                                                                                                         |
+| **Games**              | Games won and lost in the games they played.                                                                                                                          |
 
 Players are listed with the busiest first, by rounds thrown.
 
@@ -205,28 +205,28 @@ with no placement bar. See
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | No effect on the numbers. A visitor, a player, and an admin see identical statistics. A player on the team additionally sees the team's management controls, which change nothing here. | No effect. |
-| The record's state | A team with no completed match shows a record of 0-0, "—" for power score, and "N/A" for streak. A team with no live-scored match has no player section. A team with no career history has an empty career table. | A result completing elsewhere changes the season numbers on the next refetch. Career numbers follow up to ten minutes later. |
-| The season's state | Season numbers are the active season and never say so. Career numbers span every season and say so in their headings. Player statistics are the active season only. | A season activated elsewhere resets every season number to zero once the season cache expires. Career numbers absorb the old season instead. |
-| Viewport | The stat breakdown is a two-tab card at every width. Player cards are one column on a phone and a grid on a wide screen. | No effect beyond re-flowing. |
-| Keys the page honours | Nothing is focused on arrival. Tab reaches the tab strip, the collapse chevrons, and each link. | Left and right arrows move between the Core and Advanced tabs, as standard for a tab strip. |
+| Modifier              | Set at arrival                                                                                                                                                                                                    | Changed while editing                                                                                                                        |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| The user's role       | No effect on the numbers. A visitor, a player, and an admin see identical statistics. A player on the team additionally sees the team's management controls, which change nothing here.                           | No effect.                                                                                                                                   |
+| The record's state    | A team with no completed match shows a record of 0-0, "—" for power score, and "N/A" for streak. A team with no live-scored match has no player section. A team with no career history has an empty career table. | A result completing elsewhere changes the season numbers on the next refetch. Career numbers follow up to ten minutes later.                 |
+| The season's state    | Season numbers are the active season and never say so. Career numbers span every season and say so in their headings. Player statistics are the active season only.                                               | A season activated elsewhere resets every season number to zero once the season cache expires. Career numbers absorb the old season instead. |
+| Viewport              | The stat breakdown is a two-tab card at every width. Player cards are one column on a phone and a grid on a wide screen.                                                                                          | No effect beyond re-flowing.                                                                                                                 |
+| Keys the page honours | Nothing is focused on arrival. Tab reaches the tab strip, the collapse chevrons, and each link.                                                                                                                   | Left and right arrows move between the Core and Advanced tabs, as standard for a tab strip.                                                  |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is nothing to cancel. | No effect. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | The tab choice, the report card mode, and which sections were collapsed are all forgotten. |
-| Browser back or forward | Returns to the previous page. | Coming back re-opens the page in its default arrangement, with the numbers refetched, and opens the section named in the address if the section bar was used (a hash such as `#career`). |
-| Reload, or the tab closed | Reloads everything, season numbers first and career numbers second. | Same. |
-| Network lost mid-request | The page shows its own failure state; the sections that had loaded stay. | Numbers already on screen stay on screen with nothing marking them stale. The player section, failing, simply does not appear — the same as having no data. |
-| The request fails or times out | As above. Reads are retried once. | The player statistics query is retried once unless live scoring is switched off for the league, in which case it is not retried at all and the section stays absent. |
-| The session expires | No effect. Every number here is public. | No effect. |
-| The same record changed in another tab, or by another user | Not applicable before arriving. | **No realtime anywhere.** A result approved by an admin does not reach the page until a refetch. Season and career numbers refetch on different schedules, so for a while the two halves of the page describe different states. |
-| Browser autofill or a password manager writes into the form | No effect. There are no fields here. | No effect. |
-| The window loses focus | No effect. | Returning to the tab refetches the season numbers, so the top of the page can change while the bottom does not. |
+| Event                                                       | Before the first edit                                                    | While editing or submitting                                                                                                                                                                                                     |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. There is nothing to cancel.                                   | No effect.                                                                                                                                                                                                                      |
+| In-app navigation away, or switching tab within the page    | Nothing is lost.                                                         | The tab choice, the report card mode, and which sections were collapsed are all forgotten.                                                                                                                                      |
+| Browser back or forward                                     | Returns to the previous page.                                            | Coming back re-opens the page in its default arrangement, with the numbers refetched, and opens the section named in the address if the section bar was used (a hash such as `#career`).                                        |
+| Reload, or the tab closed                                   | Reloads everything, season numbers first and career numbers second.      | Same.                                                                                                                                                                                                                           |
+| Network lost mid-request                                    | The page shows its own failure state; the sections that had loaded stay. | Numbers already on screen stay on screen with nothing marking them stale. The player section, failing, simply does not appear — the same as having no data.                                                                     |
+| The request fails or times out                              | As above. Reads are retried once.                                        | The player statistics query is retried once unless live scoring is switched off for the league, in which case it is not retried at all and the section stays absent.                                                            |
+| The session expires                                         | No effect. Every number here is public.                                  | No effect.                                                                                                                                                                                                                      |
+| The same record changed in another tab, or by another user  | Not applicable before arriving.                                          | **No realtime anywhere.** A result approved by an admin does not reach the page until a refetch. Season and career numbers refetch on different schedules, so for a while the two halves of the page describe different states. |
+| Browser autofill or a password manager writes into the form | No effect. There are no fields here.                                     | No effect.                                                                                                                                                                                                                      |
+| The window loses focus                                      | No effect.                                                               | Returning to the tab refetches the season numbers, so the top of the page can change while the bottom does not.                                                                                                                 |
 
 ## Interactions with other systems
 

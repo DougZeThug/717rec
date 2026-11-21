@@ -39,16 +39,16 @@ Read `docs/agents/LEAGUE_CONTEXT.md` first. It holds verified league facts and
 the corrections log. **Do not trust old memory** of the Power Score split or the
 division weights. The code is the source of truth.
 
-| Agent | Role | Access |
-|---|---|---|
-| `product-league-operations` | Does it help real league operation? | read-only |
-| `frontend-mobile-ux` | Phone use, navigation, accessibility, admin UX | read-only |
-| `supabase-data` | Schema, migrations, RLS, queries, history safety | read-only |
-| `competition-scoring` | Standings, SOS, Power Score, playoffs, stats math | read-only |
-| `security-reliability` | RLS, admin-only actions, duplicates, recovery | read-only |
-| `skeptic` | Challenges the findings and the plan | read-only |
-| `implementer` | Executes ONE approved plan | edits code |
-| `qa-verifier` | Checks code and league use. PASS / PARTIAL / FAIL | runs checks, no source edits |
+| Agent                       | Role                                              | Access                       |
+| --------------------------- | ------------------------------------------------- | ---------------------------- |
+| `product-league-operations` | Does it help real league operation?               | read-only                    |
+| `frontend-mobile-ux`        | Phone use, navigation, accessibility, admin UX    | read-only                    |
+| `supabase-data`             | Schema, migrations, RLS, queries, history safety  | read-only                    |
+| `competition-scoring`       | Standings, SOS, Power Score, playoffs, stats math | read-only                    |
+| `security-reliability`      | RLS, admin-only actions, duplicates, recovery     | read-only                    |
+| `skeptic`                   | Challenges the findings and the plan              | read-only                    |
+| `implementer`               | Executes ONE approved plan                        | edits code                   |
+| `qa-verifier`               | Checks code and league use. PASS / PARTIAL / FAIL | runs checks, no source edits |
 
 Definitions live in `.claude/agents/*.md` (Claude Code). Codex reads
 `.codex/agents/*.toml`. Those files are **generated**. Edit only the `.md`

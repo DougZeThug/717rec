@@ -7,7 +7,7 @@ function code on every PR that touches `supabase/**`. It runs on push to
 ## The baseline migration (migration 0)
 
 `supabase/migrations/00000000000000_baseline.sql` recreates the schema as
-it existed *before* the first checked-in migration (May 2025). The
+it existed _before_ the first checked-in migration (May 2025). The
 project's core tables (`teams`, `matches`, `seasons`, `divisions`, …) were
 created in the Supabase dashboard before migrations were adopted, so no
 regular migration creates them — without the baseline, a fresh database
@@ -33,7 +33,7 @@ The baseline was reconstructed from `src/integrations/supabase/types.ts`
 migrations and app code, then verified by replaying all migrations on a
 fresh Postgres. Column types are best-effort where the snapshot is
 ambiguous, and **default values are guesses**: `types.ts` records only
-*that* a column has a default, never what it is. `seasons.is_active` was
+_that_ a column has a default, never what it is. `seasons.is_active` was
 reconstructed as `DEFAULT false` and corrected to `DEFAULT true` once the
 live behaviour was confirmed (creating a season made it active). The baseline
 keeps `true` because that is the pre-migration state; migration
@@ -120,7 +120,7 @@ silently undone. Check the current state with
 rather than inferring it from the migration list.
 
 Lesson for future migrations: a migration that ends in a backfill is not
-idempotent from the *data's* point of view, even when every DDL statement in it
+idempotent from the _data's_ point of view, even when every DDL statement in it
 is. Re-applying one overwrites whatever the operator did in between.
 
 ## What this does NOT cover

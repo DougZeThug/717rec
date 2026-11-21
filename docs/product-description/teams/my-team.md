@@ -8,7 +8,7 @@ app where an ordinary player can change anything about a team.
 
 It is also the hardest page in the app to reach. There is one link to it
 anywhere, it is labelled **Join a Team**, and it is only drawn for a user who is
-*not* on a team. A player who already has a membership has no link to this page
+_not_ on a team. A player who already has a membership has no link to this page
 at all: the same menu entry becomes **My Team** and points at the team's public
 page instead. To get back here they must type the address or use a bookmark.
 
@@ -60,11 +60,11 @@ That is not true, and there is no sign-in prompt anywhere on the page. See
 **Signed in**, the membership is fetched and a spinner sits in the middle of the
 section until it answers. Then one of three things is drawn:
 
-| State | What the page shows |
-| --- | --- |
-| No membership | A dropdown of every team, a **Request to Join Team** button, and "Your request will be reviewed by an admin before approval" |
-| Waiting for approval | A yellow card: team logo, team name, a **Pending Approval** badge, "Requested *date*", and a **Leave Team** button |
-| Approved | A green card: the same, but an **Approved** badge, "Approved *date*", the line "You can edit team details", and below it the **Team Management** card |
+| State                | What the page shows                                                                                                                                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No membership        | A dropdown of every team, a **Request to Join Team** button, and "Your request will be reviewed by an admin before approval"                          |
+| Waiting for approval | A yellow card: team logo, team name, a **Pending Approval** badge, "Requested _date_", and a **Leave Team** button                                    |
+| Approved             | A green card: the same, but an **Approved** badge, "Approved _date_", the line "You can edit team details", and below it the **Team Management** card |
 
 Nothing is focused and the dropdown starts unset. The team list is every team the
 league has, ordered by name — it is not filtered by season and it is **not
@@ -121,35 +121,35 @@ approval), the save does not succeed, and the red message says nothing was saved
 and asks them to refresh the page.
 
 **Leave Team** asks first. A dialog reads "Leave team? — Are you sure you want to
-leave *team*? You will lose your association with this team and any editing
+leave _team_? You will lose your association with this team and any editing
 privileges." with **Cancel** and **Leave Team**. Confirming deletes the
 membership outright — not a request, not a withdrawal, a deletion — and a toast
 says "Left Team". The page returns to the join dropdown.
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role | A visitor gets the misleading empty state. A player gets one of the three states above. **An admin gets exactly the same page as a player** — being an admin gives no extra power here, and an admin with no membership is offered the same join dropdown. | Signing out in another tab collapses the page to the visitor state under the cursor. |
-| The record's state | Whether a membership exists, and whether it is approved, decides the whole page. An unapproved membership grants nothing except the sight of the waiting card. | An approval granted elsewhere does not reach an open page. The user keeps seeing the yellow card until a refetch, up to five minutes. |
-| The season's state | No effect. Memberships are not season-scoped, and neither is the team list offered. | No effect. |
-| Viewport | The page is a single narrow column at every width. On a phone the membership card stacks: the team block first, the **Leave Team** button under it on the left. From 640 px up the two sit on one row with the button on the right. A long team name is cut with an ellipsis rather than pushing the button off the screen. | Re-flows on rotation. |
-| Keys the app honours | Tab reaches the dropdown, then the button; or the Edit button, then the two fields, then Save and Cancel. | Enter opens the dropdown or presses the focused button. Escape closes the dropdown or the Leave Team dialog. |
+| Modifier             | Set at arrival                                                                                                                                                                                                                                                                                                              | Changed while editing                                                                                                                 |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| The user's role      | A visitor gets the misleading empty state. A player gets one of the three states above. **An admin gets exactly the same page as a player** — being an admin gives no extra power here, and an admin with no membership is offered the same join dropdown.                                                                  | Signing out in another tab collapses the page to the visitor state under the cursor.                                                  |
+| The record's state   | Whether a membership exists, and whether it is approved, decides the whole page. An unapproved membership grants nothing except the sight of the waiting card.                                                                                                                                                              | An approval granted elsewhere does not reach an open page. The user keeps seeing the yellow card until a refetch, up to five minutes. |
+| The season's state   | No effect. Memberships are not season-scoped, and neither is the team list offered.                                                                                                                                                                                                                                         | No effect.                                                                                                                            |
+| Viewport             | The page is a single narrow column at every width. On a phone the membership card stacks: the team block first, the **Leave Team** button under it on the left. From 640 px up the two sit on one row with the button on the right. A long team name is cut with an ellipsis rather than pushing the button off the screen. | Re-flows on rotation.                                                                                                                 |
+| Keys the app honours | Tab reaches the dropdown, then the button; or the Edit button, then the two fields, then Save and Cancel.                                                                                                                                                                                                                   | Enter opens the dropdown or presses the focused button. Escape closes the dropdown or the Leave Team dialog.                          |
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. | Escape closes the team dropdown or the Leave Team dialog. **Cancel** in the edit form closes it and discards what was typed with no confirmation. Neither aborts a request already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | **Everything typed is lost, with no warning.** A save already sent still lands, and the team really is renamed — the user just never sees the toast. |
-| Browser back or forward | Returns to the previous page. | Same as navigating away, and the app cannot prevent it. Coming forward again gives the card, not the form. |
-| Reload, or the tab closed | The page rebuilds from the membership. | Anything typed is lost. A save already sent still lands. |
-| Network lost mid-request | The membership does not load. For a signed-in user the section shows the spinner and then falls through to the visitor's "No Teams Available" state, because a failed read and no teams look the same. | The write fails and a red toast carries the reason. Nothing is queued. |
-| The request fails or times out | The read is retried once, then as above. | The form keeps everything typed and reports the failure. The join button comes back to life. |
-| The session expires | The page collapses to the visitor state on the next render. | The write fails and reports it. The page still looks signed in until something re-reads the session. |
-| The same record changed in another tab, or by another user | No realtime. An admin approving, rejecting, or removing the membership does not reach an open page. | Same. Two tabs can each rename the team, and the last write wins with nothing to say it happened. |
-| Browser autofill or a password manager writes into the form | The team dropdown cannot be autofilled. | The Team Name and Team Image URL fields are ordinary text inputs and could be filled by an aggressive form filler. Nothing would mark the form dirty differently, and nothing validates it. |
-| The window loses focus | Nothing. | **Returning refetches the membership if it is over five minutes old.** An approval granted while the user was away can turn the yellow card green mid-edit, and the Team Management card can appear underneath an open form. |
+| Event                                                       | Before the first edit                                                                                                                                                                                  | While editing or submitting                                                                                                                                                                                                  |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect.                                                                                                                                                                                             | Escape closes the team dropdown or the Leave Team dialog. **Cancel** in the edit form closes it and discards what was typed with no confirmation. Neither aborts a request already sent.                                     |
+| In-app navigation away, or switching tab within the page    | Nothing is lost.                                                                                                                                                                                       | **Everything typed is lost, with no warning.** A save already sent still lands, and the team really is renamed — the user just never sees the toast.                                                                         |
+| Browser back or forward                                     | Returns to the previous page.                                                                                                                                                                          | Same as navigating away, and the app cannot prevent it. Coming forward again gives the card, not the form.                                                                                                                   |
+| Reload, or the tab closed                                   | The page rebuilds from the membership.                                                                                                                                                                 | Anything typed is lost. A save already sent still lands.                                                                                                                                                                     |
+| Network lost mid-request                                    | The membership does not load. For a signed-in user the section shows the spinner and then falls through to the visitor's "No Teams Available" state, because a failed read and no teams look the same. | The write fails and a red toast carries the reason. Nothing is queued.                                                                                                                                                       |
+| The request fails or times out                              | The read is retried once, then as above.                                                                                                                                                               | The form keeps everything typed and reports the failure. The join button comes back to life.                                                                                                                                 |
+| The session expires                                         | The page collapses to the visitor state on the next render.                                                                                                                                            | The write fails and reports it. The page still looks signed in until something re-reads the session.                                                                                                                         |
+| The same record changed in another tab, or by another user  | No realtime. An admin approving, rejecting, or removing the membership does not reach an open page.                                                                                                    | Same. Two tabs can each rename the team, and the last write wins with nothing to say it happened.                                                                                                                            |
+| Browser autofill or a password manager writes into the form | The team dropdown cannot be autofilled.                                                                                                                                                                | The Team Name and Team Image URL fields are ordinary text inputs and could be filled by an aggressive form filler. Nothing would mark the form dirty differently, and nothing validates it.                                  |
+| The window loses focus                                      | Nothing.                                                                                                                                                                                               | **Returning refetches the membership if it is over five minutes old.** An approval granted while the user was away can turn the yellow card green mid-edit, and the Team Management card can appear underneath an open form. |
 
 After an interrupt whatever reached the database is what happened. Nothing is
 restored and nothing is confirmed.
