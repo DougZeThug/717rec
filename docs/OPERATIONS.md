@@ -1636,12 +1636,16 @@ first.
 - It does **not log a season archive**. Archiving a season moves its finished
   matches to the archive and removes them from the live table. That is a move, not
   a delete. It writes **no** rows.
-- A delete made in the SQL Editor **is** logged, with an empty `deleted_by` in the
+- A delete made in the SQL Editor **is** logged, with an empty `user_id` in the
   report. Doug chose this: that delete is the one nobody else would see.
 - It is **not tamper-proof**. Someone with full database access can edit the log or
   switch the trigger off.
-- If the log itself ever fails, the delete still goes through. The database only
-  prints a warning. So a missing row is possible, but a blocked delete is not.
+- If the log write fails with an ordinary error, the delete still goes through. The
+  database only prints a warning. So a missing row is possible.
+- In a rare case, the delete itself can wait or be cancelled. This happens if
+  another session holds a conflicting lock on `security_audit_log`, or if the
+  database cancels a long wait (a timeout). Only admin work in the database takes
+  such a lock. If a delete in `/admin` fails, wait a minute and try again.
 - Deletes made **before** you apply it are not in the log. There is no back-fill.
 
 #### Applying it (Supabase SQL Editor, not Lovable)
@@ -1696,11 +1700,18 @@ WHERE tgname = 'audit_match_delete' AND NOT tgisinternal;
 
 #### Who deleted a match? (the report)
 
-Run this any time. Newest first. `deleted_by` is who did it. An **empty**
-`deleted_by` means no one was signed in (the SQL Editor or a job).
+Run this any time. Newest first. `deleted_by` is the name of who did it. `user_id`
+is their account id. Read the two columns together:
+
+- **`user_id` empty:** no one was signed in (the SQL Editor or a job).
+- **`user_id` filled, `deleted_by` empty:** someone was signed in, but their name is
+  not available. Their profile has no username, or the profile was removed. Look the
+  id up with this line (paste the id in place of `PASTE-USER-ID-HERE`):
+  `SELECT id, username, full_name FROM profiles WHERE id = 'PASTE-USER-ID-HERE';`
+  If it returns no row, the profile was removed. The id is still the proof.
 
 ```sql
-SELECT l.created_at, p.username AS deleted_by, l.record_id AS match_id,
+SELECT l.created_at, p.username AS deleted_by, l.user_id, l.record_id AS match_id,
        t1.name AS team1, t2.name AS team2,
        l.old_values->>'iscompleted' AS was_completed,
        l.old_values->>'round_number' AS round_number,
@@ -1726,13 +1737,21 @@ completed.**
 
 1. In `/admin`, open **Match Creation**. Pick a date and pair two teams, then press
    **Create Matches**. Use two test teams if you have them.
-2. Run the report above. Note how many `match_delete` rows you see (it may be 0).
+2. Run this count. Write the number down (it may be 0). It counts **every** delete
+   row. The report above stops at 50 rows, so do not count from the report.
+
+   ```sql
+   SELECT count(*) FROM security_audit_log WHERE action = 'match_delete';
+   ```
+
 3. In `/admin`, open **Scores**, find the practice match, press the bin on its row,
    and press **Delete**.
-4. Run the report again. **Expect exactly one new row**, with your username, the
-   two team names and `was_completed` = `false`.
+4. Run the same count again. **Expect the number to be exactly 1 higher.**
+5. Run the report above. The **top row** is your delete. **Expect** your username in
+   `deleted_by`, your account id in `user_id`, the two team names, and
+   `was_completed` = `false`.
 
-If you see no new row, or two, stop and tell Claude.
+If the count goes up by 0, or by 2 or more, stop and tell Claude.
 
 #### If it needs undoing
 
