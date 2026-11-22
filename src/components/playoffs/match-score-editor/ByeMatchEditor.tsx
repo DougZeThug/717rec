@@ -254,6 +254,60 @@ const EditTeamsAction: React.FC<EditTeamsActionProps> = ({
   </div>
 );
 
+interface ByeWinnerScoreFieldProps {
+  winnerName: string;
+  hasOpponent1: boolean;
+  opponent1Score: number;
+  opponent2Score: number;
+  setOpponent1Score: (score: number) => void;
+  setOpponent2Score: (score: number) => void;
+  byeEligible: ByeEligibility | null;
+}
+
+/** The winner's score input. The BYE side always scores 0. */
+const ByeWinnerScoreField: React.FC<ByeWinnerScoreFieldProps> = ({
+  winnerName,
+  hasOpponent1,
+  opponent1Score,
+  opponent2Score,
+  setOpponent1Score,
+  setOpponent2Score,
+  byeEligible,
+}) => (
+  <div className="space-y-2">
+    <Label htmlFor="winner-score" className="text-sm">
+      {winnerName} Score (Games Won)
+    </Label>
+    <Input
+      id="winner-score"
+      type="number"
+      inputMode="numeric"
+      min="0"
+      value={hasOpponent1 ? opponent1Score : opponent2Score}
+      onChange={(e) => {
+        const score = Math.max(0, parseInt(e.target.value) || 0);
+        if (hasOpponent1) {
+          setOpponent1Score(score);
+          setOpponent2Score(0);
+        } else {
+          setOpponent2Score(score);
+          setOpponent1Score(0);
+        }
+      }}
+      disabled={byeEligible != null && byeEligible.currentStatus !== 2}
+      className="w-full"
+    />
+    {byeEligible && byeEligible.currentStatus !== 2 && (
+      <p className="text-xs text-destructive-text">
+        Match is {byeEligible.statusName}. Use the status toggle above to unlock.
+      </p>
+    )}
+    <p className="text-xs text-muted-foreground">
+      Enter the number of games won (typically 2 for Best of 3)
+    </p>
+  </div>
+);
+
 export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
   byeWinner,
   hasOpponent1,
@@ -320,39 +374,15 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
           />
         )}
 
-        {/* Winner Score */}
-        <div className="space-y-2">
-          <Label htmlFor="winner-score" className="text-sm">
-            {byeWinner.name} Score (Games Won)
-          </Label>
-          <Input
-            id="winner-score"
-            type="number"
-            inputMode="numeric"
-            min="0"
-            value={hasOpponent1 ? opponent1Score : opponent2Score}
-            onChange={(e) => {
-              const score = Math.max(0, parseInt(e.target.value) || 0);
-              if (hasOpponent1) {
-                setOpponent1Score(score);
-                setOpponent2Score(0);
-              } else {
-                setOpponent2Score(score);
-                setOpponent1Score(0);
-              }
-            }}
-            disabled={byeEligible != null && byeEligible.currentStatus !== 2}
-            className="w-full"
-          />
-          {byeEligible && byeEligible.currentStatus !== 2 && (
-            <p className="text-xs text-destructive-text">
-              Match is {byeEligible.statusName}. Use the status toggle above to unlock.
-            </p>
-          )}
-          <p className="text-xs text-muted-foreground">
-            Enter the number of games won (typically 2 for Best of 3)
-          </p>
-        </div>
+        <ByeWinnerScoreField
+          winnerName={byeWinner.name}
+          hasOpponent1={hasOpponent1}
+          opponent1Score={opponent1Score}
+          opponent2Score={opponent2Score}
+          setOpponent1Score={setOpponent1Score}
+          setOpponent2Score={setOpponent2Score}
+          byeEligible={byeEligible}
+        />
       </div>
 
       {onSwapTeams && (
