@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -36,18 +36,8 @@ let mockBracketData = {
 };
 
 const mockBracketsViewer = vi.fn(
-  ({
-    bracket,
-    teams,
-    onMatchClick,
-  }: {
-    bracket: { name: string };
-    teams: unknown[];
-    onMatchClick?: (id: string) => void;
-  }) => (
-    <div role="region" aria-label={`Mock bracket ${bracket.name}`} data-team-count={teams.length}>
-      <button onClick={() => onMatchClick?.('match-1')}>Edit match score</button>
-    </div>
+  ({ bracket, teams }: { bracket: { name: string }; teams: unknown[] }) => (
+    <div role="region" aria-label={`Mock bracket ${bracket.name}`} data-team-count={teams.length} />
   )
 );
 
@@ -230,23 +220,12 @@ describe('bracket display and admin interaction views', () => {
     expect(screen.getByText('Attempted to load bracket: missing-bracket')).toBeInTheDocument();
   });
 
-  it('renders a visible bracket and routes match score editing entry points', () => {
-    const onEditMatch = vi.fn();
-
-    render(
-      <BracketView
-        bracketId="bracket-1"
-        bracket={bracket}
-        teams={teams}
-        onEditMatch={onEditMatch}
-      />
-    );
+  it('renders a visible bracket', () => {
+    render(<BracketView bracketId="bracket-1" bracket={bracket} teams={teams} />);
 
     expect(
       screen.getByRole('region', { name: 'Mock bracket Rec Championship' })
     ).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Edit match score' }));
-    expect(onEditMatch).toHaveBeenCalledWith('match-1');
   });
 
   it('passes realtimeEnabled to the bracket viewer component', () => {

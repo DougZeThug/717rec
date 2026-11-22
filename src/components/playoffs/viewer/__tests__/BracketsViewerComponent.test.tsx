@@ -33,7 +33,6 @@ let mockScriptIsReady = true;
 let mockScriptError: string | null = null;
 let mockIsInitialized = true;
 let mockRenderError: string | null = null;
-const mockGetPlayoffMatchIdRef = { current: vi.fn() };
 
 type MockMatch = { id: number; opponent1: { id: string } | null; opponent2: { id: string } | null };
 
@@ -59,7 +58,6 @@ vi.mock('@/components/playoffs/viewer/useBracketsViewerRenderer', () => ({
     return {
       isInitialized: mockIsInitialized,
       error: mockRenderError,
-      getPlayoffMatchIdRef: mockGetPlayoffMatchIdRef,
     };
   },
 }));
@@ -103,7 +101,7 @@ vi.mock('@/components/ui/loading-state', () => ({
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
 import { PlayoffBracket, PlayoffTeam } from '@/types/playoffTypes';
-import { errorLog, warnLog } from '@/utils/logger';
+import { warnLog } from '@/utils/logger';
 
 import { BracketsViewerComponent } from '../BracketsViewerComponent';
 
@@ -144,7 +142,6 @@ describe('BracketsViewerComponent', () => {
     mockScriptError = null;
     mockIsInitialized = true;
     mockRenderError = null;
-    mockGetPlayoffMatchIdRef.current = vi.fn();
   });
 
   describe('guard conditions', () => {
@@ -272,42 +269,28 @@ describe('BracketsViewerComponent', () => {
   });
 
   describe('match click handling', () => {
-    it('does not crash when no onMatchClick callback is provided', () => {
-      render(<BracketsViewerComponent bracket={makeBracket()} teams={teams} />);
-
-      expect(() => {
-        act(() => {
-          capturedOnMatchClicked?.({ id: 5, opponent1: { id: 't1' }, opponent2: { id: 't2' } });
-        });
-      }).not.toThrow();
-    });
-
-    it('blocks click when both opponents are null', () => {
-      const mockOnMatchClick = vi.fn();
+    // No handler is passed in: the viewer opens the score editor on its own.
+    it('opens the score editor for a brackets-manager match that has teams', async () => {
       render(
         <BracketsViewerComponent
-          bracket={makeBracket()}
+          bracket={makeBracket({ uses_brackets_manager: true })}
           teams={teams}
-          onMatchClick={mockOnMatchClick}
         />
       );
 
       act(() => {
-        capturedOnMatchClicked?.({ id: 5, opponent1: null, opponent2: null });
+        capturedOnMatchClicked?.({ id: 7, opponent1: { id: 't1' }, opponent2: { id: 't2' } });
       });
 
-      expect(mockOnMatchClick).not.toHaveBeenCalled();
+      expect(await screen.findByTestId('bm-editor')).toBeInTheDocument();
+      expect(screen.getByTestId('bm-editor').dataset.matchId).toBe('7');
     });
 
-    it('opens BracketsManagerMatchEditor for brackets-manager brackets', async () => {
-      const bmBracket = makeBracket({ uses_brackets_manager: true });
-      const mockOnMatchClick = vi.fn();
-
+    it('opens the score editor when only one team is known yet (late-round slot)', async () => {
       render(
         <BracketsViewerComponent
-          bracket={bmBracket}
+          bracket={makeBracket({ uses_brackets_manager: true })}
           teams={teams}
-          onMatchClick={mockOnMatchClick}
         />
       );
 
@@ -316,18 +299,13 @@ describe('BracketsViewerComponent', () => {
       });
 
       expect(await screen.findByTestId('bm-editor')).toBeInTheDocument();
-      expect(screen.getByTestId('bm-editor').dataset.matchId).toBe('7');
     });
 
-    it('calls onMatchClick with mapped playoff match ID for legacy brackets', () => {
-      const mockOnMatchClick = vi.fn();
-      mockGetPlayoffMatchIdRef.current.mockReturnValue('playoff-match-42');
-
+    it('opens nothing for a legacy bracket that does not use brackets-manager', () => {
       render(
         <BracketsViewerComponent
           bracket={makeBracket({ uses_brackets_manager: false })}
           teams={teams}
-          onMatchClick={mockOnMatchClick}
         />
       );
 
@@ -335,26 +313,23 @@ describe('BracketsViewerComponent', () => {
         capturedOnMatchClicked?.({ id: 9, opponent1: { id: 't1' }, opponent2: { id: 't2' } });
       });
 
-      expect(mockOnMatchClick).toHaveBeenCalledWith('playoff-match-42');
+      expect(screen.queryByTestId('bm-editor')).not.toBeInTheDocument();
     });
 
-    it('does not call onMatchClick when legacy ID mapping returns null', () => {
-      const mockOnMatchClick = vi.fn();
-      mockGetPlayoffMatchIdRef.current.mockReturnValue(null);
-
+    it('opens nothing for a match that has no teams yet, and says so in the log', () => {
       render(
         <BracketsViewerComponent
-          bracket={makeBracket({ uses_brackets_manager: false })}
+          bracket={makeBracket({ uses_brackets_manager: true })}
           teams={teams}
-          onMatchClick={mockOnMatchClick}
         />
       );
 
       act(() => {
-        capturedOnMatchClicked?.({ id: 9, opponent1: { id: 't1' }, opponent2: { id: 't2' } });
+        capturedOnMatchClicked?.({ id: 5, opponent1: null, opponent2: null });
       });
 
-      expect(mockOnMatchClick).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('bm-editor')).not.toBeInTheDocument();
+      expect(warnLog).toHaveBeenCalledWith('Match clicked but no participants determined yet');
     });
   });
 
@@ -396,74 +371,10 @@ describe('BracketsViewerComponent', () => {
     });
   });
 
-  describe('additional match click branches', () => {
-    it('does not open the brackets-manager editor when no onMatchClick handler is provided', () => {
-      const bmBracket = makeBracket({ uses_brackets_manager: true });
-      render(<BracketsViewerComponent bracket={bmBracket} teams={teams} />);
-
-      act(() => {
-        capturedOnMatchClicked?.({ id: 7, opponent1: { id: 't1' }, opponent2: { id: 't2' } });
-      });
-
-      expect(screen.queryByTestId('bm-editor')).not.toBeInTheDocument();
-    });
-
-    it('warns when a match with no determined participants is clicked', () => {
-      render(
-        <BracketsViewerComponent bracket={makeBracket()} teams={teams} onMatchClick={vi.fn()} />
-      );
-
-      act(() => {
-        capturedOnMatchClicked?.({ id: 5, opponent1: null, opponent2: null });
-      });
-
-      expect(warnLog).toHaveBeenCalledWith('Match clicked but no participants determined yet');
-    });
-
-    it('allows clicks when only one opponent is determined (late-round TBD slot)', () => {
-      const mockOnMatchClick = vi.fn();
-      mockGetPlayoffMatchIdRef.current.mockReturnValue('playoff-final-1');
-
-      render(
-        <BracketsViewerComponent
-          bracket={makeBracket({ uses_brackets_manager: false })}
-          teams={teams}
-          onMatchClick={mockOnMatchClick}
-        />
-      );
-
-      act(() => {
-        capturedOnMatchClicked?.({ id: 11, opponent1: { id: 't1' }, opponent2: null });
-      });
-
-      expect(mockOnMatchClick).toHaveBeenCalledWith('playoff-final-1');
-    });
-
-    it('logs an error when the legacy viewer match ID cannot be mapped', () => {
-      const mockOnMatchClick = vi.fn();
-      // fresh vi.fn() from beforeEach returns undefined -> no mapping found
-
-      render(
-        <BracketsViewerComponent
-          bracket={makeBracket({ uses_brackets_manager: false })}
-          teams={teams}
-          onMatchClick={mockOnMatchClick}
-        />
-      );
-
-      act(() => {
-        capturedOnMatchClicked?.({ id: 13, opponent1: { id: 't1' }, opponent2: { id: 't2' } });
-      });
-
-      expect(errorLog).toHaveBeenCalledWith('Could not map viewer match ID to playoff match:', 13);
-      expect(mockOnMatchClick).not.toHaveBeenCalled();
-    });
-  });
-
   describe('BracketsManagerMatchEditor lifecycle', () => {
     it('closes editor and clears matchId when onClose is called', async () => {
       const bmBracket = makeBracket({ uses_brackets_manager: true });
-      render(<BracketsViewerComponent bracket={bmBracket} teams={teams} onMatchClick={vi.fn()} />);
+      render(<BracketsViewerComponent bracket={bmBracket} teams={teams} />);
 
       // Open the editor
       act(() => {
@@ -482,7 +393,7 @@ describe('BracketsViewerComponent', () => {
 
     it('bumps the renderer refresh key after a match result is saved when realtime is disabled', async () => {
       const bmBracket = makeBracket({ uses_brackets_manager: true });
-      render(<BracketsViewerComponent bracket={bmBracket} teams={teams} onMatchClick={vi.fn()} />);
+      render(<BracketsViewerComponent bracket={bmBracket} teams={teams} />);
 
       expect(capturedRendererOpts?.refreshKey).toBe('0:initial');
 
@@ -501,14 +412,7 @@ describe('BracketsViewerComponent', () => {
 
     it('does not bump the renderer refresh key after save when realtime is enabled', async () => {
       const bmBracket = makeBracket({ uses_brackets_manager: true });
-      render(
-        <BracketsViewerComponent
-          bracket={bmBracket}
-          teams={teams}
-          onMatchClick={vi.fn()}
-          realtimeEnabled
-        />
-      );
+      render(<BracketsViewerComponent bracket={bmBracket} teams={teams} realtimeEnabled />);
 
       expect(capturedRendererOpts?.refreshKey).toBe('0:initial');
 

@@ -123,8 +123,6 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
           bracket={openBracket as unknown as PlayoffBracket}
           teams={data.teams}
           bracketLoading={data.isLoading}
-          onEditMatch={undefined}
-          onDeleteBracket={undefined}
         />
       )}
     </>

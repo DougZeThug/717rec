@@ -42,6 +42,7 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
+import { calculateCareerPowerScore } from '@/services/career/calculateCareerPowerScore';
 import { fetchCareerData } from '@/services/career/CareerService';
 
 const createWrapper = () => {
@@ -105,6 +106,35 @@ describe('useTeamTotalsComputed', () => {
     expect(result.current.totals).not.toBeNull();
     expect(result.current.totals?.career_match_wins).toBe(10);
     expect(result.current.totals?.championships).toBe(1);
+    // The career power score comes from calculateCareerPowerScore, not from the
+    // season rows, and the hook must hand it this team's own record.
+    expect(result.current.totals?.career_power_score).toBe(85);
+    expect(calculateCareerPowerScore).toHaveBeenCalledTimes(1);
+    expect(calculateCareerPowerScore).toHaveBeenCalledWith(
+      expect.objectContaining({
+        teamId: 'team-1',
+        championshipDivisions: ['Division A'],
+        careerPlayoffWins: 3,
+        careerPlayoffLosses: 1,
+        competitivePlayoffWins: 2,
+        teamDivisionWeight: 1,
+        currentSeasonId: 'season-1',
+      })
+    );
+  });
+
+  // Passing `null` here would read as "this team has no season rows" and drop
+  // the whole season history from the career score.
+  it('leaves the pre-fetched season rows out so the score reads them itself', async () => {
+    (fetchCareerData as ReturnType<typeof vi.fn>).mockResolvedValue(mockCareerData);
+    const { result } = renderHook(() => useTeamTotalsComputed('team-1'), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    const input = (calculateCareerPowerScore as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(input.prefetchedSeasonStats).toBeUndefined();
+    expect(input.prefetchedCurrentTeamData).toBeUndefined();
   });
 
   it('does not double-count playoff matches in sweep rate denominator', async () => {
