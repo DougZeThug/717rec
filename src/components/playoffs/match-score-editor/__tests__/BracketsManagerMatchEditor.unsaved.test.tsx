@@ -46,8 +46,14 @@ vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({ toast: vi.fn() }),
 }));
 
+let mockIsAdmin = true;
 vi.mock('@/hooks/useAdminAccess', () => ({
-  useAdminAccess: () => ({ isAdminAccessGranted: false }),
+  useAdminAccess: () => ({
+    isAdminAccessGranted: mockIsAdmin,
+    isLoading: false,
+    accessCheckFailed: false,
+    retryAccessCheck: vi.fn(),
+  }),
 }));
 
 vi.mock('@/hooks/playoffs/useEditTeams', () => ({
@@ -136,6 +142,7 @@ describe('BracketsManagerMatchEditor: unsaved typed scores', () => {
   });
 
   beforeEach(() => {
+    mockIsAdmin = true;
     services.updateMatch.mockResolvedValue(undefined); // skipcq: JS-W1042
     services.checkByeEligibility.mockResolvedValue({ ok: false, meta: { status: 2 } });
     confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
@@ -244,5 +251,29 @@ describe('BracketsManagerMatchEditor: unsaved typed scores', () => {
     await user.click(screen.getByRole('button', { name: 'Open match' }));
 
     expect(team1Score()).toHaveValue(3);
+  });
+
+  // The same real editor, signed out: no Save, no score boxes, so nothing can
+  // be typed, and a Save that the database would quietly refuse cannot be pressed.
+  it('shows a signed-out visitor the score as text, with no Save, and Close just closes', async () => {
+    mockIsAdmin = false;
+    const user = userEvent.setup();
+    renderEditor();
+
+    expect(screen.getByText('Fake Team One')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Fake Team One Score')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /save changes/i })).not.toBeInTheDocument();
+    expect(
+      screen.getByText('Only admins can save scores. Sign in as an admin to edit.')
+    ).toBeInTheDocument();
+
+    // The pop-up's corner X is also named "Close"; the text button is the other one.
+    const closeButtons = screen.getAllByRole('button', { name: 'Close' });
+    expect(closeButtons).toHaveLength(2);
+    await user.click(closeButtons.find((button) => !button.querySelector('svg')) as HTMLElement);
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(services.updateMatch).not.toHaveBeenCalled();
   });
 });

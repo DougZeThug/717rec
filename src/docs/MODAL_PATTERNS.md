@@ -272,6 +272,8 @@ a phone. Two pop-ups stay centred on purpose (Doug, 2026-11-10):
   Escape and Cancel. Save closes without asking. Closing clears the draft,
   because the editor stays mounted and would otherwise reopen the same match with
   the thrown-away scores.
+  For anyone who is not an admin it opens read-only (`canEdit` is false): scores
+  as text, no Save, a Close button and a line that says only admins can save.
 - **Create Bracket** (`BracketCreationDialog`). A swipe on a bottom sheet would
   fight the drag-to-seed list.
 

@@ -57,7 +57,15 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
 
   // The losers-bracket swap and Edit teams are admin-only: the editor itself
   // can open for non-admins, so each action gets its own explicit gate here.
-  const { isAdminAccessGranted } = useAdminAccess();
+  // Only an admin can save a score: everyone else gets a read-only view. The
+  // database refuses a guest's write without an error, so the screen must not
+  // offer a Save that would report success and bring the old score back.
+  const {
+    isAdminAccessGranted,
+    isLoading: isAdminLoading,
+    accessCheckFailed,
+    retryAccessCheck,
+  } = useAdminAccess();
   const { data: swapEligibility } = useLoserSwapEligibility(isAdminAccessGranted ? matchId : null);
   const canSwapTeams = isAdminAccessGranted && swapEligibility?.ok === true;
   const onSwapTeams = canSwapTeams ? () => setIsSwapTeamsOpen(true) : undefined;
@@ -68,6 +76,13 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
     onEditTeams: isAdminAccessGranted ? () => setIsEditTeamsOpen(true) : undefined,
     canEditTeams: editTeamsEligibility?.ok === true,
     editTeamsBlockedReason: editTeamsEligibility?.reason ?? null,
+  };
+
+  const accessProps = {
+    canEdit: isAdminAccessGranted,
+    accessLoading: isAdminLoading,
+    accessCheckFailed,
+    onRetryAccessCheck: retryAccessCheck,
   };
 
   if (isLoading) {
@@ -148,6 +163,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
             status={matchData.status}
             onSwapTeams={onSwapTeams}
             {...editTeamsProps}
+            {...accessProps}
           />
         </Dialog>
         {editTeamsDialog}
@@ -174,6 +190,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
           {...editTeamsProps}
           status={matchData.status}
           onSwapTeams={onSwapTeams}
+          {...accessProps}
         />
       </Dialog>
       {editTeamsDialog}

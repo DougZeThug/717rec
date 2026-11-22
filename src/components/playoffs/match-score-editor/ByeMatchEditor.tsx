@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 import { MatchStatusBadge } from './MatchStatusBadge';
+import { ReadOnlyNotice } from './ReadOnlyNotice';
 import type { ByeEligibility } from './useMatchEditorState';
 
 interface ByeMatchEditorProps {
@@ -37,6 +38,11 @@ interface ByeMatchEditorProps {
   /** Why Edit teams is disabled, shown as text (tooltips don't show on phones). */
   editTeamsBlockedReason?: string | null;
   status?: number;
+  /** Only an admin can change a BYE match. Everyone else gets a read-only view. */
+  canEdit: boolean;
+  accessLoading?: boolean;
+  accessCheckFailed?: boolean;
+  onRetryAccessCheck?: () => void;
 }
 
 interface ByeToggleButtonProps {
@@ -266,7 +272,52 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
   canEditTeams,
   editTeamsBlockedReason,
   status,
+  canEdit,
+  accessLoading,
+  accessCheckFailed,
+  onRetryAccessCheck,
 }) => {
+  // Scores as plain text, and no status buttons: Unlock, Revert and Reopen
+  // change the bracket, so they are for admins only.
+  if (!canEdit) {
+    return (
+      <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-base sm:text-lg">Match Forfeit - BYE</DialogTitle>
+          <DialogDescription className="sr-only">
+            Scores for this match. Only admins can change them.
+          </DialogDescription>
+        </DialogHeader>
+
+        <MatchStatusBadge status={byeEligible?.currentStatus ?? status} readOnly />
+
+        <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
+          <div className="text-center py-2 sm:py-4">
+            <p className="text-lg sm:text-xl font-semibold px-2">
+              {byeWinner.name} wins by walkover
+            </p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">Opponent: BYE</p>
+          </div>
+          <div className="flex justify-between gap-2 text-sm">
+            <span>{byeWinner.name} Score (Games Won)</span>
+            <span className="font-semibold">{hasOpponent1 ? opponent1Score : opponent2Score}</span>
+          </div>
+        </div>
+
+        <ReadOnlyNotice
+          accessLoading={accessLoading}
+          accessCheckFailed={accessCheckFailed}
+          onRetryAccessCheck={onRetryAccessCheck}
+        />
+        <div className="flex flex-col sm:flex-row justify-end gap-2">
+          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
+            Close
+          </Button>
+        </div>
+      </DialogContent>
+    );
+  }
+
   return (
     <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto">
       <DialogHeader>

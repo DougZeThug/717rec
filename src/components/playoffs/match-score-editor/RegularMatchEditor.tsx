@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { MatchStatusBadge } from './MatchStatusBadge';
+import { ReadOnlyNotice } from './ReadOnlyNotice';
 
 interface RegularMatchEditorProps {
   opponent1Name: string;
@@ -36,7 +37,34 @@ interface RegularMatchEditorProps {
   /** Admin-only, losers bracket only: move a team into a sibling match. */
   onSwapTeams?: () => void;
   status?: number;
+  /** Only an admin can save. Everyone else gets a read-only view with no Save. */
+  canEdit: boolean;
+  accessLoading?: boolean;
+  accessCheckFailed?: boolean;
+  onRetryAccessCheck?: () => void;
 }
+
+type GameRow = RegularMatchEditorProps['games'][number];
+
+/** Game-by-game scores, the same for an admin and a visitor. */
+const GamesList: React.FC<{ games: GameRow[] }> = ({ games }) => {
+  if (games.length === 0) return null;
+  return (
+    <div className="space-y-2">
+      <Label>Games</Label>
+      <div className="space-y-1 text-sm text-muted-foreground">
+        {games.map((game) => (
+          <div key={game.id} className="flex justify-between">
+            <span>Game {game.number}:</span>
+            <span>
+              {game.opponent1_score ?? '-'} - {game.opponent2_score ?? '-'}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
   opponent1Name,
@@ -54,7 +82,54 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
   editTeamsBlockedReason,
   onSwapTeams,
   status,
+  canEdit,
+  accessLoading,
+  accessCheckFailed,
+  onRetryAccessCheck,
 }) => {
+  // Scores as plain text, not disabled boxes: nothing here looks like a form
+  // that is about to fail to save.
+  if (!canEdit) {
+    return (
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Match Score</DialogTitle>
+          <DialogDescription className="sr-only">
+            Scores for this match. Only admins can change them.
+          </DialogDescription>
+        </DialogHeader>
+
+        <MatchStatusBadge status={status} readOnly />
+
+        <div className="space-y-6 py-4">
+          <div className="space-y-2">
+            <div className="flex justify-between gap-2">
+              <span>{opponent1Name}</span>
+              <span className="font-semibold">{opponent1Score}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span>{opponent2Name}</span>
+              <span className="font-semibold">{opponent2Score}</span>
+            </div>
+          </div>
+
+          <GamesList games={games} />
+        </div>
+
+        <ReadOnlyNotice
+          accessLoading={accessLoading}
+          accessCheckFailed={accessCheckFailed}
+          onRetryAccessCheck={onRetryAccessCheck}
+        />
+        <div className="flex justify-end">
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </DialogContent>
+    );
+  }
+
   return (
     <DialogContent className="sm:max-w-[500px]">
       <DialogHeader>
@@ -96,21 +171,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
         </div>
 
         {/* Game Details (Read-only display) */}
-        {games.length > 0 && (
-          <div className="space-y-2">
-            <Label>Games</Label>
-            <div className="space-y-1 text-sm text-muted-foreground">
-              {games.map((game) => (
-                <div key={game.id} className="flex justify-between">
-                  <span>Game {game.number}:</span>
-                  <span>
-                    {game.opponent1_score ?? '-'} - {game.opponent2_score ?? '-'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <GamesList games={games} />
       </div>
 
       {/* Wraps on a narrow phone, so the row never scrolls sideways; ml-auto
