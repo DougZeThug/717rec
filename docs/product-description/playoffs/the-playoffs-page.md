@@ -247,8 +247,9 @@ stacked banners above the list rather than as toasts, each naming what failed.
 
 **Unsaved changes.** None. Nothing on this page can be half-done.
 
-**Optimistic updates and rollback.** None for a player. An admin's score save is
-optimistic; see [`admin/run-the-playoffs.md`](../admin/run-the-playoffs.md).
+**Optimistic updates and rollback.** None for a player. An admin's score save
+waits for the league and is not optimistic; see
+[`admin/run-the-playoffs.md`](../admin/run-the-playoffs.md).
 
 **Realtime.** Present, and the only place outside live scoring where it is. Two
 subscriptions open once a bracket is chosen: one watches that bracket's matches
