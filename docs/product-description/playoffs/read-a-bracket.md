@@ -154,8 +154,9 @@ byes; the byes go to the top five seeds, who skip round one.
 
 **The current engine never draws a play-in.** A play-in — an extra match before
 round one, used when the team count is not a power of two — exists in the data
-model and in older brackets, but a bracket built today uses byes instead. If a
-bracket shows a play-in, it is a legacy bracket.
+model and in older brackets, but a bracket built today uses byes instead. The
+viewer never draws a play-in now: an older bracket cannot be drawn at all (its
+row on the list says so).
 
 A bye slot and a to-be-decided slot look different and mean different things. A
 bye says "BYE" and never changes. A to-be-decided slot names the match that will

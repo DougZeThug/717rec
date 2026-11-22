@@ -483,6 +483,8 @@ find the 'opponent1_position' column of 'match'".
 > - To run it anyway: Supabase dashboard, SQL Editor. Paste the full file. Click
 >   **Run** (the button must say "Run", not "Run selected"). Expect "Success. No
 >   rows returned".
+>   If the editor asks you to confirm a destructive operation, click through: the
+>   file contains the word DROP, but it changes nothing in production.
 > - Check afterwards (read only):
 >
 >   ```sql
