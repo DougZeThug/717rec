@@ -13,7 +13,6 @@ import { useBracketsViewerScript } from './useBracketsViewerScript';
 interface BracketsViewerComponentProps {
   bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
   teams: PlayoffTeam[];
-  onMatchClick?: (matchId: string) => void;
   /**
    * External signal that should trigger a re-render of the viewer (e.g. a
    * realtime 'lastUpdate' timestamp). When this value changes, the viewer
@@ -34,7 +33,6 @@ const CONTAINER_ID = 'brackets-viewer-container';
 const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   bracket,
   teams,
-  onMatchClick,
   refreshSignal,
   realtimeEnabled = false,
 }) => {
@@ -59,12 +57,12 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   // state update. Internal editor saves still bump refreshCounter below.
   const refreshKey = `${refreshCounter}:${refreshSignal ?? 'initial'}`;
 
-  // Match click handler - routes to BM editor or legacy handler
+  // Match click handler: opens the brackets-manager score editor. A legacy
+  // bracket (no brackets-manager) opens nothing, so a click can never reach
+  // the editor for a bracket it cannot save to.
   const handleMatchClicked = useCallback(
     (match: BracketsViewerMatchClick) => {
       bracketLog('Match clicked', { matchId: match.id });
-
-      if (!onMatchClick) return;
 
       // Block if BOTH opponents are missing (match not yet determined)
       if (!match.opponent1?.id && !match.opponent2?.id) {
@@ -72,45 +70,17 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
         return;
       }
 
-      // Handle brackets-manager brackets
       if (bracket?.uses_brackets_manager) {
         bracketLog('Opening brackets-manager match editor for match:', match.id);
         setSelectedBMMatchId(Number(match.id));
         setIsBMEditorOpen(true);
-        return;
-      }
-
-      // Handle legacy playoff_matches brackets.
-      //
-      // getPlayoffMatchIdRef comes from useBracketsViewerRenderer below, and that
-      // hook takes this handler as an argument — so the handler must be written
-      // first, which makes the two reads below forward references. They are safe:
-      // this body only runs on a click, long after the hook has bound the name.
-      // Swapping the two statements throws on the first render.
-      // skipcq: JS-0357 -- the forward reference is required; see the note above.
-      // eslint-disable-next-line react-hooks/immutability, @typescript-eslint/no-use-before-define -- stable ref is returned by the renderer hook below and read only from this click handler.
-      if (getPlayoffMatchIdRef.current) {
-        // skipcq: JS-0357 -- as above.
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- as above.
-        const playoffMatchId = getPlayoffMatchIdRef.current(Number(match.id));
-        if (playoffMatchId) {
-          bracketLog('Calling onMatchClick with playoff match ID:', playoffMatchId);
-          onMatchClick(playoffMatchId);
-        } else {
-          errorLog('Could not map viewer match ID to playoff match:', match.id);
-        }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- getPlayoffMatchIdRef is a stable ref from useBracketsViewerRenderer.
-    [onMatchClick, bracket?.uses_brackets_manager]
+    [bracket?.uses_brackets_manager]
   );
 
   // Render the bracket visualization
-  const {
-    isInitialized,
-    error: renderError,
-    getPlayoffMatchIdRef,
-  } = useBracketsViewerRenderer({
+  const { isInitialized, error: renderError } = useBracketsViewerRenderer({
     bracket,
     containerRef,
     containerId: CONTAINER_ID,

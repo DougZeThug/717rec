@@ -263,7 +263,9 @@ describe('useBatchMatchForm', () => {
   it('handleSubmit success calls services, shows success toast, and resets the form', async () => {
     const { result } = renderHook(() => useBatchMatchForm([]), { wrapper: createWrapper() });
 
+    const chosenNight = new Date(2024, 0, 4);
     act(() => {
+      result.current.setSelectedDate(chosenNight);
       const id = result.current.matchPairs[0].id;
       result.current.updateMatchPair(id, {
         team1Id: 'team-1',
@@ -277,7 +279,26 @@ describe('useBatchMatchForm', () => {
     });
 
     expect(mockFetchActiveSeason).toHaveBeenCalled();
-    expect(mockBatchCreateMatches).toHaveBeenCalled();
+    // The chosen night and the row's timeslot go to the date helper...
+    expect(mockCreateDateWithTime).toHaveBeenCalledTimes(1);
+    expect(mockCreateDateWithTime).toHaveBeenCalledWith(chosenNight, '6:00 PM');
+    // ...and the rows saved carry the teams, that date, the court and the season.
+    expect(mockBatchCreateMatches).toHaveBeenCalledTimes(1);
+    expect(mockBatchCreateMatches).toHaveBeenCalledWith([
+      {
+        team1_id: 'team-1',
+        team2_id: 'team-2',
+        date: '2024-01-04T23:30:00.000Z',
+        location: 'Court 1',
+        iscompleted: false,
+        round_number: 0,
+        team1_score: 0,
+        team2_score: 0,
+        team1_game_wins: 0,
+        team2_game_wins: 0,
+        season_id: 'season-1',
+      },
+    ]);
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Matches created' }));
     // Form resets to one empty pair
     expect(result.current.matchPairs).toHaveLength(1);

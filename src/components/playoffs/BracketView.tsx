@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 
 import {
   type BracketViewDisplayBracket,
@@ -24,7 +24,6 @@ interface BracketViewProps {
   bracketId: string;
   bracket?: BracketViewData;
   teams?: PlayoffTeam[];
-  onEditMatch?: (matchId: string) => void;
 }
 
 /** Render, mount and prop-change diagnostics. */
@@ -70,7 +69,6 @@ interface BracketReadyViewProps {
   bracketId: string;
   displayBracket: NonNullable<BracketViewDisplayBracket>;
   displayTeams: PlayoffTeam[];
-  onMatchClick: (matchId: string) => void;
   lastUpdate: Date | null;
   realtimeEnabled: boolean;
 }
@@ -79,7 +77,6 @@ const BracketReadyView: React.FC<BracketReadyViewProps> = ({
   bracketId,
   displayBracket,
   displayTeams,
-  onMatchClick,
   lastUpdate,
   realtimeEnabled,
 }) => {
@@ -101,7 +98,6 @@ const BracketReadyView: React.FC<BracketReadyViewProps> = ({
                 ? displayBracket.teams
                 : displayTeams
             }
-            onMatchClick={onMatchClick}
             refreshSignal={lastUpdate ? lastUpdate.getTime() : null}
             realtimeEnabled={realtimeEnabled}
           />
@@ -119,7 +115,6 @@ const BracketView: React.FC<BracketViewProps> = ({
   bracketId,
   bracket: legacyBracket,
   teams: legacyTeams,
-  onEditMatch,
 }) => {
   useBracketViewLogging(bracketId, legacyBracket, legacyTeams);
 
@@ -136,13 +131,6 @@ const BracketView: React.FC<BracketViewProps> = ({
     realtimeEnabled,
     lastUpdate,
   } = useBracketViewData(bracketId, legacyBracket);
-
-  const handleMatchClick = useCallback(
-    (matchId: string) => {
-      onEditMatch?.(matchId);
-    },
-    [onEditMatch]
-  );
 
   const displayTeams = useMemo(() => {
     return legacyTeams || [];
@@ -205,7 +193,6 @@ const BracketView: React.FC<BracketViewProps> = ({
           bracketId={bracketId}
           displayBracket={displayBracket as NonNullable<typeof displayBracket>}
           displayTeams={displayTeams}
-          onMatchClick={handleMatchClick}
           lastUpdate={lastUpdate}
           realtimeEnabled={realtimeEnabled}
         />

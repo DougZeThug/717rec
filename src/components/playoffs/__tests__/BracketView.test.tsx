@@ -78,16 +78,11 @@ vi.mock('../viewer', () => ({
   BracketsViewerComponent: (props: {
     bracket: { id?: string };
     teams: unknown[];
-    onMatchClick?: (id: string) => void;
     refreshSignal: number | null;
     realtimeEnabled: boolean;
   }) => {
     mocks.viewer(props);
-    return (
-      <div data-testid="viewer" data-bracket-id={props.bracket.id}>
-        <button onClick={() => props.onMatchClick?.('match-1')}>Edit match</button>
-      </div>
-    );
+    return <div data-testid="viewer" data-bracket-id={props.bracket.id} />;
   },
 }));
 
@@ -404,32 +399,12 @@ describe('BracketView', () => {
       expect(lastViewerProps().teams).toEqual(teams);
     });
 
-    it('sends match clicks to onEditMatch', () => {
-      const onEditMatch = vi.fn();
-
-      render(
-        <BracketView bracketId="bracket-1" bracket={legacyBracket()} onEditMatch={onEditMatch} />
-      );
-      fireEvent.click(screen.getByRole('button', { name: 'Edit match' }));
-
-      expect(onEditMatch).toHaveBeenCalledWith('match-1');
-    });
-
-    it('ignores match clicks when there is no onEditMatch', () => {
+    // The viewer opens the score editor on its own, so there is no click handler
+    // to hand it. A leftover one would be a second, silent route to the editor.
+    it('does not hand the viewer a click handler', () => {
       render(<BracketView bracketId="bracket-1" bracket={legacyBracket()} />);
 
-      expect(() =>
-        fireEvent.click(screen.getByRole('button', { name: 'Edit match' }))
-      ).not.toThrow();
-    });
-
-    it('always gives the viewer a click handler, even without onEditMatch, so the live score pop-up can open', () => {
-      // BracketsViewerComponent returns early when it gets no onMatchClick, and
-      // that check sits before the brackets-manager branch that opens the score
-      // editor. A missing handler here would silently break all live score entry.
-      render(<BracketView bracketId="bracket-1" bracket={legacyBracket()} />);
-
-      expect(typeof lastViewerProps().onMatchClick).toBe('function');
+      expect(lastViewerProps()).not.toHaveProperty('onMatchClick');
     });
 
     it('passes the realtime state through', () => {

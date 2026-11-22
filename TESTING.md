@@ -173,23 +173,22 @@ Do not use `pnpm` or `yarn` — neither is installed.
 
 ## Current baseline
 
-Last measured: 2026-08-11.
+Last measured: 2026-11-22.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 70.42%  |
-| Statements | 68.98%  |
-| Functions  | 64.66%  |
-| Branches   | 58.15%  |
+| Lines      | 91.74%  |
+| Statements | 90.19%  |
+| Functions  | 90.00%  |
+| Branches   | 81.41%  |
 
-Measured from a full passing run on 2026-08-11: 511 test files / 3840 tests. The
-suite is larger now: 892 test files / 8,574 tests (15 of them expected-fail cases) as of 2026-11-21.
+Measured from a full passing run on 2026-11-22: 886 test files / 8,515 tests (15 of
+them expected-fail cases).
 
-The overall number is held down by the component layer, which is still uneven
-at 62% lines even after the 2026-08 test expansion. The logic-heavy areas
-(utils, scheduling, rankings, career math) and the service layer are in much
-better shape — services now sit at 89% lines — see the per-area table below.
-As of this ratchet, `src/components/**` and `src/pages/**` have their own
+The component layer sits at about 92% lines and the service layer at about 95%
+(summed from the 2026-11-22 coverage report). The logic-heavy
+areas (utils, scheduling, rankings, career math) are in similar shape. See the
+per-area table below. `src/components/**` and `src/pages/**` have their own
 enforced floors, so the component layer can no longer regress silently behind
 the global aggregate.
 

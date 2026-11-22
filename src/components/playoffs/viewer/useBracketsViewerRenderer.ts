@@ -172,7 +172,6 @@ export const useBracketsViewerRenderer = ({
 }: UseBracketsViewerRendererOptions) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const getPlayoffMatchIdRef = useRef<((id: number) => string | undefined) | null>(null);
   const lastFingerprintRef = useRef<string | null>(null);
 
   // brackets-viewer keeps the handler it was given at render() and nothing else
@@ -220,8 +219,6 @@ export const useBracketsViewerRenderer = ({
         const result = await transformForViewer(bracket);
 
         if (cancelled) return;
-
-        getPlayoffMatchIdRef.current = result.getPlayoffMatchId;
 
         // Validate data structure before rendering
         const matchRows = result.data.matches;
@@ -410,5 +407,5 @@ export const useBracketsViewerRenderer = ({
     };
   }, [bracket, isScriptReady, containerId, refreshKey, containerRef]);
 
-  return { isInitialized, error, getPlayoffMatchIdRef };
+  return { isInitialized, error };
 };

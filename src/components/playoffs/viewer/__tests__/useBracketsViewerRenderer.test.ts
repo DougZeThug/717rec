@@ -304,16 +304,6 @@ describe('useBracketsViewerRenderer', () => {
       expect(typeof config.customRoundName).toBe('function');
     });
 
-    it('stores the viewer-to-playoff match ID mapper on the returned ref', async () => {
-      const transformed = makeResult();
-      mockedAdapter.transformFromSql.mockResolvedValue(transformed);
-      const { result } = renderRenderer({ bracket: makeBracket() });
-
-      await waitFor(() => expect(result.current.isInitialized).toBe(true));
-
-      expect(result.current.getPlayoffMatchIdRef.current).toBe(transformed.getPlayoffMatchId);
-    });
-
     it('dispatches a window resize event after a successful render', async () => {
       const resizeListener = vi.fn();
       window.addEventListener('resize', resizeListener);

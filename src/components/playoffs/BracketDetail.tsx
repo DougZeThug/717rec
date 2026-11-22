@@ -22,7 +22,6 @@ interface BracketDetailProps {
   bracket: PlayoffBracket | null;
   teams: Team[];
   bracketLoading: boolean;
-  onEditMatch?: (matchId: string) => void;
   onDeleteBracket?: (bracketId: string, bracketName: string) => void;
 }
 
@@ -73,7 +72,6 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   bracket,
   teams,
   bracketLoading,
-  onEditMatch,
   onDeleteBracket,
 }) => {
   const { isAdminAccessGranted } = useAdminAccess();
@@ -131,12 +129,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
           </div>
         ) : (
           <>
-            <BracketView
-              bracketId={bracketId}
-              bracket={bracket}
-              teams={teams || []}
-              onEditMatch={isAdminAccessGranted ? onEditMatch : undefined}
-            />
+            <BracketView bracketId={bracketId} bracket={bracket} teams={teams || []} />
 
             <ChampionDisplay championId={bracket.champion} teams={teams} />
           </>
