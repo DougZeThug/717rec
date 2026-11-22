@@ -15,12 +15,6 @@ interface AdminViewProps {
   setBracketDialogOpen: (open: boolean) => void;
   onCreateBracket: () => void;
   onDeleteBracket: (bracketId: string, bracketName: string) => void;
-  /**
-   * Opens the match score editor. Owned by PlayoffPageLayout, which also renders
-   * the dialog this opens — calling usePlayoffHandlers here instead would create a
-   * second, private copy of `editingMatch` that the dialog never reads.
-   */
-  onEditMatch: (matchId: string) => void;
   data: PlayoffPageData;
 }
 
@@ -31,7 +25,6 @@ const AdminView: React.FC<AdminViewProps> = ({
   setBracketDialogOpen: _setBracketDialogOpen,
   onCreateBracket,
   onDeleteBracket,
-  onEditMatch,
   data,
 }) => {
   const [activeTab, setActiveTab] = React.useState(() => {
@@ -99,7 +92,6 @@ const AdminView: React.FC<AdminViewProps> = ({
               bracket={data.bracket as unknown as PlayoffBracket}
               teams={data.teams}
               bracketLoading={data.isLoading}
-              onEditMatch={onEditMatch}
               onDeleteBracket={async (bracketId: string, bracketName: string) => {
                 await onDeleteBracket(bracketId, bracketName);
                 data.setSelectedBracketId(null);

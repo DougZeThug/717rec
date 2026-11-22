@@ -21,7 +21,7 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 // Import after mocks
-import { deleteBracket, updateBracket, updatePlayoffMatchScores } from '../BracketWriteService';
+import { deleteBracket, updateBracket } from '../BracketWriteService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -39,15 +39,6 @@ const writeChain = (result: { data: { id: string } | null; error: unknown }) => 
   const select = vi.fn(() => ({ maybeSingle }));
   const eq = vi.fn(() => ({ select }));
   return { eq, select };
-};
-
-const scores = {
-  team1_score: 2,
-  team2_score: 1,
-  winner_id: 't1',
-  loser_id: 't2',
-  status: 'complete',
-  updated_at: '2026-04-17',
 };
 
 // ─── deleteBracket ────────────────────────────────────────────────────────────
@@ -119,38 +110,5 @@ describe('updateBracket', () => {
     const attempt = updateBracket('gone', { title: 'Renamed' });
     await expect(attempt).rejects.toThrow(BusinessLogicError);
     await expect(attempt).rejects.toThrow(/^Nothing was saved. This bracket/);
-  });
-});
-
-// ─── updatePlayoffMatchScores ─────────────────────────────────────────────────
-
-describe('updatePlayoffMatchScores', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('resolves on success', async () => {
-    const { eq, select } = writeChain({ data: { id: 'm-1' }, error: null });
-    const update = vi.fn(() => ({ eq }));
-    mockFrom.mockReturnValue({ update });
-
-    await expect(updatePlayoffMatchScores('m-1', scores)).resolves.toBeUndefined();
-
-    expect(mockFrom).toHaveBeenCalledWith('playoff_matches');
-    expect(update).toHaveBeenCalledWith(scores);
-    expect(eq).toHaveBeenCalledWith('id', 'm-1');
-    expect(select).toHaveBeenCalledWith('id');
-  });
-
-  it('throws DatabaseError on error', async () => {
-    const { eq } = writeChain({ data: null, error: pgError() });
-    mockFrom.mockReturnValue({ update: () => ({ eq }) });
-    await expect(updatePlayoffMatchScores('m-1', scores)).rejects.toThrow(DatabaseError);
-  });
-
-  it('throws BusinessLogicError when no row was updated', async () => {
-    const { eq } = writeChain({ data: null, error: null });
-    mockFrom.mockReturnValue({ update: () => ({ eq }) });
-    const attempt = updatePlayoffMatchScores('gone', scores);
-    await expect(attempt).rejects.toThrow(BusinessLogicError);
-    await expect(attempt).rejects.toThrow(/^Nothing was saved. This match/);
   });
 });

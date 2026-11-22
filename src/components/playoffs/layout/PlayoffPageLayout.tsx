@@ -9,9 +9,7 @@ import { useBracketsManagerRealtime } from '@/hooks/brackets/useBracketsManagerR
 import { useChallongeFallbackConfig } from '@/hooks/useChallongeFallback';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import type { AsyncVoidCallback } from '@/types/callbacks';
 
-import { usePlayoffHandlers } from '../hooks/usePlayoffHandlers';
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 import { usePlayoffViewState } from '../hooks/usePlayoffViewState';
 import { useViewSelection } from '../hooks/useViewSelection';
@@ -22,8 +20,7 @@ interface PlayoffPageLayoutProps {
 }
 
 const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
-  const handlers = usePlayoffHandlers(data);
-  const view = usePlayoffViewState(data, handlers);
+  const view = usePlayoffViewState(data);
   const selectedView = useViewSelection(data);
   const { shouldApplyWinterBase, winterClass } = useSeasonalTheme();
 
@@ -36,31 +33,6 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
   const { data: challongeConfig } = useChallongeFallbackConfig();
   const showChallongeFallback =
     !data.isLoading && !data.selectedBracketId && challongeConfig?.enabled === true;
-
-  // Create a wrapper function that includes refetchBrackets with all 7 parameters
-  const handleSaveMatchScore = React.useCallback(
-    async (
-      matchId: string,
-      team1Score: number,
-      team2Score: number,
-      games: { team1Score: number; team2Score: number }[],
-      team1GameWins: number,
-      team2GameWins: number,
-      _refetchBrackets: AsyncVoidCallback
-    ) => {
-      await handlers.handleSaveMatchScore(
-        matchId,
-        team1Score,
-        team2Score,
-        games,
-        team1GameWins,
-        team2GameWins,
-        data.refetchBrackets
-      );
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers object identity churns each render
-    [handlers.handleSaveMatchScore, data.refetchBrackets]
-  );
 
   return (
     <div
@@ -96,7 +68,6 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
           setBracketDialogOpen={view.setBracketDialogOpen}
           onCreateBracket={view.handleCreateBracket}
           onDeleteBracket={view.handleDeleteBracket}
-          onEditMatch={handlers.handleEditMatch}
           data={data}
         />
 
@@ -120,11 +91,6 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
         teams={data.teams}
         onBracketCreated={data.handleBracketCreated}
         seasonId={data.selectedSeasonId}
-        // Match editor props
-        editingMatch={handlers.editingMatch}
-        isQuickEdit={handlers.isQuickEdit}
-        onCloseMatchEditor={handlers.handleCloseMatchEditor}
-        onSaveMatchScore={handleSaveMatchScore}
         // Delete bracket props
         deletingBracket={view.deletingBracket}
         setDeletingBracket={view.setDeletingBracket}

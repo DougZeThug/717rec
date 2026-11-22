@@ -62,7 +62,6 @@ const renderTeamsTab = (overrides: Partial<PlayoffPageData>) => {
         setBracketDialogOpen={vi.fn()}
         onCreateBracket={vi.fn()}
         onDeleteBracket={vi.fn()}
-        onEditMatch={vi.fn()}
         data={makeData(overrides)}
       />
     </MemoryRouter>

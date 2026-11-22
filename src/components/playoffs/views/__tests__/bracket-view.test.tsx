@@ -35,7 +35,6 @@ let mockBracketData = {
   loadingProgress: { label: 'Loading bracket', percent: 50 },
 };
 
-const mockHandleEditMatch = vi.fn();
 const mockBracketsViewer = vi.fn(
   ({
     bracket,
@@ -276,7 +275,6 @@ describe('bracket display and admin interaction views', () => {
         setBracketDialogOpen={vi.fn()}
         onCreateBracket={vi.fn()}
         onDeleteBracket={vi.fn()}
-        onEditMatch={mockHandleEditMatch}
         data={makeAdminData({ isLoading: true })}
       />
     );
@@ -289,7 +287,6 @@ describe('bracket display and admin interaction views', () => {
         setBracketDialogOpen={vi.fn()}
         onCreateBracket={vi.fn()}
         onDeleteBracket={vi.fn()}
-        onEditMatch={mockHandleEditMatch}
         data={makeAdminData({ availableDivisions: [], typesafeBracketsByDivision: {} })}
       />
     );
@@ -311,7 +308,6 @@ describe('bracket display and admin interaction views', () => {
           setBracketDialogOpen={vi.fn()}
           onCreateBracket={vi.fn()}
           onDeleteBracket={vi.fn()}
-          onEditMatch={mockHandleEditMatch}
           data={makeAdminData({ divisionsError: 'divisions unavailable' })}
         />
       </MemoryRouter>
@@ -320,14 +316,13 @@ describe('bracket display and admin interaction views', () => {
     expect(await screen.findByText('divisions unavailable')).toBeInTheDocument();
   });
 
-  it('renders the selected AdminView bracket with admin actions, score editing, and champion state', () => {
+  it('renders the selected AdminView bracket with admin actions and champion state', () => {
     render(
       <AdminView
         bracketDialogOpen={false}
         setBracketDialogOpen={vi.fn()}
         onCreateBracket={vi.fn()}
         onDeleteBracket={vi.fn()}
-        onEditMatch={mockHandleEditMatch}
         data={makeAdminData({
           selectedBracketId: 'bracket-1',
           bracket: { ...bracket, state: 'completed', champion: 'team-1' },
@@ -338,11 +333,5 @@ describe('bracket display and admin interaction views', () => {
     expect(screen.getAllByText('Rec Championship').length).toBeGreaterThan(0);
     expect(screen.getByText('Completed')).toBeInTheDocument();
     expect(screen.getByTestId('champion-display')).toHaveTextContent('Champion: Alpha');
-
-    // Proves the onEditMatch prop reaches the viewer. PlayoffPageLayout owns the
-    // real handler; AdminView must not build its own, or the editor dialog it
-    // opens would watch a different copy of `editingMatch` than the one it sets.
-    fireEvent.click(screen.getByRole('button', { name: 'Edit match score' }));
-    expect(mockHandleEditMatch).toHaveBeenCalledWith('match-1');
   });
 });

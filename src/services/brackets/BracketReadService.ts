@@ -6,7 +6,7 @@
  * - BracketSelectorService: bracket selector dropdown queries
  * - BracketInfoService: bracket info, overview, division joins
  * - BracketParticipantService: participants, teams, seed validation
- * - BracketMatchReadService: playoff & brackets-manager match queries
+ * - BracketMatchReadService: brackets-manager match queries
  * - BracketStageService: stage, group, participant association queries
  * - BracketStandingsService: final standings
  */
@@ -17,16 +17,9 @@ export {
   fetchBracketsOverview,
   fetchBracketWithDivision,
 } from './read/BracketInfoService';
-export {
-  fetchBmMatchData,
-  fetchBmMatchWithStage,
-  fetchBracketsManagerMatchData,
-  fetchPlayoffMatchTeams,
-  fetchPlayoffMatchWithBracket,
-} from './read/BracketMatchReadService';
+export { fetchBracketsManagerMatchData } from './read/BracketMatchReadService';
 export {
   fetchBracketParticipants,
-  fetchParticipantsByIds,
   fetchPlayoffTeams,
   fetchTeamsByIds,
   validateSeeds,

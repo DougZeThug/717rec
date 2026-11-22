@@ -341,28 +341,16 @@ outside it, Escape or Cancel asks first, and Save never asks. See
 [`read-a-bracket.md`](../playoffs/read-a-bracket.md). Nothing else here is. The create form, the
 seeding order, and an unsaved Challonge row are all lost on close.
 
-**Optimistic updates and rollback.** Creating, seeding and deleting a bracket all
-wait; a failed creation tries to delete its own half-made bracket row. **Saving a
-match score does not wait.** The editor closes at once and the bracket shows the
-new score before the write has landed, which is what
-[`the-playoffs-page.md`](../playoffs/the-playoffs-page.md) points here for.
-
-If that write fails, or takes more than 15 seconds, the bracket goes back to the
-last score the league actually holds and a red toast says so. That is true even
-when the same match was saved twice in a row before either write landed: the
-score to go back to is taken once, when the first save starts, and it moves
-forward as each save comes back successful — so a second save failing after the
-first succeeded returns to what the first one wrote, not to what was on screen
-before either started. Leaving the page mid-save does the same rather than
-leaving an unwritten score behind, which matters because bracket data is held for
-five minutes and is not re-read on arrival.
-
-On a bracket not built with the current engine, the score write also fails when
-the database refuses it and says nothing (the match was deleted, or admin access
-was removed). That counts as a failed write: the bracket goes back and the red
-toast reads "Score update failed: Nothing was saved. This match may have been
-deleted, or your admin access may have changed. Refresh the page and try again."
-The games are not written after a refused score.
+**Optimistic updates and rollback.** None. Creating, seeding and deleting a bracket
+all wait; a failed creation tries to delete its own half-made bracket row.
+**Saving a match score waits too.** The Save button shows a spinner and is
+disabled, and the editor stays open until the write lands. The editor then
+re-reads the bracket, raises a "Match Updated" toast and closes. If the write fails, the editor stays open with
+the typed score and a red toast gives the reason, so the admin can fix it and
+save again. A tied score is refused before anything is written: the toast reads
+"Playoff matches cannot end tied. Please enter a decisive score." The bracket
+never shows a score the league does not hold. See
+[`the-playoffs-page.md`](../playoffs/the-playoffs-page.md).
 
 **Realtime.** The matches inside an open bracket update live. Nothing else on
 any of these three screens does.

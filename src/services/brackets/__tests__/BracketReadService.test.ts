@@ -24,8 +24,6 @@ vi.mock('@/utils/logger', () => ({
 
 // Import after mocks
 import {
-  fetchBmMatchData,
-  fetchBmMatchWithStage,
   fetchBracketInfo,
   fetchBracketParticipants,
   fetchBracketsForSelector,
@@ -34,9 +32,6 @@ import {
   fetchBracketWithDivision,
   fetchFinalStandings,
   fetchGroupsAndMatches,
-  fetchParticipantsByIds,
-  fetchPlayoffMatchTeams,
-  fetchPlayoffMatchWithBracket,
   fetchPlayoffTeams,
   fetchStageAndParticipants,
   fetchTeamsByIds,
@@ -294,172 +289,6 @@ describe('fetchPlayoffTeams', () => {
       return { select: () => Promise.resolve({ data: [], error: null }) };
     });
     await expect(fetchPlayoffTeams()).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchBmMatchWithStage ────────────────────────────────────────────────────
-
-describe('fetchBmMatchWithStage', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns match data with its round row on success', async () => {
-    const row = {
-      id: 1,
-      stage_id: 10,
-      group_id: 1,
-      round_id: 1296,
-      number: 1,
-      status: 'pending',
-      opponent1_id: 1,
-      opponent1_score: null,
-      opponent1_result: null,
-      opponent2_id: 2,
-      opponent2_score: null,
-      opponent2_result: null,
-      child_count: 0,
-      stage: {
-        id: 10,
-        name: 'Stage 1',
-        type: 'single_elimination',
-        tournament_id: 'b-1',
-        number: 1,
-        settings: {},
-      },
-      round: { id: 1296, number: 2 },
-    };
-    let selected = '';
-    mockFrom.mockReturnValue({
-      select: (columns: string) => {
-        selected = columns;
-        return { eq: () => ({ single: () => Promise.resolve({ data: row, error: null }) }) };
-      },
-    });
-    const result = await fetchBmMatchWithStage(1);
-    expect(result).toMatchObject({ id: 1, round: { id: 1296, number: 2 } });
-    // round_id carries two foreign keys to round (fk_match_round and
-    // match_round_id_fkey), so an unnamed embed is ambiguous and PostgREST
-    // refuses it. The hint is the fix, not decoration.
-    expect(selected).toContain('round:round!fk_match_round(id, number)');
-  });
-
-  it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
-      }),
-    });
-    await expect(fetchBmMatchWithStage(1)).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchPlayoffMatchWithBracket ─────────────────────────────────────────────
-
-describe('fetchPlayoffMatchWithBracket', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns match data on success', async () => {
-    const row = {
-      id: 'm-1',
-      bracket_id: 'b-1',
-      bracket: { id: 'b-1', uses_brackets_manager: false },
-      playoff_games: [],
-    };
-    mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: row, error: null }) }) }),
-    });
-    const result = await fetchPlayoffMatchWithBracket('m-1');
-    expect(result).toMatchObject({ id: 'm-1' });
-  });
-
-  it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
-      }),
-    });
-    await expect(fetchPlayoffMatchWithBracket('m-1')).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchBmMatchData ─────────────────────────────────────────────────────────
-
-describe('fetchBmMatchData', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns match opponent data on success', async () => {
-    const row = { opponent1_id: 1, opponent2_id: 2, stage_id: 10 };
-    mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: row, error: null }) }) }),
-    });
-    const result = await fetchBmMatchData(1);
-    expect(result).toMatchObject({ opponent1_id: 1 });
-  });
-
-  it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
-      }),
-    });
-    await expect(fetchBmMatchData(1)).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchParticipantsByIds ───────────────────────────────────────────────────
-
-describe('fetchParticipantsByIds', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns participants on success', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        in: () =>
-          Promise.resolve({ data: [{ id: 1, name: 'Eagles', tournament_id: 'b-1' }], error: null }),
-      }),
-    });
-    const result = await fetchParticipantsByIds([1]);
-    expect(result).toHaveLength(1);
-  });
-
-  it('returns empty array when no data', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({ in: () => Promise.resolve({ data: null, error: null }) }),
-    });
-    expect(await fetchParticipantsByIds([1])).toEqual([]);
-  });
-
-  it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({ in: () => Promise.resolve({ data: null, error: pgError() }) }),
-    });
-    await expect(fetchParticipantsByIds([1])).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchPlayoffMatchTeams ───────────────────────────────────────────────────
-
-describe('fetchPlayoffMatchTeams', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns team ids on success', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          single: () => Promise.resolve({ data: { team1_id: 't1', team2_id: 't2' }, error: null }),
-        }),
-      }),
-    });
-    const result = await fetchPlayoffMatchTeams('m-1');
-    expect(result).toMatchObject({ team1_id: 't1' });
-  });
-
-  it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
-      }),
-    });
-    await expect(fetchPlayoffMatchTeams('m-1')).rejects.toThrow(DatabaseError);
   });
 });
 

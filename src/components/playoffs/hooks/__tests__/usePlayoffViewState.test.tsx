@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BusinessLogicError } from '@/types/errors';
 
-import type { usePlayoffHandlers } from '../usePlayoffHandlers';
 import type { PlayoffPageData } from '../usePlayoffPageData';
 import { usePlayoffViewState } from '../usePlayoffViewState';
 
@@ -26,10 +25,6 @@ describe('usePlayoffViewState', () => {
     refetchBrackets: vi.fn() as MockFn,
   });
 
-  const createHandlers = () => ({
-    handleBracketCreatedWithNavigation: vi.fn() as MockFn,
-  });
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -40,12 +35,7 @@ describe('usePlayoffViewState', () => {
     data.deleteBracket.mockResolvedValue(undefined); // skipcq: JS-W1042
     data.refetchBrackets.mockResolvedValue(undefined); // skipcq: JS-W1042
 
-    const { result } = renderHook(() =>
-      usePlayoffViewState(
-        data as unknown as PlayoffPageData,
-        createHandlers() as unknown as ReturnType<typeof usePlayoffHandlers>
-      )
-    );
+    const { result } = renderHook(() => usePlayoffViewState(data as unknown as PlayoffPageData));
 
     act(() => {
       result.current.handleDeleteBracket('bracket-1', 'Spring Playoffs');
@@ -69,12 +59,7 @@ describe('usePlayoffViewState', () => {
     const cause = new BusinessLogicError('Nothing was deleted. This bracket may already be gone.');
     data.deleteBracket.mockRejectedValue(new Error('wrapped', { cause }));
 
-    const { result } = renderHook(() =>
-      usePlayoffViewState(
-        data as unknown as PlayoffPageData,
-        createHandlers() as unknown as ReturnType<typeof usePlayoffHandlers>
-      )
-    );
+    const { result } = renderHook(() => usePlayoffViewState(data as unknown as PlayoffPageData));
 
     act(() => {
       result.current.handleDeleteBracket('bracket-1', 'Spring Playoffs');
@@ -99,12 +84,7 @@ describe('usePlayoffViewState', () => {
     const data = createData();
     data.deleteBracket.mockRejectedValue(new Error('Delete failed'));
 
-    const { result } = renderHook(() =>
-      usePlayoffViewState(
-        data as unknown as PlayoffPageData,
-        createHandlers() as unknown as ReturnType<typeof usePlayoffHandlers>
-      )
-    );
+    const { result } = renderHook(() => usePlayoffViewState(data as unknown as PlayoffPageData));
 
     act(() => {
       result.current.handleDeleteBracket('bracket-1', 'Spring Playoffs');
@@ -129,10 +109,9 @@ describe('usePlayoffViewState', () => {
   describe('when admin rights are lost', () => {
     const renderAs = (isAdmin: boolean) => {
       const data = { ...createData(), isAdmin };
-      const handlers = createHandlers() as unknown as ReturnType<typeof usePlayoffHandlers>;
       return renderHook(
         (props: { data: typeof data }) =>
-          usePlayoffViewState(props.data as unknown as PlayoffPageData, handlers),
+          usePlayoffViewState(props.data as unknown as PlayoffPageData),
         { initialProps: { data } }
       );
     };
@@ -171,12 +150,7 @@ describe('usePlayoffViewState', () => {
     data.deleteBracket.mockResolvedValue(undefined); // skipcq: JS-W1042
     data.refetchBrackets.mockRejectedValue(new Error('Refetch failed'));
 
-    const { result } = renderHook(() =>
-      usePlayoffViewState(
-        data as unknown as PlayoffPageData,
-        createHandlers() as unknown as ReturnType<typeof usePlayoffHandlers>
-      )
-    );
+    const { result } = renderHook(() => usePlayoffViewState(data as unknown as PlayoffPageData));
 
     act(() => {
       result.current.handleDeleteBracket('bracket-1', 'Spring Playoffs');
