@@ -16,8 +16,9 @@
  * cache in divisionWeightsCache.
  *
  * - The value must stay 0.85.
- * - The value must stay BELOW 0.89. That is the competitive-playoff threshold in
- *   calculatePlayoffStats.ts and teamSeasonStats/calculations.ts, and in SQL.
+ * - The value must stay BELOW 0.89. That is COMPETITIVE_PLAYOFF_MIN_WEIGHT
+ *   (playoffTierCutoffs.ts), used by calculatePlayoffStats.ts and
+ *   teamSeasonStats/calculations.ts, and it has a copy in SQL.
  * - Two applied migrations have a stale path comment for this constant. A
  *   migration that has run cannot be edited.
  * - The match predictions keep their own copy in

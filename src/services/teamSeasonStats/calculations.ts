@@ -1,5 +1,9 @@
 import { DivisionSeasonRecord, SeasonBreakdown } from '@/types/teamAdvancedStats';
 import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
+import {
+  COMPETITIVE_PLAYOFF_MIN_WEIGHT,
+  INTERMEDIATE_PLAYOFF_MIN_WEIGHT,
+} from '@/utils/rankingUtils/playoffTierCutoffs';
 
 import type { MatchRecord, PlayoffMatchRecord } from './types';
 
@@ -115,9 +119,10 @@ const getRegularOpponentId = (match: MatchRecord, teamId: string) =>
 
 /** Maps playoff bracket division weight to the corresponding division tier bucket. */
 const getPlayoffDivisionTier = (match: PlayoffMatchRecord): DivisionTier => {
+  // `??` keeps a stored 0 (Recreational). Career uses `||` (0 becomes 0.85). Do not unify.
   const bracketWeight = match.bracketInfo?.division_weight ?? DEFAULT_DIVISION_WEIGHT;
-  if (bracketWeight >= 0.89) return 'competitive';
-  if (bracketWeight >= 0.4) return 'intermediate';
+  if (bracketWeight >= COMPETITIVE_PLAYOFF_MIN_WEIGHT) return 'competitive';
+  if (bracketWeight >= INTERMEDIATE_PLAYOFF_MIN_WEIGHT) return 'intermediate';
   return 'recreational';
 };
 
