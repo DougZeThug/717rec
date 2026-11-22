@@ -148,12 +148,17 @@ const ChallongeFallbackSection: React.FC = () => {
 
   const handleSaveConfig = async () => {
     if (!config) return;
-    await updateConfig({
-      id: config.id,
-      enabled,
-      header_title: title,
-      header_subtitle: subtitle,
-    });
+    try {
+      await updateConfig({
+        id: config.id,
+        enabled,
+        header_title: title,
+        header_subtitle: subtitle,
+      });
+    } catch {
+      // The mutation's onError already shows the red toast. Without this catch
+      // the rejection would be unhandled, because the click handler ignores the promise.
+    }
   };
 
   const handleAddRow = () => {
@@ -175,19 +180,24 @@ const ChallongeFallbackSection: React.FC = () => {
 
   const handleSaveRow = async (row: DraftRow) => {
     if (!row.title.trim() || !row.slug.trim()) return;
-    if (row.isNew) {
-      await createBracket({
-        title: row.title.trim(),
-        slug: row.slug.trim(),
-        sort_order: row.sort_order,
-      });
-    } else {
-      await updateBracket({
-        id: row.id,
-        title: row.title.trim(),
-        slug: row.slug.trim(),
-        sort_order: row.sort_order,
-      });
+    try {
+      if (row.isNew) {
+        await createBracket({
+          title: row.title.trim(),
+          slug: row.slug.trim(),
+          sort_order: row.sort_order,
+        });
+      } else {
+        await updateBracket({
+          id: row.id,
+          title: row.title.trim(),
+          slug: row.slug.trim(),
+          sort_order: row.sort_order,
+        });
+      }
+    } catch {
+      // The mutation's onError already shows the red toast. Without this catch
+      // the rejection would be unhandled, because the click handler ignores the promise.
     }
   };
 
