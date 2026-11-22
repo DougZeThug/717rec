@@ -66,8 +66,16 @@ vi.mock('@/components/playoffs/admin/EditMatchParticipantsDialog', () => ({
 // The admin-only actions (losers-bracket swap, Edit teams) need auth and
 // react-query (eligibility) — stub them; tests default to "not an admin".
 let mockIsAdmin = false;
+let mockAdminLoading = false;
+let mockAccessCheckFailed = false;
+const mockRetryAccessCheck = vi.fn();
 vi.mock('@/hooks/useAdminAccess', () => ({
-  useAdminAccess: () => ({ isAdminAccessGranted: mockIsAdmin }),
+  useAdminAccess: () => ({
+    isAdminAccessGranted: mockIsAdmin,
+    isLoading: mockAdminLoading,
+    accessCheckFailed: mockAccessCheckFailed,
+    retryAccessCheck: mockRetryAccessCheck,
+  }),
 }));
 
 let mockEditTeamsEligibility: { ok: boolean; reason: string | null } | undefined;
@@ -86,8 +94,31 @@ vi.mock('@/components/playoffs/admin/SwapLoserSlotsDialog', () => ({
 }));
 
 vi.mock('@/components/playoffs/match-score-editor/ByeMatchEditor', () => ({
-  ByeMatchEditor: ({ onClose, onEditTeams }: { onClose: () => void; onEditTeams?: () => void }) => (
-    <div data-testid="bye-match-editor" data-has-edit-teams={String(Boolean(onEditTeams))}>
+  ByeMatchEditor: ({
+    onClose,
+    onEditTeams,
+    canEdit,
+    accessLoading,
+    accessCheckFailed,
+    onRetryAccessCheck,
+  }: {
+    onClose: () => void;
+    onEditTeams?: () => void;
+    canEdit: boolean;
+    accessLoading?: boolean;
+    accessCheckFailed?: boolean;
+    onRetryAccessCheck?: () => void;
+  }) => (
+    <div
+      data-testid="bye-match-editor"
+      data-has-edit-teams={String(Boolean(onEditTeams))}
+      data-can-edit={String(canEdit)}
+      data-access-loading={String(Boolean(accessLoading))}
+      data-access-failed={String(Boolean(accessCheckFailed))}
+    >
+      <button data-testid="bye-retry" onClick={onRetryAccessCheck}>
+        Retry
+      </button>
       <button data-testid="bye-close" onClick={onClose}>
         Close
       </button>
@@ -106,7 +137,15 @@ vi.mock('@/components/playoffs/match-score-editor/RegularMatchEditor', () => ({
     editTeamsBlockedReason,
     onEditTeams,
     onClose,
+    canEdit,
+    accessLoading,
+    accessCheckFailed,
+    onRetryAccessCheck,
   }: {
+    canEdit: boolean;
+    accessLoading?: boolean;
+    accessCheckFailed?: boolean;
+    onRetryAccessCheck?: () => void;
     opponent1Name: string;
     opponent2Name: string;
     canEditTeams: boolean;
@@ -119,7 +158,13 @@ vi.mock('@/components/playoffs/match-score-editor/RegularMatchEditor', () => ({
       data-can-edit-teams={String(canEditTeams)}
       data-edit-teams-reason={editTeamsBlockedReason ?? ''}
       data-has-edit-teams={String(Boolean(onEditTeams))}
+      data-can-edit={String(canEdit)}
+      data-access-loading={String(Boolean(accessLoading))}
+      data-access-failed={String(Boolean(accessCheckFailed))}
     >
+      <button data-testid="regular-retry" onClick={onRetryAccessCheck}>
+        Retry
+      </button>
       <span data-testid="opp1-name">{opponent1Name}</span>
       <span data-testid="opp2-name">{opponent2Name}</span>
       <button data-testid="edit-teams-btn" onClick={onEditTeams}>
@@ -185,6 +230,8 @@ const defaultProps = {
 describe('BracketsManagerMatchEditor', () => {
   beforeEach(() => {
     mockIsAdmin = false;
+    mockAdminLoading = false;
+    mockAccessCheckFailed = false;
     mockEditTeamsEligibility = undefined;
     vi.clearAllMocks();
     mockEditorState = { ...defaultEditorState };
@@ -310,6 +357,69 @@ describe('BracketsManagerMatchEditor', () => {
       mockEditorState = { ...defaultEditorState, matchData: makeMatchData({ opponent2: null }) };
       render(<BracketsManagerMatchEditor {...defaultProps} />);
       expect(screen.getByTestId('bye-match-editor').dataset.hasEditTeams).toBe('true');
+    });
+  });
+
+  // Only an admin can save. The database refuses anyone else's write without an
+  // error, so the editors get canEdit and show a read-only view instead of a
+  // Save that would report success and bring the old score back.
+  describe('who can edit', () => {
+    it.each([
+      ['regular', makeMatchData(), 'regular-match-editor'],
+      ['BYE', makeMatchData({ opponent2: null }), 'bye-match-editor'],
+    ])('lets an admin edit a %s match', (_name, matchData, testId) => {
+      mockIsAdmin = true;
+      mockEditorState = { ...defaultEditorState, matchData };
+      render(<BracketsManagerMatchEditor {...defaultProps} />);
+
+      expect(screen.getByTestId(testId).dataset.canEdit).toBe('true');
+      expect(screen.getByTestId(testId).dataset.accessLoading).toBe('false');
+      expect(screen.getByTestId(testId).dataset.accessFailed).toBe('false');
+    });
+
+    it.each([
+      ['regular', makeMatchData(), 'regular-match-editor'],
+      ['BYE', makeMatchData({ opponent2: null }), 'bye-match-editor'],
+    ])('makes a %s match read-only for a non-admin', (_name, matchData, testId) => {
+      mockEditorState = { ...defaultEditorState, matchData };
+      render(<BracketsManagerMatchEditor {...defaultProps} />);
+
+      expect(screen.getByTestId(testId).dataset.canEdit).toBe('false');
+      expect(screen.getByTestId(testId).dataset.accessLoading).toBe('false');
+      expect(screen.getByTestId(testId).dataset.accessFailed).toBe('false');
+    });
+
+    it('is read-only, and tells the editor the check is still running, while access loads', () => {
+      mockAdminLoading = true;
+      mockEditorState = { ...defaultEditorState, matchData: makeMatchData() };
+      render(<BracketsManagerMatchEditor {...defaultProps} />);
+
+      const editor = screen.getByTestId('regular-match-editor');
+      expect(editor.dataset.canEdit).toBe('false');
+      expect(editor.dataset.accessLoading).toBe('true');
+    });
+
+    it('is read-only when the admin check failed, and Try again retries the check', () => {
+      mockAccessCheckFailed = true;
+      mockEditorState = { ...defaultEditorState, matchData: makeMatchData() };
+      render(<BracketsManagerMatchEditor {...defaultProps} />);
+
+      const editor = screen.getByTestId('regular-match-editor');
+      expect(editor.dataset.canEdit).toBe('false');
+      expect(editor.dataset.accessFailed).toBe('true');
+
+      fireEvent.click(screen.getByTestId('regular-retry'));
+      expect(mockRetryAccessCheck).toHaveBeenCalledTimes(1);
+    });
+
+    it('passes the retry to a BYE match editor too', () => {
+      mockAccessCheckFailed = true;
+      mockEditorState = { ...defaultEditorState, matchData: makeMatchData({ opponent2: null }) };
+      render(<BracketsManagerMatchEditor {...defaultProps} />);
+
+      expect(screen.getByTestId('bye-match-editor').dataset.accessFailed).toBe('true');
+      fireEvent.click(screen.getByTestId('bye-retry'));
+      expect(mockRetryAccessCheck).toHaveBeenCalledTimes(1);
     });
   });
 

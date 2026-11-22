@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { MatchStatusBadge } from './MatchStatusBadge';
+import { GamesList, ReadOnlyRegularView } from './ReadOnlyMatchViews';
 
 interface RegularMatchEditorProps {
   opponent1Name: string;
@@ -36,6 +37,11 @@ interface RegularMatchEditorProps {
   /** Admin-only, losers bracket only: move a team into a sibling match. */
   onSwapTeams?: () => void;
   status?: number;
+  /** Only an admin can save. Everyone else gets a read-only view with no Save. */
+  canEdit: boolean;
+  accessLoading?: boolean;
+  accessCheckFailed?: boolean;
+  onRetryAccessCheck?: () => void;
 }
 
 export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
@@ -54,7 +60,30 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
   editTeamsBlockedReason,
   onSwapTeams,
   status,
+  canEdit,
+  accessLoading,
+  accessCheckFailed,
+  onRetryAccessCheck,
 }) => {
+  // Scores as plain text, not disabled boxes: nothing here looks like a form
+  // that is about to fail to save.
+  if (!canEdit) {
+    return (
+      <ReadOnlyRegularView
+        opponent1Name={opponent1Name}
+        opponent2Name={opponent2Name}
+        opponent1Score={opponent1Score}
+        opponent2Score={opponent2Score}
+        games={games}
+        status={status}
+        onClose={onClose}
+        accessLoading={accessLoading}
+        accessCheckFailed={accessCheckFailed}
+        onRetryAccessCheck={onRetryAccessCheck}
+      />
+    );
+  }
+
   return (
     <DialogContent className="sm:max-w-[500px]">
       <DialogHeader>
@@ -96,21 +125,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
         </div>
 
         {/* Game Details (Read-only display) */}
-        {games.length > 0 && (
-          <div className="space-y-2">
-            <Label>Games</Label>
-            <div className="space-y-1 text-sm text-muted-foreground">
-              {games.map((game) => (
-                <div key={game.id} className="flex justify-between">
-                  <span>Game {game.number}:</span>
-                  <span>
-                    {game.opponent1_score ?? '-'} - {game.opponent2_score ?? '-'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <GamesList games={games} />
       </div>
 
       {/* Wraps on a narrow phone, so the row never scrolls sideways; ml-auto

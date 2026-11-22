@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 import { MatchStatusBadge } from './MatchStatusBadge';
+import { ReadOnlyByeView } from './ReadOnlyMatchViews';
 import type { ByeEligibility } from './useMatchEditorState';
 
 interface ByeMatchEditorProps {
@@ -37,6 +38,11 @@ interface ByeMatchEditorProps {
   /** Why Edit teams is disabled, shown as text (tooltips don't show on phones). */
   editTeamsBlockedReason?: string | null;
   status?: number;
+  /** Only an admin can change a BYE match. Everyone else gets a read-only view. */
+  canEdit: boolean;
+  accessLoading?: boolean;
+  accessCheckFailed?: boolean;
+  onRetryAccessCheck?: () => void;
 }
 
 interface ByeToggleButtonProps {
@@ -266,7 +272,28 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
   canEditTeams,
   editTeamsBlockedReason,
   status,
+  canEdit,
+  accessLoading,
+  accessCheckFailed,
+  onRetryAccessCheck,
 }) => {
+  // Scores as plain text, and no status buttons: Unlock, Revert and Reopen
+  // change the bracket, so they are for admins only.
+  if (!canEdit) {
+    return (
+      <ReadOnlyByeView
+        winnerName={byeWinner.name}
+        winnerScore={hasOpponent1 ? opponent1Score : opponent2Score}
+        byeEligible={byeEligible}
+        status={status}
+        onClose={onClose}
+        accessLoading={accessLoading}
+        accessCheckFailed={accessCheckFailed}
+        onRetryAccessCheck={onRetryAccessCheck}
+      />
+    );
+  }
+
   return (
     <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto">
       <DialogHeader>

@@ -17,11 +17,15 @@ import { Badge } from '@/components/ui/badge';
  */
 interface MatchStatusBadgeProps {
   status: number | undefined;
+  /** A person who cannot save scores: no "Editable now" and no "Saving will..." wording. */
+  readOnly?: boolean;
 }
 
 interface StatusDisplay {
   label: string;
   description: string;
+  /** Wording for someone who cannot save, where `description` talks about saving or editing. */
+  readOnlyDescription?: string;
   Icon: React.ComponentType<{ className?: string }>;
   variant: 'default' | 'secondary' | 'destructive' | 'outline';
   editable: boolean;
@@ -35,6 +39,7 @@ const getStatusDisplay = (status: number | undefined): StatusDisplay => {
         label: 'Locked',
         description:
           'Earlier matches feeding into this one have not finished yet. Saving will be allowed once both teams are confirmed.',
+        readOnlyDescription: 'Earlier matches feeding into this one have not finished yet.',
         Icon: Lock,
         variant: 'outline',
         editable: false,
@@ -44,6 +49,7 @@ const getStatusDisplay = (status: number | undefined): StatusDisplay => {
         label: 'Waiting',
         description:
           'The bracket has not promoted this match to Ready yet. If both teams are shown above, saving will unlock it automatically.',
+        readOnlyDescription: 'The bracket has not promoted this match to Ready yet.',
         Icon: Clock,
         variant: 'outline',
         editable: true,
@@ -68,6 +74,7 @@ const getStatusDisplay = (status: number | undefined): StatusDisplay => {
       return {
         label: 'Completed',
         description: 'Final score recorded — can still be edited',
+        readOnlyDescription: 'Final score recorded',
         Icon: CheckCircle2,
         variant: 'default',
         editable: true,
@@ -77,6 +84,7 @@ const getStatusDisplay = (status: number | undefined): StatusDisplay => {
         label: 'Archived',
         description:
           'A later round has progressed. Saving will temporarily unlock this match so the score can be corrected.',
+        readOnlyDescription: 'A later round has progressed after this match.',
         Icon: Lock,
         variant: 'destructive',
         editable: true,
@@ -93,8 +101,9 @@ const getStatusDisplay = (status: number | undefined): StatusDisplay => {
 };
 
 /** Shows a bracket match's status badge plus whether it can be edited and why. */
-export const MatchStatusBadge: React.FC<MatchStatusBadgeProps> = ({ status }) => {
-  const { label, description, Icon, variant, editable } = getStatusDisplay(status);
+export const MatchStatusBadge: React.FC<MatchStatusBadgeProps> = ({ status, readOnly = false }) => {
+  const { label, description, readOnlyDescription, Icon, variant, editable } =
+    getStatusDisplay(status);
 
   return (
     <div className="flex flex-col gap-1.5 rounded-md border border-border bg-muted/40 p-3">
@@ -103,15 +112,19 @@ export const MatchStatusBadge: React.FC<MatchStatusBadgeProps> = ({ status }) =>
           <Icon className="size-3" />
           {label}
         </Badge>
-        <span
-          className={`text-xs font-medium ${
-            editable ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
-          }`}
-        >
-          {editable ? '• Editable now' : '• Not editable yet'}
-        </span>
+        {!readOnly && (
+          <span
+            className={`text-xs font-medium ${
+              editable ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
+            }`}
+          >
+            {editable ? '• Editable now' : '• Not editable yet'}
+          </span>
+        )}
       </div>
-      <p className="text-xs text-muted-foreground leading-snug">{description}</p>
+      <p className="text-xs text-muted-foreground leading-snug">
+        {readOnly ? (readOnlyDescription ?? description) : description}
+      </p>
     </div>
   );
 };

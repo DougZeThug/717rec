@@ -31,6 +31,7 @@ describe('RegularMatchEditor', () => {
     isSaving: false,
     onSave: vi.fn(),
     onClose: vi.fn(),
+    canEdit: true,
   };
 
   beforeEach(() => {
@@ -129,5 +130,114 @@ describe('RegularMatchEditor', () => {
     fireEvent.change(input, { target: { value: '' } });
 
     expect(defaultProps.setOpponent1Score).toHaveBeenLastCalledWith(0);
+  });
+
+  describe('admin view', () => {
+    it('shows the score boxes, Save and Cancel, and no read-only wording', () => {
+      render(<RegularMatchEditor {...defaultProps} status={2} />);
+
+      expect(screen.getByRole('heading', { name: 'Edit Match Score' })).toBeInTheDocument();
+      expect(screen.getAllByRole('spinbutton')).toHaveLength(2);
+      expect(screen.getByRole('button', { name: 'Save Changes' })).toBeEnabled();
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
+      expect(screen.queryByText(/only admins can save scores/i)).not.toBeInTheDocument();
+      expect(screen.getByText('• Editable now')).toBeInTheDocument();
+    });
+  });
+
+  // A signed-out visitor or a non-admin. The database refuses their write
+  // without an error, so Save here would show "saved" and bring the old score back.
+  describe('read-only view (canEdit is false)', () => {
+    const readOnlyProps = {
+      ...defaultProps,
+      canEdit: false,
+      opponent1Score: 2,
+      opponent2Score: 1,
+      status: 4,
+    };
+
+    it('shows names and scores as text, with no score boxes and no Save', () => {
+      render(<RegularMatchEditor {...readOnlyProps} />);
+
+      expect(screen.getByText('Team One')).toBeInTheDocument();
+      expect(screen.getByText('Team Two')).toBeInTheDocument();
+      expect(screen.getByText('2')).toBeInTheDocument();
+      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /save changes/i })).not.toBeInTheDocument();
+    });
+
+    it('titles and describes the pop-up as a read-only view', () => {
+      render(<RegularMatchEditor {...readOnlyProps} />);
+
+      expect(screen.getByRole('heading', { name: 'Match Score' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog')).toHaveAccessibleDescription(
+        'Scores for this match. Only admins can change them.'
+      );
+    });
+
+    it('says only admins can save, and closes through a Close button', () => {
+      render(<RegularMatchEditor {...readOnlyProps} />);
+
+      expect(
+        screen.getByText('Only admins can save scores. Sign in as an admin to edit.')
+      ).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+      expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not offer Edit teams or Move team', () => {
+      render(
+        <RegularMatchEditor
+          {...readOnlyProps}
+          onEditTeams={vi.fn()}
+          onSwapTeams={vi.fn()}
+          canEditTeams
+        />
+      );
+
+      expect(screen.queryByRole('button', { name: /edit teams/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /move team/i })).not.toBeInTheDocument();
+    });
+
+    it('keeps the game list and drops the editing wording from the status', () => {
+      render(
+        <RegularMatchEditor
+          {...readOnlyProps}
+          games={[{ id: 1, number: 1, opponent1_score: 21, opponent2_score: 15 }]}
+        />
+      );
+
+      expect(screen.getByText('21 - 15')).toBeInTheDocument();
+      expect(screen.queryByText(/editable/i)).not.toBeInTheDocument();
+      expect(screen.getByText('Final score recorded')).toBeInTheDocument();
+    });
+
+    it('stays silent while the admin check is still running', () => {
+      render(<RegularMatchEditor {...readOnlyProps} accessLoading />);
+
+      expect(screen.queryByText(/only admins can save scores/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /save changes/i })).not.toBeInTheDocument();
+    });
+
+    it('says the check failed and retries it, instead of saying "only admins"', () => {
+      const onRetryAccessCheck = vi.fn();
+      render(
+        <RegularMatchEditor
+          {...readOnlyProps}
+          accessCheckFailed
+          onRetryAccessCheck={onRetryAccessCheck}
+        />
+      );
+
+      expect(screen.getByText('Could not check admin access.')).toBeInTheDocument();
+      expect(screen.queryByText(/only admins can save scores/i)).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+      expect(onRetryAccessCheck).toHaveBeenCalledTimes(1);
+    });
   });
 });

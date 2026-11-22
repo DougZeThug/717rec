@@ -238,8 +238,9 @@ way, the toast says "Only part of this change was saved"; saving the same teams
 again finishes it, a half-done trade included, whether from the same screen or
 after opening Edit teams on that match again. Repair Bracket does not.
 
-**Match Status Control** also sits in the Edit Match Score box, for admins only,
-on a losers-bracket match with one team and a BYE. It shows the current status and
+**Match Status Control** also sits in the Edit Match Score box, for admins only
+(a visitor or a non-admin does not see it, and gets a read-only box with no
+Save), on a losers-bracket match with one team and a BYE. It shows the current status and
 the buttons for it: "Unlock to Ready", "Revert to Waiting", or, for a match marked
 Completed with no winner, "Reopen (Safe)" and "Reopen + Clear Downstream".
 Reopen (Safe) works only while the later matches are still empty. **Reopen + Clear
@@ -293,13 +294,13 @@ is selected**. Selecting a bracket hides it. It is read-only to everyone.
 
 ## Modifiers
 
-| Modifier              | Set at arrival                                                                                                                                                                                              | Changed while editing                                                                                                                            |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| The user's role       | A visitor or player sees `/playoffs` with no controls at all. An admin sees the tab strip and every button. Blind Draw and Hero are inside `/admin` and gated by its guard.                                 | Losing admin leaves the controls on screen until the profile is re-read; the writes then fail.                                                   |
-| The record's state    | `pending` allows seeding and rearranging. `in_progress` allows neither. `completed` disables everything but Recalculate Standings and Delete.                                                               | A result entered elsewhere moves the bracket to `in_progress`; the seeding dialog does not notice until it is reopened, and the save then fails. |
-| The season's state    | The season picker chooses which season's brackets are listed, and a new bracket is stamped with it. When the playoff season and the active season differ, a banner says which is which.                     | Changing the season reloads the list and clears the selected bracket.                                                                            |
-| Viewport              | Below the medium breakpoint the six bracket admin controls collapse into one **⋯** menu; above it they are a row of buttons. The season picker does not move: it is under the heading on every screen size. | No effect.                                                                                                                                       |
-| Keys the form honours | The create, seeding, rearrange, and delete dialogs are proper dialogs: Escape closes, Tab is trapped. The seeding list can be reordered from the keyboard.                                                  | Escape cancels without writing — except that the Seeds tab inside the create dialog has already saved anything it saved.                         |
+| Modifier              | Set at arrival                                                                                                                                                                                                                 | Changed while editing                                                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The user's role       | A visitor or player sees `/playoffs` with no admin controls: a match card opens a read-only score box (no Save). An admin sees the tab strip and every button. Blind Draw and Hero are inside `/admin` and gated by its guard. | Losing admin leaves the controls on screen until the profile is re-read; the writes then fail.                                                   |
+| The record's state    | `pending` allows seeding and rearranging. `in_progress` allows neither. `completed` disables everything but Recalculate Standings and Delete.                                                                                  | A result entered elsewhere moves the bracket to `in_progress`; the seeding dialog does not notice until it is reopened, and the save then fails. |
+| The season's state    | The season picker chooses which season's brackets are listed, and a new bracket is stamped with it. When the playoff season and the active season differ, a banner says which is which.                                        | Changing the season reloads the list and clears the selected bracket.                                                                            |
+| Viewport              | Below the medium breakpoint the six bracket admin controls collapse into one **⋯** menu; above it they are a row of buttons. The season picker does not move: it is under the heading on every screen size.                    | No effect.                                                                                                                                       |
+| Keys the form honours | The create, seeding, rearrange, and delete dialogs are proper dialogs: Escape closes, Tab is trapped. The seeding list can be reordered from the keyboard.                                                                     | Escape cancels without writing — except that the Seeds tab inside the create dialog has already saved anything it saved.                         |
 
 ## Cancel and interrupt
 
