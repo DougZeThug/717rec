@@ -140,7 +140,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
     // Create bracket record in database. grandFinalType is NOT stored here:
     // brackets-manager persists it in stage.settings.grandFinal at stage
     // creation, and the viewer reads it from there. (Older rows carry a
-    // legacy copy in the brackets.participants JSONB — see MatchTransformer.)
+    // legacy copy in the brackets.participants JSONB.)
     const { data: bracketData, error: bracketError } = await supabase
       .from('brackets')
       .insert({

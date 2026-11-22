@@ -1,4 +1,3 @@
-import { InMemoryDatabase } from 'brackets-memory-db';
 import type { Match, ParticipantResult } from 'brackets-model';
 import { useEffect, useRef, useState } from 'react';
 
@@ -44,27 +43,6 @@ const fingerprint = (matches: FingerprintMatch[]): string => {
 
 type ViewerMatchRow = ViewerDataWithMapping['data']['matches'][number];
 type ViewerParticipantRow = ViewerDataWithMapping['data']['participants'][number];
-type RenderableBracket = PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
-
-/**
- * Pick the transform that matches where this bracket keeps its data: the SQL
- * tables, a JSONB blob, or the legacy playoff_matches shape.
- *
- * Not `async`, deliberately: only the SQL path is asynchronous, so the keyword
- * would buy nothing and leave a function with no `await` in it. The other two
- * are wrapped instead, so every caller gets the same promise either way.
- */
-const transformForViewer = (bracket: RenderableBracket): Promise<ViewerDataWithMapping> => {
-  if (bracket.uses_brackets_manager) {
-    return BracketsViewerAdapter.transformFromSql(bracket.id);
-  }
-  if (bracket.bracket_data) {
-    return Promise.resolve(
-      BracketsViewerAdapter.transformFromJsonb(bracket.bracket_data, bracket.id)
-    );
-  }
-  return Promise.resolve(BracketsViewerAdapter.transform(bracket, [], bracket.participants));
-};
 
 /** Hand the viewer the team logos, if this build of it takes them. */
 const applyParticipantImages = (participants: ViewerParticipantRow[]) => {
@@ -150,7 +128,7 @@ const hideUuidNodes = (container: HTMLElement) => {
 };
 
 interface UseBracketsViewerRendererOptions {
-  bracket: RenderableBracket;
+  bracket: PlayoffBracket;
   containerRef: React.RefObject<HTMLDivElement | null>;
   containerId: string;
   isScriptReady: boolean;
@@ -188,10 +166,8 @@ export const useBracketsViewerRenderer = ({
   // us. BracketsViewerComponent keys the container on `${bracket.id}-${refreshKey}`,
   // so both parts belong here: a change to either mounts a fresh, empty node,
   // and a fingerprint held over from the old one would skip the render and
-  // leave that node blank. Two different brackets really can share a
-  // fingerprint — the legacy transform numbers matches locally per bracket, so
-  // two brackets of the same size at the same stage produce identical ids,
-  // scores and statuses, and the fingerprint carries no bracket identity.
+  // leave that node blank. The fingerprint carries no bracket identity, so it
+  // cannot tell one bracket's data from another's.
   useEffect(() => {
     lastFingerprintRef.current = null;
   }, [refreshKey, bracket?.id]);
@@ -213,10 +189,9 @@ export const useBracketsViewerRenderer = ({
 
         bracketLog('Starting bracket transformation', {
           usesBracketsManager: bracket.uses_brackets_manager,
-          hasBracketData: Boolean(bracket.bracket_data),
         });
 
-        const result = await transformForViewer(bracket);
+        const result = await BracketsViewerAdapter.transformFromSql(bracket.id);
 
         if (cancelled) return;
 

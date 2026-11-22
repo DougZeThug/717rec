@@ -1,6 +1,5 @@
 import React from 'react';
 
-import BracketView from '@/components/playoffs/BracketView';
 import { Button } from '@/components/ui/button';
 import type { PlayoffBracket, PlayoffMatch, PlayoffTeam } from '@/types/playoffTypes';
 
@@ -187,14 +186,6 @@ const PlayoffBracketE2EProof = () => {
           Champion: {bracket?.champion ? getTeamName(bracket.champion) : 'TBD'}
         </p>
       </section>
-
-      {bracket ? (
-        <BracketView bracketId={bracket.id} bracket={bracket} teams={teams} />
-      ) : (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-          Create the bracket to render the playoff viewer.
-        </div>
-      )}
     </div>
   );
 };
