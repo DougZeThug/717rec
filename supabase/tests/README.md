@@ -216,6 +216,12 @@ because other objects depend on it` (script 07 never uses CASCADE) and thirteen
   `archive_season` completes on a season holding a live-scored finished match.
   Without the cascade both paths raised `23503`, so the admin Scores bin and
   season archiving both failed on any match that had been scored live.
+- `match_comments_reactions_cascade.sql` — asserts `match_comments.match_id`
+  and `match_reactions.match_id` carry `ON DELETE CASCADE`, that the admin
+  delete (`delete_match_with_stats_reversal`), `archive_season` and
+  `partial_archive_season` remove a match's comment and reaction with it, and
+  that the catch-up migration is idempotent (a key forced back to NO ACTION is
+  swapped to cascade, and a second run changes nothing).
 - `start_game_with_roster.sql` — asserts starting a game is all-or-nothing:
   one call creates the game and both sides' `game_players`, a second call for
   the same game number replaces the line-ups rather than duplicating them and

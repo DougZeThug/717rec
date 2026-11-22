@@ -472,6 +472,29 @@ find the 'opponent1_position' column of 'match'".
 >   then `DROP FUNCTION IF EXISTS public.touch_game_on_round_change();`.
 > - `supabase/tests/touch_game_on_round_change.sql` covers it in CI.
 
+> **Catch-up for match comments and reactions**
+> (`20261122120000_match_comments_reactions_cascade_catchup.sql`). **Applying it
+> is OPTIONAL. It changes nothing in production.** Production already deletes a
+> match's comments and reactions with the match (Doug's live check, 2026-11-22).
+> The repo did not say so: a database rebuilt from the repo (CI, a new project)
+> did not cascade. This file brings the repo in line. On production it only reads
+> the catalog and does nothing.
+>
+> - To run it anyway: Supabase dashboard, SQL Editor. Paste the full file. Click
+>   **Run** (the button must say "Run", not "Run selected"). Expect "Success. No
+>   rows returned".
+> - Check afterwards (read only):
+>
+>   ```sql
+>   select conname, confdeltype from pg_constraint
+>   where conname in ('match_comments_match_id_fkey','match_reactions_match_id_fkey');
+>   ```
+>
+>   Both rows must show `c`. Any other letter: stop and tell Claude.
+>
+> - No undo is needed. No data is written. It is safe to paste twice.
+> - `supabase/tests/match_comments_reactions_cascade.sql` covers it in CI.
+
 ## 6a. Power-score unification: review, revert, reapply
 
 The power-score unification (migrations `20260809*`) put every page on one
