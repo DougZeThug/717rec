@@ -97,23 +97,6 @@ export const fetchPlayoffTeams = async (): Promise<Team[]> => {
 };
 
 /**
- * Fetch participants by their IDs
- * Used by usePlayoffMatchUpdate hook (BM path)
- */
-export const fetchParticipantsByIds = async (ids: number[]) => {
-  const { data, error } = await supabase
-    .from('participant')
-    .select('id, name, tournament_id')
-    .in('id', ids);
-
-  if (error) {
-    handleDatabaseError(error, 'Failed to fetch participants');
-  }
-
-  return data ?? [];
-};
-
-/**
  * Fetch team details by team ids (participant.team_id values).
  * Used by useBracketData hook (step 4). Id-keyed so a team rename
  * mid-playoffs cannot break resolution.

@@ -13,8 +13,6 @@ interface Props {
   setBracketDialogOpen: (open: boolean) => void;
   onCreateBracket: () => void;
   onDeleteBracket: (bracketId: string, bracketName: string) => void;
-  /** Opens the match score editor. Admin view only — the public view is read-only. */
-  onEditMatch: (matchId: string) => void;
   data: PlayoffPageData;
 }
 
@@ -24,7 +22,6 @@ export const PlayoffViewSelector: React.FC<Props> = ({
   setBracketDialogOpen,
   onCreateBracket,
   onDeleteBracket,
-  onEditMatch,
   data,
 }) => {
   switch (view) {
@@ -37,7 +34,6 @@ export const PlayoffViewSelector: React.FC<Props> = ({
           setBracketDialogOpen={setBracketDialogOpen}
           onCreateBracket={onCreateBracket}
           onDeleteBracket={onDeleteBracket}
-          onEditMatch={onEditMatch}
           data={data}
         />
       );

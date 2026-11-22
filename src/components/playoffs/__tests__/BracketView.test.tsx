@@ -423,6 +423,15 @@ describe('BracketView', () => {
       ).not.toThrow();
     });
 
+    it('always gives the viewer a click handler, even without onEditMatch, so the live score pop-up can open', () => {
+      // BracketsViewerComponent returns early when it gets no onMatchClick, and
+      // that check sits before the brackets-manager branch that opens the score
+      // editor. A missing handler here would silently break all live score entry.
+      render(<BracketView bracketId="bracket-1" bracket={legacyBracket()} />);
+
+      expect(typeof lastViewerProps().onMatchClick).toBe('function');
+    });
+
     it('passes the realtime state through', () => {
       mocks.realtime = { realtimeEnabled: true, lastUpdate: new Date('2026-01-15T12:00:00Z') };
 

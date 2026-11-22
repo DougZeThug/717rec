@@ -2,17 +2,8 @@ import React from 'react';
 
 import BracketCreationDialog from '@/components/playoffs/BracketCreationDialog';
 import DeleteBracketDialog from '@/components/playoffs/DeleteBracketDialog';
-import { MatchScoreEditor, QuickScoreEditor } from '@/components/playoffs/match-score-editor';
 import TeamDivisionDialog from '@/components/playoffs/TeamDivisionDialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Division, PlayoffMatch, Team } from '@/types';
-import type { AsyncVoidCallback } from '@/types/callbacks';
+import { Division, Team } from '@/types';
 
 interface PlayoffDialogsProps {
   // Team division dialog
@@ -31,37 +22,12 @@ interface PlayoffDialogsProps {
   onBracketCreated: () => void;
   seasonId?: string | null;
 
-  // Match score editor - Updated to include refetchBrackets parameter
-  editingMatch: PlayoffMatch | null;
-  isQuickEdit: boolean;
-  onCloseMatchEditor: () => void;
-  onSaveMatchScore: (
-    matchId: string,
-    team1Score: number,
-    team2Score: number,
-    games: { team1Score: number; team2Score: number }[],
-    team1GameWins: number,
-    team2GameWins: number,
-    refetchBrackets: AsyncVoidCallback
-  ) => Promise<void>;
-
   // Delete bracket dialog
   deletingBracket: { id: string; name: string } | null;
   setDeletingBracket: (value: { id: string; name: string } | null) => void;
   onConfirmDelete: () => Promise<void>;
   isDeleting: boolean;
 }
-
-const MatchEditorHeader: React.FC<{ isQuickEdit: boolean }> = ({ isQuickEdit }) => (
-  <DialogHeader className="sr-only">
-    <DialogTitle>{isQuickEdit ? 'Quick Score Update' : 'Edit Match Score'}</DialogTitle>
-    <DialogDescription>
-      {isQuickEdit
-        ? 'Update the match score quickly'
-        : 'Edit match details and game-by-game scores'}
-    </DialogDescription>
-  </DialogHeader>
-);
 
 const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
   // Team division dialog props
@@ -79,12 +45,6 @@ const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
   teams,
   onBracketCreated,
   seasonId,
-
-  // Match score editor props
-  editingMatch,
-  isQuickEdit,
-  onCloseMatchEditor,
-  onSaveMatchScore,
 
   // Delete bracket dialog props
   deletingBracket,
@@ -113,36 +73,6 @@ const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
         onBracketCreated={onBracketCreated}
         seasonId={seasonId}
       />
-
-      {/* Match Score Editor Dialog */}
-      <Dialog
-        open={Boolean(editingMatch)}
-        onOpenChange={(open) => {
-          if (!open) onCloseMatchEditor();
-        }}
-      >
-        <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[95vh] sm:max-h-[90vh] supports-[height:95dvh]:max-h-[95dvh] supports-[height:90dvh]:sm:max-h-[90dvh] overflow-y-auto">
-          <MatchEditorHeader isQuickEdit={isQuickEdit} />
-
-          {editingMatch && isQuickEdit && (
-            <QuickScoreEditor
-              match={editingMatch}
-              teams={teams || []}
-              onSave={onSaveMatchScore}
-              onCancel={onCloseMatchEditor}
-            />
-          )}
-
-          {editingMatch && !isQuickEdit && (
-            <MatchScoreEditor
-              match={editingMatch}
-              teams={teams || []}
-              onSave={onSaveMatchScore}
-              onCancel={onCloseMatchEditor}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Bracket Confirmation Dialog */}
       <DeleteBracketDialog

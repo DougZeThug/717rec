@@ -4,14 +4,9 @@ import { useToast } from '@/hooks/useToast';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { bracketLog, errorLog } from '@/utils/logger';
 
-import { usePlayoffHandlers } from './usePlayoffHandlers';
 import { PlayoffPageData } from './usePlayoffPageData';
 
-export function usePlayoffViewState(
-  data: PlayoffPageData,
-  handlers: ReturnType<typeof usePlayoffHandlers>,
-  defaultTab = 'brackets'
-) {
+export function usePlayoffViewState(data: PlayoffPageData, defaultTab = 'brackets') {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);

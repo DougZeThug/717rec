@@ -6,16 +6,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   bmMatch: vi.fn(),
   teams: vi.fn(),
-  participants: vi.fn(),
-  legacyTeams: vi.fn(),
-  scores: vi.fn(),
-  games: vi.fn(),
   eligibility: vi.fn(),
   swap: vi.fn(),
   board: vi.fn(),
   rearrange: vi.fn(),
   edit: vi.fn(),
-  update: vi.fn(),
   invalidateRelated: vi.fn(),
   toast: vi.fn(),
   log: vi.fn(),
@@ -24,13 +19,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/services/brackets/BracketReadService', () => ({
   fetchBracketsManagerMatchData: mocks.bmMatch,
   fetchPlayoffTeams: mocks.teams,
-  fetchBmMatchData: mocks.bmMatch,
-  fetchParticipantsByIds: mocks.participants,
-  fetchPlayoffMatchTeams: mocks.legacyTeams,
-}));
-vi.mock('@/services/brackets/BracketWriteService', () => ({
-  updatePlayoffMatchScores: mocks.scores,
-  replacePlayoffGames: mocks.games,
 }));
 vi.mock('@/services/brackets/manager', () => ({
   bracketManagerService: {
@@ -39,7 +27,6 @@ vi.mock('@/services/brackets/manager', () => ({
     getLoserRearrangeBoard: mocks.board,
     applyLoserBracketRearrange: mocks.rearrange,
     editMatchParticipants: mocks.edit,
-    updateMatch: mocks.update,
   },
 }));
 vi.mock('@/hooks/matches/utils/queryCacheUtils', () => ({
@@ -55,7 +42,6 @@ vi.mock('@/utils/logger', () => ({
 import { useBracketsManagerMatch } from '../useBracketsManagerMatch';
 import { usePlayoffEditMatchParticipants } from '../usePlayoffEditMatchParticipants';
 import { useLoserSwapEligibility, usePlayoffSwapLoserSlots } from '../usePlayoffLoserSwap';
-import { usePlayoffMatchUpdate } from '../usePlayoffMatchUpdate';
 import { useLoserRearrangeBoard, usePlayoffApplyRearrange } from '../usePlayoffRearrange';
 import { usePlayoffTeams } from '../usePlayoffTeams';
 
@@ -244,95 +230,5 @@ describe('uncovered playoff hooks', () => {
         expect.objectContaining({ title: 'Could not rearrange teams', variant: 'destructive' })
       )
     );
-  });
-  it('updates a legacy match and replaces its games', async () => {
-    mocks.legacyTeams.mockResolvedValue({ team1_id: 't1', team2_id: 't2' });
-    mocks.scores.mockResolvedValue({});
-    mocks.games.mockResolvedValue({});
-    const { wrapper } = setup();
-    const { result } = renderHook(
-      () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: false } as never),
-      { wrapper }
-    );
-    expect(result.current.useBracketsManager).toBe(false);
-    await act(async () => {
-      await result.current.updateMatch('m1', 21, 18, [{ team1Score: 21, team2Score: 18 }], 2, 0);
-    });
-    expect(mocks.scores).toHaveBeenCalledWith(
-      'm1',
-      expect.objectContaining({
-        team1_score: 2,
-        team2_score: 0,
-        winner_id: 't1',
-        loser_id: 't2',
-        status: 'completed',
-        // Season stats order playoff results by this column to compute streaks.
-        updated_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
-      })
-    );
-    expect(mocks.games).toHaveBeenCalledWith('m1', [
-      { game_number: 1, team1_score: 21, team2_score: 18, winner_id: 't1' },
-    ]);
-  });
-  it('updates a brackets-manager match and refreshes its bracket', async () => {
-    mocks.bmMatch.mockResolvedValue({ opponent1_id: 1, opponent2_id: 2 });
-    mocks.participants.mockResolvedValue([]);
-    mocks.update.mockResolvedValue({});
-    const { client, wrapper } = setup();
-    const refetch = vi.spyOn(client, 'refetchQueries');
-    const { result } = renderHook(
-      () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: true } as never),
-      { wrapper }
-    );
-    await act(async () => {
-      await result.current.updateMatch('9', 0, 0, [], 1, 2);
-    });
-    expect(mocks.update).toHaveBeenCalledWith({
-      matchId: 9,
-      scores: { opponent1: { score: 1, result: 'loss' }, opponent2: { score: 2, result: 'win' } },
-    });
-    expect(refetch).toHaveBeenCalledWith({ queryKey: ['bracket-data', 'b1'] });
-  });
-  it('refuses to score a brackets-manager match that cannot be found', async () => {
-    mocks.bmMatch.mockResolvedValue(null);
-    const { wrapper } = setup();
-    const { result } = renderHook(
-      () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: true } as never),
-      { wrapper }
-    );
-    await act(async () => {
-      await expect(result.current.updateMatch('9', 0, 0, [], 1, 2)).rejects.toThrow(
-        'Failed to fetch match data from brackets-manager table'
-      );
-    });
-    expect(mocks.update).not.toHaveBeenCalled();
-  });
-  it('refuses to score a legacy match that cannot be found', async () => {
-    mocks.legacyTeams.mockResolvedValue(null);
-    const { wrapper } = setup();
-    const { result } = renderHook(
-      () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: false } as never),
-      { wrapper }
-    );
-    await act(async () => {
-      await expect(result.current.updateMatch('m1', 21, 18, [], 2, 0)).rejects.toThrow(
-        'Failed to fetch match data'
-      );
-    });
-    expect(mocks.scores).not.toHaveBeenCalled();
-  });
-  it('refuses to complete a legacy match that is missing a team', async () => {
-    mocks.legacyTeams.mockResolvedValue({ team1_id: 't1', team2_id: null });
-    const { wrapper } = setup();
-    const { result } = renderHook(
-      () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: false } as never),
-      { wrapper }
-    );
-    await act(async () => {
-      await expect(result.current.updateMatch('m1', 21, 18, [], 2, 0)).rejects.toThrow(
-        'Cannot complete playoff match without both teams assigned'
-      );
-    });
-    expect(mocks.scores).not.toHaveBeenCalled();
   });
 });
