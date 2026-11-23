@@ -7,8 +7,6 @@ export const gradients = {
     default: 'bg-gradient-to-br from-muted to-card',
     subtle: 'bg-gradient-to-br from-muted to-card',
     highlight: 'bg-gradient-to-br from-blue-500/[0.07] to-card',
-    // New orange accent gradients
-    orangeAccent: 'bg-gradient-to-br from-white to-orange-50 dark:from-gray-800 dark:to-gray-900',
     blueOrange:
       'bg-gradient-to-br from-white via-blue-50/30 to-orange-50/40 dark:from-gray-800 dark:to-gray-900 dark:via-none',
   },

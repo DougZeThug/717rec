@@ -8,8 +8,8 @@ import {
   TimeslotMatchRowMobile,
 } from '@/components/schedule/timeslot-grouping/TimeslotGroupBits';
 import { useTimeslotGrouping } from '@/components/schedule/timeslot-grouping/useTimeslotGrouping';
-import { AppCard } from '@/components/ui/app-card';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { LoadingState } from '@/components/ui/loading-state';
 import { TeamLogo } from '@/components/ui/team';
@@ -113,26 +113,28 @@ const TimeslotSectionCard = ({
   cardClass,
   children,
 }: TimeslotSectionCardProps) => (
-  <AppCard
-    className={cardClass}
-    // No side padding on a phone, so the header band and the tiles reach the
-    // card edge. From md up the card keeps its usual padding.
-    contentClassName="p-0 md:p-6 md:pt-0"
-    elevation="default"
-    isInteractive={false}
+  <Card
+    className={cn(
+      'rounded-lg border border-border bg-gradient-to-br from-muted to-card shadow-xs hover:shadow-md dark:shadow-gray-900/20 transition-all duration-300',
+      cardClass
+    )}
   >
-    <Collapsible open={open} onOpenChange={onToggle} className="w-full">
-      <CollapsibleTrigger className="w-full">
-        <TimeslotGroupHeader
-          timeslot={timeslot}
-          teamCount={teams.length}
-          expanded={Boolean(open)}
-          isByeWeek={isByeWeek}
-        />
-      </CollapsibleTrigger>
-      <CollapsibleContent>{children}</CollapsibleContent>
-    </Collapsible>
-  </AppCard>
+    {/* No side padding on a phone, so the header band and the tiles reach the
+        card edge. From md up the card keeps its usual padding. */}
+    <CardContent className="p-0 md:p-6 md:pt-0">
+      <Collapsible open={open} onOpenChange={onToggle} className="w-full">
+        <CollapsibleTrigger className="w-full">
+          <TimeslotGroupHeader
+            timeslot={timeslot}
+            teamCount={teams.length}
+            expanded={Boolean(open)}
+            isByeWeek={isByeWeek}
+          />
+        </CollapsibleTrigger>
+        <CollapsibleContent>{children}</CollapsibleContent>
+      </Collapsible>
+    </CardContent>
+  </Card>
 );
 
 /** Renders collapsible cards of matches per timeslot, plus orange-styled bye-week sections. */

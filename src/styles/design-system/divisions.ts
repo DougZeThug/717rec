@@ -73,26 +73,6 @@ export function getDivisionStyles(
 }
 
 /**
- * Helper to get division-specific gradient using display_division
- * Now supports both "Competitive High" and "Competitive" mapping to same style
- */
-export function getDivisionGradientClass(division: string): string {
-  const lowerDivName = division.toLowerCase();
-
-  if (lowerDivName.includes('competitive')) {
-    return 'bg-gradient-to-br from-background to-[hsl(var(--competitive)/0.05)] dark:from-background/90 dark:to-[hsl(var(--competitive)/0.1)]';
-  }
-  if (lowerDivName.includes('intermediate')) {
-    return 'bg-gradient-to-br from-background to-[hsl(var(--intermediate)/0.05)] dark:from-background/90 dark:to-[hsl(var(--intermediate)/0.1)]';
-  }
-  if (lowerDivName.includes('recreational')) {
-    return 'bg-gradient-to-br from-background to-[hsl(var(--recreational)/0.05)] dark:from-background/90 dark:to-[hsl(var(--recreational)/0.1)]';
-  }
-
-  return 'bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted';
-}
-
-/**
  * Get the display division name from either display_division field or derive from name
  * This ensures consistent grouping for visual purposes
  */
