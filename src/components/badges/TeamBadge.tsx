@@ -16,7 +16,6 @@ import { getBadgeConfig } from '@/utils/badgeConfig';
 interface TeamBadgeProps {
   badge: TeamBadgeEvent;
   size?: 'sm' | 'md' | 'lg';
-  showDescription?: boolean;
   className?: string;
   /**
    * Set false where the badge sits inside a link (or another button). A button
@@ -217,7 +216,6 @@ const BadgeTooltip: React.FC<{
 export const TeamBadge: React.FC<TeamBadgeProps> = ({
   badge,
   size = 'md',
-  showDescription: _showDescription = false,
   className,
   interactive = true,
 }) => {

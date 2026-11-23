@@ -18,7 +18,6 @@ import RankTrendIndicator from './RankTrendIndicator';
 interface RankingCardProps {
   ranking: Ranking;
   index: number;
-  showRankChange?: boolean;
   expandedTeam?: string | null;
   onToggleExpand?: (teamId: string) => void;
   compactView?: boolean;
@@ -62,7 +61,6 @@ const StatTile: React.FC<{
 const RankingCard: React.FC<RankingCardProps> = ({
   ranking,
   index,
-  showRankChange = true,
   expandedTeam,
   onToggleExpand,
   compactView = false,
@@ -93,7 +91,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
       <RankingCardCompact
         ranking={ranking}
         globalRank={globalRank}
-        showRankChange={showRankChange}
+        showRankChange
         showDivision={showDivision}
         isExpanded={isExpanded}
         onToggleExpand={handleToggleExpand}
@@ -110,7 +108,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
           <span className="text-lg font-bold whitespace-nowrap text-foreground">
             {formatRankDisplay(globalRank, divisionRank, showDivision)}
           </span>
-          {showRankChange && <RankTrendIndicator rankChange={ranking.rankChange} />}
+          <RankTrendIndicator rankChange={ranking.rankChange} />
         </div>
         <TeamBadgeCollection
           teamId={ranking.teamId}
