@@ -14,7 +14,7 @@ Nothing here has been filed as an issue.
 The 58 documents raised roughly 190 suspected defects and open questions. After
 merging by root cause the original pass came to 42 entries. The list has grown
 since, as later readings found defects the documents never raised, and now holds
-**75 entries**: 16 high, 36 medium, 20 low, B-06, which carries no severity
+**76 entries**: 16 high, 37 medium, 20 low, B-06, which carries no severity
 because it was cleared as not a defect, and B-69 and B-74, which carry none
 because each records two defensible readings in conflict rather than one thing
 being wrong. All of them are now closed. Several were **not raised as
@@ -30,7 +30,8 @@ as a product call: the league chose to accept the behaviour rather than change
 it. B-62 to B-74 came out of a pass over five filed bug reports: five of the
 thirteen are the reports themselves, and the other eight were found while
 reading the files those reports named. Eleven were fixed; B-69 and B-74 were put
-to the league and left as they are, documented.
+to the league and left as they are, documented. B-75 came out of a code reading
+and was fixed in the change that recorded it.
 
 _The counts in this paragraph go stale easily, and have twice._ They once read
 "42 entries: 13 high, 23 medium, and 6 low", then "62 entries: 15 high, 30
@@ -2261,6 +2262,33 @@ match.team2_name)`. `teamId` is a **uuid** and `team1_name` is a **name**, so
   downloaded file. It was checked by deleting the field: typecheck still passes
   and only that test fails, with `expected '' to be 'Premier'`. Two smaller
   tests cover the export helper itself, which had none.
+
+### B-75: A failed rematch-history read was shown as "no history"
+
+- **Where the user meets it:** an admin pressing Generate in Match Creation's
+  inline auto-schedule or in Auto Schedule, while the read of this season's
+  played matches is failing.
+- **What happens / what was expected:** the pairings came out as if no team had
+  played any other this season, with no message. Rematches could slip in and nothing
+  said why. Expected: a read that failed is reported as a failure.
+- **Reproduce:** 1. Make the `matches` read fail (offline, or a database error). 2. Press Generate.
+- **Why (from the code):** `fetchSeasonHistoryForTeams` caught every error and
+  returned an empty list, so `usePairingGenerator` could not tell a failed read from a
+  new season. This is the same rule as B-36, B-46 and B-49 — _a failed fetch is not
+  an empty one_.
+- **Severity:** `medium`. Nothing is corrupted, and Generate still works. The
+  admin could save a schedule with repeat opponents without knowing why.
+- **Decision needed:** `fix`.
+- **Raised by:** left open in the safety PR (open-follow-ups row s).
+- **Status:** **fixed 2026-11-23.** The service now throws on a failed read. Only the
+  "no active season" answer (PostgREST `PGRST116`, read from the error's `details`)
+  is still an empty history, with no warning. `usePairingGenerator` catches the
+  throw, logs it, shows one default toast ("Warning", "Rematch history could not be
+  loaded; pairings may repeat opponents") and generates with an empty history, so the
+  pairings are the same as before. Doug allowed the one edit to that Dual Match Mode
+  file and approved the wording. Tests: the service tests (real `DatabaseError`
+  shapes) and the hook tests (Standard and Dual mode, one toast each, no toast when
+  the read works).
 
 ### B-48: A won game can be ended on a round that is still on its way
 
