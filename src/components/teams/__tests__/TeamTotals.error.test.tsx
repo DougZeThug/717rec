@@ -15,7 +15,6 @@ vi.mock('@/hooks/useLeaguePercentiles', () => ({
 }));
 
 const failed = (refetch = vi.fn()) => ({
-  totals: undefined,
   isLoading: false,
   error: new Error('read failed'),
   refetch,

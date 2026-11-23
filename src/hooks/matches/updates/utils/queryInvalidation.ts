@@ -9,5 +9,5 @@ import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheU
  * Callers do not wait for it.
  */
 export const invalidateAllDataQueries = (queryClient: QueryClient) => {
-  void invalidateMatchRelatedQueries(queryClient);
+  invalidateMatchRelatedQueries(queryClient);
 };

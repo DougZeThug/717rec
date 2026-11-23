@@ -145,7 +145,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
       <ErrorDisplay
         variant="inline"
         error="We couldn't load career statistics. Please try again."
-        onRetry={() => void refetch()}
+        onRetry={() => refetch()}
       />
     );
     if (standalone) return errorContent;
