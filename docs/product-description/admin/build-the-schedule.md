@@ -425,6 +425,17 @@ notification is sent to any team.
   (11 of 1,501 six-team blocks in the QA grid). If the first try gives a list, that list is kept even when
   it bends a rule. No rule was relaxed. Dual Match Mode is not affected. See the decision log, "Pairing
   retry result".
+- **If the rematch history cannot be loaded, Generate warns and goes on.**
+  Changed 2026-11-23. Before generating, the app reads which teams already played
+  this season (`fetchSeasonHistoryForTeams`). That read now **throws** when the
+  database fails. Generate catches it, shows one default (not red) toast, "Warning
+  — Rematch history could not be loaded; pairings may repeat opponents", and still
+  generates with the season treated as having no history. The pairings are the same
+  ones the old silent fallback gave. The toast shows in Match Creation's inline
+  auto-schedule and in Auto Schedule, both Dual Match Mode on and off. **No active
+  season does not warn:** that is a real empty state, so Generate runs with no
+  history and no toast. A different read failure (a timeout, a lost connection)
+  does warn. See [B-75](../bug-triage.md#b-75-a-failed-rematch-history-read-was-shown-as-no-history).
 - **"Open Full Auto Schedule" changes tab in place.** It does not reload the
   page. Auto Schedule's own Export step no longer offers a way out to Match
   Creation: the two tools keep separate state, so that button always landed on

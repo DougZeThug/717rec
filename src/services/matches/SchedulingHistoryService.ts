@@ -3,7 +3,8 @@ import {
   fetchActiveSeasonIdStrict,
   fetchMatchPairsInSeason,
 } from '@/services/matches/MatchReadService';
-import { dbLog, errorLog, scheduleLog } from '@/utils/logger';
+import { DatabaseError } from '@/types/errors';
+import { dbLog, errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
 /**
  * Check if two teams have played against each other in the current season
@@ -42,41 +43,53 @@ export async function haveTeamsPlayedBefore(team1Id: string, team2Id: string): P
 }
 
 /**
+ * True when the error is the "no row" answer of the active-season lookup
+ * (PostgREST code PGRST116). handleDatabaseError keeps that code in `details`.
+ */
+function isNoActiveSeasonError(error: unknown): boolean {
+  if (!(error instanceof DatabaseError)) return false;
+  const { details } = error;
+  return typeof details === 'object' && details !== null && 'code' in details
+    ? details.code === 'PGRST116'
+    : false;
+}
+
+/**
  * Fetch all season history pairs for a list of teams
  * Returns array of team ID pairs that have played each other this season
+ * Returns an empty list when there is no active season (a real empty state).
+ * @throws {DatabaseError} When a read fails, so the caller can tell a failed read from no history
  */
 export async function fetchSeasonHistoryForTeams(
   teamIds: string[]
 ): Promise<Array<[string, string]>> {
+  if (teamIds.length === 0) return [];
+
+  scheduleLog(`Fetching season history for ${teamIds.length} teams`);
+
+  // Get active season
+  let seasonId: string;
   try {
-    if (teamIds.length === 0) return [];
-
-    scheduleLog(`Fetching season history for ${teamIds.length} teams`);
-
-    // Get active season
-    let seasonId: string;
-    try {
-      seasonId = await fetchActiveSeasonIdStrict();
-    } catch (seasonError) {
-      errorLog('Error fetching active season:', seasonError);
+    seasonId = await fetchActiveSeasonIdStrict();
+  } catch (seasonError) {
+    if (isNoActiveSeasonError(seasonError)) {
+      warnLog('No active season, so there is no season history:', seasonError);
       return [];
     }
-
-    // Fetch all completed matches where both teams are in our list
-    const matches = await fetchMatchPairsInSeason(teamIds, seasonId);
-
-    const pairs: Array<[string, string]> = [];
-
-    for (const match of matches) {
-      if (match.team1_id && match.team2_id) {
-        pairs.push([match.team1_id, match.team2_id]);
-      }
-    }
-
-    scheduleLog(`Found ${pairs.length} historical match pairs for current season`);
-    return pairs;
-  } catch (error) {
-    errorLog('Unexpected error fetching season history:', error);
-    return [];
+    throw seasonError;
   }
+
+  // Fetch all completed matches where both teams are in our list
+  const matches = await fetchMatchPairsInSeason(teamIds, seasonId);
+
+  const pairs: Array<[string, string]> = [];
+
+  for (const match of matches) {
+    if (match.team1_id && match.team2_id) {
+      pairs.push([match.team1_id, match.team2_id]);
+    }
+  }
+
+  scheduleLog(`Found ${pairs.length} historical match pairs for current season`);
+  return pairs;
 }
