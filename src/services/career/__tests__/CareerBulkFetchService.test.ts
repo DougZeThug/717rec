@@ -150,22 +150,22 @@ describe('fetchAllTeamsCareerData', () => {
     await expect(fetchAllTeamsCareerData(['t1'])).rejects.toThrow(DatabaseError);
   });
 
-  it('continues and returns data when non-critical queries fail', async () => {
+  it.each([
+    ['teams', /bulk team divisions/i],
+    ['matches', /bulk matches/i],
+    ['matches_archive', /bulk archived matches/i],
+    ['team_details_archive', /bulk team division history/i],
+    ['playoff_matches', /bulk playoff matches/i],
+  ])('throws DatabaseError when the %s read fails, not empty numbers', async (table, text) => {
     mockFrom.mockImplementation(
       buildFromMock({
         ...successOverrides,
-        matches: { data: null, error: pgError('matches failed') },
-        matches_archive: { data: null, error: pgError('archive failed') },
-        playoff_matches: { data: null, error: pgError('playoff failed') },
+        [table]: { data: null, error: pgError('read failed') },
       })
     );
 
-    const result = await fetchAllTeamsCareerData(['t1']);
-    expect(result.size).toBe(1);
-    const data = result.get('t1');
-    expect(data?.currentMatches).toBeNull();
-    expect(data?.archivedMatches).toBeNull();
-    expect(data?.playoffMatches).toBeNull();
+    await expect(fetchAllTeamsCareerData(['t1'])).rejects.toThrow(DatabaseError);
+    await expect(fetchAllTeamsCareerData(['t1'])).rejects.toThrow(text);
   });
 
   it('groups matches for the correct team', async () => {
@@ -304,6 +304,77 @@ describe('bracket lookup cache', () => {
     await freshFetch(['t1']);
 
     expect(bracketIdCalls).toEqual([['b-deleted']]);
+  });
+
+  /** Brackets read that fails on the first call and works on later calls. */
+  function bracketsFailingOnce(bracketIdCalls: string[][], failures: number) {
+    let remaining = failures;
+    const base = buildFromMock({
+      ...successOverrides,
+      playoff_matches: { data: [playoffMatchIn('b-old')], error: null },
+    });
+    return (table: string) => {
+      if (table !== 'brackets') return base(table);
+      return {
+        select: () => ({
+          in: (_column: string, ids: string[]) => {
+            bracketIdCalls.push([...ids]);
+            if (remaining > 0) {
+              remaining -= 1;
+              return Promise.resolve({ data: null, error: pgError('brackets failed') });
+            }
+            return Promise.resolve({
+              data: ids.map((id) => BRACKET_ROWS[id]).filter(Boolean),
+              error: null,
+            });
+          },
+        }),
+      };
+    };
+  }
+
+  it('throws when the first bracket read fails, then asks again instead of using a cached gap', async () => {
+    vi.resetModules();
+    const { fetchAllTeamsCareerData: freshFetch } = await import('../CareerBulkFetchService');
+    const bracketIdCalls: string[][] = [];
+    mockFrom.mockImplementation(bracketsFailingOnce(bracketIdCalls, 1));
+
+    // (A reset module has its own error class, so match the message.)
+    await expect(freshFetch(['t1'])).rejects.toThrow(/bracket lookups/i);
+
+    // Nothing was cached from the failed read, so the retry asks the database again
+    // and the competitive bracket keeps its real weight (not the 0.85 fallback).
+    const retry = await freshFetch(['t1']);
+    expect(retry.get('t1')?.bracketDivisionWeights).toEqual({ 'b-old': 0.9 });
+    expect(bracketIdCalls).toEqual([['b-old'], ['b-old']]);
+  });
+
+  it('does not mark new bracket ids as queried when a read on a warm cache fails', async () => {
+    vi.resetModules();
+    const { fetchAllTeamsCareerData: freshFetch } = await import('../CareerBulkFetchService');
+    const bracketIdCalls: string[][] = [];
+    const withBrackets = (bracketIds: string[], failures: number) => {
+      const fail = bracketsFailingOnce(bracketIdCalls, failures);
+      const base = buildFromMock({
+        ...successOverrides,
+        playoff_matches: { data: bracketIds.map(playoffMatchIn), error: null },
+      });
+      return (table: string) => (table === 'brackets' ? fail(table) : base(table));
+    };
+
+    // Warm the cache with b-old.
+    mockFrom.mockImplementation(withBrackets(['b-old'], 0));
+    await freshFetch(['t1']);
+
+    // b-new is new, and its read fails: the call throws.
+    mockFrom.mockImplementation(withBrackets(['b-old', 'b-new'], 1));
+    // (A reset module has its own error class, so match the message.)
+    await expect(freshFetch(['t1'])).rejects.toThrow(/bracket lookups/i);
+
+    // b-new was not marked as queried, so the next call asks for it again.
+    const retry = await freshFetch(['t1']);
+    expect(retry.get('t1')?.bracketDivisionWeights).toEqual({ 'b-old': 0.9, 'b-new': 1.0 });
+    expect(bracketIdCalls).toEqual([['b-old'], ['b-new'], ['b-new']]);
   });
 });
 
