@@ -19,8 +19,6 @@ export const TimeslotService = {
   fetchTimeslotDates: TimeslotQueryService.fetchTimeslotDates.bind(TimeslotQueryService),
 
   // ── Back-to-back ───────────────────────────────────────────────────────────
-  addBackToBackTimeslot:
-    BackToBackTimeslotService.addBackToBackTimeslot.bind(BackToBackTimeslotService),
   deleteTimeslot: BackToBackTimeslotService.deleteTimeslot.bind(BackToBackTimeslotService),
 
   // ── Double header ──────────────────────────────────────────────────────────

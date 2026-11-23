@@ -164,54 +164,6 @@ describe('fetchLiveMatchBundle', () => {
   });
 });
 
-// ─── createGame ───────────────────────────────────────────────────────────────
-
-describe('createGame', () => {
-  it('inserts and returns the new game', async () => {
-    const insert = vi.fn(() => ({
-      select: () => ({ single: () => Promise.resolve({ data: gameRow(), error: null }) }),
-    }));
-    routeTables({ games: { insert } });
-
-    const game = await LiveMatchService.createGame('match-1', 1);
-
-    expect(insert).toHaveBeenCalledWith({ match_id: 'match-1', game_number: 1 });
-    expect(game.id).toBe('game-1');
-  });
-
-  it('returns the existing game when another scorer created it first (23505)', async () => {
-    const existing = gameRow({ id: 'game-existing' });
-    const eq2 = vi.fn(() => ({ single: () => Promise.resolve({ data: existing, error: null }) }));
-    const eq1 = vi.fn(() => ({ eq: eq2 }));
-    routeTables({
-      games: {
-        insert: () => ({
-          select: () => ({
-            single: () => Promise.resolve({ data: null, error: pgError('23505') }),
-          }),
-        }),
-        select: () => ({ eq: eq1 }),
-      },
-    });
-
-    const game = await LiveMatchService.createGame('match-1', 1);
-
-    expect(game.id).toBe('game-existing');
-  });
-
-  it('throws DatabaseError for other insert failures', async () => {
-    routeTables({
-      games: {
-        insert: () => ({
-          select: () => ({ single: () => Promise.resolve({ data: null, error: pgError('500') }) }),
-        }),
-      },
-    });
-
-    await expect(LiveMatchService.createGame('match-1', 1)).rejects.toBeInstanceOf(DatabaseError);
-  });
-});
-
 // ─── completeGame / reopenGame ────────────────────────────────────────────────
 
 // update -> eq -> select -> maybeSingle, as reopenGame chains it.

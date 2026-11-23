@@ -13,7 +13,6 @@ vi.mock('../TimeslotQueryService', () => ({
 
 vi.mock('../BackToBackTimeslotService', () => ({
   BackToBackTimeslotService: {
-    addBackToBackTimeslot: vi.fn().mockResolvedValue([]),
     deleteTimeslot: vi.fn().mockResolvedValue(null),
   },
 }));
@@ -47,16 +46,6 @@ describe('TimeslotService', () => {
     const date = new Date('2026-04-17');
     await TimeslotService.fetchByDate(date);
     expect(TimeslotQueryService.fetchByDate).toHaveBeenCalledWith(date);
-  });
-
-  it('delegates addBackToBackTimeslot to BackToBackTimeslotService', async () => {
-    const date = new Date('2026-04-17');
-    await TimeslotService.addBackToBackTimeslot(date, 'team-1', 'Early');
-    expect(BackToBackTimeslotService.addBackToBackTimeslot).toHaveBeenCalledWith(
-      date,
-      'team-1',
-      'Early'
-    );
   });
 
   it('delegates deleteTimeslot to BackToBackTimeslotService', async () => {

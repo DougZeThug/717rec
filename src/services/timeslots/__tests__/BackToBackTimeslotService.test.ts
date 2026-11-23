@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError, ValidationError } from '@/types/errors';
+import { DatabaseError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
@@ -18,16 +18,6 @@ vi.mock('@/utils/logger', () => ({
   teamLog: vi.fn(),
 }));
 
-// Mock autoSchedule/constants — return real-looking pair config
-vi.mock('@/utils/autoSchedule/constants', () => ({
-  getPairConfig: (name: string) =>
-    name === 'Early' ? { primary: '6:30 PM', secondary: '7:00 PM', label: 'Early' } : undefined,
-  getBackToBackPairName: (slot: string) => {
-    if (slot === '6:30 PM' || slot === '7:00 PM') return 'Early';
-    return null;
-  },
-}));
-
 // Import after mocks
 import { BackToBackTimeslotService } from '../BackToBackTimeslotService';
 
@@ -39,24 +29,6 @@ const pgError = (msg = 'query failed') => ({
   details: null,
   hint: null,
   name: 'PostgrestError',
-});
-
-const makeRawSlot = (overrides: Record<string, unknown> = {}) => ({
-  id: 'ts-1',
-  match_date: '2026-04-17',
-  timeslot: '6:30 PM',
-  team_id: 'team-1',
-  created_at: '2026-04-17T00:00:00Z',
-  is_back_to_back: true,
-  is_double_header: false,
-  pair_slot: '7:00 PM',
-  match_sequence: 1,
-  teams: null,
-  ...overrides,
-});
-
-const insertSelectChain = (result: { data: unknown; error: unknown }) => ({
-  insert: () => ({ select: () => Promise.resolve(result) }),
 });
 
 // Two-step chain for deleteTimeslot: first fetch, then delete
@@ -85,58 +57,6 @@ const makeFetchAndDeleteMock = (
     };
   };
 };
-
-// ─── addBackToBackTimeslot ────────────────────────────────────────────────────
-
-describe('BackToBackTimeslotService.addBackToBackTimeslot', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('inserts both timeslot rows and returns transformed results', async () => {
-    const rows = [
-      makeRawSlot(),
-      makeRawSlot({ id: 'ts-2', timeslot: '7:00 PM', match_sequence: 2 }),
-    ];
-    mockFrom.mockReturnValue(insertSelectChain({ data: rows, error: null }));
-
-    const result = await BackToBackTimeslotService.addBackToBackTimeslot(
-      new Date('2026-04-17'),
-      'team-1',
-      'Early'
-    );
-
-    expect(result).toHaveLength(2);
-    expect(result[0].is_back_to_back).toBe(true);
-    expect(mockFrom).toHaveBeenCalledWith('team_timeslots');
-  });
-
-  it('returns empty array when data is null', async () => {
-    mockFrom.mockReturnValue(insertSelectChain({ data: null, error: null }));
-    const result = await BackToBackTimeslotService.addBackToBackTimeslot(
-      new Date('2026-04-17'),
-      'team-1',
-      'Early'
-    );
-    expect(result).toEqual([]);
-  });
-
-  it('throws ValidationError for invalid pairName', async () => {
-    await expect(
-      BackToBackTimeslotService.addBackToBackTimeslot(
-        new Date('2026-04-17'),
-        'team-1',
-        'InvalidPair'
-      )
-    ).rejects.toThrow(ValidationError);
-    expect(mockFrom).not.toHaveBeenCalled();
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue(insertSelectChain({ data: null, error: pgError() }));
-    await expect(
-      BackToBackTimeslotService.addBackToBackTimeslot(new Date('2026-04-17'), 'team-1', 'Early')
-    ).rejects.toThrow(DatabaseError);
-  });
-});
 
 // ─── deleteTimeslot (back-to-back path) ──────────────────────────────────────
 

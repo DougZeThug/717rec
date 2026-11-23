@@ -122,30 +122,6 @@ export const LiveMatchService = {
     };
   },
 
-  /** Idempotent: a concurrent create of the same game number returns the existing row. */
-  createGame: async (matchId: string, gameNumber: number): Promise<LiveGameRow> => {
-    const { data, error } = await supabase
-      .from('games')
-      .insert({ match_id: matchId, game_number: gameNumber })
-      .select(GAME_COLUMNS)
-      .single();
-
-    if (error) {
-      if (error.code === '23505') {
-        const { data: existing, error: fetchError } = await supabase
-          .from('games')
-          .select(GAME_COLUMNS)
-          .eq('match_id', matchId)
-          .eq('game_number', gameNumber)
-          .single();
-        if (fetchError) handleLiveScoringError(fetchError, 'Failed to load existing game');
-        return ensureFound(existing, 'Game');
-      }
-      handleLiveScoringError(error, 'Failed to create game');
-    }
-    return ensureFound(data, 'Game');
-  },
-
   /**
    * Ends a game, but only if it is still the game the screen showed.
    *

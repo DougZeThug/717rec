@@ -42,18 +42,6 @@ export interface SaveVersionInput {
  * no UPDATE or DELETE grant.
  */
 export const RecapEditionService = {
-  /** Every edition for a season, newest week first. Admin-only by RLS. */
-  fetchEditionsForSeason: async (seasonId: string): Promise<EditionRow[]> => {
-    const { data, error } = await supabase
-      .from('recap_editions')
-      .select(EDITION_COLUMNS)
-      .eq('season_id', seasonId)
-      .order('week_number', { ascending: false });
-
-    if (error) handleDatabaseError(error, 'Failed to fetch recap editions');
-    return data ?? [];
-  },
-
   /** The edition for one week, or null when none has been started. */
   fetchEditionForWeek: async (seasonId: string, weekNumber: number): Promise<EditionRow | null> => {
     const { data, error } = await supabase

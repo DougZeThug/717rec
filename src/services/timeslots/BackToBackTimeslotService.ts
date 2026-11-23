@@ -1,64 +1,8 @@
-import { format } from 'date-fns';
-
 import { supabase } from '@/integrations/supabase/client';
 import { ValidationError } from '@/types/errors';
-import { TeamTimeslot } from '@/types/timeslots';
-import { getPairConfig } from '@/utils/autoSchedule/constants';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { scheduleLog } from '@/utils/logger';
-
-import { TimeslotTransformer } from './TimeslotTransformer';
 
 export const BackToBackTimeslotService = {
-  /**
-   * Add a back-to-back timeslot assignment.
-   * Always creates BOTH timeslots for the team.
-   */
-  async addBackToBackTimeslot(
-    date: Date,
-    teamId: string,
-    pairName: string
-  ): Promise<TeamTimeslot[]> {
-    const pairConfig = getPairConfig(pairName);
-    if (!pairConfig) throw new ValidationError(`Invalid pair name: ${pairName}`);
-
-    const formattedDate = format(date, 'yyyy-MM-dd');
-
-    const timeslotData = [
-      {
-        match_date: formattedDate,
-        team_id: teamId,
-        timeslot: pairConfig.primary,
-        is_back_to_back: true,
-        pair_slot: pairConfig.secondary,
-        match_sequence: 1,
-      },
-      {
-        match_date: formattedDate,
-        team_id: teamId,
-        timeslot: pairConfig.secondary,
-        is_back_to_back: true,
-        pair_slot: pairConfig.primary,
-        match_sequence: 2,
-      },
-    ];
-
-    scheduleLog(
-      `Adding back-to-back timeslots for team ${teamId} in ${pairName} pair:`,
-      timeslotData
-    );
-
-    const { data, error } = await supabase
-      .from('team_timeslots')
-      .insert(timeslotData)
-      .select(
-        'id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)'
-      );
-
-    if (error) handleDatabaseError(error, 'Failed to add back-to-back timeslots');
-    return TimeslotTransformer.formatTimeslotResponse(data ?? []);
-  },
-
   /**
    * Delete a timeslot assignment (removes both slots in a back-to-back pair).
    */
