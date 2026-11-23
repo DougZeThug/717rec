@@ -24,7 +24,7 @@ Problems:
 
 - 12 files under `src/components/playoffs/` (`match-card/*`, `animation/BracketAnimationUtils.tsx`) hang off the dead `PlayoffMatchCard`. The live card is `src/components/schedule/match-card/`.
 - 7 display components nobody renders: `schedule/ScoreSection`, `stats/{AnimatedRankNumber,CompactStandings,StatsSummaryCards}`, `stats/rank/TeamLogo`, `teams/TeamStats`, `timeslots/WeekTimeslotDisplay`, plus `styles/interactionUtils.ts`.
-- 3 old team services nobody calls: `TeamAnalysisService` (coach notes; the `team_analysis` table STAYS), `TeamCalculationService`, `TeamHiddenService`.
+- 3 old team services nobody calls: `TeamAnalysisService` (coach notes; the `team_analysis` table STAYS), `TeamCalculationService`, `TeamHiddenService`. Overruled 2026-11-23: Doug approved dropping `team_analysis` (and the other dead database objects). See `docs/audits/open-follow-ups.md`, row s.
 - 5 old playoff hooks replaced by `usePlayoffViewModel.compat.ts`: `usePlayoffActions`, `usePlayoffBracketData`, `usePlayoffMatches`, `usePlayoffState`, `usePlayoffViewModel`; plus `matches/useMatchInteractions`, `matches/utils/matchResultUtils`, `useWeekTimeslotsByTeam`.
 - Old utils: `autoScheduleUtils`, `teamStatsUtils/{fetchTeamData,parseTeamStats}`, `teamDetailsUtils/{headToHeadUtils,matchUtils}`, `colors/{championshipColors,sweepRateColors}`, `powerScore/getTrendingTeams`, `brackets/mappers/teamMapper`, `brackets/validators/bracketDataValidator`, `hooks/useHistoricalPowerScores`.
 
