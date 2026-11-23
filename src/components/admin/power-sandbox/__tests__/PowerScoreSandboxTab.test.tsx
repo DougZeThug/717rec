@@ -349,6 +349,46 @@ describe('PowerScoreSandboxTab', () => {
     expect(refetch).toHaveBeenCalledTimes(1);
   });
 
+  it('says the preview data could not load, and Retry asks for the data again, not the preview', async () => {
+    const refetch = vi.fn();
+    const retryData = vi.fn();
+    mockPreview.mockReturnValue(queryResult({ dataError: true, retryData, refetch }));
+    render(<PowerScoreSandboxTab />);
+
+    expect(screen.getByText("Couldn't load the data for the preview.")).toBeInTheDocument();
+    expect(screen.queryByText("Couldn't build the preview.")).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: /retry/i }));
+    expect(retryData).toHaveBeenCalledTimes(1);
+    expect(refetch).not.toHaveBeenCalled();
+  });
+
+  it('says the preview could not be built, and Retry rebuilds the preview', async () => {
+    const refetch = vi.fn();
+    const retryData = vi.fn();
+    mockPreview.mockReturnValue(queryResult({ isError: true, refetch, retryData }));
+    render(<PowerScoreSandboxTab />);
+
+    expect(screen.getByText("Couldn't build the preview.")).toBeInTheDocument();
+    expect(screen.queryByText("Couldn't load the data for the preview.")).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: /retry/i }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+    expect(retryData).not.toHaveBeenCalled();
+  });
+
+  it('shows no preview error when the preview loads', () => {
+    render(<PowerScoreSandboxTab />);
+
+    expect(screen.queryByText(/couldn't/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('Building preview...')).not.toBeInTheDocument();
+  });
+
+  it('shows "Building preview..." while the preview data is still loading', () => {
+    mockPreview.mockReturnValue(queryResult({ dataLoading: true }));
+    render(<PowerScoreSandboxTab />);
+
+    expect(screen.getByText('Building preview...')).toBeInTheDocument();
+  });
+
   it('closes the Revert dialog when Cancel is pressed', async () => {
     render(<PowerScoreSandboxTab />);
 

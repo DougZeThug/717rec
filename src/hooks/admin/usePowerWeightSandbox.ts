@@ -77,7 +77,7 @@ export const usePowerWeightPreview = (
   });
 
   const previewInputs = dataQuery.data;
-  return useQuery<PowerWeightPreview>({
+  const previewQuery = useQuery<PowerWeightPreview>({
     queryKey: [
       ...PREVIEW_KEY,
       candidate.win,
@@ -110,6 +110,15 @@ export const usePowerWeightPreview = (
     placeholderData: keepPreviousData,
     staleTime: 5 * 60_000,
   });
+
+  // The compute query stays idle when the data read fails, so the screen
+  // would show nothing. Hand the data query's state to the caller too.
+  return {
+    ...previewQuery,
+    dataError: dataQuery.isError,
+    dataLoading: dataQuery.isLoading,
+    retryData: () => dataQuery.refetch(),
+  };
 };
 
 /**
