@@ -32,6 +32,7 @@ export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) =>
     'team-totals', // career totals are computed from matches
     // Schedule and opponent data
     'season-opponent-history',
+    'season-data', // History page data
     // Head-to-head data
     'head-to-head',
     'opponent-history',

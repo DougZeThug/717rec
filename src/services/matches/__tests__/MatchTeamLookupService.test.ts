@@ -94,6 +94,32 @@ describe('fetchTeamMatchesData', () => {
     expect(result).toBeNull();
   });
 
+  it('returns null, not an error, when the active-season read finds no row (PGRST116)', async () => {
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: null, error: { ...pgError(), code: 'PGRST116' } }),
+        }),
+      }),
+    });
+
+    await expect(fetchTeamMatchesData(TEAM_ID)).resolves.toBeNull();
+  });
+
+  it('throws DatabaseError when the active-season read fails, not an empty schedule', async () => {
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: null, error: pgError('seasons failed') }),
+        }),
+      }),
+    });
+
+    await expect(fetchTeamMatchesData(TEAM_ID)).rejects.toThrow(DatabaseError);
+    // The matches read must not run after the season read failed.
+    expect(mockFrom).not.toHaveBeenCalledWith('matches');
+  });
+
   it('returns empty array when no matches', async () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {

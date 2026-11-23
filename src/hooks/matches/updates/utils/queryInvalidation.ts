@@ -1,18 +1,13 @@
 import { QueryClient } from '@tanstack/react-query';
 
+import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
+
 /**
- * Invalidates all data queries related to matches, teams, and rankings
- * to ensure data consistency across the application after match updates/deletions
+ * Refreshes every query that depends on match results after a match is
+ * updated or deleted. It uses the same list as the other match flows
+ * (`invalidateMatchRelatedQueries`), so Career and bracket pages refresh too.
+ * Callers do not wait for it.
  */
 export const invalidateAllDataQueries = (queryClient: QueryClient) => {
-  queryClient.invalidateQueries({ queryKey: ['matches'] });
-  queryClient.invalidateQueries({ queryKey: ['teams'] });
-  queryClient.invalidateQueries({ queryKey: ['rankings'] });
-  queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-  queryClient.invalidateQueries({ queryKey: ['team-totals'] });
-  queryClient.invalidateQueries({ queryKey: ['season-data'] }); // History page data
-
-  // Also invalidate single team queries that might be open in team details pages
-  queryClient.invalidateQueries({ queryKey: ['team'] });
-  queryClient.invalidateQueries({ queryKey: ['team-matches'] });
+  invalidateMatchRelatedQueries(queryClient);
 };

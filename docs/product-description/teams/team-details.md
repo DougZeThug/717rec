@@ -172,7 +172,12 @@ history are the active season; the career section and the badges are not. See
 [`foundations/seasons.md`](../foundations/seasons.md).
 
 **Validation and error display.** No input. Section-level failures appear as
-in-place retry cards rather than toasts.
+in-place retry cards rather than toasts. If the career numbers fail to load and
+there are none to show, the Career card says "We couldn't load career
+statistics. Please try again." and has a Retry button. It no longer says "No
+career statistics available", which now means the read worked and the team has
+no career numbers yet. If a refresh fails while old numbers are on screen, the
+old numbers stay.
 
 **Unsaved changes.** None exist.
 

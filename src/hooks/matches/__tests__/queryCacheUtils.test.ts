@@ -52,6 +52,7 @@ describe('match query cache utilities', () => {
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['careerRankings'] });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['team-totals'] });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['season-opponent-history'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['season-data'] });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['match-head-to-head'] });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['batch-head-to-head'] });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['upcoming-matches'] });

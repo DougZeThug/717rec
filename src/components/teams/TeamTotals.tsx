@@ -15,6 +15,7 @@ import {
 import React from 'react';
 
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { PercentileFromResult } from '@/components/ui/PercentileBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTeamTotalsComputed } from '@/hooks/career/useTeamTotalsComputed';
@@ -94,7 +95,7 @@ const DivisionRecordCard: React.FC<DivisionRecordCardProps> = ({ name, icon, rec
 };
 
 const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) => {
-  const { totals, isLoading } = useTeamTotalsComputed(teamId);
+  const { totals, isLoading, error, refetch } = useTeamTotalsComputed(teamId);
   const { getTeamPercentiles } = useLeaguePercentiles();
 
   const percentiles = getTeamPercentiles(teamId);
@@ -133,6 +134,29 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
             )}
           </div>
         </div>
+      </CollapsibleSection>
+    );
+  }
+
+  // A failed read is not "no stats yet": say so and offer a retry. If a refresh
+  // fails while old totals exist, keep the old numbers on screen.
+  if (error && !totals) {
+    const errorContent = (
+      <ErrorDisplay
+        variant="inline"
+        error="We couldn't load career statistics. Please try again."
+        onRetry={() => refetch()}
+      />
+    );
+    if (standalone) return errorContent;
+    return (
+      <CollapsibleSection
+        title="Career Statistics"
+        icon={BarChart}
+        iconColor="text-purple-500"
+        defaultOpen={false}
+      >
+        {errorContent}
       </CollapsibleSection>
     );
   }

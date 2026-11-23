@@ -109,21 +109,6 @@ describe('fetchCareerData', () => {
     await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(DatabaseError);
   });
 
-  it('returns result even when non-critical queries fail (matches, archived, playoff)', async () => {
-    mockFrom.mockImplementation(
-      makeFromImpl({
-        ...successResults,
-        matches: { data: null, error: pgError('non-critical') },
-        matches_archive: { data: null, error: pgError('non-critical') },
-        playoff_matches: { data: null, error: pgError('non-critical') },
-      })
-    );
-
-    // Non-critical errors are logged but don't throw
-    const result = await fetchCareerData(TEAM_ID);
-    expect(result).not.toBeNull();
-  });
-
   it('rejects an invalid teamId before querying Supabase', async () => {
     await expect(fetchCareerData('team-1')).rejects.toThrow(ValidationError);
     expect(mockFrom).not.toHaveBeenCalled();
@@ -307,7 +292,10 @@ describe('fetchCareerData query flow', () => {
       ['the division is null', { data: { divisions: null }, error: null }],
       ['the weight is null', { data: { divisions: { division_weight: null } }, error: null }],
       ['the team row is missing', { data: null, error: null }],
-      ['the team query fails', { data: null, error: pgError('teams failed') }],
+      [
+        'the team row is missing (PGRST116)',
+        { data: null, error: { ...pgError(), code: 'PGRST116' } },
+      ],
     ])('has no team weight (null) when %s', async (_label, teams) => {
       setup({ teams });
 
@@ -367,39 +355,30 @@ describe('fetchCareerData query flow', () => {
       expect(recorded).toHaveLength(7);
     });
 
-    it('ignores errors from the teams and team-details queries', async () => {
-      setup({
-        teams: { data: null, error: pgError('teams failed') },
-        team_details_archive: { data: null, error: pgError('archive failed') },
-      });
+    it('throws when the team query fails for another reason', async () => {
+      setup({ teams: { data: null, error: pgError('teams failed') } });
 
-      const result = await fetchCareerData(TEAM_ID);
-
-      expect(result).not.toBeNull();
-      expect(result?.teamDivisionMap.size).toBe(0);
-      expect(warnLog).not.toHaveBeenCalled();
+      await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(DatabaseError);
+      await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(/fetch team:/i);
     });
 
-    it('warns, in order, about failed match queries and returns null data for them', async () => {
-      const currentError = pgError('current failed');
-      const archivedError = pgError('archived failed');
-      const playoffError = pgError('playoff failed');
-      setup({
-        matches: { data: null, error: currentError },
-        matches_archive: { data: null, error: archivedError },
-        playoff_matches: { data: null, error: playoffError },
-      });
+    it('throws when the team division history read fails', async () => {
+      setup({ team_details_archive: { data: null, error: pgError('archive failed') } });
 
-      const result = await fetchCareerData(TEAM_ID);
+      await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(DatabaseError);
+      await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(/division history/i);
+    });
 
-      expect(vi.mocked(warnLog).mock.calls).toEqual([
-        ['Error fetching current matches:', currentError],
-        ['Error fetching archived matches:', archivedError],
-        ['Error fetching playoff matches:', playoffError],
-      ]);
-      expect(result?.currentMatches).toBeNull();
-      expect(result?.archivedMatches).toBeNull();
-      expect(result?.playoffMatches).toBeNull();
+    it.each([
+      ['matches', /current matches/i],
+      ['matches_archive', /archived matches/i],
+      ['playoff_matches', /playoff matches/i],
+    ])('throws, and does not just warn, when the %s read fails', async (table, text) => {
+      setup({ [table]: { data: null, error: pgError('read failed') } });
+
+      await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(DatabaseError);
+      await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(text);
+      expect(warnLog).not.toHaveBeenCalled();
     });
   });
 
@@ -516,11 +495,11 @@ describe('fetchCareerData query flow', () => {
       expect(result?.bracketSeasonMap).toEqual({ b1: 's1', b3: 's3' });
     });
 
-    it('returns empty maps, without throwing, when the bracket queries return no data', async () => {
+    it('returns empty maps when the bracket queries answer with no rows', async () => {
       setup({
         playoff_matches: { data: [playoffRow('b1')], error: null },
-        bracket_weights: { data: null, error: pgError('brackets failed') },
-        bracket_seasons: { data: null, error: pgError('brackets failed') },
+        bracket_weights: { data: null, error: null },
+        bracket_seasons: { data: null, error: null },
       });
 
       const result = await fetchCareerData(TEAM_ID);
@@ -529,6 +508,26 @@ describe('fetchCareerData query flow', () => {
       expect(result?.bracketDivisionWeights).toEqual({});
       expect(result?.bracketDivisionDisplayNames).toEqual({});
       expect(result?.bracketSeasonMap).toEqual({});
+    });
+
+    it('throws when the bracket weight read fails', async () => {
+      setup({
+        playoff_matches: { data: [playoffRow('b1')], error: null },
+        bracket_weights: { data: null, error: pgError('brackets failed') },
+      });
+
+      await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(DatabaseError);
+      await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(/bracket divisions/i);
+    });
+
+    it('throws when the bracket season read fails', async () => {
+      setup({
+        playoff_matches: { data: [playoffRow('b1')], error: null },
+        bracket_seasons: { data: null, error: pgError('brackets failed') },
+      });
+
+      await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(DatabaseError);
+      await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(/bracket seasons/i);
     });
   });
 

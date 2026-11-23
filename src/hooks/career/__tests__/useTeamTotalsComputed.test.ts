@@ -158,4 +158,19 @@ describe('useTeamTotalsComputed', () => {
     expect(result.current.error).toBeInstanceOf(Error);
     expect(result.current.totals).toBeUndefined();
   });
+
+  it('hands back refetch so the page can retry a failed read', async () => {
+    (fetchCareerData as ReturnType<typeof vi.fn>)
+      .mockRejectedValueOnce(new Error('Fetch failed'))
+      .mockResolvedValueOnce(mockCareerData);
+    const { result } = renderHook(() => useTeamTotalsComputed('team-1'), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
+
+    await result.current.refetch();
+
+    await waitFor(() => expect(result.current.totals?.career_match_wins).toBe(10));
+    expect(fetchCareerData).toHaveBeenCalledTimes(2);
+  });
 });

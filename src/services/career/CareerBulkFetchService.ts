@@ -4,7 +4,6 @@ import { fetchRealDivisionOverrides } from '@/services/divisions/RealDivisionSer
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
 import { applyRealDivisions } from '@/utils/divisions/realDivisionOverrides';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { warnLog } from '@/utils/logger';
 import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
 
 import { CareerData, TeamDetailsArchive } from './CareerTypes';
@@ -139,10 +138,14 @@ async function fetchBracketsInto(
 ): Promise<void> {
   if (bracketIds.length === 0) return;
 
-  const { data: bracketData } = await supabase
+  const { data: bracketData, error } = await supabase
     .from('brackets')
     .select('id, season_id, divisions(division_weight, display_division)')
     .in('id', bracketIds);
+
+  // Throw before anything is written: a failed read must not be cached or
+  // marked as queried, so the next call asks again.
+  if (error) handleDatabaseError(error, 'Failed to fetch bracket lookups');
 
   for (const bracket of bracketData ?? []) {
     const divisions = bracket.divisions as {
@@ -319,17 +322,28 @@ export const fetchAllTeamsCareerData = async (
     fetchRealDivisionOverrides(),
   ]);
 
-  // Handle critical error
+  // A failed read must not look like "no stats yet", so every read throws.
   if (allSeasonStatsResult.error) {
     handleDatabaseError(allSeasonStatsResult.error, 'Failed to fetch bulk team season stats');
   }
-
-  // Log non-critical errors
-  if (allMatchesResult.error) warnLog('Error fetching bulk matches:', allMatchesResult.error);
-  if (allArchivedMatchesResult.error)
-    warnLog('Error fetching bulk archived matches:', allArchivedMatchesResult.error);
-  if (allPlayoffMatchesResult.error)
-    warnLog('Error fetching bulk playoff matches:', allPlayoffMatchesResult.error);
+  if (allTeamDivisionsResult.error) {
+    handleDatabaseError(allTeamDivisionsResult.error, 'Failed to fetch bulk team divisions');
+  }
+  if (allMatchesResult.error) {
+    handleDatabaseError(allMatchesResult.error, 'Failed to fetch bulk matches');
+  }
+  if (allArchivedMatchesResult.error) {
+    handleDatabaseError(allArchivedMatchesResult.error, 'Failed to fetch bulk archived matches');
+  }
+  if (allTeamDetailsArchiveResult.error) {
+    handleDatabaseError(
+      allTeamDetailsArchiveResult.error,
+      'Failed to fetch bulk team division history'
+    );
+  }
+  if (allPlayoffMatchesResult.error) {
+    handleDatabaseError(allPlayoffMatchesResult.error, 'Failed to fetch bulk playoff matches');
+  }
 
   // 2. Build shared lookup maps (computed once, shared across all teams)
   const { teamDivisionWeights, teamDivisionMap } = buildTeamDivisionMaps(
