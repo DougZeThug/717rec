@@ -6,8 +6,6 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 vi.mock('@/services/brackets/viewer', () => ({
   BracketsViewerAdapter: {
     transformFromSql: vi.fn(),
-    transformFromJsonb: vi.fn(),
-    transform: vi.fn(),
   },
 }));
 
@@ -117,9 +115,7 @@ const makeResult = (
   getPlayoffMatchId: vi.fn(),
 });
 
-const makeBracket = (
-  overrides: Partial<PlayoffBracket> & { bracket_data?: unknown } = {}
-): PlayoffBracket & { bracket_data?: never } =>
+const makeBracket = (overrides: Partial<PlayoffBracket> = {}): PlayoffBracket =>
   ({
     id: 'bracket-1',
     name: 'Championship',
@@ -127,7 +123,7 @@ const makeBracket = (
     state: 'in_progress',
     uses_brackets_manager: true,
     ...overrides,
-  }) as PlayoffBracket & { bracket_data?: never };
+  }) as PlayoffBracket;
 
 // ─── Test harness ────────────────────────────────────────────────────────────
 
@@ -209,8 +205,6 @@ beforeEach(() => {
     setParticipantImages: setParticipantImagesMock,
   };
   mockedAdapter.transformFromSql.mockResolvedValue(makeResult());
-  mockedAdapter.transformFromJsonb.mockReturnValue(makeResult());
-  mockedAdapter.transform.mockReturnValue(makeResult());
 });
 
 afterEach(() => {
@@ -228,45 +222,6 @@ describe('useBracketsViewerRenderer', () => {
       await waitFor(() => expect(result.current.isInitialized).toBe(true));
 
       expect(mockedAdapter.transformFromSql).toHaveBeenCalledWith('bracket-1');
-      expect(mockedAdapter.transformFromJsonb).not.toHaveBeenCalled();
-      expect(mockedAdapter.transform).not.toHaveBeenCalled();
-    });
-
-    it('uses the JSONB transform when bracket_data is present and brackets-manager is off', async () => {
-      const bracketData = { stage: [], match: [] };
-      const bracket = makeBracket({
-        uses_brackets_manager: false,
-        bracket_data: bracketData as never,
-      });
-      const { result } = renderRenderer({ bracket });
-
-      await waitFor(() => expect(result.current.isInitialized).toBe(true));
-
-      expect(mockedAdapter.transformFromJsonb).toHaveBeenCalledWith(bracketData, 'bracket-1');
-      expect(mockedAdapter.transformFromSql).not.toHaveBeenCalled();
-    });
-
-    it('falls back to the legacy transform with bracket participants', async () => {
-      const participants = [{ position: 1, team_id: 't1', name: 'Team A' }];
-      const bracket = makeBracket({ uses_brackets_manager: false, participants });
-      const { result } = renderRenderer({ bracket });
-
-      await waitFor(() => expect(result.current.isInitialized).toBe(true));
-
-      expect(mockedAdapter.transform).toHaveBeenCalledWith(bracket, [], participants);
-    });
-
-    it('prefers the SQL transform when both brackets-manager flag and bracket_data exist', async () => {
-      const bracket = makeBracket({
-        uses_brackets_manager: true,
-        bracket_data: { stage: [] } as never,
-      });
-      const { result } = renderRenderer({ bracket });
-
-      await waitFor(() => expect(result.current.isInitialized).toBe(true));
-
-      expect(mockedAdapter.transformFromSql).toHaveBeenCalledWith('bracket-1');
-      expect(mockedAdapter.transformFromJsonb).not.toHaveBeenCalled();
     });
   });
 

@@ -1,13 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
-
-// The proof page renders the full <BracketView>, which pulls in TanStack Query
-// and the brackets-viewer. This unit test only cares about the page's own
-// state-transition proof (the status section + buttons), so stub the viewer.
-vi.mock('@/components/playoffs/BracketView', () => ({
-  default: () => <div data-testid="mock-bracket-view" />,
-}));
+import { describe, expect, it } from 'vitest';
 
 import PlayoffBracketE2EProof from '../PlayoffBracketE2EProof';
 

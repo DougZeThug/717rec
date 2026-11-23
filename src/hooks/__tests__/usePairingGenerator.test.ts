@@ -201,6 +201,9 @@ describe('usePairingGenerator', () => {
       variant: 'destructive',
     });
 
+    // Exactly one toast: the screen relies on this and adds no toast of its own on null
+    expect(mockToast).toHaveBeenCalledTimes(1);
+
     // Should return null on error
     expect(pairings).toBeNull();
   });

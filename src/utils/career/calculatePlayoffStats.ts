@@ -1,4 +1,5 @@
 import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
+import { COMPETITIVE_PLAYOFF_MIN_WEIGHT } from '@/utils/rankingUtils/playoffTierCutoffs';
 
 import { PlayoffMatchData, PlayoffStatsResult } from './types';
 
@@ -10,7 +11,7 @@ interface PlayoffStatsInput {
 
 /**
  * Calculates playoff statistics including wins, losses, and competitive division wins.
- * Competitive divisions are those with weight >= 0.89.
+ * Competitive divisions are those with weight >= COMPETITIVE_PLAYOFF_MIN_WEIGHT (0.89).
  */
 export const calculatePlayoffStats = ({
   playoffMatches,
@@ -30,9 +31,10 @@ export const calculatePlayoffStats = ({
   }
 
   for (const match of playoffMatches) {
+    // `||` turns a stored 0 into 0.85. The Team page uses `??` (keeps 0). Do not unify.
     const bracketDivisionWeight =
       bracketDivisionWeights[match.bracket_id || ''] || DEFAULT_DIVISION_WEIGHT;
-    const isCompetitiveDivision = bracketDivisionWeight >= 0.89;
+    const isCompetitiveDivision = bracketDivisionWeight >= COMPETITIVE_PLAYOFF_MIN_WEIGHT;
 
     if (match.winner_id === teamId) {
       career_playoff_wins++;

@@ -177,12 +177,12 @@ Last measured: 2026-11-22.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 91.74%  |
-| Statements | 90.19%  |
-| Functions  | 90.00%  |
-| Branches   | 81.41%  |
+| Lines      | 91.72%  |
+| Statements | 90.17%  |
+| Functions  | 89.97%  |
+| Branches   | 81.48%  |
 
-Measured from a full passing run on 2026-11-22: 886 test files / 8,515 tests (15 of
+Measured from a full passing run on 2026-11-22: 886 test files / 8,542 tests (15 of
 them expected-fail cases).
 
 The component layer sits at about 92% lines and the service layer at about 95%

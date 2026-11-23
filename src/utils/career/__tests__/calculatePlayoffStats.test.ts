@@ -124,6 +124,32 @@ describe('calculatePlayoffStats', () => {
     expect(result.competitive_playoff_wins).toBe(1);
   });
 
+  it('counts a win at exactly weight 0.89 as competitive and a win at 0.88 as not competitive', () => {
+    const win = (bracket_id: string): PlayoffMatchData => ({
+      winner_id: 'team-1',
+      loser_id: 'team-2',
+      team1_id: 'team-1',
+      team2_id: 'team-2',
+      team1_score: 2,
+      team2_score: 0,
+      bracket_id,
+    });
+
+    const atCutoff = calculatePlayoffStats({
+      playoffMatches: [win('at-cutoff')],
+      bracketDivisionWeights: { 'at-cutoff': 0.89 },
+      teamId,
+    });
+    const justBelow = calculatePlayoffStats({
+      playoffMatches: [win('just-below')],
+      bracketDivisionWeights: { 'just-below': 0.88 },
+      teamId,
+    });
+
+    expect(atCutoff.competitive_playoff_wins).toBe(1);
+    expect(justBelow.competitive_playoff_wins).toBe(0);
+  });
+
   it('uses default weight 0.85 for unknown brackets', () => {
     const playoffMatches: PlayoffMatchData[] = [
       {

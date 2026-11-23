@@ -420,9 +420,9 @@ describe('usePairingOperations', () => {
       );
     });
 
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Generation Failed', variant: 'destructive' })
-    );
+    // The generator raises the real error toast before it returns null. This screen adds none.
+    expect(mockToast).not.toHaveBeenCalled();
+    expect(setActiveTab).not.toHaveBeenCalled();
     expect(setIsProcessing).toHaveBeenLastCalledWith(false);
 
     mockGenerateMatchPairings.mockRejectedValueOnce(new Error('boom'));

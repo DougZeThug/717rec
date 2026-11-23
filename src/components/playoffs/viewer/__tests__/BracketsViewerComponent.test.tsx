@@ -107,11 +107,7 @@ import { BracketsViewerComponent } from '../BracketsViewerComponent';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const makeBracket = (
-  overrides: Partial<PlayoffBracket> = {}
-): PlayoffBracket & {
-  bracket_data?: import('brackets-memory-db').InMemoryDatabase['data'];
-} => ({
+const makeBracket = (overrides: Partial<PlayoffBracket> = {}): PlayoffBracket => ({
   id: 'bracket-1',
   name: 'Championship',
   format: 'single_elimination',

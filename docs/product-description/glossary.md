@@ -418,8 +418,10 @@ it — "Winner of WB 1.1", "Loser of WB Semi 1". It uses short match labels that
 named two ways on one screen.
 
 **Legacy bracket.** A bracket created before the current bracket engine. It is
-listed with a "Legacy" badge and **cannot be opened**: the loader returns nothing
-and the page shows no message.
+listed with a "Legacy" badge and **cannot be opened**: the list shows a note,
+"This bracket was made with an older tool and cannot be drawn. Its results are
+saved.", in place of the button. A typed link to one still shows the list again
+with no message.
 
 **Final standings.** The placement table shown above a completed bracket: every
 team in finishing order with match and game records, and a trophy, medal and

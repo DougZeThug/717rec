@@ -131,10 +131,17 @@ describe('standard mode: Generate, Apply and the Save check for one block', () =
             variant: 'destructive',
           })
         );
-        // And the screen adds its own generic toast. Three toasts fit at once, so both show.
-        expect(mockToast).toHaveBeenCalledWith(
-          expect.objectContaining({ title: 'Generation Failed', variant: 'destructive' })
+        // Generate shows this one red toast and the screen adds no second, generic one. The
+        // helper's Apply step then adds its own "No generated schedule" toast, so count only
+        // the toasts that are about the failed Generate.
+        expect(mockToast).not.toHaveBeenCalledWith(
+          expect.objectContaining({ title: 'Generation Failed' })
         );
+        expect(
+          mockToast.mock.calls.filter(([toast]) =>
+            String(toast.description).startsWith('Failed to generate')
+          )
+        ).toHaveLength(1);
         expect(mockToast).not.toHaveBeenCalledWith(
           expect.objectContaining({ title: expect.stringContaining('Schedule Generated') })
         );

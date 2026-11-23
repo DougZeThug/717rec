@@ -33,6 +33,9 @@ const getDivisionTextColor = (division: string): string => getDivisionSoftClasse
 const getDivisionButtonClass = (division: string): string =>
   getDivisionSoftClasses(division).button;
 
+const LEGACY_BRACKET_NOTE =
+  'This bracket was made with an older tool and cannot be drawn. Its results are saved.';
+
 interface BracketTitleProps {
   bracket: Partial<PlayoffBracket>;
   isCompleted: boolean;
@@ -70,6 +73,8 @@ const BracketRow: React.FC<BracketRowProps> = ({
   onDeleteBracket,
 }) => {
   const isCompleted = bracket.state === BRACKET_STATES.COMPLETED;
+  // Strictly false: a row with no flag keeps its button.
+  const isLegacy = bracket.uses_brackets_manager === false;
 
   const handleViewBracket = () => {
     if (!bracket.id) return;
@@ -88,7 +93,9 @@ const BracketRow: React.FC<BracketRowProps> = ({
 
       {/* Action buttons */}
       <div className="flex gap-2">
-        {onViewBracket && (
+        {/* The viewer draws brackets-manager brackets only, so a legacy bracket
+            gets a note where the button would be. */}
+        {onViewBracket && !isLegacy && (
           <Button
             size="sm"
             className={cn('flex-1 text-xs h-8', getDivisionButtonClass(division))}
@@ -96,6 +103,9 @@ const BracketRow: React.FC<BracketRowProps> = ({
           >
             {isCompleted ? 'View Final Results' : 'View Live Bracket'}
           </Button>
+        )}
+        {onViewBracket && isLegacy && (
+          <p className="flex-1 text-xs text-muted-foreground">{LEGACY_BRACKET_NOTE}</p>
         )}
         {onDeleteBracket && (
           <Button

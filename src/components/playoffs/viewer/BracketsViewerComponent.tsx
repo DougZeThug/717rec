@@ -1,4 +1,3 @@
-import { InMemoryDatabase } from 'brackets-memory-db';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { LoadingState } from '@/components/ui/loading-state';
@@ -11,7 +10,7 @@ import { useBracketsViewerRenderer } from './useBracketsViewerRenderer';
 import { useBracketsViewerScript } from './useBracketsViewerScript';
 
 interface BracketsViewerComponentProps {
-  bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
+  bracket: PlayoffBracket;
   teams: PlayoffTeam[];
   /**
    * External signal that should trigger a re-render of the viewer (e.g. a
