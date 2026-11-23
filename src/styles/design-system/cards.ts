@@ -1,7 +1,3 @@
-import { cn } from '@/lib/utils';
-
-import { getDivisionGradientClass } from './divisions';
-
 /**
  * Card gradient presets for light mode
  */
@@ -37,56 +33,3 @@ export const cardAnimations = {
     }),
   },
 };
-
-/**
- * Card style utility function that combines various design system elements
- */
-export function getCardStyle({
-  gradient = 'default',
-  elevationType = 'default',
-  isInteractive = true,
-  division = null,
-  className = '',
-}: {
-  gradient?: 'default' | 'subtle' | 'highlight';
-  elevationType?: 'default' | 'active' | 'highlighted';
-  isInteractive?: boolean;
-  division?: string | null;
-  className?: string;
-} = {}) {
-  // Get division-specific gradient if division is provided
-  const cardGradient = division ? getDivisionGradientClass(division) : getCardGradient(gradient);
-
-  return cn(
-    'rounded-lg border',
-    'border-border',
-    cardGradient,
-    getCardElevation(elevationType),
-    isInteractive ? 'hover:bg-accent transition-colors duration-200' : '',
-    className
-  );
-}
-
-/** Tailwind background-gradient classes for a card variant. */
-function getCardGradient(variant: 'default' | 'subtle' | 'highlight'): string {
-  switch (variant) {
-    case 'subtle':
-      return 'bg-gradient-to-br from-muted to-card';
-    case 'highlight':
-      return 'bg-gradient-to-br from-blue-500/[0.07] to-card';
-    default:
-      return 'bg-gradient-to-br from-muted to-card';
-  }
-}
-
-/** Tailwind shadow classes for a card elevation level. */
-function getCardElevation(type: 'default' | 'active' | 'highlighted'): string {
-  switch (type) {
-    case 'active':
-      return 'shadow-md hover:shadow-lg dark:shadow-gray-900/30 transition-all duration-300';
-    case 'highlighted':
-      return 'shadow-lg hover:shadow-xl dark:shadow-gray-900/40 transition-all duration-300';
-    default:
-      return 'shadow-xs hover:shadow-md dark:shadow-gray-900/20 transition-all duration-300';
-  }
-}

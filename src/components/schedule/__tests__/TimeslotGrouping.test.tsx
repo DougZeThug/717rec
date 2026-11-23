@@ -51,6 +51,15 @@ describe('TimeslotGrouping', () => {
     expect(screen.getByText('No timeslots scheduled for this date.')).toBeInTheDocument();
   });
 
+  it('keeps the literal gradient classes on the timeslot card (the winter theme matches them)', () => {
+    const grouped: Record<string, TeamTimeslot[]> = { '10:00 AM': [makeTeamTimeslot()] };
+
+    renderWithRouter(<TimeslotGrouping groupedTimeslots={grouped} isLoading={false} />);
+
+    const card = screen.getByText('10:00 AM').closest('[class*="from-muted"]');
+    expect(card).toHaveClass('bg-gradient-to-br', 'from-muted', 'to-card');
+  });
+
   it('renders the timeslot header and team rows for grouped data', () => {
     const grouped: Record<string, TeamTimeslot[]> = {
       '10:00 AM': [

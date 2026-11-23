@@ -85,15 +85,6 @@ export const TimeslotBatchService = {
   },
 
   /**
-   * Delete a single timeslot by id.
-   * Simple delete — does NOT handle back-to-back pair deletion.
-   */
-  async deleteTimeslotSimple(id: string) {
-    const { error } = await supabase.from('team_timeslots').delete().eq('id', id);
-    if (error) handleDatabaseError(error, 'Failed to delete timeslot');
-  },
-
-  /**
    * Delete exactly the rows named, in one statement.
    *
    * Deliberately by id, unlike `BackToBackTimeslotService.deleteTimeslot`,

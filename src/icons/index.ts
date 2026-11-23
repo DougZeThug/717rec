@@ -9,8 +9,7 @@
  * import {
  *   getIcon,
  *   getWinterGlyph,
- *   Snowflake,
- *   WINTER_ICONS_ENABLED
+ *   SnowflakeSparkle
  * } from "@/icons";
  * ''`
  */
@@ -23,5 +22,4 @@ export {
   getWinterGlyph,
   // Individual winter glyphs for direct import
   SnowflakeSparkle,
-  WINTER_ICONS_ENABLED,
 } from './winterGlyphRegistry';

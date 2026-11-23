@@ -48,7 +48,6 @@ vi.mock('@/services/liveScoring/LiveMatchService', () => ({
   LiveMatchService: {
     fetchLiveMatchBundle: (...args: unknown[]) => mockFetchBundle(...args),
     reopenGame: (...args: unknown[]) => mockReopenGame(...args),
-    createGame: vi.fn(),
     completeGame: vi.fn(),
   },
 }));

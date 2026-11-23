@@ -57,7 +57,7 @@ const AutoScheduleTab = lazy(() => import('@/components/admin/auto-schedule/Auto
 const OpponentHistoryTab = lazy(
   () => import('@/components/admin/opponent-history/OpponentHistoryTab')
 );
-const MassScoresTab = lazy(() => import('@/components/admin/scores/MassScoresTab'));
+const MassScoresTab = lazy(() => import('@/components/admin/MassScoreEntryTool'));
 const WeeklyContentPackTab = lazy(
   () => import('@/components/admin/weekly-content/WeeklyContentPackTab')
 );

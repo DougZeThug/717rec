@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type PendingMatch, usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
-import { SnowflakeSparkle, WINTER_ICONS_ENABLED } from '@/icons';
+import { SnowflakeSparkle } from '@/icons';
 import { cn } from '@/lib/utils';
 
 import { ScoreSubmissionModal } from './ScoreSubmissionModal';
@@ -15,9 +15,7 @@ const PendingScoresTitle = ({ shouldApplyWinter }: { shouldApplyWinter: boolean 
   <CardTitle className="flex items-center gap-2">
     <Clock className={cn('size-5', shouldApplyWinter ? 'text-cyan-400' : 'text-primary')} />
     Pending Scores
-    {shouldApplyWinter && WINTER_ICONS_ENABLED && (
-      <SnowflakeSparkle size={12} className="text-cyan-400/60" />
-    )}
+    {shouldApplyWinter && <SnowflakeSparkle size={12} className="text-cyan-400/60" />}
   </CardTitle>
 );
 

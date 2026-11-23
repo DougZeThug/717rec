@@ -56,10 +56,6 @@ const insertSelectChain = (result: { data: unknown; error: unknown }) => ({
   insert: () => ({ select: () => Promise.resolve(result) }),
 });
 
-const deleteEqChain = (result: { error: unknown }) => ({
-  delete: () => ({ eq: () => Promise.resolve(result) }),
-});
-
 const deleteInChain = (result: { error: unknown }, capture?: (ids: string[]) => void) => ({
   delete: () => ({
     in: (_column: string, ids: string[]) => {
@@ -117,23 +113,6 @@ describe('TimeslotBatchService.batchAssignBackToBackTimeslots', () => {
         'Early'
       )
     ).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── deleteTimeslotSimple ─────────────────────────────────────────────────────
-
-describe('TimeslotBatchService.deleteTimeslotSimple', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('resolves without error on success', async () => {
-    mockFrom.mockReturnValue(deleteEqChain({ error: null }));
-    await expect(TimeslotBatchService.deleteTimeslotSimple('ts-1')).resolves.toBeUndefined();
-    expect(mockFrom).toHaveBeenCalledWith('team_timeslots');
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue(deleteEqChain({ error: pgError() }));
-    await expect(TimeslotBatchService.deleteTimeslotSimple('ts-1')).rejects.toThrow(DatabaseError);
   });
 });
 

@@ -14,7 +14,6 @@ import ScheduleSearch from './ScheduleSearch';
 interface ScheduleHeaderProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  onNewMatch?: () => void;
   selectedDate?: Date;
   onDateSelect?: (date: Date) => void;
   matchDates?: Set<string>;

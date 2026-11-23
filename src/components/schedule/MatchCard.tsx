@@ -22,7 +22,6 @@ interface MatchCardProps {
   match: Match;
   onEdit?: (match: Match) => void;
   onDelete?: (matchId: string) => void;
-  showInteractions?: boolean;
   prefetchedH2H?: HeadToHeadData | null;
   isBatchH2HLoading?: boolean;
   /**
@@ -58,7 +57,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
   match,
   onEdit,
   onDelete,
-  showInteractions = true,
   prefetchedH2H,
   isBatchH2HLoading = false,
   liveScoredMatchIds,
@@ -153,9 +151,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             />
           )}
 
-          {showInteractions && isCompleted && (
-            <MatchInteractions matchId={match.id} className="mt-2" />
-          )}
+          {isCompleted && <MatchInteractions matchId={match.id} className="mt-2" />}
         </div>
       </div>
     </div>

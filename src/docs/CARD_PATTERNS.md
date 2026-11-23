@@ -8,7 +8,6 @@
 1. **`Card`** - Base shadcn component for all card-like containers
 2. **`SummaryCard`** - For stat/metric displays with icon, title, value
 3. **`EntityCard`** - Wrapper for entity displays (teams, rankings) with motion
-4. **`AppCard`** - High-level wrapper for navigable cards with title, description, badge
 
 ## When to Use Each
 
