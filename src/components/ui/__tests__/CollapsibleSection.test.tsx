@@ -12,7 +12,6 @@ vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalTheme: () => ({ shouldApplyWinterBase: mocks.winter }),
 }));
 vi.mock('@/icons', () => ({
-  WINTER_ICONS_ENABLED: true,
   SnowflakeSparkle: () => <span data-testid="snowflake" />,
 }));
 

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { fetchTeamSeasonBreakdown } from './fetchTeamSeasonBreakdown';
+import { fetchSeasonBreakdown } from '@/services/TeamSeasonStatsService';
 
 export const useTeamSeasonBreakdown = (teamId: string | undefined) => {
   const {
@@ -10,7 +10,7 @@ export const useTeamSeasonBreakdown = (teamId: string | undefined) => {
     refetch,
   } = useQuery({
     queryKey: ['team-season-breakdown', teamId],
-    queryFn: () => (teamId ? fetchTeamSeasonBreakdown(teamId) : Promise.resolve(null)),
+    queryFn: () => (teamId ? fetchSeasonBreakdown(teamId) : Promise.resolve(null)),
     enabled: Boolean(teamId),
     staleTime: 5 * 60 * 1000,
   });

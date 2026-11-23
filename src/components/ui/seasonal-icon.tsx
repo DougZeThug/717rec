@@ -3,7 +3,7 @@ import React from 'react';
 
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import type { WinterGlyphName } from '@/icons';
-import { getWinterGlyph, SvgIconComponent, WINTER_ICONS_ENABLED } from '@/icons';
+import { getWinterGlyph, SvgIconComponent } from '@/icons';
 import { cn } from '@/lib/utils';
 
 export interface SeasonalIconProps {
@@ -58,7 +58,7 @@ export const SeasonalIcon: React.FC<SeasonalIconProps> = ({
   const { isWinterTheme } = useSeasonalTheme();
 
   // Determine which icon to render
-  const shouldUseWinter = isWinterTheme && WINTER_ICONS_ENABLED && (winterGlyph || winterIcon);
+  const shouldUseWinter = isWinterTheme && (winterGlyph || winterIcon);
   const winterResolved = shouldUseWinter
     ? winterGlyph
       ? getWinterGlyph(winterGlyph)

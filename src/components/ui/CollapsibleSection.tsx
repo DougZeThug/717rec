@@ -3,7 +3,7 @@ import React, { ReactNode, useState } from 'react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
-import { SnowflakeSparkle, WINTER_ICONS_ENABLED } from '@/icons';
+import { SnowflakeSparkle } from '@/icons';
 import { cn } from '@/lib/utils';
 interface CollapsibleSectionProps {
   title: string;
@@ -93,7 +93,7 @@ export const CollapsibleSection = ({
             iconColor={iconColor}
             title={title}
             headingId={headingId}
-            showSnowflake={shouldApplyWinterBase && WINTER_ICONS_ENABLED}
+            showSnowflake={shouldApplyWinterBase}
           />
           <SectionSummaryGroup summaryValue={summaryValue} isOpen={isOpen} />
         </CollapsibleTrigger>
@@ -136,7 +136,7 @@ export const SectionHeader = ({
           <Heading className="text-2xl md:text-3xl font-bebas uppercase tracking-wide bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 dark:via-none bg-clip-text text-transparent heading-winter">
             {title}
           </Heading>
-          {shouldApplyWinterBase && WINTER_ICONS_ENABLED && (
+          {shouldApplyWinterBase && (
             <SnowflakeSparkle size={14} className="text-cyan-400/70 ml-1 animate-pulse" />
           )}
         </div>

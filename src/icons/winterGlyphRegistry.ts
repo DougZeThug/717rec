@@ -23,12 +23,6 @@ import SparkleFrost from './winter/SparkleFrost';
 import WinterStar from './winter/WinterStar';
 
 /**
- * Global flag to enable/disable winter icons
- * Set to false to revert all winter icons to their defaults
- */
-export const WINTER_ICONS_ENABLED = true;
-
-/**
  * Registry mapping winter glyph names to their SVG components
  */
 const winterGlyphRegistry: Record<WinterGlyphName, SvgIconComponent> = {
@@ -46,10 +40,9 @@ const winterGlyphRegistry: Record<WinterGlyphName, SvgIconComponent> = {
 
 /**
  * Get a winter glyph component by name
- * Returns undefined if winter icons are disabled or name not found
+ * Returns undefined if the name is not found
  */
 export const getWinterGlyph = (name: WinterGlyphName): SvgIconComponent | undefined => {
-  if (!WINTER_ICONS_ENABLED) return undefined;
   return winterGlyphRegistry[name];
 };
 
