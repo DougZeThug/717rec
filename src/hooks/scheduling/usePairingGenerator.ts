@@ -94,7 +94,18 @@ export const usePairingGenerator = () => {
         Object.values(timeBlockTeams).forEach((teamsInBlock) => {
           teamsInBlock?.forEach((team) => allTeamIds.add(team.id));
         });
-        const historyPairs = await fetchSeasonHistoryForTeams(Array.from(allTeamIds));
+        // A failed read must not stop generation, but the admin must know the
+        // pairings were made without rematch history.
+        let historyPairs: Array<[string, string]> = [];
+        try {
+          historyPairs = await fetchSeasonHistoryForTeams(Array.from(allTeamIds));
+        } catch (historyError) {
+          errorLog('Rematch history could not be loaded:', historyError);
+          toast({
+            title: 'Warning',
+            description: 'Rematch history could not be loaded; pairings may repeat opponents',
+          });
+        }
         scheduleLog(`Season History Loaded: ${historyPairs.length} pairs`);
 
         let pairings: TeamPairingMap;

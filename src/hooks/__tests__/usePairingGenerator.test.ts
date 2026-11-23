@@ -9,6 +9,7 @@ import { AlgorithmConfig, PairingResult, TimeBlockTeamsMap } from '@/types/autoS
 import { mockDate, mockPairings, mockTimeBlockTeams } from '@/utils/test/autoSchedule/mockData';
 
 import { usePairingGenerator } from '../scheduling/usePairingGenerator';
+import { scheduleDualBlockPairings } from '../scheduling/utils/dualBlockScheduler';
 
 // Mock useTeamsMap (uses react-query internally)
 vi.mock('../teams', () => ({
@@ -206,5 +207,105 @@ describe('usePairingGenerator', () => {
 
     // Should return null on error
     expect(pairings).toBeNull();
+  });
+
+  describe('when the rematch history cannot be loaded', () => {
+    const WARNING = {
+      title: 'Warning',
+      description: 'Rematch history could not be loaded; pairings may repeat opponents',
+    };
+
+    it('shows one Warning toast and still generates with an empty history', async () => {
+      vi.mocked(fetchSeasonHistoryForTeams).mockRejectedValue(new Error('history read failed'));
+
+      const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
+      const mockToast = mockUseToast().toast;
+
+      let pairings: PairingResult | null = null as PairingResult | null;
+      await act(async () => {
+        pairings = await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams);
+      });
+
+      // Exactly one toast, the default (not red) kind, with the approved wording.
+      expect(mockToast).toHaveBeenCalledTimes(1);
+      expect(mockToast).toHaveBeenCalledWith(WARNING);
+      expect(mockToast).not.toHaveBeenCalledWith(expect.objectContaining({ title: 'Error' }));
+      // Generation goes on, with no history, same as before this warning existed.
+      expect(pairings).not.toBeNull();
+      expect(mockScheduleStandardPairings).toHaveBeenCalledTimes(1);
+      expect(mockScheduleStandardPairings).toHaveBeenCalledWith(mockTimeBlockTeams, {}, []);
+    });
+
+    it('shows one Warning toast in Dual Match Mode and still generates', async () => {
+      vi.mocked(fetchSeasonHistoryForTeams).mockRejectedValue(new Error('history read failed'));
+      vi.mocked(scheduleDualBlockPairings).mockResolvedValue({
+        pairings: {},
+        unmatchedTeamIds: [],
+        diagnostics: { relaxationApplied: 0, repairAttempted: false, constraintsRelaxed: [] },
+      });
+
+      const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
+      const mockToast = mockUseToast().toast;
+
+      let pairings: PairingResult | null = null as PairingResult | null;
+      await act(async () => {
+        pairings = await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams, {
+          dualMatchMode: true,
+        });
+      });
+
+      expect(mockToast).toHaveBeenCalledTimes(1);
+      expect(mockToast).toHaveBeenCalledWith(WARNING);
+      expect(pairings).not.toBeNull();
+      expect(scheduleDualBlockPairings).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(scheduleDualBlockPairings).mock.calls[0][3]).toEqual([]);
+    });
+
+    it('shows no toast when the history loads with pairs', async () => {
+      vi.mocked(fetchSeasonHistoryForTeams).mockResolvedValue([['team1', 'team2']]);
+
+      const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
+      const mockToast = mockUseToast().toast;
+
+      await act(async () => {
+        await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams);
+      });
+
+      expect(mockToast).not.toHaveBeenCalled();
+    });
+
+    it('shows no toast when the history loads empty (a new season)', async () => {
+      vi.mocked(fetchSeasonHistoryForTeams).mockResolvedValue([]);
+
+      const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
+      const mockToast = mockUseToast().toast;
+
+      await act(async () => {
+        await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams);
+      });
+
+      expect(mockToast).not.toHaveBeenCalled();
+    });
+
+    it('shows the warning and then the error toast when the scheduler also fails', async () => {
+      vi.mocked(fetchSeasonHistoryForTeams).mockRejectedValue(new Error('history read failed'));
+      mockScheduleStandardPairings.mockRejectedValueOnce(new Error('Calculation error'));
+
+      const { result } = renderHook(() => usePairingGenerator(), { wrapper: createWrapper() });
+      const mockToast = mockUseToast().toast;
+
+      let pairings: PairingResult | null = null as PairingResult | null;
+      await act(async () => {
+        pairings = await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams);
+      });
+
+      expect(pairings).toBeNull();
+      expect(mockToast).toHaveBeenCalledTimes(2);
+      expect(mockToast).toHaveBeenNthCalledWith(1, WARNING);
+      expect(mockToast).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ title: 'Error', variant: 'destructive' })
+      );
+    });
   });
 });

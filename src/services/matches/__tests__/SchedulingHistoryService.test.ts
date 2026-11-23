@@ -16,9 +16,11 @@ vi.mock('@/utils/logger', () => ({
   dbLog: vi.fn(),
   errorLog: vi.fn(),
   scheduleLog: vi.fn(),
+  warnLog: vi.fn(),
 }));
 
 // Import after mocks
+import { DatabaseError } from '@/types/errors';
 import { errorLog } from '@/utils/logger';
 
 import { fetchSeasonHistoryForTeams, haveTeamsPlayedBefore } from '../SchedulingHistoryService';
@@ -110,22 +112,53 @@ describe('fetchSeasonHistoryForTeams', () => {
     ]);
   });
 
-  it('returns an empty list when the active season lookup throws', async () => {
-    const seasonError = new Error('no active season');
-    mockFetchActiveSeasonIdStrict.mockRejectedValue(seasonError);
+  it('returns an empty list, and does not read pairs, when there is no active season', async () => {
+    // The shape handleDatabaseError throws for a "no row" answer (PGRST116).
+    mockFetchActiveSeasonIdStrict.mockRejectedValue(
+      new DatabaseError('Failed to fetch active season: no rows', { code: 'PGRST116' })
+    );
 
     await expect(fetchSeasonHistoryForTeams(['team-a', 'team-b'])).resolves.toEqual([]);
 
     expect(mockFetchMatchPairsInSeason).not.toHaveBeenCalled();
-    // Handled by the season lookup's own catch: one log, not the outer catch's second one.
-    expect(errorLog).toHaveBeenCalledTimes(1);
-    expect(errorLog).toHaveBeenCalledWith('Error fetching active season:', seasonError);
+    // A legitimate empty state is not an error log.
+    expect(errorLog).not.toHaveBeenCalled();
   });
 
-  it('returns an empty list when the pairs query throws', async () => {
-    mockFetchMatchPairsInSeason.mockRejectedValue(new Error('pairs failed'));
+  it('throws when the active season lookup fails for any other database reason', async () => {
+    const seasonError = new DatabaseError('Failed to fetch active season: timeout', {
+      code: '57014',
+    });
+    mockFetchActiveSeasonIdStrict.mockRejectedValue(seasonError);
 
-    await expect(fetchSeasonHistoryForTeams(['team-a', 'team-b'])).resolves.toEqual([]);
+    await expect(fetchSeasonHistoryForTeams(['team-a', 'team-b'])).rejects.toBe(seasonError);
+
+    expect(mockFetchMatchPairsInSeason).not.toHaveBeenCalled();
+  });
+
+  it('throws when the active season lookup fails with a plain error', async () => {
+    const seasonError = new Error('network down');
+    mockFetchActiveSeasonIdStrict.mockRejectedValue(seasonError);
+
+    await expect(fetchSeasonHistoryForTeams(['team-a', 'team-b'])).rejects.toBe(seasonError);
+
+    expect(mockFetchMatchPairsInSeason).not.toHaveBeenCalled();
+  });
+
+  it('throws when a database error has no details to read a code from', async () => {
+    const seasonError = new DatabaseError('Failed to fetch active season');
+    mockFetchActiveSeasonIdStrict.mockRejectedValue(seasonError);
+
+    await expect(fetchSeasonHistoryForTeams(['team-a', 'team-b'])).rejects.toBe(seasonError);
+  });
+
+  it('throws when the pairs query fails, instead of returning an empty history', async () => {
+    const pairsError = new DatabaseError('Failed to fetch match pairs in season: boom', {
+      code: '08006',
+    });
+    mockFetchMatchPairsInSeason.mockRejectedValue(pairsError);
+
+    await expect(fetchSeasonHistoryForTeams(['team-a', 'team-b'])).rejects.toBe(pairsError);
 
     expect(mockFetchMatchPairsInSeason).toHaveBeenCalledTimes(1);
   });
