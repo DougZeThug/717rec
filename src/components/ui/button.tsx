@@ -22,12 +22,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           variant !== 'ghost' &&
             variant !== 'outline' &&
             'active:scale-[0.97] hover:shadow-md active:shadow-xs',
-          // Subtle hover scale for primary button variants only
-          (variant === 'default' ||
-            variant === 'cornhole' ||
-            variant === 'blue' ||
-            variant === 'orange') &&
-            'hover:scale-[1.02]'
+          // Subtle hover scale for the primary button variant only
+          variant === 'default' && 'hover:scale-[1.02]'
         )}
         ref={ref}
         {...props}

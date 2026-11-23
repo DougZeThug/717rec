@@ -14,12 +14,6 @@ export const buttonVariants = cva(
         secondary: gradients.button.secondary,
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
-        cornhole: gradients.button.primary,
-        blue: gradients.button.blue,
-        green: gradients.button.green,
-        // New button variants with orange accents
-        orange: gradients.button.orange,
-        orangeSubtle: gradients.button.orangeSubtle,
         blueOrange: gradients.button.blueOrange,
       },
       size: {
