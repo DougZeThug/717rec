@@ -103,16 +103,30 @@ interface TimeslotSectionCardProps {
   children: React.ReactNode;
 }
 
-/** Collapsible card for one timeslot; the header trigger shows the time and team count. */
-const TimeslotSectionCard = ({
+/** The open/close panel inside a timeslot card; the trigger shows the time and team count. */
+const TimeslotCollapsible = ({
   timeslot,
   teams,
   open,
   onToggle,
   isByeWeek,
-  cardClass,
   children,
-}: TimeslotSectionCardProps) => (
+}: Omit<TimeslotSectionCardProps, 'cardClass'>) => (
+  <Collapsible open={open} onOpenChange={onToggle} className="w-full">
+    <CollapsibleTrigger className="w-full">
+      <TimeslotGroupHeader
+        timeslot={timeslot}
+        teamCount={teams.length}
+        expanded={Boolean(open)}
+        isByeWeek={isByeWeek}
+      />
+    </CollapsibleTrigger>
+    <CollapsibleContent>{children}</CollapsibleContent>
+  </Collapsible>
+);
+
+/** Collapsible card for one timeslot. */
+const TimeslotSectionCard = ({ cardClass, ...panelProps }: TimeslotSectionCardProps) => (
   <Card
     className={cn(
       'rounded-lg border border-border bg-gradient-to-br from-muted to-card shadow-xs hover:shadow-md dark:shadow-gray-900/20 transition-all duration-300',
@@ -122,17 +136,7 @@ const TimeslotSectionCard = ({
     {/* No side padding on a phone, so the header band and the tiles reach the
         card edge. From md up the card keeps its usual padding. */}
     <CardContent className="p-0 md:p-6 md:pt-0">
-      <Collapsible open={open} onOpenChange={onToggle} className="w-full">
-        <CollapsibleTrigger className="w-full">
-          <TimeslotGroupHeader
-            timeslot={timeslot}
-            teamCount={teams.length}
-            expanded={Boolean(open)}
-            isByeWeek={isByeWeek}
-          />
-        </CollapsibleTrigger>
-        <CollapsibleContent>{children}</CollapsibleContent>
-      </Collapsible>
+      <TimeslotCollapsible {...panelProps} />
     </CardContent>
   </Card>
 );
