@@ -92,6 +92,11 @@ These are public on purpose — public pages or RLS policies call them:
 - RLS policy helpers (revoking breaks the policies): `current_user_is_admin`,
   `is_team_opted_out_active`, `user_can_score_match`, `user_is_team_member`
 
+Note (2026-11-23): `get_team_badges`, `get_all_team_badges`, `get_season_badges` and
+`get_participants` are not called by the app (no caller in `src` or
+`supabase/functions`). They are planned to be dropped in the clean-up migration
+(PR C), so they will leave this list.
+
 ### SECURITY DEFINER functions executable by authenticated (41)
 
 The 13 above, plus functions the client calls as a signed-in admin or scorer
