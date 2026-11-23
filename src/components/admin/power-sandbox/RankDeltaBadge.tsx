@@ -17,7 +17,7 @@ const RankDeltaBadge: React.FC<{ delta: number }> = ({ delta }) => {
   }
   if (delta < 0) {
     return (
-      <span className="inline-flex items-center text-red-500 tabular-nums">
+      <span className="inline-flex items-center text-destructive-text tabular-nums">
         <MoveDown className="size-3" aria-hidden="true" />
         {Math.abs(delta)}
       </span>

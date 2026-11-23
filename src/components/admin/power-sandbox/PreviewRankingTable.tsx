@@ -69,7 +69,7 @@ const RankingRow: React.FC<{ row: PreviewRankingRow; isMobile: boolean }> = ({ r
       className={cn(
         'py-2 text-right tabular-nums',
         row.scoreDelta > 0 && 'text-emerald-500',
-        row.scoreDelta < 0 && 'text-red-500'
+        row.scoreDelta < 0 && 'text-destructive-text'
       )}
     >
       {formatDelta(row.scoreDelta)}
