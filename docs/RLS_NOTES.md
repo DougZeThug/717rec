@@ -81,27 +81,26 @@ access goes through PostgREST, and the flagged objects are public league data
 (standings, teams, stats, schedules) that the public pages serve by design.
 Accepted: the exposure matches the intended public read access.
 
-### SECURITY DEFINER functions executable by anon (13)
+### SECURITY DEFINER functions executable by anon (9)
 
 These are public on purpose — public pages or RLS policies call them:
 
-- Public page data: `get_team_badges`, `get_all_team_badges`,
-  `get_season_badges`, `get_batch_head_to_head`, `get_opponent_match_history`,
-  `get_blind_draw_signup_count`, `get_participants`,
-  `get_season_team_power_scores`, `get_season_week_number`
+- Public page data: `get_batch_head_to_head`, `get_opponent_match_history`,
+  `get_blind_draw_signup_count`, `get_season_team_power_scores`,
+  `get_season_week_number`
 - RLS policy helpers (revoking breaks the policies): `current_user_is_admin`,
   `is_team_opted_out_active`, `user_can_score_match`, `user_is_team_member`
 
 Note (2026-11-23): `get_team_badges`, `get_all_team_badges`, `get_season_badges` and
-`get_participants` are not called by the app (no caller in `src` or
-`supabase/functions`). Migration `20261123120000_drop_dead_db_objects.sql` drops them
-once Doug applies it by hand (`docs/OPERATIONS.md` section 6i). Until then they are
-still live and the count above is 13. After that the count is 9. Recount the
-authenticated list with the linter after the drop. The 41 below is not changed here.
+`get_participants` were not called by the app (no caller in `src` or
+`supabase/functions`). Migration `20261123120000_drop_dead_db_objects.sql` dropped
+them. Doug applied it on live on 2026-11-23 (`docs/OPERATIONS.md` section 6i). The
+count above was 13 before and is 9 now. The 41 below is from before the drop and was
+not changed here: recount the authenticated list with the linter.
 
 ### SECURITY DEFINER functions executable by authenticated (41)
 
-The 13 above, plus functions the client calls as a signed-in admin or scorer
+The 9 above, plus functions the client calls as a signed-in admin or scorer
 (match approval, live scoring, season lifecycle, seeding, admin power tools).
 Admins are authenticated users, so these must keep the authenticated grant;
 each function checks admin/scorer rights internally.
