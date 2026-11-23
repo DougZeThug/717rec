@@ -151,10 +151,13 @@ describe('Prioritize Match Quality, from the button to the toast', () => {
           variant: 'destructive',
         })
       );
-      // The screen adds its own generic toast too. Three toasts fit at once, so both show.
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Generation Failed', variant: 'destructive' })
+      // The admin sees this one red toast only. The screen adds no second, generic toast.
+      expect(mockToast).not.toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Generation Failed' })
       );
+      expect(
+        mockToast.mock.calls.filter(([toast]) => toast.variant === 'destructive')
+      ).toHaveLength(1);
       expect(mockToast).not.toHaveBeenCalledWith(
         expect.objectContaining({ title: expect.stringContaining('Schedule Generated') })
       );

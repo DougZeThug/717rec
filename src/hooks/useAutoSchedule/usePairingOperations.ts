@@ -232,14 +232,9 @@ export const usePairingOperations = (
 
           // Move to matches tab to show results
           setActiveTab('matches');
-        } else {
-          toast({
-            title: 'Generation Failed',
-            description:
-              'Failed to generate schedule. Please check the console for details and try again.',
-            variant: 'destructive',
-          });
         }
+        // No else: generateMatchPairings returns null only after it has shown its
+        // own error toast. A second toast here would repeat it.
       } catch (error) {
         errorLog('Error during pairing generation:', error);
         toast({
