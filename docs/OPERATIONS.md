@@ -1794,10 +1794,10 @@ DROP FUNCTION IF EXISTS public.audit_match_delete();
 ## 6i. Dropping the dead database objects (clean-up migration)
 
 Built 2026-11-23 (`supabase/migrations/20261123120000_drop_dead_db_objects.sql`).
-**A hand-apply is needed** (§6). Until Doug applies it, the live database is
-unchanged and nothing else breaks. Doug approved this one clean-up on
-2026-11-23, after his read-only checks were all clean (`docs/audits/open-follow-ups.md`,
-row s).
+**Applied by Doug on live 2026-11-23 (it worked). `src/integrations/supabase/types.ts`
+is regenerated.** The steps below are kept as history and as a model for a later
+clean-up. Doug approved this one clean-up on 2026-11-23, after his read-only checks
+were all clean (`docs/audits/open-follow-ups.md`, row s).
 
 **What it does.** It drops 9 functions the app never calls (`auto_assign_seeds`,
 `get_all_team_badges`, `get_participants`, `get_season_badges`, `get_team_badges`,
