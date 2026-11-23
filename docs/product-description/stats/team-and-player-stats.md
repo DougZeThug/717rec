@@ -268,7 +268,10 @@ standard one and works from the keyboard.
 
 **Side effects the user can notice.** None from reading. Opening one team's page
 loads and caches the whole league's career numbers, which is why the second team
-page in a session fills in immediately.
+page in a session fills in immediately. If a career read fails and there are no
+numbers to show, the team page's Career card shows an error with a retry, not a
+card of zeros. If a refresh fails, the old numbers stay. The Career table on
+`/stats` already did this.
 
 ## Edge cases
 
