@@ -1907,3 +1907,81 @@ reconstruction, so the saved live text wins. The two tables hold 0 rows, so noth
 is lost. Their policies and grants must be added again from the repo sources.
 
 `supabase/tests/dead_objects_dropped.sql` covers the result in CI.
+
+## 6j. Dropping two extra `update_team_stats` functions (clean-up migration)
+
+Built 2026-11-23 (`supabase/migrations/20261123180000_drop_extra_update_team_stats_overloads.sql`).
+**A hand-apply is needed** (§6). Until Doug applies it, the live database is
+unchanged and nothing else breaks. Doug approved this drop on 2026-11-23.
+
+**What it does.** The live database has three functions named `update_team_stats`.
+Only the one with four arguments, `update_team_stats(uuid, uuid, integer, integer)`,
+is in the repo and in use. The other two were made outside the repo migrations. No
+code calls them:
+
+- `update_team_stats()`: an empty stub.
+- `update_team_stats(team_id uuid)`: recounts the wins and losses of one team from the
+  completed matches. Anyone could run it (PUBLIC, anon and authenticated).
+
+The file drops only these two. It uses no `CASCADE`. It is one block: both drops
+happen or neither. The four-argument function, `reverse_team_stats` and every other
+function stay. No season, match, player or stat is touched. This is a tidy-up, not a
+security fix.
+
+**When:** a non-league day, when no live scoring is running.
+
+### Step 1. Back up the definitions
+
+A drop cannot be undone from the file. Run this ONE read-only query in the Supabase SQL
+Editor. Copy the whole result into a file and keep it.
+
+```sql
+select p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')' as name,
+       pg_get_functiondef(p.oid) as definition,
+       p.proacl::text as grants
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.proname = 'update_team_stats' and p.pronargs <> 4
+order by 1;
+```
+
+Expect 2 rows: `update_team_stats()` and `update_team_stats(team_id uuid)`.
+
+### Step 2. Apply the file
+
+Paste the **whole** file into the SQL Editor and run it as written. Do not add
+`CASCADE`. The editor may warn about a "destructive operation". This is expected.
+Click through. If it fails, it changed nothing: copy the error and send it to Claude.
+
+### Step 3. Check (read only)
+
+**Expect ONLY the four-argument row** (the one that takes two ids and two counts):
+
+```sql
+select p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')' as name
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.proname = 'update_team_stats';
+```
+
+**Expect 1 row** (`reverse_team_stats` is still there):
+
+```sql
+select p.proname
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.proname = 'reverse_team_stats';
+```
+
+Then open the **Standings** page. It must load as before.
+
+### Step 4. Regenerate the types
+
+After the apply, regenerate `src/integrations/supabase/types.ts`. Tell Claude, who does
+it in a small follow-up change.
+
+### If something is missing afterwards (rollback)
+
+Run the two saved definitions from step 1. The grants are in the `grants` column
+(`{=X, postgres, anon, authenticated, service_role}`): add them again with
+`GRANT EXECUTE ON FUNCTION ... TO ...`. A copy of both definitions as read on live on
+2026-11-23 is in the header of the migration file. The saved text wins over that copy.
+
+`supabase/tests/extra_update_team_stats_dropped.sql` covers the result in CI.
