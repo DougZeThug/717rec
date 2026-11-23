@@ -94,8 +94,10 @@ These are public on purpose — public pages or RLS policies call them:
 
 Note (2026-11-23): `get_team_badges`, `get_all_team_badges`, `get_season_badges` and
 `get_participants` are not called by the app (no caller in `src` or
-`supabase/functions`). They are planned to be dropped in the clean-up migration
-(PR C), so they will leave this list.
+`supabase/functions`). Migration `20261123120000_drop_dead_db_objects.sql` drops them
+once Doug applies it by hand (`docs/OPERATIONS.md` section 6i). Until then they are
+still live and the count above is 13. After that the count is 9. Recount the
+authenticated list with the linter after the drop. The 41 below is not changed here.
 
 ### SECURITY DEFINER functions executable by authenticated (41)
 

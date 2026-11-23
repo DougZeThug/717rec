@@ -1790,3 +1790,120 @@ DROP FUNCTION IF EXISTS public.audit_match_delete();
 ```
 
 `supabase/tests/match_delete_audit.sql` covers it in CI.
+
+## 6i. Dropping the dead database objects (clean-up migration)
+
+Built 2026-11-23 (`supabase/migrations/20261123120000_drop_dead_db_objects.sql`).
+**A hand-apply is needed** (§6). Until Doug applies it, the live database is
+unchanged and nothing else breaks. Doug approved this one clean-up on
+2026-11-23, after his read-only checks were all clean (`docs/audits/open-follow-ups.md`,
+row s).
+
+**What it does.** It drops 9 functions the app never calls (`auto_assign_seeds`,
+`get_all_team_badges`, `get_participants`, `get_season_badges`, `get_team_badges`,
+`get_team_division_weight`, `insert_participant`, `snapshot_current_season` and
+`preserve_team_analysis_created_by`, the trigger helper of `team_analysis`), 2 empty
+tables (`team_stats`, `team_analysis`) and 3 unused views (`v_team_game_totals`,
+`v_team_round_stats`, `v_visible_teams`). It uses no `CASCADE`. It is one block: all
+of it happens or none of it. If a table holds a row, it stops and changes nothing.
+No season, match, player or stat is touched. The live look-alikes stay:
+`update_team_stats`, `reverse_team_stats`, `approve_match_result`,
+`delete_match_with_stats_reversal`, `_reapply_power_score_unification_owner` and
+`update_updated_at_column`.
+
+**When:** a non-league day, when no live scoring is running.
+
+### Step 0. Pre-check (read only)
+
+The file drops `preserve_team_analysis_created_by` after the `team_analysis` table.
+Run this to see which triggers use that function:
+
+```sql
+select t.tgname, t.tgrelid::regclass as on_table
+from pg_trigger t
+where not t.tgisinternal and t.tgfoid = to_regproc('public.preserve_team_analysis_created_by');
+```
+
+**Expected:** only one trigger, on `team_analysis` (or no rows). A row on any OTHER
+table means stop and tell the developer. (The file would fail and change nothing,
+but do not rely on that.)
+
+### Step 1. Back up the definitions (do not skip)
+
+A drop cannot be undone from the file. Run this ONE read-only query in the Supabase
+SQL Editor. Copy the whole result into a file and keep it.
+
+```sql
+select 'function' as kind,
+       p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')' as name,
+       pg_get_functiondef(p.oid) as definition,
+       p.proacl::text as grants
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public'
+  and p.proname in ('auto_assign_seeds','get_all_team_badges','get_participants','get_season_badges','get_team_badges','get_team_division_weight','insert_participant','snapshot_current_season','preserve_team_analysis_created_by')
+union all
+select 'view', c.relname::text, pg_get_viewdef(c.oid, true), c.relacl::text
+from pg_class c
+where c.relnamespace = 'public'::regnamespace and c.relkind = 'v'
+  and c.relname in ('v_team_game_totals','v_team_round_stats','v_visible_teams')
+order by 1, 2;
+```
+
+Expect 9 `function` rows and 3 `view` rows. The two tables hold 0 rows, so they need no
+backup. The repo has their definitions.
+
+### Step 2. Apply the file
+
+Paste the **whole** file into the SQL Editor and run it as written. Do not add
+`CASCADE`. The editor may warn about a "destructive operation". This is expected.
+Click through. If it fails, it changed nothing: copy the error and send it to
+Claude. A message that starts "team_stats has N row(s)" or "team_analysis has N
+row(s)" means a table is not empty. Stop.
+
+### Step 3. Check (read only)
+
+**Expect 0 rows:**
+
+```sql
+select p.proname, pg_get_function_identity_arguments(p.oid)
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public'
+  and p.proname in ('auto_assign_seeds','get_all_team_badges','get_participants','get_season_badges','get_team_badges','get_team_division_weight','insert_participant','snapshot_current_season','preserve_team_analysis_created_by');
+```
+
+**Expect all five values empty (NULL):**
+
+```sql
+select to_regclass('public.team_stats') as team_stats,
+       to_regclass('public.team_analysis') as team_analysis,
+       to_regclass('public.v_team_game_totals') as v_team_game_totals,
+       to_regclass('public.v_team_round_stats') as v_team_round_stats,
+       to_regclass('public.v_visible_teams') as v_visible_teams;
+```
+
+**Expect 6 rows** (the look-alikes that must stay):
+
+```sql
+select p.proname
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public'
+  and p.proname in ('update_team_stats','reverse_team_stats','approve_match_result','delete_match_with_stats_reversal','_reapply_power_score_unification_owner','update_updated_at_column')
+order by 1;
+```
+
+Then open the **Standings** page and one team page. They must load as before.
+
+### Step 4. Regenerate the types
+
+After the apply, regenerate `src/integrations/supabase/types.ts`. The function, table
+and view types change. Tell Claude, who does it in a small follow-up change.
+
+### If something is missing afterwards (rollback)
+
+Run the saved definitions from step 1. The grants are in the
+`grants` column: add them again (`GRANT EXECUTE ON FUNCTION ... TO ...`). The repo
+sources for a rebuild are in the header of the migration file. The base file is only a
+reconstruction, so the saved live text wins. The two tables hold 0 rows, so nothing
+is lost. Their policies and grants must be added again from the repo sources.
+
+`supabase/tests/dead_objects_dropped.sql` covers the result in CI.
