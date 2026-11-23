@@ -48,11 +48,25 @@ const SandboxPreviewTabs: React.FC<SandboxPreviewTabsProps> = ({
         </p>
       )}
 
-      {previewQuery.isLoading && <LoadingState variant="section" message="Building preview..." />}
+      {(previewQuery.isLoading || previewQuery.dataLoading) && (
+        <LoadingState variant="section" message="Building preview..." />
+      )}
+      {previewQuery.dataError && (
+        <Card>
+          <CardContent className="pt-6 space-y-2">
+            <p className="text-sm text-destructive-text">
+              Couldn&apos;t load the data for the preview.
+            </p>
+            <Button size="sm" variant="outline" onClick={() => previewQuery.retryData()}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      )}
       {previewQuery.isError && !previewQuery.isLoading && (
         <Card>
           <CardContent className="pt-6 space-y-2">
-            <p className="text-sm text-red-500">Couldn&apos;t build the preview.</p>
+            <p className="text-sm text-destructive-text">Couldn&apos;t build the preview.</p>
             <Button size="sm" variant="outline" onClick={() => previewQuery.refetch()}>
               Retry
             </Button>

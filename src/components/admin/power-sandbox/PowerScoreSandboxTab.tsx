@@ -41,7 +41,7 @@ const formatDate = (iso: string | null | undefined): string =>
 const RetryCard: React.FC<{ message: string; onRetry: () => void }> = ({ message, onRetry }) => (
   <Card>
     <CardContent className="pt-6 space-y-2">
-      <p className="text-sm text-red-500">{message}</p>
+      <p className="text-sm text-destructive-text">{message}</p>
       <Button size="sm" variant="outline" onClick={onRetry}>
         Retry
       </Button>
