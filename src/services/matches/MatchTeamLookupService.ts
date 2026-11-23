@@ -44,7 +44,7 @@ type TeamDetailsRow = Pick<
 
 /**
  * Fetch team matches for a specific team in the active season.
- * Returns null if no active season is found.
+ * Returns null if no active season is found (no row; a failed read throws).
  * @throws {DatabaseError} When database operations fail
  */
 export const fetchTeamMatchesData = async (
@@ -53,11 +53,17 @@ export const fetchTeamMatchesData = async (
   assertValidUuid(teamId, 'teamId');
 
   // Get active season first to filter matches
-  const { data: activeSeason } = await supabase
+  const { data: activeSeason, error: seasonError } = await supabase
     .from('seasons')
     .select('id')
     .eq('is_active', true)
     .single();
+
+  // PGRST116 (no active season) is a valid empty state; any other error must
+  // surface so the page does not show an empty schedule for a failed read.
+  if (seasonError && seasonError.code !== 'PGRST116') {
+    handleDatabaseError(seasonError, 'Failed to fetch active season');
+  }
 
   // Returns null when no data exists yet (not an error) — caller renders an empty state.
   if (!activeSeason) {

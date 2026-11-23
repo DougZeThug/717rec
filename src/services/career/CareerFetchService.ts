@@ -3,7 +3,6 @@ import { fetchRealDivisionOverrides } from '@/services/divisions/RealDivisionSer
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
 import { applyRealDivisions } from '@/utils/divisions/realDivisionOverrides';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { warnLog } from '@/utils/logger';
 import { DEFAULT_DIVISION_WEIGHT } from '@/utils/rankingUtils/defaultDivisionWeight';
 import { assertValidUuid } from '@/utils/validation';
 
@@ -92,32 +91,37 @@ const runCareerQueries = (teamId: string) =>
 type CareerQueryResults = Awaited<ReturnType<typeof runCareerQueries>>;
 
 /**
- * Season stats are critical and the active season must not fail silently, so
- * those throw. Match queries are non-critical and only log.
+ * A failed read must not look like "no stats yet", so every read throws.
+ * The only quiet cases are "no row" answers (PGRST116) on the two single-row
+ * reads: a missing team row or no active season is a valid empty state.
  */
 const reportCareerQueryErrors = ([
-  ,
+  teamResult,
   seasonStatsResult,
   currentMatchesResult,
   archivedMatchesResult,
-  ,
+  teamDetailsArchiveResult,
   playoffMatchesResult,
   activeSeasonResult,
 ]: CareerQueryResults): void => {
-  // Handle critical error
   if (seasonStatsResult.error) {
     handleDatabaseError(seasonStatsResult.error, 'Failed to fetch team season stats');
   }
 
-  // Log non-critical errors
+  if (teamResult.error && teamResult.error.code !== 'PGRST116') {
+    handleDatabaseError(teamResult.error, 'Failed to fetch team');
+  }
   if (currentMatchesResult.error) {
-    warnLog('Error fetching current matches:', currentMatchesResult.error);
+    handleDatabaseError(currentMatchesResult.error, 'Failed to fetch current matches');
   }
   if (archivedMatchesResult.error) {
-    warnLog('Error fetching archived matches:', archivedMatchesResult.error);
+    handleDatabaseError(archivedMatchesResult.error, 'Failed to fetch archived matches');
+  }
+  if (teamDetailsArchiveResult.error) {
+    handleDatabaseError(teamDetailsArchiveResult.error, 'Failed to fetch team division history');
   }
   if (playoffMatchesResult.error) {
-    warnLog('Error fetching playoff matches:', playoffMatchesResult.error);
+    handleDatabaseError(playoffMatchesResult.error, 'Failed to fetch playoff matches');
   }
 
   // Active season lookup: PGRST116 (no rows) is a valid empty state; any other
@@ -141,7 +145,7 @@ const fetchBracketDivisionInfo = async (
   const displayNames: Record<string, string> = {};
   if (bracketIds.length === 0) return { weights, displayNames };
 
-  const { data: bracketData } = await supabase
+  const { data: bracketData, error } = await supabase
     .from('brackets')
     .select(
       `
@@ -150,6 +154,8 @@ const fetchBracketDivisionInfo = async (
         `
     )
     .in('id', bracketIds);
+
+  if (error) handleDatabaseError(error, 'Failed to fetch bracket divisions');
 
   for (const bracket of bracketData ?? []) {
     const divisions = bracket.divisions as {
@@ -167,10 +173,12 @@ const fetchBracketSeasonMap = async (bracketIds: string[]): Promise<Record<strin
   const bracketSeasonMap: Record<string, string> = {};
   if (bracketIds.length === 0) return bracketSeasonMap;
 
-  const { data: bracketSeasonData } = await supabase
+  const { data: bracketSeasonData, error } = await supabase
     .from('brackets')
     .select('id, season_id')
     .in('id', bracketIds);
+
+  if (error) handleDatabaseError(error, 'Failed to fetch bracket seasons');
 
   for (const bracket of bracketSeasonData ?? []) {
     if (bracket.season_id) {
