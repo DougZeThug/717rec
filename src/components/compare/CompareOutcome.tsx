@@ -56,6 +56,8 @@ export const CompareOutcome: React.FC<CompareOutcomeProps> = ({ team1, team2, co
       team2={comparison.team2}
       headToHead={comparison.headToHead}
       headToHeadError={comparison.headToHeadError}
+      totalsError={comparison.totalsError}
+      onRetryTotals={comparison.retryTotals}
     />
   );
 };

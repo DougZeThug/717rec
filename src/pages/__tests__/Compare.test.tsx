@@ -54,6 +54,8 @@ const emptyComparison = {
   team2: null,
   headToHead: null,
   headToHeadError: false,
+  totalsError: false,
+  retryTotals: vi.fn(),
   isLoading: false,
 };
 
@@ -145,6 +147,8 @@ describe('Compare', () => {
       team2: null,
       headToHead: null,
       headToHeadError: false,
+      totalsError: false,
+      retryTotals: vi.fn(),
       isLoading: false,
     });
 
@@ -165,6 +169,8 @@ describe('Compare', () => {
       team2: null,
       headToHead: null,
       headToHeadError: false,
+      totalsError: false,
+      retryTotals: vi.fn(),
       isLoading: true,
     });
 
@@ -173,6 +179,32 @@ describe('Compare', () => {
     await waitFor(() => {
       expect(screen.getByText('Loading comparison...')).toBeInTheDocument();
     });
+  });
+
+  it('shows the career statistics message with Retry when a totals read failed', async () => {
+    const retryTotals = vi.fn();
+    vi.mocked(useTeamsQuery).mockReturnValue({
+      data: [TEAM_A, TEAM_B],
+      isLoading: false,
+    } as ReturnType<typeof useTeamsQuery>);
+    vi.mocked(useTeamComparison).mockReturnValue({
+      team1: buildSide(TEAM_A.id, TEAM_A.name),
+      team2: buildSide(TEAM_B.id, TEAM_B.name),
+      headToHead: null,
+      headToHeadError: false,
+      totalsError: true,
+      retryTotals,
+      isLoading: false,
+    });
+
+    renderCompare('/compare?team1=team-a&team2=team-b');
+
+    expect(
+      await screen.findByText("We couldn't load career statistics. Please try again.")
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Career Statistics')).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: /retry|try again/i }));
+    expect(retryTotals).toHaveBeenCalledTimes(1);
   });
 
   it('renders the real comparison view when both sides resolve', async () => {
@@ -192,6 +224,8 @@ describe('Compare', () => {
         isFirstMeeting: false,
       },
       headToHeadError: false,
+      totalsError: false,
+      retryTotals: vi.fn(),
       isLoading: false,
     });
 
@@ -258,6 +292,8 @@ describe('Compare', () => {
         team2: buildSide('team-b', 'Bravo Bombers'),
         headToHead: null,
         headToHeadError: false,
+        totalsError: false,
+        retryTotals: vi.fn(),
         isLoading: false,
       });
       rerender(compareTree('/compare?team1=team-a&team2=team-b'));
@@ -396,6 +432,8 @@ describe('Compare', () => {
       team2: buildSide('team-b', 'Bravo Bombers'),
       headToHead: null,
       headToHeadError: false,
+      totalsError: false,
+      retryTotals: vi.fn(),
       isLoading: false,
     });
 
