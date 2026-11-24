@@ -388,7 +388,7 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
           />
           <div
             class="lg:hidden"
-            style="min-width: 120px; min-height: 44px;"
+            style="min-size: 120px 44px;"
           >
             <div
               class="flex items-center justify-end gap-2"
