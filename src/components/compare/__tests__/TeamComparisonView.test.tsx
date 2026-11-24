@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { TeamComparisonView } from '@/components/compare/TeamComparisonView';
@@ -252,5 +253,61 @@ describe('TeamComparisonView team names', () => {
       expect(heading).not.toHaveClass('line-clamp-1');
       expect(heading.parentElement).toHaveClass('min-w-0');
     }
+  });
+});
+
+describe('TeamComparisonView when career totals could not be read', () => {
+  const h2h = {
+    team1Wins: 3,
+    team2Wins: 2,
+    gameWins1: 9,
+    gameWins2: 7,
+    lastPlayed: null,
+    isFirstMeeting: false,
+  };
+
+  it('says so with a Retry button, in place of the three stat cards', async () => {
+    const onRetryTotals = vi.fn();
+    render(
+      <TeamComparisonView
+        team1={side('Alpha')}
+        team2={side('Beta')}
+        headToHead={h2h}
+        totalsError
+        onRetryTotals={onRetryTotals}
+      />
+    );
+
+    expect(screen.getByText("We couldn't load career statistics. Please try again.")).toBeVisible();
+    expect(screen.queryByText('Career Statistics')).not.toBeInTheDocument();
+    expect(screen.queryByText('Playoff Performance')).not.toBeInTheDocument();
+    expect(screen.queryByText('vs Division Tiers')).not.toBeInTheDocument();
+
+    await userEvent.setup().click(screen.getByRole('button', { name: /retry|try again/i }));
+    expect(onRetryTotals).toHaveBeenCalledTimes(1);
+  });
+
+  it('still shows the head-to-head record', () => {
+    render(
+      <TeamComparisonView
+        team1={side('Alpha')}
+        team2={side('Beta')}
+        headToHead={h2h}
+        totalsError
+        onRetryTotals={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Alpha')).toBeInTheDocument();
+    expect(screen.queryByText('Head-to-Head Unavailable')).not.toBeInTheDocument();
+  });
+
+  it('draws the three stat cards and no error when the reads worked', () => {
+    render(<TeamComparisonView team1={side('Alpha')} team2={side('Beta')} headToHead={null} />);
+
+    expect(screen.getByText('Career Statistics')).toBeInTheDocument();
+    expect(screen.getByText('Playoff Performance')).toBeInTheDocument();
+    expect(screen.getByText('vs Division Tiers')).toBeInTheDocument();
+    expect(screen.queryByText(/couldn't load career statistics/i)).not.toBeInTheDocument();
   });
 });

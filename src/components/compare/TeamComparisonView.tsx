@@ -2,6 +2,7 @@ import { Medal, Trophy } from 'lucide-react';
 import React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { PercentileFromResult } from '@/components/ui/PercentileBadge';
 import { TeamComparisonSide } from '@/hooks/useTeamComparison';
 
@@ -20,6 +21,9 @@ interface TeamComparisonViewProps {
     isFirstMeeting: boolean;
   } | null;
   headToHeadError?: boolean;
+  /** A career totals read failed: show a message and Retry in place of the stat cards. */
+  totalsError?: boolean;
+  onRetryTotals?: () => void;
 }
 
 const TeamHeader: React.FC<{ team: TeamComparisonSide; align: 'left' | 'right' }> = ({
@@ -226,6 +230,8 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
   team2,
   headToHead,
   headToHeadError = false,
+  totalsError = false,
+  onRetryTotals,
 }) => (
   <div className="space-y-6">
     {/* Team Headers */}
@@ -234,9 +240,19 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
       <TeamHeader team={team2} align="right" />
     </div>
 
-    <CareerStatsCard team1={team1} team2={team2} />
-    <PlayoffStatsCard team1={team1} team2={team2} />
-    <DivisionRecordsCard team1={team1} team2={team2} />
+    {totalsError ? (
+      <ErrorDisplay
+        variant="inline"
+        error="We couldn't load career statistics. Please try again."
+        onRetry={onRetryTotals}
+      />
+    ) : (
+      <>
+        <CareerStatsCard team1={team1} team2={team2} />
+        <PlayoffStatsCard team1={team1} team2={team2} />
+        <DivisionRecordsCard team1={team1} team2={team2} />
+      </>
+    )}
 
     {/* Head-to-Head */}
     {headToHeadError && <HeadToHeadUnavailable />}

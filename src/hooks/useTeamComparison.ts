@@ -52,12 +52,30 @@ export interface TeamComparisonData {
    * genuine first meeting -- a failed read used to be reported as one.
    */
   headToHeadError: boolean;
+  /**
+   * A career totals read failed and that team has no totals to show. Without
+   * this the page drew the career cards from `0-0` records. A failed refresh
+   * that leaves old totals in place is not reported.
+   */
+  totalsError: boolean;
+  /** Asks again for every totals read that failed. */
+  retryTotals: () => void;
   isLoading: boolean;
 }
 
 export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamComparisonData => {
-  const { totals: totals1, isLoading: loading1 } = useTeamTotalsComputed(team1?.id ?? '');
-  const { totals: totals2, isLoading: loading2 } = useTeamTotalsComputed(team2?.id ?? '');
+  const {
+    totals: totals1,
+    isLoading: loading1,
+    error: totalsError1,
+    refetch: refetchTotals1,
+  } = useTeamTotalsComputed(team1?.id ?? '');
+  const {
+    totals: totals2,
+    isLoading: loading2,
+    error: totalsError2,
+    refetch: refetchTotals2,
+  } = useTeamTotalsComputed(team2?.id ?? '');
   const { getTeamPercentiles, isLoading: loadingPercentiles } = useLeaguePercentiles();
   const {
     data: h2hHistory,
@@ -66,6 +84,8 @@ export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamC
   } = useOpponentHistory(team1?.id, team2?.id);
   const comparisonData = useMemo((): TeamComparisonData => {
     const isLoading = loading1 || loading2 || loadingPercentiles || loadingH2H;
+    const totalsFailed1 = Boolean(team1) && Boolean(totalsError1) && !totals1;
+    const totalsFailed2 = Boolean(team2) && Boolean(totalsError2) && !totals2;
 
     const buildTeamSide = (
       team: Team | null,
@@ -132,6 +152,11 @@ export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamC
       // with "could not be loaded" on any failed background refresh --
       // swapping one wrong claim for another. A known record wins.
       headToHeadError: headToHead === null && Boolean(h2hError) && Boolean(team1) && Boolean(team2),
+      totalsError: totalsFailed1 || totalsFailed2,
+      retryTotals: () => {
+        if (totalsFailed1) refetchTotals1();
+        if (totalsFailed2) refetchTotals2();
+      },
       isLoading,
     };
   }, [
@@ -139,6 +164,10 @@ export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamC
     team2,
     totals1,
     totals2,
+    totalsError1,
+    totalsError2,
+    refetchTotals1,
+    refetchTotals2,
     getTeamPercentiles,
     loadingPercentiles,
     h2hHistory,
