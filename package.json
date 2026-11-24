@@ -97,7 +97,7 @@
     "react-snowfall": "^2.4.0",
     "react-window": "^2.5.3",
     "recharts": "^3.11.0",
-    "tailwind-merge": "3.7.0",
+    "tailwind-merge": "3.7.1",
     "tailwindcss-animate": "^1.0.7",
     "use-sound": "^5.0.0",
     "uuid": "^14.0.3",

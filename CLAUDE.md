@@ -178,11 +178,13 @@ export const ExampleService = {
 - Keep `bg-gradient-to-*` (not `bg-linear-to-*`): hero card presets save these
   class names in the database, and the winter theme matches them with
   `[class*="bg-gradient"]`.
-- `tailwind-merge` is pinned **exact** at 3.7.0 on purpose. Version 3.7.1 stops
-  dropping `leading-*` when a `text-*` size comes after it. That would change the
-  line height of `CardTitle`, `Label`, `CardDescription` and others (66 real call
-  sites), because this project keeps v3 fixed line heights. Do not bump it until
-  that is handled. Dependabot ignores it (`.github/dependabot.yml`).
+- `tailwind-merge` is pinned **exact** (currently 3.7.1) and `cn()` in
+  `src/lib/utils.ts` builds it with `extendTailwindMerge` to keep the v3 rule:
+  a `text-*` size that comes after a `leading-*` drops it (`leading-none text-lg`
+  becomes `text-lg`). Stock 3.7.1 stopped doing this, which would change the
+  line heights of `CardTitle`, `Label`, `CardDescription` and others (66 real
+  call sites), because this project keeps v3 fixed line heights. A
+  `tailwind-merge` bump must keep `src/lib/__tests__/utils.test.ts` passing.
 - Do not `@apply` `leading-*`, `tracking-*` or `font-*` on plain element
   selectors: in v4 they also set `--tw-*` variables that change later `text-*`
   classes. Write plain CSS values instead (see `src/styles/typography.css`).
