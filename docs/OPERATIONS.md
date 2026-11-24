@@ -1911,8 +1911,9 @@ is lost. Their policies and grants must be added again from the repo sources.
 ## 6j. Dropping two extra `update_team_stats` functions (clean-up migration)
 
 Built 2026-11-23 (`supabase/migrations/20261123180000_drop_extra_update_team_stats_overloads.sql`).
-**A hand-apply is needed** (§6). Until Doug applies it, the live database is
-unchanged and nothing else breaks. Doug approved this drop on 2026-11-23.
+**Applied by Doug on live 2026-11-24 (backup saved, apply succeeded, post-check
+passed); `src/integrations/supabase/types.ts` is regenerated.** The steps below are
+kept as history. Doug approved this drop on 2026-11-23.
 
 **What it does.** The live database has three functions named `update_team_stats`.
 Only the one with four arguments, `update_team_stats(uuid, uuid, integer, integer)`,
