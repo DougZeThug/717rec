@@ -202,11 +202,10 @@ export const ExampleService = {
 - `vitest` and `@vitest/coverage-v8` are pinned to the **same exact version**.
   Coverage needs the matching Vitest, so bump them together. Dependabot groups
   `vitest*` and `@vitest/*` for this reason.
-- The `declare module 'vitest'` block in `src/setupTests.ts` gives the jest-dom
-  matchers (`toBeInTheDocument` and the rest) their types. Vitest 5 no longer
-  reads `jest.Matchers`, and jest-dom 7.0.1 declares them only there. Delete the
-  block when jest-dom ships Vitest 5 types (testing-library/jest-dom#738). Keep
-  it in a `.ts` file: `skipLibCheck` hides mistakes in `.d.ts` files.
+- jest-dom 8 ships its own Vitest 5 types. `src/setupTests.ts` imports
+  `@testing-library/jest-dom/vitest`, which registers the matchers
+  (`toBeInTheDocument` and the rest) and carries their types. The old
+  `declare module 'vitest'` block is gone. Do not add it back.
 - Vitest clears the call history of every mock before each test (`clearMocks`
   is on by default). Check calls in the test that makes them, not in
   `beforeAll`.
