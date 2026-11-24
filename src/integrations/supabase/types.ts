@@ -6297,18 +6297,15 @@ export type Database = {
         }
         Returns: Json
       }
-      update_team_stats:
-        | { Args: never; Returns: undefined }
-        | {
-            Args: {
-              p_loser_game_wins?: number
-              p_loser_id: string
-              p_winner_game_wins?: number
-              p_winner_id: string
-            }
-            Returns: Json
-          }
-        | { Args: { team_id: string }; Returns: undefined }
+      update_team_stats: {
+        Args: {
+          p_loser_game_wins?: number
+          p_loser_id: string
+          p_winner_game_wins?: number
+          p_winner_id: string
+        }
+        Returns: Json
+      }
       upsert_team_season_stats: {
         Args: { p_include_archived?: boolean }
         Returns: undefined
