@@ -33,8 +33,3 @@ updates:
         versions: [">=19.0.0"]
       - dependency-name: "react-dom"
         versions: [">=19.0.0"]
-      # tailwind-merge 3.7.1 stops dropping leading-* when a text-* size follows
-      # it, which changes line heights (this project keeps v3 fixed line heights).
-      # Held at exactly 3.7.0 until that is handled.
-      - dependency-name: "tailwind-merge"
-        versions: [">3.7.0"]
