@@ -114,7 +114,7 @@ Nothing is submitted. This page only reads.
 | Browser back or forward                                     | Leaves the page.                                                           | **Back leaves the page rather than undoing a selection**, because every change replaces the history entry instead of adding one. Coming forward again returns to the last comparison.                                                                                  |
 | Reload, or the tab closed                                   | Gives two empty dropdowns.                                                 | **The comparison survives**, because it is in the address.                                                                                                                                                                                                             |
 | Network lost mid-request                                    | The team list never arrives and the retry card appears.                    | The comparison stays on "Loading comparison..." with no error and no timeout.                                                                                                                                                                                          |
-| The request fails or times out                              | The read is retried once, then the retry card.                             | The numbers for one side fail and that side draws zeros rather than saying anything.                                                                                                                                                                                   |
+| The request fails or times out                              | The read is retried once, then the retry card.                             | A failed career totals read replaces the three stat cards with "We couldn't load career statistics. Please try again." and a **Retry** button; the head-to-head block is unchanged.                                                                                                                                                                                   |
 | The session expires                                         | No effect. Everything here is public.                                      | No effect.                                                                                                                                                                                                                                                             |
 | The same record changed in another tab, or by another user  | No realtime. A result entered elsewhere does not reach an open comparison. | Same, and more so than elsewhere: the head-to-head block is deliberately told **not** to refetch when the page is opened or when the tab regains focus, so an open page never refetches it at all and reopening within ten minutes reuses the cached record. See B-74. |
 | Browser autofill or a password manager writes into the form | No effect. There are no text fields.                                       | No effect.                                                                                                                                                                                                                                                             |
@@ -133,7 +133,8 @@ back; anything it does not, does not.
 and a season power score can disagree.
 
 **Validation and error display.** No input to validate. A failed team list
-replaces the page; a failed comparison shows zeros.
+replaces the page; a failed career totals read replaces the three stat cards
+with a Retry message.
 
 **Unsaved changes.** None exist.
 
